@@ -15,10 +15,11 @@
 //
 // Everything here is a default that config or the environment overrides, and
 // none of it touches a deployment, a release or the user's own working tree.
-import { readFile, readdir, writeFile, mkdir, stat } from 'node:fs/promises'
+import { readFile, readdir, writeFile, mkdir, stat, lstat } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { join, dirname } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
 import { loopbackOnly } from './url-policy.mjs'
@@ -38,8 +39,8 @@ export const CONFIG_TEMPLATE = {
     'stateRoot: STARTS AN OWNED BACKEND against this state directory instead of the shell\'s private one. It does NOT attach to anything: a harness process is spawned here exactly as it would be by default. Pointing it at a deployment that is already running makes a second writer against one set of storages, which is corruption and not sharing — the shell refuses when it finds a live process recorded there. The directory must be private (mode 0700); the shell refuses a wider one rather than narrowing it. To SHOW a running deployment, use attachUrl.',
     'nodePath: a node binary to use. Default: the first of ~/.local/bin/node, /opt/homebrew/bin/node, /usr/local/bin/node, /usr/bin/node that exists.',
     'patch: extra composition patch overlays. Default: the release\'s own aukora-composition.patch.yml, which is what mounts the organs and the spatial frame, followed by kira-deployment-overlay.patch.yml from this folder once the first Aumlok link has written it.',
-    'approvedRecordSha: approved artifact record digests. Without one, allowUnapproved must be true.',
-    'allowUnapproved: false by default. true launches a release with no approved record AND waives the plugin set: every AUKORA plugin then loads without its owner-approved record being enforced. For a disposable preview only.',
+    'approvedRecordSha: approved artifact record digests. A matching installed plugin-set approval also admits the release record; the gate still verifies its signature.',
+    'allowUnapproved: false by default. With no configured record approvals and no installed plugin-set approval, the first-run launch temporarily waives approval so you can link your Aumlok phrase. Nothing saves that waiver. true explicitly waives the plugin set on every launch: for a disposable preview only.',
   ],
   release: null,
   repo: null,
@@ -49,9 +50,7 @@ export const CONFIG_TEMPLATE = {
   nodePath: null,
   patch: [],
   approvedRecordSha: [],
-  // FALSE SINCE 2026-09-27. It shipped `true`, so a config that omitted the key launched any release and,
-  // once the plugin set existed, would have loaded every AUKORA plugin unapproved. Only the boolean true in
-  // config.json opens the hatch now.
+  // First-run permission is resolved from absent approval evidence, never saved in this template.
   allowUnapproved: false,
   searchRoots: [homedir()],
 }
@@ -62,6 +61,67 @@ async function isDir(path) {
 
 async function isFile(path) {
   try { return (await stat(path)).isFile() } catch { return false }
+}
+
+// The installed Aumlok receipt stores operationDigest, not setDigest. Port the exact text from
+// the gate's setOperationContent; the focused test derives receipts with that original helper.
+// Keep the packaged shell independent of the gate's module tree. This only matches evidence:
+// the gate still validates the record's digests, pinned key and receipt signature itself.
+function pluginSetOperationDigest(record) {
+  const hex = value => typeof value === 'string' && /^[0-9a-f]{64}$/u.test(value)
+  const artifacts = record?.artifacts
+  if (record?.kind !== 'aukora-plugin-set/v1' || !hex(record.setDigest)
+    || artifacts === null || typeof artifacts !== 'object' || Array.isArray(artifacts)) {
+    throw new Error('malformed plugin set')
+  }
+  const ids = Object.keys(artifacts).sort()
+  if (record.count !== ids.length || ids.some(id => {
+    const artifact = artifacts[id]
+    return artifact?.id !== id || !hex(artifact.digest)
+      || artifact.files === null || typeof artifact.files !== 'object' || Array.isArray(artifact.files)
+      || !Object.hasOwn(artifact.files, artifact.entry) || !Object.values(artifact.files).every(hex)
+  })) throw new Error('malformed plugin set')
+  const files = new Set(Object.values(artifacts).flatMap(artifact => Object.keys(artifact.files)))
+  const width = Math.max(...ids.map(id => id.length))
+  const content = [
+    'AUKORA: ADMIT THESE PLUGINS',
+    'Approve lets exactly these plugin bytes load. A changed, added or',
+    'unrecorded file in them is refused when Node loads it.',
+    `set ${record.setDigest}`,
+    `${String(record.count)} plugins, ${String(files.size)} files, sha256 each:`,
+    ...ids.map(id => `${id.padEnd(width)} ${String(Object.keys(artifacts[id].files).length).padStart(4)} ${artifacts[id].digest.slice(0, 16)}`),
+    'Not covered: node_modules, the gate bootstrap, workers.',
+    '',
+  ].join('\n')
+  return createHash('sha256').update('aukora:operation-content:v1\0', 'utf8').update(content, 'utf8').digest('hex')
+}
+
+async function installedPluginSet(release, stateRoot) {
+  const path = join(stateRoot, 'gate-state', 'plugin-set-approval.json')
+  try {
+    // A malformed file, directory or dangling symlink is existing evidence, never first run.
+    const info = await lstat(path)
+    if (!info.isFile()) return { status: 'invalid', path }
+  } catch (error) {
+    return { status: error.code === 'ENOENT' ? 'absent' : 'invalid', path }
+  }
+  try {
+    const receipt = JSON.parse(await readFile(path, 'utf8'))
+    const record = JSON.parse(await readFile(join(release, '.dsh-build/plugin-set.json'), 'utf8'))
+    // The verifier's required receipt fields: reject truncated evidence here without verifying a key.
+    const fields = ['domain', 'verdict', 'approvalKeyDid', 'subject', 'activeControlDigest', 'operationDigest',
+      'challenge', 'issuedAt', 'expiresAt', 'signature', 'signedBytesDigest', 'approvalClass', 'keyClass']
+    if (receipt?.domain !== 'aukora:approval-receipt:v1' || receipt.verdict !== 'OWNER_KEY_SIGNED'
+      || fields.some(field => !Object.hasOwn(receipt, field))
+      || typeof receipt.signature !== 'string' || !/^[0-9a-f]{128}$/u.test(receipt.signature)
+      || typeof receipt.operationDigest !== 'string' || !/^[0-9a-f]{64}$/u.test(receipt.operationDigest)) {
+      return { status: 'invalid', path }
+    }
+    return { status: receipt.operationDigest === pluginSetOperationDigest(record) ? 'matching' : 'changed',
+      path, setDigest: record.setDigest }
+  } catch {
+    return { status: 'invalid', path }
+  }
 }
 
 /**
@@ -320,7 +380,7 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
     ? 'state root owned by this shell'
     : `state root ${stateRoot} (an owned backend is started against it, not attached)`)
 
-  // ── THE RELEASE DOOR'S TWO VALUES, RESOLVED FAIL-CLOSED ────────────────────────────────────────
+  // ── EXPLICIT RELEASE PERMISSIONS, BEFORE CHECKING THIS INSTALL'S APPROVAL ─────────────────────
   // `approvedRecordSha` is the set of release artifact records an operator approved, and the launcher
   // refuses any release whose record sha is not in it. `allowUnapproved` is the escape hatch for a
   // disposable preview, and it has to keep working — a door with no way out is a lock-out.
@@ -329,13 +389,13 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
   // test: a missing key, a misspelled key, `"allowUnapproved": "false"` (a string — an easy JSON
   // mistake), `0` or `null` all resolved to `true`, and `true` here means the launcher is handed
   // `--allow-unapproved` and adopts any release with no operator decision at all. A value that is
-  // merely not `false` is not permission. Permission is the boolean `true`, and nothing else.
+  // merely not `false` is not permission. Explicit preview permission is the boolean `true`.
   //
   // The escape hatch is unchanged for the value that actually is one: `true` still permits.
-  const allowUnapproved = config.allowUnapproved === true
+  let allowUnapproved = config.allowUnapproved === true
   if (config.allowUnapproved !== undefined && typeof config.allowUnapproved !== 'boolean') {
     why.push(`allowUnapproved is ${JSON.stringify(config.allowUnapproved)} — not a boolean, so it is `
-      + 'NOT permission: only the boolean true permits a release with no approved record')
+      + 'NOT explicit preview permission: only the boolean true enables the configured waiver')
   }
   // WHERE THE PERMISSION CAME FROM, SAID OUT LOUD. A config file that omits the key falls back to the
   // shipped template. It shipped `true` until 2026-09-27 — so a typo (`allowUnapprove`, `"allowUnapproved "`)
@@ -354,7 +414,7 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
   // a STRING here is iterated CHARACTER BY CHARACTER downstream — 64 single-character digests that
   // no release matches. That fails closed at the launcher, but it fails as `unapproved-release` and
   // hides the operator's actual mistake. Named here instead.
-  const approvedRecordSha = config.approvedRecordSha ?? []
+  let approvedRecordSha = config.approvedRecordSha ?? []
   if (!Array.isArray(approvedRecordSha)
     || approvedRecordSha.some(sha => typeof sha !== 'string' || !/^[0-9a-f]{64}$/u.test(sha))) {
     throw new Error('approved-record-sha-malformed: ' + configPath + ' names approved artifact record '
@@ -362,6 +422,26 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
       + '.dsh-build/genesis-artifacts.json. A string is not a list, and a digest that is not 64 hex '
       + 'characters matches no release. Refusing rather than launching with an approval list nothing '
       + 'can satisfy.')
+  }
+  approvedRecordSha = [...approvedRecordSha]
+
+  // Preserve explicit preview permission and every configured digest; a matching installed approval
+  // contributes the release's digest. Only an install with no approval gets the temporary waiver.
+  if (!allowUnapproved) {
+    const approval = await installedPluginSet(release, resolve(stateRoot ?? join(userData, 'state')))
+    if (approval.status === 'absent' && approvedRecordSha.length === 0) {
+      allowUnapproved = true
+      why.push('FIRST RUN: no owner has approved this install yet; link your Aumlok phrase, then approve the plugin set (the app asks) — from then on every launch requires it')
+    } else if (approval.status === 'matching') {
+      // Match launch-dsh.py: sha256(record_file.read_bytes()), including formatting and final newline.
+      const sha = createHash('sha256').update(await readFile(join(release, RECORD))).digest('hex')
+      if (!approvedRecordSha.includes(sha)) approvedRecordSha.push(sha)
+      why.push(`APPROVED BY THE OWNER: installed approval ${approval.path} matches plugin set ${approval.setDigest}; the gate must still verify the signature`)
+    } else if (approval.status === 'changed') {
+      why.push(`plugin set changed: installed approval ${approval.path} does not match this release and must be re-approved; launch remains strict`)
+    } else if (approval.status === 'invalid') {
+      why.push(`installed plugin-set approval ${approval.path} or release plugin-set record is unreadable or malformed; launch remains strict`)
+    }
   }
   if (approvedRecordSha.length === 0 && !allowUnapproved) {
     why.push('NO approved release record and no escape hatch: the launcher will refuse every release '
