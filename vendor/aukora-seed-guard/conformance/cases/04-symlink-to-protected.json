@@ -1,0 +1,21 @@
+{
+  "id": "symlink-to-protected",
+  "why": "An innocent name resolving to a protected object. Only the realpath form sees this; the lexical form cannot.",
+  "incident": "AURA, 2026-07-27 - world/mind.md -> law.js, the gate returned admitted, and a ring-0 file changed through a lawful path.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "law.js": "ORIGINAL-LAW\n"
+    },
+    "symlinks": {
+      "world/mind.md": "law.js"
+    }
+  },
+  "attempt": {
+    "path": "world/mind.md",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

@@ -1,0 +1,483 @@
+{
+  "domain": "aukora:evidence-pin:v1",
+  "package": {
+    "name": "@aukora/evidence",
+    "version": "0.1.0",
+    "license": "AGPL-3.0-or-later",
+    "licenseFile": "LICENSE"
+  },
+  "source": {
+    "repository": "github.com/aumara-xyz/aukora",
+    "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+    "path": "packages/evidence",
+    "taken": "git show def297f:<path>, one file at a time, from the local read-only clone ~/aukora-great-merge/clones/aukora; no network",
+    "license": "packages/evidence carries no LICENSE or NOTICE of its own at def297f (its package.json `files` names them, the tree does not); LICENSE and NOTICE are the repository root files at the same commit. LICENSE is the same blob as vendor/aukora-kernel/LICENSE.",
+    "alsoAt": "vendor/aukora-seed-app/src/packages/evidence carries 7 of these 10 src files (the index.ts closure) and none of the tests, as part of the seed-app closure. Same upstream commit, same blobs."
+  },
+  "upstream": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "gitBlob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "path": "NOTICE",
+      "upstreamPath": "NOTICE",
+      "gitBlob": "a9e7ee67e68d7554023a0ce49cc607ceae5ffd9b",
+      "sha256": "6c737c8ce6b5a651f36ead98f0107084e8a65d74dce0c8ee16fa9cc122c20228",
+      "bytes": 1783
+    },
+    {
+      "path": "src/agreEvidenceAdapterV1.ts",
+      "upstreamPath": "packages/evidence/src/agreEvidenceAdapterV1.ts",
+      "gitBlob": "966d2b11bc7e0a653f8325c85abbb0bb4885ce98",
+      "sha256": "1440e0da2eaa544eb2060cb0935e73053c9955f17ba3bd79cce2ddfbcef326a5",
+      "bytes": 17804
+    },
+    {
+      "path": "src/canonical.ts",
+      "upstreamPath": "packages/evidence/src/canonical.ts",
+      "gitBlob": "623b008a3cc2fc5350054e75b4ab4b65cbcfea11",
+      "sha256": "c48a7b9cbfcf338237602dd44cc3fd414221137f0863d1aabb6b1f03ad0febf6",
+      "bytes": 3150
+    },
+    {
+      "path": "src/catalogue.ts",
+      "upstreamPath": "packages/evidence/src/catalogue.ts",
+      "gitBlob": "2b7ff7f32f8bf403776b5dba624ba5ee1b7c75b0",
+      "sha256": "718f02edeeed1405c17182be8d1d5ddc9915b9fdfa5e513bf96d0bb57595f872",
+      "bytes": 13385
+    },
+    {
+      "path": "src/digest.ts",
+      "upstreamPath": "packages/evidence/src/digest.ts",
+      "gitBlob": "1a07e9d4d2a23c74d9beb438dcd0296feab1016f",
+      "sha256": "ffac6387355fe7189f5bef288e66c7a626784c2edf326647792a34866ca67869",
+      "bytes": 1378
+    },
+    {
+      "path": "src/framing.ts",
+      "upstreamPath": "packages/evidence/src/framing.ts",
+      "gitBlob": "ec698ba0a704d9d69afbe555b635d3905a4601e2",
+      "sha256": "ee4a9316fe43ff0e8ba01c87de7c9f4761423b14078e2586d3856634dbab7109",
+      "bytes": 1880
+    },
+    {
+      "path": "src/index.ts",
+      "upstreamPath": "packages/evidence/src/index.ts",
+      "gitBlob": "ba1a9e90e7ddc53b6eb9e327fd737fe51efc96b0",
+      "sha256": "02ba4c6d89b4e9f44defb92f29d107ad48ff04cf8f172f926f9932c4491f0b39",
+      "bytes": 4360
+    },
+    {
+      "path": "src/providerTokenShapes.ts",
+      "upstreamPath": "packages/evidence/src/providerTokenShapes.ts",
+      "gitBlob": "75e65d3771262d94ca1146201be5eea3b5b2d5ab",
+      "sha256": "33b7315bef8911ca085452c2d8637e7664486fb666aa416e7da91954a31c483e",
+      "bytes": 3332
+    },
+    {
+      "path": "src/swarmRunEvidenceV1.ts",
+      "upstreamPath": "packages/evidence/src/swarmRunEvidenceV1.ts",
+      "gitBlob": "8e7e6c26dd80664fc8c48246a231d3dc74de0d48",
+      "sha256": "246b662be36d916c03e84853fa3335aea1a7bb712aaeb4c4fd7c5d83b7bbbc62",
+      "bytes": 31795
+    },
+    {
+      "path": "src/types.ts",
+      "upstreamPath": "packages/evidence/src/types.ts",
+      "gitBlob": "d0e2f4d15c54660d8f2006caff3f58621cbf1d92",
+      "sha256": "006c8a8186325cdc85114f60078ad8f01e2e3ad8be028abcb3aa03dec223d0d1",
+      "bytes": 4831
+    },
+    {
+      "path": "src/validate.ts",
+      "upstreamPath": "packages/evidence/src/validate.ts",
+      "gitBlob": "2d6a247a602cc86fcba52120052a1a972572f640",
+      "sha256": "b21f272440519d00881feb2555d3167297ae62abf4a6f3a94da1035f4f8ef617",
+      "bytes": 23797
+    },
+    {
+      "path": "test/evidencePackV1.test.ts",
+      "upstreamPath": "packages/evidence/test/evidencePackV1.test.ts",
+      "gitBlob": "69abafb0c76f203b724843d490651d07beebae9d",
+      "sha256": "92005793af6d31eca5442759745a0f19fada0977a75c79568962107e20129b1f",
+      "bytes": 37806
+    },
+    {
+      "path": "test/r56.providerTokenShapes.test.ts",
+      "upstreamPath": "packages/evidence/test/r56.providerTokenShapes.test.ts",
+      "gitBlob": "910cc8bbad33bea059dbe71b3809e5c70ca22c9b",
+      "sha256": "d010e4d6a5921001cdff02de998d2d86d1d1b7240c02bc4c8fb0c9061e7600c9",
+      "bytes": 2599
+    },
+    {
+      "path": "test/r57.swarmRunEvidenceV1.test.ts",
+      "upstreamPath": "packages/evidence/test/r57.swarmRunEvidenceV1.test.ts",
+      "gitBlob": "a1b9e0abbb6c20c835680567ec7c075f174d6cb0",
+      "sha256": "cef678f7c0512a3f7e553bfd3b65a099f2e3b56ce62ced70572542a34fc0bcb6",
+      "bytes": 19875
+    },
+    {
+      "path": "test/r58.agreEvidenceAdapterV1.test.ts",
+      "upstreamPath": "packages/evidence/test/r58.agreEvidenceAdapterV1.test.ts",
+      "gitBlob": "d7369593c3d47ed2b7e406d54ecd69aa28f5bf34",
+      "sha256": "f76e358a5efce90494b5839d638516d5d0551ef807631e8944b6652f3c0c4fc4",
+      "bytes": 16336
+    },
+    {
+      "path": "test/r59.sealBoundary.test.ts",
+      "upstreamPath": "packages/evidence/test/r59.sealBoundary.test.ts",
+      "gitBlob": "5993d928902d8876f506e6a905df46ff89d3820d",
+      "sha256": "5ae1abe87140a07c2beed8665a558f65e6cc7e5945cf3f9ad34778f933c316e6",
+      "bytes": 7715
+    },
+    {
+      "path": "test/r60.h1SnapshotBoundary.test.ts",
+      "upstreamPath": "packages/evidence/test/r60.h1SnapshotBoundary.test.ts",
+      "gitBlob": "2e9e5505919fdd4adedc21569e6bb65818a26f20",
+      "sha256": "4573b2732fe487385513830514c3f29b0d37b4a477b952843ddab7da1ade7312",
+      "bytes": 9241
+    }
+  ],
+  "transpile": {
+    "command": "node vendor/aukora-evidence/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js",
+    "compiler": "typescript 6.0.3 (ts.transpileModule; type stripping only)",
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "ESNext",
+      "verbatimModuleSyntax": false,
+      "esModuleInterop": true
+    },
+    "rule": "emitted bytes are exactly the compiler output except import specifiers, each listed under specifierRewrites"
+  },
+  "generated": [
+    {
+      "path": "lib/agreEvidenceAdapterV1.js",
+      "from": "src/agreEvidenceAdapterV1.ts",
+      "transpiled": true,
+      "sha256": "baa4525bfe0f11043ee6810aa2a33d614f119a57c993518c2516f6be8a8418b8",
+      "bytes": 15626,
+      "specifierRewrites": [
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./swarmRunEvidenceV1'",
+          "to": "'./swarmRunEvidenceV1.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/canonical.js",
+      "from": "src/canonical.ts",
+      "transpiled": true,
+      "sha256": "eb51b9429c0f25c52359ac4da15c05a26abf183a6fd657544570b138f31cf03f",
+      "bytes": 3365,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/catalogue.js",
+      "from": "src/catalogue.ts",
+      "transpiled": true,
+      "sha256": "055cc8c38e5f3cdb08c236ede1a0d2a5ac89b81fa925d157e64419bbad273a60",
+      "bytes": 13081,
+      "specifierRewrites": [
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/digest.js",
+      "from": "src/digest.ts",
+      "transpiled": true,
+      "sha256": "9e3f41c044df99be43324f3ececa1af54c5a00601a0e959732b22e29ab0feb36",
+      "bytes": 1343,
+      "specifierRewrites": [
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/framing.js",
+      "from": "src/framing.ts",
+      "transpiled": true,
+      "sha256": "b238214b8c4a51e050301499c4f975cbfcb83ae6c06e8b8f85e6906063a9144d",
+      "bytes": 1805,
+      "specifierRewrites": [
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/index.js",
+      "from": "src/index.ts",
+      "transpiled": true,
+      "sha256": "3ef96129db567727bb02907be093651c854602435f8eb4ff78d5000fb61bab1d",
+      "bytes": 4156,
+      "specifierRewrites": [
+        {
+          "from": "'./types'",
+          "to": "'./types.js'"
+        },
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./framing'",
+          "to": "'./framing.js'"
+        },
+        {
+          "from": "'./catalogue'",
+          "to": "'./catalogue.js'"
+        },
+        {
+          "from": "'./validate'",
+          "to": "'./validate.js'"
+        },
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./validate'",
+          "to": "'./validate.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/providerTokenShapes.js",
+      "from": "src/providerTokenShapes.ts",
+      "transpiled": true,
+      "sha256": "405b4a66d8416cec91aeeb48bc0d5492a8b052bafbfd47c70e4c9bab300b87c3",
+      "bytes": 3050,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/swarmRunEvidenceV1.js",
+      "from": "src/swarmRunEvidenceV1.ts",
+      "transpiled": true,
+      "sha256": "dac02dcce535d6e2c30f0e6596a27edc7fb04ef67a81bd5cfcb4462746a10355",
+      "bytes": 27657,
+      "specifierRewrites": [
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./catalogue'",
+          "to": "'./catalogue.js'"
+        },
+        {
+          "from": "'./providerTokenShapes'",
+          "to": "'./providerTokenShapes.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/types.js",
+      "from": "src/types.ts",
+      "transpiled": true,
+      "sha256": "334c4d43662d6606ffa7fd9fa3e02bd92fc36920539d401a73dcda74ac6d528d",
+      "bytes": 2092,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/validate.js",
+      "from": "src/validate.ts",
+      "transpiled": true,
+      "sha256": "5f1743391c0152ed3a9337f5e82552be667d78ca72b90a5e3a05b952934fb02d",
+      "bytes": 24050,
+      "specifierRewrites": [
+        {
+          "from": "'./types'",
+          "to": "'./types.js'"
+        },
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./catalogue'",
+          "to": "'./catalogue.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib-test/evidencePackV1.test.js",
+      "from": "test/evidencePackV1.test.ts",
+      "transpiled": true,
+      "sha256": "11e8fbc394a82db9e35a5a81eb0639b735d5f1bda19ccd03555f71a08db2fd12",
+      "bytes": 38802,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/index'",
+          "to": "'../lib/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib-test/r56.providerTokenShapes.test.js",
+      "from": "test/r56.providerTokenShapes.test.ts",
+      "transpiled": true,
+      "sha256": "49ea6b65c3f6b624b817601d204f78ef6b11ee1294de728a65f4baedf2df8eac",
+      "bytes": 2717,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/providerTokenShapes'",
+          "to": "'../lib/providerTokenShapes.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib-test/r57.swarmRunEvidenceV1.test.js",
+      "from": "test/r57.swarmRunEvidenceV1.test.ts",
+      "transpiled": true,
+      "sha256": "d82ca2df1490d071f2b24ebaa1f8a106d9d85c688f9a349d1cdca0073720947e",
+      "bytes": 20340,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/swarmRunEvidenceV1'",
+          "to": "'../lib/swarmRunEvidenceV1.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib-test/r58.agreEvidenceAdapterV1.test.js",
+      "from": "test/r58.agreEvidenceAdapterV1.test.ts",
+      "transpiled": true,
+      "sha256": "037ae3ad28d7de0c1c9214f06f6472bd5d04f11c759743e3607bc3c4dd7b9b23",
+      "bytes": 16615,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/agreEvidenceAdapterV1'",
+          "to": "'../lib/agreEvidenceAdapterV1.js'"
+        },
+        {
+          "from": "'../src/swarmRunEvidenceV1'",
+          "to": "'../lib/swarmRunEvidenceV1.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib-test/r59.sealBoundary.test.js",
+      "from": "test/r59.sealBoundary.test.ts",
+      "transpiled": true,
+      "sha256": "a15c872159ffabf11c2efda956e266f84f02ffa83ab2d7e76fd9b57c16ae3bb9",
+      "bytes": 7709,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/swarmRunEvidenceV1'",
+          "to": "'../lib/swarmRunEvidenceV1.js'"
+        },
+        {
+          "from": "'../src/agreEvidenceAdapterV1'",
+          "to": "'../lib/agreEvidenceAdapterV1.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib-test/r60.h1SnapshotBoundary.test.js",
+      "from": "test/r60.h1SnapshotBoundary.test.ts",
+      "transpiled": true,
+      "sha256": "63f878e3ad331886df3af3801688c6795c263c41367604788ce601f9b0c7cdc6",
+      "bytes": 9147,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/swarmRunEvidenceV1'",
+          "to": "'../lib/swarmRunEvidenceV1.js'"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "specifier": "node:crypto",
+      "use": "createHash (sha256) in digest.ts, swarmRunEvidenceV1.ts, agreEvidenceAdapterV1.ts"
+    }
+  ],
+  "dependencyNote": "The package imports only node:crypto and its own files. No @noble package, no curve, no new crypto implementation.",
+  "genesisAuthored": [
+    "package.json",
+    "transpile.mjs",
+    "vitest-shim.mjs",
+    "conformance.mjs",
+    "PROVENANCE.json"
+  ],
+  "notVendored": [
+    "package.json (upstream)",
+    "tsconfig.json",
+    "vitest.config.ts"
+  ],
+  "conformance": {
+    "command": "node vendor/aukora-evidence/conformance.mjs",
+    "expectedCases": 178,
+    "upstreamMeasurement": "bun 1.3.14, `bun test ./test` in a scratch copy of packages/evidence at def297f (git archive): 178 pass / 0 fail, 585 expect() calls (2026-09-27)",
+    "testFiles": [
+      "lib-test/evidencePackV1.test.js",
+      "lib-test/r56.providerTokenShapes.test.js",
+      "lib-test/r57.swarmRunEvidenceV1.test.js",
+      "lib-test/r58.agreEvidenceAdapterV1.test.js",
+      "lib-test/r59.sealBoundary.test.js",
+      "lib-test/r60.h1SnapshotBoundary.test.js"
+    ]
+  }
+}

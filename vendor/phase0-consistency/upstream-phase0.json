@@ -1,0 +1,95 @@
+{
+  "domain": "aukora:phase0-vendor-pin:v1",
+  "repository": "github.com/aumara-xyz/aukora-membrane",
+  "commit": "d8b17fac",
+  "commitLong": "d8b17faca5f17bb6e279feb30a2ea808a1f31cb8",
+  "license": "AGPL-3.0-only",
+  "vendoredFrom": "minimal/",
+  "measuredAt": "2026-09-16T06:37:00Z",
+  "measuredOn": "macos-14 / darwin 24.x, sha256 via shasum -a 256",
+  "note": "Bytes copied verbatim from aukora-membrane minimal/ at commit d8b17fac and never edited. The same minimal/verify.py bytes are pinned in Deep c417f7c5. Retaining this tree at all is the pin: scripts/phase0-check-pins.py recomputes every sha256 and byte length below and refuses on any drift, extra sibling or missing file. minimal/replicas/ (a Rust third implementation together with its target/ build output) is deliberately NOT vendored; nothing in this tree imports it. minimal/tour.py is vendored as the upstream teaching artifact and is not run by CI: it reports its own unimplemented paths as MISSING!! when the rest of the membrane tree is absent, and it decides no verdicts itself, because it shells out to verify.py.",
+  "notVendored": [
+    "minimal/.DS_Store"
+  ],
+  "genesisAuthored": [
+    {
+      "path": "SELFTEST.md",
+      "why": "Genesis-authored run sheet and limit statement. Not upstream bytes, so pinning it as upstream would be a false provenance claim. Listed here so the checker can require it by name rather than ignore the whole directory."
+    },
+    {
+      "path": "upstream-phase0.json",
+      "why": "This manifest. A file cannot carry its own digest; the checker prints the manifest digest on every run instead."
+    },
+    {
+      "path": "vectors/same-size-ok.json",
+      "why": "Genesis-authored, derived from aukora-toy vendor/phase0/vectors/same_size_ok.json (MIT) by translating its retained/presented pair into this court's wire shape. The toy's own vectors are in a different shape and its court takes different arguments, so they cannot be used here unchanged \u2014 see scripts/phase0/README.md. This case is the no-growth path: retained size == presented size with an equal root. Every other vector here grows the log, so this class had no coverage at all."
+    },
+    {
+      "path": "vectors/same-size-fork.json",
+      "why": "Genesis-authored, derived the same way from the toy's same_size_fork.json: same size, presented root differing in the last nibble. Decides OBSERVATION_CONFLICT / same_size_root_mismatch, which is the only shape in which a fork with no growth is provable at all."
+    }
+  ],
+  "files": [
+    {
+      "path": "CLAIM.md",
+      "upstreamPath": "minimal/CLAIM.md",
+      "sha256": "dbd0e7e2a16a8157c822944d06030bb0c1bcca034acc2a58acdd1e8349d77cb7",
+      "bytes": 3692
+    },
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef",
+      "bytes": 34523,
+      "note": "*** THIS ONE FILE DEPARTS FROM UPSTREAM BYTES, AND THIS IS WHY. *** Upstream `minimal/` @ d8b17fac carried a 4,674-byte PARAPHRASE of the AGPL-3.0 that was not the licence: it omitted section 13 (Remote Network Interaction) entirely, its numbering restarted at 2 and 3 so sections 4-13 were absent and two pairs of numbers collided, and it nonetheless carried the FSF's own notice that changing the document is not allowed. A verified outside audit found it. THE PIN NOW RECORDS THE VERBATIM AGPL-3.0 TEXT -- byte-identical to this repository's root LICENSE -- because a licence file that is not the licence grants nothing and, worse, reads as though it does. Upstream's bytes are NOT preserved here, deliberately and for this reason alone."
+    },
+    {
+      "path": "verify.py",
+      "upstreamPath": "minimal/verify.py",
+      "sha256": "039aa8999f9a1e1a8b8e01eb51598bfc546e4e574b2c9333f13e8bb303958089",
+      "bytes": 9731,
+      "note": "the stranger CLI; same bytes pinned by the Deep court at c417f7c5"
+    },
+    {
+      "path": "tour.py",
+      "upstreamPath": "minimal/tour.py",
+      "sha256": "dc4b21fe468d278cde0d8c49538070584db8f65a480cf3de54f704ade75f9558",
+      "bytes": 15753
+    },
+    {
+      "path": "vectors/append-only.json",
+      "upstreamPath": "minimal/vectors/append-only.json",
+      "sha256": "bb3d061f184f71268d5cc3410d2b8679f34d4760363669c05540bec3adddd566",
+      "bytes": 508
+    },
+    {
+      "path": "vectors/power-of-two-presented.json",
+      "upstreamPath": "minimal/vectors/power-of-two-presented.json",
+      "sha256": "f1bcef7c4a99e978aa2fea5ae438ccfea38883d2d3e54371a84d3ebf820fa096",
+      "bytes": 292
+    },
+    {
+      "path": "vectors/power-of-two-retained.json",
+      "upstreamPath": "minimal/vectors/power-of-two-retained.json",
+      "sha256": "6ebb2509df1d5588deff3188b406a0595e90a0ab77d7a4f6b90de1f2dda2b84a",
+      "bytes": 119
+    },
+    {
+      "path": "vectors/retained.json",
+      "upstreamPath": "minimal/vectors/retained.json",
+      "sha256": "cb2ecdf40dcf7af66a9cd739eaf5a61218e88162b6b5692e88b8a536d991a031",
+      "bytes": 196
+    },
+    {
+      "path": "vectors/rewritten.json",
+      "upstreamPath": "minimal/vectors/rewritten.json",
+      "sha256": "bd22c2c1b56963417f788718102e169df154a4117fc2bbc6adabfc82914bb2f2",
+      "bytes": 508
+    }
+  ],
+  "replicasVendoredSeparately": {
+    "path": "replicas/",
+    "manifest": "upstream-replicas.json",
+    "why": "The Rust replica sources ARE vendored, in their own manifest with their own pins. They were listed here as not vendored only until that happened; leaving the stale line would have made this manifest claim something false."
+  }
+}

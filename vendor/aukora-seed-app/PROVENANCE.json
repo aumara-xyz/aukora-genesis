@@ -1,0 +1,3237 @@
+{
+  "domain": "aukora:vendor-import:v1",
+  "repo": "github.com/aumara-xyz/aukora",
+  "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+  "taken": "git archive def297f from the local clone ~/aukora-great-merge/clones/aukora (HEAD verified == commit); no network; no working-tree bytes",
+  "paths": {
+    "requested": [
+      "apps/seed/src/localCandidateStage.ts",
+      "apps/seed/src/pathFence.ts",
+      "apps/seed/src/candidateReferenceMonitor.ts",
+      "apps/seed/src/repoIdentity.ts",
+      "apps/seed/src/governedCrossing.ts"
+    ],
+    "tests": [
+      "apps/seed/test/containment.test.ts",
+      "apps/seed/test/r39.security.test.ts",
+      "apps/seed/test/r47.governed-crossing.test.ts"
+    ],
+    "closureRule": "transitive static + dynamic import closure (type-only imports included) of requested + tests inside the aukora repo, resolving @aukora/* through each workspace package.json exports; plus files the tests read or run at runtime; plus package.json of every workspace package touched, apps/seed tsconfig/vitest config, root package.json + package-lock.json (dependency pins), root LICENSE + NOTICE",
+    "layout": "src/<upstream path>; LICENSE and NOTICE also at the vendor root"
+  },
+  "notCopied": {
+    "@aukora/kernel": {
+      "reason": "already vendored in Genesis at vendor/aukora-kernel (commit ad35a577b, same upstream def297f packages/kernel)",
+      "specifiers": {
+        "@aukora/kernel": "packages/kernel/src/index.ts",
+        "@aukora/kernel/authority": "packages/kernel/src/authority.ts",
+        "@aukora/kernel/canonical": "packages/kernel/src/canonical.ts",
+        "@aukora/kernel/evidence": "packages/kernel/src/evidence.ts",
+        "@aukora/kernel/merkle": "packages/kernel/src/merkle.ts",
+        "@aukora/kernel/reducer": "packages/kernel/src/reducer.ts",
+        "@aukora/kernel/registries": "packages/kernel/src/registry.ts",
+        "@aukora/kernel/schemas": "packages/kernel/src/schema.ts",
+        "@aukora/kernel/staleness": "packages/kernel/src/staleness.ts"
+      },
+      "importers": {
+        "apps/seed/src/localCandidateStage.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/candidateReferenceMonitor.ts": [
+          "@aukora/kernel/reducer",
+          "@aukora/kernel/canonical",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/governedCrossing.ts": [
+          "@aukora/kernel/canonical",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/proposal.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/councilPack.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/ideEnvelope.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/proposerQualification.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/localCeremonyRunner.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/recursion.ts": [
+          "@aukora/kernel/staleness",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/ceremonyView.ts": [
+          "@aukora/kernel/canonical",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/ceremony.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/memorySelection.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/durableRecursion.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/fuStructuredAdapter.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/mindDoor.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/brain/src/reactiveStore.ts": [
+          "@aukora/kernel/evidence",
+          "@aukora/kernel/merkle"
+        ],
+        "apps/brain/src/brainProvider.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/nodePrint.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/reactiveBrainAdapter.ts": [
+          "@aukora/kernel/evidence"
+        ],
+        "apps/brain/src/perceptionProvider.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/memoryBridge.ts": [
+          "@aukora/kernel/evidence"
+        ],
+        "apps/brain/src/metabolismSimulator.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/goldRegistry.ts": [
+          "@aukora/kernel/evidence"
+        ],
+        "apps/brain/src/keychain/credentialStore.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/effectEvent.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/continuity/eraseAttestation.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/inklingCell.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/brain/src/mindProposer.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "packages/memory/src/envelope.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "packages/memory/src/staleness.ts": [
+          "@aukora/kernel/staleness"
+        ],
+        "apps/seed/src/liveEffectOps.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/durableCandidateMonitor.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/aumlokGate.ts": [
+          "@aukora/kernel/authority",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/ownerFixture.ts": [
+          "@aukora/kernel/authority",
+          "@aukora/kernel/registries",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/ownerBoundary.ts": [
+          "@aukora/kernel/canonical",
+          "@aukora/kernel/authority",
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/hermeticRehearsal.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "apps/seed/src/bondCeremony.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/approveDoor.ts": [
+          "@aukora/kernel/schemas"
+        ],
+        "apps/seed/src/modelCellAdapter.ts": [
+          "@aukora/kernel/canonical"
+        ],
+        "packages/kernel-node/src/trustedStateStore.ts": [
+          "@aukora/kernel"
+        ]
+      }
+    },
+    "external": {
+      "@noble/curves/ed25519.js": [
+        "apps/seed/src/ownerFixture.ts"
+      ],
+      "@noble/hashes/sha2.js": [
+        "apps/brain/src/continuity/aukoraSignedHead.ts",
+        "apps/brain/src/continuity/eraseAttestation.ts",
+        "apps/seed/src/ownerFixture.ts"
+      ],
+      "@noble/hashes/utils.js": [
+        "apps/brain/src/continuity/aukoraPqcSigner.ts",
+        "apps/brain/src/continuity/aukoraSignedHead.ts",
+        "apps/brain/src/continuity/eraseAttestation.ts",
+        "apps/brain/src/memoryBridge.ts",
+        "apps/brain/src/reactiveStore.ts",
+        "apps/seed/src/doorGuards.ts",
+        "apps/seed/src/ownerFixture.ts",
+        "apps/seed/src/proposal.ts"
+      ],
+      "@noble/post-quantum/ml-dsa.js": [
+        "apps/brain/src/continuity/aukoraPqcSigner.ts",
+        "apps/seed/src/ownerFixture.ts"
+      ],
+      "crypto": [
+        "packages/council/src/aukoraFuCouncil.ts"
+      ],
+      "node:child_process": [
+        "apps/brain/src/keychain/macKeychain.ts",
+        "apps/seed/scripts/scan-public-tree.ts",
+        "apps/seed/src/liveEffectOps.ts",
+        "apps/seed/src/localCandidateStage.ts",
+        "apps/seed/test/r39.security.test.ts",
+        "apps/seed/test/r47.governed-crossing.test.ts"
+      ],
+      "node:crypto": [
+        "apps/brain/src/continuity/locations.ts",
+        "apps/brain/src/localDoor.ts",
+        "apps/seed/src/approveChallenge.ts",
+        "apps/seed/src/bondCeremony.ts",
+        "apps/seed/src/liveEffectOps.ts",
+        "packages/evidence/src/digest.ts"
+      ],
+      "node:fs": [
+        "apps/brain/src/continuity/locations.ts",
+        "apps/seed/scripts/scan-public-tree.ts",
+        "apps/seed/src/durableCandidateMonitor.ts",
+        "apps/seed/src/localCandidateStage.ts",
+        "apps/seed/src/ownerCustody.ts",
+        "apps/seed/test/containment.test.ts",
+        "apps/seed/test/r39.security.test.ts",
+        "apps/seed/test/r47.governed-crossing.test.ts",
+        "packages/kernel-node/src/trustedStateStore.ts"
+      ],
+      "node:http": [
+        "apps/brain/src/localDoor.ts"
+      ],
+      "node:os": [
+        "apps/brain/src/continuity/locations.ts",
+        "apps/seed/src/localCandidateStage.ts",
+        "apps/seed/test/r39.security.test.ts",
+        "apps/seed/test/r47.governed-crossing.test.ts"
+      ],
+      "node:path": [
+        "apps/brain/src/continuity/locations.ts",
+        "apps/seed/src/durableCandidateMonitor.ts",
+        "apps/seed/src/localCandidateStage.ts",
+        "apps/seed/src/ownerCustody.ts",
+        "apps/seed/test/r39.security.test.ts",
+        "apps/seed/test/r47.governed-crossing.test.ts",
+        "packages/kernel-node/src/trustedStateStore.ts"
+      ],
+      "vitest": [
+        "apps/seed/test/containment.test.ts",
+        "apps/seed/test/r39.security.test.ts",
+        "apps/seed/test/r47.governed-crossing.test.ts"
+      ]
+    },
+    "externalPins": {
+      "@noble/curves": "2.2.0",
+      "@noble/hashes": "2.2.0",
+      "@noble/post-quantum": "0.6.1",
+      "vitest": "4.1.10 (package-lock.json)",
+      "tsx": "not in package-lock; r39 runs `npx tsx`"
+    }
+  },
+  "secretsReview": {
+    "excluded": [],
+    "keptTestFixtures": [
+      {
+        "path": "src/apps/seed/test/r39.security.test.ts",
+        "kind": "AWS documentation example access-key-id literal planted to prove the scanner refuses it"
+      },
+      {
+        "path": "src/apps/seed/test/r47.governed-crossing.test.ts",
+        "kind": "synthetic placeholder sk-or- token shape (wrong length for a real key) planted as a negative control"
+      },
+      {
+        "path": "src/apps/seed/src/ownerFixture.ts",
+        "kind": "deterministic test-key derivation from a label (no embedded key bytes)"
+      }
+    ]
+  },
+  "fileCount": 142,
+  "totalBytes": 1143558,
+  "blobCheck": "PASS",
+  "genesisAuthored": [
+    {
+      "path": "README.md",
+      "sha256": "1b37016bfb9a7ba69ea1fcf1a36f228d81bd15b45bb91743781c6f84672c6a8e",
+      "bytes": 1170
+    },
+    {
+      "path": "run-tests.vitest.config.mjs",
+      "sha256": "0ffeaa327519da054c89ccbe4ad2e3dbbc5d0732bb7fed7d35aa4a444214b275",
+      "bytes": 1048
+    },
+    {
+      "path": "run-tests.tsconfig.json",
+      "sha256": "9ada046d03741638bc45501dcd9f4bbba150ebe2c48c23304975e25fdbd18426",
+      "bytes": 360
+    },
+    {
+      "path": "PROVENANCE.json",
+      "note": "this file"
+    },
+    {
+      "path": "package.json",
+      "sha256": "73f526187254c86dfea20e280ba7f672371230f6789e98ad9bc3b094883b36e1",
+      "bytes": 89
+    },
+    {
+      "path": "transpile.mjs",
+      "sha256": "50f96c457bbcd0260079a8092748f04119f2777906c9badfa851a599bab03349",
+      "bytes": 9749
+    },
+    {
+      "path": "run-tests.mjs",
+      "sha256": "9b434928c817f007bf5eaeca3ed681654f4f2480c07ce75d3b87d719d660107d",
+      "bytes": 2806
+    }
+  ],
+  "testsMeasured": {
+    "date": "2026-09-27",
+    "cwd": "src/apps/seed",
+    "command": "AUKORA_SEED_DEPS=<node_modules> node <vitest>/vitest.mjs run --config ../../../run-tests.vitest.config.mjs",
+    "runner": {
+      "vitest": "4.1.8 (upstream lock pins 4.1.10, not in the local npm cache)",
+      "tsx": "4.23.15 (npx cache, offline)",
+      "node": "v22.23.0",
+      "noble": "@noble/curves 2.2.0, @noble/hashes 2.2.0, @noble/post-quantum 0.6.1, @noble/ciphers 2.2.0: installed offline from the npm cache; integrity equals the upstream package-lock.json",
+      "kernel": "vendor/aukora-kernel/src from Genesis commit ad35a577b; its 10 src blobs equal aukora@def297f packages/kernel/src"
+    },
+    "results": {
+      "test/containment.test.ts": "69/69",
+      "test/r39.security.test.ts": "10/10",
+      "test/r47.governed-crossing.test.ts": "11/11"
+    },
+    "redArm": "isSelfProtecting() stubbed to `return false` in a scratch copy: r39 2 failed / 88 passed"
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "gitBlob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "NOTICE",
+      "upstreamPath": "NOTICE",
+      "gitBlob": "a9e7ee67e68d7554023a0ce49cc607ceae5ffd9b",
+      "sha256": "6c737c8ce6b5a651f36ead98f0107084e8a65d74dce0c8ee16fa9cc122c20228",
+      "bytes": 1783,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/LICENSE",
+      "upstreamPath": "LICENSE",
+      "gitBlob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/NOTICE",
+      "upstreamPath": "NOTICE",
+      "gitBlob": "a9e7ee67e68d7554023a0ce49cc607ceae5ffd9b",
+      "sha256": "6c737c8ce6b5a651f36ead98f0107084e8a65d74dce0c8ee16fa9cc122c20228",
+      "bytes": 1783,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/apps/brain/package.json",
+      "upstreamPath": "apps/brain/package.json",
+      "gitBlob": "e05ed6de6e54163fa8f9f7e596636396f2335d30",
+      "sha256": "bd876f124fdfd1df45332c86d0aab075bbca11c6be8ec8efda5e042da73d7e05",
+      "bytes": 1556,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/apps/brain/src/brainProvider.ts",
+      "upstreamPath": "apps/brain/src/brainProvider.ts",
+      "gitBlob": "f604211c08ec4a3b17e44d2625b87c4ca709fb96",
+      "sha256": "a18bea0d7112bc272b501256b6315f61fdf2dab619260c918fa38c6f1d4d716f",
+      "bytes": 6920,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/brainRoles.ts",
+      "upstreamPath": "apps/brain/src/brainRoles.ts",
+      "gitBlob": "d0ef4cdbf9e5abcad45fa44cb39eaef7236ba918",
+      "sha256": "bb85243ac90118fffc5ca7808026cfa6e4f64012ef9e895a62df6ac64cc98e19",
+      "bytes": 4292,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/composeLive.ts",
+      "upstreamPath": "apps/brain/src/composeLive.ts",
+      "gitBlob": "d36aca526dac1093b059f28e6f69016644ba41a4",
+      "sha256": "e162fe019368ea5c49d8e895db15d8d0141124b7f81eb078d95d2dd1b0f3dd20",
+      "bytes": 4017,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/continuity/aukoraPqcSigner.ts",
+      "upstreamPath": "apps/brain/src/continuity/aukoraPqcSigner.ts",
+      "gitBlob": "f597e3fcf72f679a5f79c9fb1a7cbd5b63d41010",
+      "sha256": "2b7491bc2f21ca824c3d42d7d5426fa3590ae703248512b71ed111084703559c",
+      "bytes": 12890,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/continuity/aukoraSignedHead.ts",
+      "upstreamPath": "apps/brain/src/continuity/aukoraSignedHead.ts",
+      "gitBlob": "f04cecf6d8df4371c03769dbaed50e4212769f38",
+      "sha256": "526f0b448bf89ae1f0fa86d7a68e6634084066bfcb4678fa1a822f3463cc5a3c",
+      "bytes": 18508,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/continuity/eraseAttestation.ts",
+      "upstreamPath": "apps/brain/src/continuity/eraseAttestation.ts",
+      "gitBlob": "06b09e3489621692cd44d60f639d355fedd7692f",
+      "sha256": "706ecbe8590899c306cedde788131f5b86a5c51616c654351a89de1410662c45",
+      "bytes": 8035,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/continuity/eraseRootRegistry.ts",
+      "upstreamPath": "apps/brain/src/continuity/eraseRootRegistry.ts",
+      "gitBlob": "ca9f0014440133fe65f1efebc24f0e916030f7aa",
+      "sha256": "65f6e675abcb4f03fd32ed83d921c313b6132daf86e51ce0fadefd67bbd24431",
+      "bytes": 3861,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/continuity/locations.ts",
+      "upstreamPath": "apps/brain/src/continuity/locations.ts",
+      "gitBlob": "47dbaddada31f60a3c13d680076cd45c02e5dd92",
+      "sha256": "125f4f52f9fbde8d038b4b76877daf289291b61aac0e0b229d601fde6be5de14",
+      "bytes": 3494,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/convexWorkflowStore.ts",
+      "upstreamPath": "apps/brain/src/convexWorkflowStore.ts",
+      "gitBlob": "03738dd8b5b284ffffbffd4d033ae894399d126a",
+      "sha256": "863fa8da3507e1ffd81dc230529eaabe6b0bbe968acd6709f75ea48dddb5eec8",
+      "bytes": 6482,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/durableSession.ts",
+      "upstreamPath": "apps/brain/src/durableSession.ts",
+      "gitBlob": "5fad0264368386a23fc8559a3472102e0bcaf7d2",
+      "sha256": "c1bb4b8ab688d0d9231996fe59528661ba9ca3021c556ad0016bb7cc1ecbb8e5",
+      "bytes": 5577,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/effectCancellation.ts",
+      "upstreamPath": "apps/brain/src/effectCancellation.ts",
+      "gitBlob": "88add91bf7624101d635230adb1e9e88dacb1ff5",
+      "sha256": "0e0f7bf238b50533a8a1de786cebbca0ed79974f21811737d49e54274bbf5936",
+      "bytes": 2626,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/effectEvent.ts",
+      "upstreamPath": "apps/brain/src/effectEvent.ts",
+      "gitBlob": "4dfd06f5b83aa5fdeea5a292e1cf4c147835050d",
+      "sha256": "53c05c3afa7e4455a4d43c8b31ce6a3f401270c64e9bddd3acf625692eccb30a",
+      "bytes": 7537,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/effectEventLog.ts",
+      "upstreamPath": "apps/brain/src/effectEventLog.ts",
+      "gitBlob": "5067f2ebdb5b290240b543bbe9388774a0f6f624",
+      "sha256": "7785afc72ecf762c0f085767a405cbab3d523174ca195d7563dca26e72797d8d",
+      "bytes": 3376,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/effectEventStore.ts",
+      "upstreamPath": "apps/brain/src/effectEventStore.ts",
+      "gitBlob": "67485e58d747fb357b2ea7da5741bfa6c8d5368d",
+      "sha256": "1d39416f0962ef562ffa8c14e847e5871c54e7bb03b118c5d9c844650ed999ef",
+      "bytes": 5283,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/goldRegistry.ts",
+      "upstreamPath": "apps/brain/src/goldRegistry.ts",
+      "gitBlob": "260dc95d0b9f78f5ab8bb057f3a629f71938d45d",
+      "sha256": "000a6ef41b26a8381b874950f280176442af2c73ececc7c70fe78eb78c8886a5",
+      "bytes": 4196,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/healthContract.ts",
+      "upstreamPath": "apps/brain/src/healthContract.ts",
+      "gitBlob": "84d5461d99f436492cc301ef5c78af3fcf09895c",
+      "sha256": "4728dca28c3f760fd3b8c6064ecb0baed1bad120f7ea229b70ef7fcd767e867d",
+      "bytes": 2014,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/index.ts",
+      "upstreamPath": "apps/brain/src/index.ts",
+      "gitBlob": "40c17e8c752049ae2b652d002846c791a79c2b8a",
+      "sha256": "3954ea86c1fbd821c562424334b7d679bb5272075824cf820f80fb052736e2e2",
+      "bytes": 1604,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/inklingCell.ts",
+      "upstreamPath": "apps/brain/src/inklingCell.ts",
+      "gitBlob": "517487e7b16bfa0940a3fd98448c7af35c86079b",
+      "sha256": "dfa63f1c1c32b4bcb1d42d065ff9cf8cbcc98a891356cce91c17c914186809ac",
+      "bytes": 6165,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/keychain/credentialStore.ts",
+      "upstreamPath": "apps/brain/src/keychain/credentialStore.ts",
+      "gitBlob": "011b72644ef1e534b69cea96cc9b95950ad52310",
+      "sha256": "da833b6710efd85fb4768200fe51f00b244e096f304cd772ced451b4f02fd85f",
+      "bytes": 7618,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/keychain/macKeychain.ts",
+      "upstreamPath": "apps/brain/src/keychain/macKeychain.ts",
+      "gitBlob": "82bd04fdd87ee3f7f54f121d810ba532385cdc88",
+      "sha256": "d34862e4397b8927a9575d7c5fb59f65a709d71e2d2c2c2280fd6028ab01178c",
+      "bytes": 3478,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/localDoor.ts",
+      "upstreamPath": "apps/brain/src/localDoor.ts",
+      "gitBlob": "912ca3012c0449ba31e176c873c86401a04e85c9",
+      "sha256": "5469847680c04ddc28c61b0f290234f8aa5b6905da88592fefc71a80c815032f",
+      "bytes": 11213,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/memoryBridge.ts",
+      "upstreamPath": "apps/brain/src/memoryBridge.ts",
+      "gitBlob": "a9a163706a6e8bffea6a426439caea9c7e590673",
+      "sha256": "597c9278cf59843d5af33cc35fb49334c5a02817f48c86875e005a495f5def0c",
+      "bytes": 15934,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/metabolismSimulator.ts",
+      "upstreamPath": "apps/brain/src/metabolismSimulator.ts",
+      "gitBlob": "94db349a9cd2eee3bd65bc6e8655d448fbc29c29",
+      "sha256": "d0325391883a8f9572202f60496c1492e987b5648cfed6710363daa1551b3e70",
+      "bytes": 6078,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/mindProposer.ts",
+      "upstreamPath": "apps/brain/src/mindProposer.ts",
+      "gitBlob": "b457b2d9fec29835782585d5671c9b7fe6931a07",
+      "sha256": "e7b3de6d143adbe2fdda894734fea1982549aaf26c489b3fb931205317596eed",
+      "bytes": 10465,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/nebiusProvider.ts",
+      "upstreamPath": "apps/brain/src/nebiusProvider.ts",
+      "gitBlob": "999eec7ee565f10a468d5d92ea98e27052474451",
+      "sha256": "e45254a57c091cbdfa47fd5ac60eb1c9cede12ed670ddd5a7ce19e577a199e38",
+      "bytes": 13352,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/nodePrint.ts",
+      "upstreamPath": "apps/brain/src/nodePrint.ts",
+      "gitBlob": "5d48c9471e787a9c020db03e82dda055512cebdc",
+      "sha256": "143f357032cf36f5c65f957d9c9a23b8492a1377a4b3f29b73b2a044555fe20e",
+      "bytes": 10146,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/offlineExecutor.ts",
+      "upstreamPath": "apps/brain/src/offlineExecutor.ts",
+      "gitBlob": "020804443b7ce4d7b31d360b02ddd554acb8b492",
+      "sha256": "15f68f96096a443adb1a56d606c4448bdaaca89e577efb6d4a330cdc98d413f0",
+      "bytes": 4143,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/perceptionProvider.ts",
+      "upstreamPath": "apps/brain/src/perceptionProvider.ts",
+      "gitBlob": "a85a27755401234114e0d2b3ae2858be0c3f28e0",
+      "sha256": "401defc59baad5dcaad91426c7b565d354d93933e359b592f8adf076b7452269",
+      "bytes": 4302,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/ports.ts",
+      "upstreamPath": "apps/brain/src/ports.ts",
+      "gitBlob": "0a68c7f4bb32d36c58d2dc72fb56ce59e888232a",
+      "sha256": "3abf5668d6de35e8e65bdf0c7177b21816c4338fcd1e0b43711695c6d037eb79",
+      "bytes": 1372,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/providerPolicy.ts",
+      "upstreamPath": "apps/brain/src/providerPolicy.ts",
+      "gitBlob": "1575ad67be2cbabb0a8321ec5378c80c87acc473",
+      "sha256": "395d87e722ecf830e90320df4d6be0dc20ed30c566234f6e1044c08851493367",
+      "bytes": 3680,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/reactiveBrainAdapter.ts",
+      "upstreamPath": "apps/brain/src/reactiveBrainAdapter.ts",
+      "gitBlob": "cbace4bbb93bd01d020ab7b5d6631747a05d8fbc",
+      "sha256": "30d503e83a53555224c25d87753a450f2d0e6cc3c95c280ca993ec707acf7312",
+      "bytes": 5696,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/reactiveStore.ts",
+      "upstreamPath": "apps/brain/src/reactiveStore.ts",
+      "gitBlob": "fb5a8bbeac4c5a36f96c55cca68a5a1c78d44833",
+      "sha256": "9841f3544eb97a0f8547e6c6b814d565a20e7d0a7aa8448ae0fe7195c7a29508",
+      "bytes": 8844,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/receiptBridge.ts",
+      "upstreamPath": "apps/brain/src/receiptBridge.ts",
+      "gitBlob": "208cea977f96e31d49833804cef2f03e43362104",
+      "sha256": "2cb3c9ff2dd6f930f1b0986e673a0a711e52271da576827fb6310d18c11b4d22",
+      "bytes": 4249,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/spatialContracts.ts",
+      "upstreamPath": "apps/brain/src/spatialContracts.ts",
+      "gitBlob": "db912b40797e37cd83b40ad817abcc5da2fd155e",
+      "sha256": "bc5238fcd9a7bba031f1848bcf1cce777cb1a78bea4ef7dd19d1378fecbb8dcd",
+      "bytes": 6737,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/brain/src/supervisedGeneration.ts",
+      "upstreamPath": "apps/brain/src/supervisedGeneration.ts",
+      "gitBlob": "8e93afcd3533b02ceba6f1d8f618ec12e873bca5",
+      "sha256": "59d68a6ff65afe462947a9cf26bb25dc9e6d897a25469dda35b1a5760fe0edfe",
+      "bytes": 5050,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/package.json",
+      "upstreamPath": "apps/seed/package.json",
+      "gitBlob": "4c8bc8cfe4a819601a0ef25677fd2c8e4b277de9",
+      "sha256": "a3ac4e859d1886d394ae6300e58595d63f8f8c871892bf573d26e8bfc0ee32b3",
+      "bytes": 986,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/apps/seed/scripts/fu-live-smoke.ts",
+      "upstreamPath": "apps/seed/scripts/fu-live-smoke.ts",
+      "gitBlob": "f413b54039868e3191b456f45221699fbc13cbe1",
+      "sha256": "dcd80c12bf819da39b4e0113824dcb51a6e9a10256c4008c92ab3d06917afd39",
+      "bytes": 1990,
+      "mode": "100644",
+      "role": "read-or-run-by-tests"
+    },
+    {
+      "path": "src/apps/seed/scripts/scan-public-tree.ts",
+      "upstreamPath": "apps/seed/scripts/scan-public-tree.ts",
+      "gitBlob": "d0a707f0e99fa5bbd6ef85d7c9c2079859db4858",
+      "sha256": "64fcaa046dc53bbda4102fc6aecd63ef3ad145e515db2f8280f0358fd45ead79",
+      "bytes": 6655,
+      "mode": "100644",
+      "role": "read-or-run-by-tests"
+    },
+    {
+      "path": "src/apps/seed/src/approveChallenge.ts",
+      "upstreamPath": "apps/seed/src/approveChallenge.ts",
+      "gitBlob": "fcb60fdb254ec60c7fc9d57e0e98065c6917788b",
+      "sha256": "ad87418400fac467fbc6903d727fcea883b9663593c714009c134e242d72818f",
+      "bytes": 6413,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/approveDoor.ts",
+      "upstreamPath": "apps/seed/src/approveDoor.ts",
+      "gitBlob": "0d64a065d13a7cc7ae4b7a01b7cea3f6387698f1",
+      "sha256": "fadd419426e1d656afde7bbea571d4f59954e25fb6ffeaeb55eac81b9cc92be4",
+      "bytes": 13778,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/approveGuard.ts",
+      "upstreamPath": "apps/seed/src/approveGuard.ts",
+      "gitBlob": "cde73017bf335f53a24caa1527dd65281d968dd5",
+      "sha256": "9cd8dea5a9d2f442848a03650794fdb7dfd9859a1cc9a468791369456d59a9c5",
+      "bytes": 4763,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/aumlokGate.ts",
+      "upstreamPath": "apps/seed/src/aumlokGate.ts",
+      "gitBlob": "01c6f2008f5038f7aba05143298597f1779a1d7f",
+      "sha256": "658062cb732242e27895ec5493489c5a304030700b41bbfc9b3827730255c6df",
+      "bytes": 3205,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/auraTrace.ts",
+      "upstreamPath": "apps/seed/src/auraTrace.ts",
+      "gitBlob": "11e72773e47bf89931e5ab7ffba315ad7772e934",
+      "sha256": "5ea0d630f658f525e2cf7b9c0efe0858039bf2d57674397794880f3a9ce927b5",
+      "bytes": 11215,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/bondCeremony.ts",
+      "upstreamPath": "apps/seed/src/bondCeremony.ts",
+      "gitBlob": "f567836b05e53c4b2a9e4d6f0e88a4ef122da396",
+      "sha256": "b37551cd867fb1e7e328c23b14a5c48a801a83890f6db13d8da8e80334f161a3",
+      "bytes": 17673,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/candidatePathIntegrity.ts",
+      "upstreamPath": "apps/seed/src/candidatePathIntegrity.ts",
+      "gitBlob": "9f169c874ac6bc1587722cfad5c3e44f22e18ee3",
+      "sha256": "f06b7f50f738578268c4a63697d5b4166e4af13375bb82ab8e2eb2f3b63637ad",
+      "bytes": 2614,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/candidateReferenceMonitor.ts",
+      "upstreamPath": "apps/seed/src/candidateReferenceMonitor.ts",
+      "gitBlob": "3376e68052b1683ccb6ddd0fc4d967f09f34a158",
+      "sha256": "01c2abd838635cdab1c893e0f152de4911537d0a0a61e084cfccc233ec9fee8c",
+      "bytes": 10202,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/capabilities.ts",
+      "upstreamPath": "apps/seed/src/capabilities.ts",
+      "gitBlob": "93aa38a72a7158c669779701d9a51d87dabe8453",
+      "sha256": "43ac73a4f0953232479bd69ec2e9ef1e53285e90a5c5640b6ca65dd0dd3146b4",
+      "bytes": 2872,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ceremony.ts",
+      "upstreamPath": "apps/seed/src/ceremony.ts",
+      "gitBlob": "1ac1a92c1dccb4200588cf2090f525aee2e43891",
+      "sha256": "3354e20792bcdb8c6a59919c9164b67ab1fb1b92f2cbf8b66d14c2af2f98bddf",
+      "bytes": 11674,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ceremonyView.ts",
+      "upstreamPath": "apps/seed/src/ceremonyView.ts",
+      "gitBlob": "a018aa831968a98c85587adc2314d9b997ffc9f9",
+      "sha256": "5afafffe197fd081b82345d9210baaa6bdbf1d2839f2c2fb45a8f9099f80ff9e",
+      "bytes": 4368,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/contracts.ts",
+      "upstreamPath": "apps/seed/src/contracts.ts",
+      "gitBlob": "48ef25c7d575cce5aa86b7706c19ddf53e4db347",
+      "sha256": "9335aebd3ea94851e5b14898a0ac13ed5e7088e9745d6fe22019a15c7cd3a679",
+      "bytes": 5769,
+      "mode": "100644",
+      "role": "read-or-run-by-tests"
+    },
+    {
+      "path": "src/apps/seed/src/councilPack.ts",
+      "upstreamPath": "apps/seed/src/councilPack.ts",
+      "gitBlob": "667402a895b50f7ed77be5b84cce8d38ff093af5",
+      "sha256": "0c21ef42eb790fa62fc0e74109cea84c02e9ed6966a171153cb1484db47a58b8",
+      "bytes": 5298,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/councilRunnerBoundary.ts",
+      "upstreamPath": "apps/seed/src/councilRunnerBoundary.ts",
+      "gitBlob": "7de6a1e763402b05cb0ea6a8fc485950ff8748bd",
+      "sha256": "4022ddc56fd810e3234b76055eeb9ebbc0206bb6ed4804a6ee2c4ad8568e866f",
+      "bytes": 10004,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/doorGuards.ts",
+      "upstreamPath": "apps/seed/src/doorGuards.ts",
+      "gitBlob": "85349b279c5441b7c24c65a0821e314de1fe835d",
+      "sha256": "e656dd84584f2a38c69798f0033c6bfe946bb3a17aa51b4d99e75656964399a9",
+      "bytes": 6140,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/durableCandidateMonitor.ts",
+      "upstreamPath": "apps/seed/src/durableCandidateMonitor.ts",
+      "gitBlob": "6017bb5f8c7575d15cb0756e00f9c7cc61f8be98",
+      "sha256": "dd33b27a11e61bf0faecbc9e08b4d15fadc375213aba9aba9d2b74ce9beee594",
+      "bytes": 9363,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/durableRecursion.ts",
+      "upstreamPath": "apps/seed/src/durableRecursion.ts",
+      "gitBlob": "1a13ea271964e241f4077ad3feda4da68c54b1bc",
+      "sha256": "45bad4d31829a08a9d6e5a39c9e9f3ae92aa1b8904dc4dab858bc61dd14807e1",
+      "bytes": 19966,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/effectAudit.ts",
+      "upstreamPath": "apps/seed/src/effectAudit.ts",
+      "gitBlob": "5fb392cedfde71bb0a9b6160a728c37f62727080",
+      "sha256": "623dc55e1cd4a77da3ab7703743dec6ce5c70ca7dc243b3ae15419d0e0fdb559",
+      "bytes": 4951,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/effectCoordinator.ts",
+      "upstreamPath": "apps/seed/src/effectCoordinator.ts",
+      "gitBlob": "5d03bb34f98fecb89d7d3870ffbd72aed873b720",
+      "sha256": "b73bdeea9758f89d754b9d4b955c1b4bac3dd7da9062d37e4359c086643e15de",
+      "bytes": 7641,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/effectProtocol.ts",
+      "upstreamPath": "apps/seed/src/effectProtocol.ts",
+      "gitBlob": "37c822d5a29a8dbbd8f7acdb0c2f0523d09e05ee",
+      "sha256": "aafc736ef6740bc79b3f6c4be7933bf7a1b11531c2679d1ebb63b85bb73ded3c",
+      "bytes": 14119,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/effectSettlement.ts",
+      "upstreamPath": "apps/seed/src/effectSettlement.ts",
+      "gitBlob": "075ad28ccad55b54397ded5ae2276cb611e1ce23",
+      "sha256": "6d91b130c684265f5706878d96342179f194edce7deafad1604a5f97848f038a",
+      "bytes": 5282,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/eventStream.ts",
+      "upstreamPath": "apps/seed/src/eventStream.ts",
+      "gitBlob": "a506aaf6858c9842bbf1056a8a0627b5d1aa6de1",
+      "sha256": "e98901f5a730677420f0ab1dcdc5b33afbce7a9073d51116bea307940ebe0189",
+      "bytes": 2058,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/forbiddenContent.ts",
+      "upstreamPath": "apps/seed/src/forbiddenContent.ts",
+      "gitBlob": "7eeb7419ee6f931725249eeaec9825cb2e3879a4",
+      "sha256": "6b678d634d15552903bc8f71edf271cf9705ce18f03fca4335924d7fa79be059",
+      "bytes": 9733,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/fuLiveSmoke.ts",
+      "upstreamPath": "apps/seed/src/fuLiveSmoke.ts",
+      "gitBlob": "696563f633813f7fc45ff924255786d539b98a8b",
+      "sha256": "8c16a44d7d7474af6b311a411dff3e9faf6b23680cd375e5c92edc0f64c88f53",
+      "bytes": 5113,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/fuStructuredAdapter.ts",
+      "upstreamPath": "apps/seed/src/fuStructuredAdapter.ts",
+      "gitBlob": "599cc97192ef2e1a17229097803d557736dc5844",
+      "sha256": "28ce7210e07018ce8741b52884d73c2c7db28ce5a1d1f259d074a9f31fc5f160",
+      "bytes": 8091,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/geometry.ts",
+      "upstreamPath": "apps/seed/src/geometry.ts",
+      "gitBlob": "756ac1c57bba0f7ca3e4f97f6083de6766cb9df7",
+      "sha256": "1fc596d290d9c093239d4242266a16bc63084d5e6ad3bbcdef13365420737441",
+      "bytes": 7213,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/gitConfigThreat.ts",
+      "upstreamPath": "apps/seed/src/gitConfigThreat.ts",
+      "gitBlob": "bd421c3acace87a6f01584cc36d7f5f141d8b85d",
+      "sha256": "2b5b1f636fd1a704309b60af77f7796d59453f0d7150bc4d3c3d9a77534e5d5b",
+      "bytes": 3883,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/governedCrossing.ts",
+      "upstreamPath": "apps/seed/src/governedCrossing.ts",
+      "gitBlob": "b487f72aba300632883b2bbd0c175a3c116d5332",
+      "sha256": "8cd12e962bd94298eadc7bfd780144bbed90565d1469aa51a610812a262b00f7",
+      "bytes": 12874,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/hermeticRehearsal.ts",
+      "upstreamPath": "apps/seed/src/hermeticRehearsal.ts",
+      "gitBlob": "52fa30536f2b24dce96976838dd2483693f938e3",
+      "sha256": "75443ba174d582f2766ad20a578622c99a57c54bc8ccbe8dd8a3f928d750aa24",
+      "bytes": 7414,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ideEnvelope.ts",
+      "upstreamPath": "apps/seed/src/ideEnvelope.ts",
+      "gitBlob": "d7411de58219f1bcd828dc1e588cb8bdeeb4f600",
+      "sha256": "171efbeb36206ac22993c7503af027d6e427c1a7b3fe431c2ab67437fd52ba29",
+      "bytes": 15323,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ideSession.ts",
+      "upstreamPath": "apps/seed/src/ideSession.ts",
+      "gitBlob": "985b2347c0f821ee9921cfac73ad7ef135f0f6b9",
+      "sha256": "3915a24ae0731cc7369ca71380c1fecf44761fcf8d95bed8979a26def28fb736",
+      "bytes": 7271,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/index.ts",
+      "upstreamPath": "apps/seed/src/index.ts",
+      "gitBlob": "7b84689b08731e228cc6620b3f3e456c5f45ce04",
+      "sha256": "e359d44ea842779e3a20878b34e513b919df142e7fccfc8c87d90df4b1fa531c",
+      "bytes": 2602,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ledger.ts",
+      "upstreamPath": "apps/seed/src/ledger.ts",
+      "gitBlob": "474645cedd5845221a806e70252cfac42359eda3",
+      "sha256": "c0310f9f6b1336066c82d26c9843271a81f8fe4bfca5cd60be8ffa7b632fc05b",
+      "bytes": 2256,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/liveEffectOps.ts",
+      "upstreamPath": "apps/seed/src/liveEffectOps.ts",
+      "gitBlob": "b74e3d3186cda28770528e01e726f496794b1e9b",
+      "sha256": "5cb86789c630f9fe73e6170e0d5fc1c9bd02105997635537627dbf85f3f93d63",
+      "bytes": 22422,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/localCandidateStage.ts",
+      "upstreamPath": "apps/seed/src/localCandidateStage.ts",
+      "gitBlob": "9507087823ba392df4fa2c21902455b0e4f75064",
+      "sha256": "4e2da22e760a4e160b47e1ed52200453c6f372e3f488bb8b0edc43f3ae3c3863",
+      "bytes": 30626,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/localCeremonyRunner.ts",
+      "upstreamPath": "apps/seed/src/localCeremonyRunner.ts",
+      "gitBlob": "8588b60e5391cbcb244ad7804e5e50eddc71de4e",
+      "sha256": "ed3c8798c9c2ccdd9f99a501f5a8910df4ce7009df768d5403bf0d6c92b127e9",
+      "bytes": 16616,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/maternalAnchor.ts",
+      "upstreamPath": "apps/seed/src/maternalAnchor.ts",
+      "gitBlob": "b475d1e86edd78563bbb9948de2ee99679c91ab9",
+      "sha256": "724e23c49640109d20e017d6a3d2fe2838bee3236774f624eeea48b02cdff21e",
+      "bytes": 5570,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/memoryConstitution.ts",
+      "upstreamPath": "apps/seed/src/memoryConstitution.ts",
+      "gitBlob": "2fa52cbfb73f19921b5b820dee6e5ebf9dd85e50",
+      "sha256": "4b008dcf7dae9aaff86e87000f62ae602af111aecd8911d1f9bfc5387534ea3d",
+      "bytes": 8839,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/memorySelection.ts",
+      "upstreamPath": "apps/seed/src/memorySelection.ts",
+      "gitBlob": "778fdb68650963a0cf8eb3c71ea8d52a4b97e15b",
+      "sha256": "4dc662f6ba2ecf0bb83136a5acde80e731818af60a792087b245295c2a8ce215",
+      "bytes": 9357,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/metabolism.ts",
+      "upstreamPath": "apps/seed/src/metabolism.ts",
+      "gitBlob": "9c4484ff5722e07fd9a4d9ba4648b6ac370f0488",
+      "sha256": "f35ce0f777ca54e5cb67c72534c371490b8c9882d4af1bd8892dc135be72cd10",
+      "bytes": 2320,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/mindDoor.ts",
+      "upstreamPath": "apps/seed/src/mindDoor.ts",
+      "gitBlob": "12dc1b564da21ffa7847d4db8ede652f6c0edc46",
+      "sha256": "37a54d4a878199a6bc0e422e5f2bfa9a702982d8a6ef81f75c0832653bebaf28",
+      "bytes": 26619,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/mockCouncil.ts",
+      "upstreamPath": "apps/seed/src/mockCouncil.ts",
+      "gitBlob": "98601a7724acb59111c94a87ab03b1c441ff8efe",
+      "sha256": "1f5aa989e86ee9ddd3405c9b97c2aa54155408bcf6a001255a79f88620651e21",
+      "bytes": 2129,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/modelCellAdapter.ts",
+      "upstreamPath": "apps/seed/src/modelCellAdapter.ts",
+      "gitBlob": "a141d73d8213069dc6cabeadd887a7eef282cf0e",
+      "sha256": "19a15784c7cdfef7ea751787be8756ca769cd71e0782d69a3e6f3c0f9d5336f4",
+      "bytes": 7490,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ownerBoundary.ts",
+      "upstreamPath": "apps/seed/src/ownerBoundary.ts",
+      "gitBlob": "4c14764749bdf6e92fd246e724eaaa09b1809688",
+      "sha256": "30e324c0a70108e56141310530cc38b7fbf5a568a382e54be4bccb337e4f2e48",
+      "bytes": 10856,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ownerCustody.ts",
+      "upstreamPath": "apps/seed/src/ownerCustody.ts",
+      "gitBlob": "284c313c3a5c6e7fca59845dbd706398048877b0",
+      "sha256": "c6881b7dc56d4984e2a7b6eac2ca3412c5e074f733a637d4cae3961b97dc1ac5",
+      "bytes": 7131,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/ownerFixture.ts",
+      "upstreamPath": "apps/seed/src/ownerFixture.ts",
+      "gitBlob": "1389e3d74330853f9ae2ad9e382d02043beaf1f6",
+      "sha256": "b9416d59231a74f3160407d59679d147b0870f919cfbda404eb34d8726182bb0",
+      "bytes": 4006,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/pathFence.ts",
+      "upstreamPath": "apps/seed/src/pathFence.ts",
+      "gitBlob": "33704c8e78d56a241521ae8f5ff666fe323394c9",
+      "sha256": "48e2ee2a84be87de76375ad2cbba8cbf870eccad62dabd397f4e18a50f17d102",
+      "bytes": 7388,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/proposal.ts",
+      "upstreamPath": "apps/seed/src/proposal.ts",
+      "gitBlob": "b9e379da7348bd2d4b623f21b704dd7a776ad5ef",
+      "sha256": "9df85d9390aee2f3cb821217051bb1ff8af34192e98d741d0093540069eaf848",
+      "bytes": 7580,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/proposerQualification.ts",
+      "upstreamPath": "apps/seed/src/proposerQualification.ts",
+      "gitBlob": "6063d5077d2902f97e6c5fe1b809511b53543385",
+      "sha256": "cdb9e6aca0b328aca8062e18a44f65d618b812afe50abb864df366bf7a4f28ef",
+      "bytes": 12506,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/providerEgress.ts",
+      "upstreamPath": "apps/seed/src/providerEgress.ts",
+      "gitBlob": "327e94a6a64f8a1431d12a10e332a1306602cc49",
+      "sha256": "ff28e808672dd5c2e92bae6ed7f8bbc84b0ca23828bc7d96fc9cc38d9fd5e820",
+      "bytes": 5741,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/providerTransport.ts",
+      "upstreamPath": "apps/seed/src/providerTransport.ts",
+      "gitBlob": "6ccffcb48a69b22eb20e5327b78a99fbb48ae672",
+      "sha256": "82b74cf0ee096591164d9a1c5339e60c3505f271d32da0ce5d1b056cf1b658ea",
+      "bytes": 6800,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/recoveryPlanner.ts",
+      "upstreamPath": "apps/seed/src/recoveryPlanner.ts",
+      "gitBlob": "be42f7ffcc08ebb11554544c42973d58aa43a46e",
+      "sha256": "bb8d588a4fa36e79a7da6a6e7f60371e2f89d950c0c94ba6db4bc0d8cb7f471b",
+      "bytes": 4792,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/recursion.ts",
+      "upstreamPath": "apps/seed/src/recursion.ts",
+      "gitBlob": "9172b5218be7c55b3ab6b149001c0c3d48b11390",
+      "sha256": "f0c345485fc71b4b49c4e4bcfa46b261700d9fab92e6fb6f52b908308bf85c0d",
+      "bytes": 15123,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/refSnapshot.ts",
+      "upstreamPath": "apps/seed/src/refSnapshot.ts",
+      "gitBlob": "46e8f34d5f0bfd46abf07d8f0b284c91566cf324",
+      "sha256": "46f0813b1907fde68a51993dd1a57709a43624a026371dbc7c0d22a4b5ff50fc",
+      "bytes": 4712,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/repoIdentity.ts",
+      "upstreamPath": "apps/seed/src/repoIdentity.ts",
+      "gitBlob": "9e8798d7b17b2fe23dfb8f5ea27418c347649885",
+      "sha256": "49bb90b6da1a8fd6c5f1fa385389af24f43c73f11cd190078fff2ba49e9fd1a2",
+      "bytes": 8148,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/selectionAcceptance.ts",
+      "upstreamPath": "apps/seed/src/selectionAcceptance.ts",
+      "gitBlob": "f116077078e73f86c58e518ce594ccd2517c0932",
+      "sha256": "14336f6d5ea36e5622eaa0be8cdb27c4438e480781da2bbfc8f43b425af68d07",
+      "bytes": 7334,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/src/spatialCeremonyAdapter.ts",
+      "upstreamPath": "apps/seed/src/spatialCeremonyAdapter.ts",
+      "gitBlob": "b0419259ff9c83a97ebbf068ecc80302433a5afd",
+      "sha256": "b068d00a4fc450a6734c3e755a258137b23b65f927784a067526ab573567edd0",
+      "bytes": 5303,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/test/containment.test.ts",
+      "upstreamPath": "apps/seed/test/containment.test.ts",
+      "gitBlob": "d55bfff7d9da92377360a57fc4dfc05aecfda014",
+      "sha256": "26770341fc2c920fe024dda9578cd6793d9b86764d6d3c161027fd040e9ed73c",
+      "bytes": 6300,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/test/r39.security.test.ts",
+      "upstreamPath": "apps/seed/test/r39.security.test.ts",
+      "gitBlob": "3e55dd45bebba219efcdef7c3c1b1968daef2cf1",
+      "sha256": "0f81dced4172c854f9395bcd685daccc4d26aa15670e6e7d9bc55eb409c9f35b",
+      "bytes": 12912,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/test/r47.governed-crossing.test.ts",
+      "upstreamPath": "apps/seed/test/r47.governed-crossing.test.ts",
+      "gitBlob": "bb8a605dac8632b8ff2eac8b289d176100b57992",
+      "sha256": "ad04dbd50a63fcd2908778db82cc43d97593d8f3c130aa57be8b1f03e08d17f7",
+      "bytes": 12765,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/test/support.ts",
+      "upstreamPath": "apps/seed/test/support.ts",
+      "gitBlob": "5778139caeb37b438c0a7225f21b8901a5b8effa",
+      "sha256": "6f7f41597c81b4cb66ec94007f3be08ebd726a5bc0f9af7c9e9fd65a58d452d5",
+      "bytes": 2792,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/apps/seed/tsconfig.json",
+      "upstreamPath": "apps/seed/tsconfig.json",
+      "gitBlob": "6165a310f45ba43b1a515d9b9d557d17275f0c7e",
+      "sha256": "22ec1b264abc6e588d0bdf7dbf3bccfaedd5fd3ee4ffd364b2872f221f9b1a1d",
+      "bytes": 288,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/apps/seed/vitest.config.ts",
+      "upstreamPath": "apps/seed/vitest.config.ts",
+      "gitBlob": "7fbd247e3dc207a651f73fb3e50dd38feddf52e3",
+      "sha256": "d9cc33fb2812672b650d223e7f7eee6d3db9691707140cc62f49cafc8e86b796",
+      "bytes": 178,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/package-lock.json",
+      "upstreamPath": "package-lock.json",
+      "gitBlob": "997e3a081a859f79f620950d4be9f49c68d493eb",
+      "sha256": "500e3add8c686d5ff7e5d464913e74027d77c9086f800ba5c3f6650b2233291a",
+      "bytes": 66524,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/package.json",
+      "upstreamPath": "package.json",
+      "gitBlob": "4f94090e6f5cc319b2c91d789ee11b8e4c64fd1c",
+      "sha256": "d024abe35d0da790aecc75a064cc6240bb02fb0d2c66f902a5ce165ae5bc8bbb",
+      "bytes": 4113,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/packages/council/fuDisagreement.ts",
+      "upstreamPath": "packages/council/fuDisagreement.ts",
+      "gitBlob": "e5b9267d64e4fc6dea870d884d556c40b606608e",
+      "sha256": "dcea08a7bdc5cb44461caaaf254b5fae2e3068eea885bca22a20774232d3a45e",
+      "bytes": 8873,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/council/index.ts",
+      "upstreamPath": "packages/council/index.ts",
+      "gitBlob": "be0d3d8bd184559a85eac22003f60bbb10b14153",
+      "sha256": "143b6166063f3ab3d17ad166f178c41c7bcfbc900a2ee9172232eacf561d22fc",
+      "bytes": 782,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/council/package.json",
+      "upstreamPath": "packages/council/package.json",
+      "gitBlob": "fbdbbf1d479bee15144926b8a43b1f452c5a17c5",
+      "sha256": "c7960402dfd8870b6f394a3334045beffa1c7057bde6c8620d04b31a49ca62dc",
+      "bytes": 858,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/packages/council/src/aukoraFuCouncil.ts",
+      "upstreamPath": "packages/council/src/aukoraFuCouncil.ts",
+      "gitBlob": "93bc046ab866ad022b82e9dc04aac65eb6ae39dc",
+      "sha256": "39e0595a6955ee333c5b3a24fb42c842e854e2a570ae56c4c667dca978d85077",
+      "bytes": 42366,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/council/src/aukoraFuGlyph.ts",
+      "upstreamPath": "packages/council/src/aukoraFuGlyph.ts",
+      "gitBlob": "7081ab39890ce654929d326155d77f85bb585a99",
+      "sha256": "53b00e32346204b4a786a54b9b48c474edd11cd4253ecb9a627e7a87bafb37e8",
+      "bytes": 16768,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/package.json",
+      "upstreamPath": "packages/evidence/package.json",
+      "gitBlob": "ec12522fb9767613c52b4e419a10fb374685c0cc",
+      "sha256": "e3826f939df84627899423d8e6ae9c55daae22b4a00728b78745141bf6033ad0",
+      "bytes": 1181,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/packages/evidence/src/canonical.ts",
+      "upstreamPath": "packages/evidence/src/canonical.ts",
+      "gitBlob": "623b008a3cc2fc5350054e75b4ab4b65cbcfea11",
+      "sha256": "c48a7b9cbfcf338237602dd44cc3fd414221137f0863d1aabb6b1f03ad0febf6",
+      "bytes": 3150,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/src/catalogue.ts",
+      "upstreamPath": "packages/evidence/src/catalogue.ts",
+      "gitBlob": "2b7ff7f32f8bf403776b5dba624ba5ee1b7c75b0",
+      "sha256": "718f02edeeed1405c17182be8d1d5ddc9915b9fdfa5e513bf96d0bb57595f872",
+      "bytes": 13385,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/src/digest.ts",
+      "upstreamPath": "packages/evidence/src/digest.ts",
+      "gitBlob": "1a07e9d4d2a23c74d9beb438dcd0296feab1016f",
+      "sha256": "ffac6387355fe7189f5bef288e66c7a626784c2edf326647792a34866ca67869",
+      "bytes": 1378,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/src/framing.ts",
+      "upstreamPath": "packages/evidence/src/framing.ts",
+      "gitBlob": "ec698ba0a704d9d69afbe555b635d3905a4601e2",
+      "sha256": "ee4a9316fe43ff0e8ba01c87de7c9f4761423b14078e2586d3856634dbab7109",
+      "bytes": 1880,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/src/index.ts",
+      "upstreamPath": "packages/evidence/src/index.ts",
+      "gitBlob": "ba1a9e90e7ddc53b6eb9e327fd737fe51efc96b0",
+      "sha256": "02ba4c6d89b4e9f44defb92f29d107ad48ff04cf8f172f926f9932c4491f0b39",
+      "bytes": 4360,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/src/types.ts",
+      "upstreamPath": "packages/evidence/src/types.ts",
+      "gitBlob": "d0e2f4d15c54660d8f2006caff3f58621cbf1d92",
+      "sha256": "006c8a8186325cdc85114f60078ad8f01e2e3ad8be028abcb3aa03dec223d0d1",
+      "bytes": 4831,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/evidence/src/validate.ts",
+      "upstreamPath": "packages/evidence/src/validate.ts",
+      "gitBlob": "2d6a247a602cc86fcba52120052a1a972572f640",
+      "sha256": "b21f272440519d00881feb2555d3167297ae62abf4a6f3a94da1035f4f8ef617",
+      "bytes": 23797,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/kernel-node/package.json",
+      "upstreamPath": "packages/kernel-node/package.json",
+      "gitBlob": "8181610fbd059fcfec1592f5b03f47ec6009275f",
+      "sha256": "f258dfc647a6eb81af564fddc62f86832cff8e441529a03c27e6da5b91693a35",
+      "bytes": 778,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/packages/kernel-node/src/index.ts",
+      "upstreamPath": "packages/kernel-node/src/index.ts",
+      "gitBlob": "9f93558f5c1148faca35d30865ddfc9ca76bae79",
+      "sha256": "325147f8e32ea375c95c4d2f9c1559ab73b141eec2928f8f71c3a0d5a5e04980",
+      "bytes": 86,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/kernel-node/src/trustedStateStore.ts",
+      "upstreamPath": "packages/kernel-node/src/trustedStateStore.ts",
+      "gitBlob": "5c2b34d6a499852e78c4c4c9a89d7201329eb550",
+      "sha256": "38c5d50da2038845eb4a8f005848c8090bea199f947413b887957cecc3ed4ecc",
+      "bytes": 20571,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/index.ts",
+      "upstreamPath": "packages/memory/index.ts",
+      "gitBlob": "c234731fa6a5d0acf9a7d5c7c52c33aae5746ff8",
+      "sha256": "be5ea995ff6544b416b307db56686a10318d15186c3ace5ffda97c95db98f2f6",
+      "bytes": 784,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/package.json",
+      "upstreamPath": "packages/memory/package.json",
+      "gitBlob": "ec4efe83e75970fd597c2817a9fc0e8fc35480ef",
+      "sha256": "83302796c8c5aa9e6feadf2e4f1ac1fdd0a3a3edf5f5d0f8d6dc3265a737cff3",
+      "bytes": 957,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/packages/memory/src/containment.ts",
+      "upstreamPath": "packages/memory/src/containment.ts",
+      "gitBlob": "7f7fe2990682beb58c6c0fd2d0d879ca6b8a7df4",
+      "sha256": "bdd6d3433854fa870c087e9c329616c0cafce85a121639cbca7a65f6cf5ad885",
+      "bytes": 7947,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/src/envelope.ts",
+      "upstreamPath": "packages/memory/src/envelope.ts",
+      "gitBlob": "0fb96cfff3c1e5b75e5c6cbe7c2bb558bc3c39fe",
+      "sha256": "107472bf80063af88ad1fc60f8e295899a3053c27d69dd1e6ce19a22a58aa84f",
+      "bytes": 8370,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/src/ingestGate.ts",
+      "upstreamPath": "packages/memory/src/ingestGate.ts",
+      "gitBlob": "85f71b71de7715e2470555f12a71ffd106fbb0bf",
+      "sha256": "65bdd6a291f7e7dc7f5eab0694ec9f515a9b138b8dc91fed2d43c9d3a8179213",
+      "bytes": 3381,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/src/recall.ts",
+      "upstreamPath": "packages/memory/src/recall.ts",
+      "gitBlob": "a8e2c2e4bfddf7f1ca255e8fb7a80c320d2a1c2b",
+      "sha256": "b8c740d7ef17883e689c49658d208383f576293ad93dbbebc3bd13851d25071e",
+      "bytes": 6794,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/src/scope.ts",
+      "upstreamPath": "packages/memory/src/scope.ts",
+      "gitBlob": "979824764e2ffb24c1d7e152b4b4cbd00efd7e79",
+      "sha256": "49f7d2e5444e723e0c2ba21340e27f2e8c566abdb4389dcbbd923db130719eee",
+      "bytes": 4672,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/memory/src/staleness.ts",
+      "upstreamPath": "packages/memory/src/staleness.ts",
+      "gitBlob": "d055dd87488c7bbf3c6d6ebe6d6429cb6b5e3f4d",
+      "sha256": "0a8ee886eef9e6f69f566e8b6f1eefca121e1172b5068d46b9eb6f8bb58e71de",
+      "bytes": 820,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/index.ts",
+      "upstreamPath": "packages/mind/index.ts",
+      "gitBlob": "b33141f5b8a5a1be19200aefc86c26b964937d1f",
+      "sha256": "4c1c284f9fa35b6f9dbb7d69a3bd0a448eb37168225307bdcc35b96d710a508e",
+      "bytes": 1193,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/package.json",
+      "upstreamPath": "packages/mind/package.json",
+      "gitBlob": "7be1f8fd61dd4e6df8d920385dcdd12c327c252d",
+      "sha256": "3856617acd96354458721eeadef6e2829bff87a4e3e2e9fe87af86c4b75d86cb",
+      "bytes": 1009,
+      "mode": "100644",
+      "role": "metadata-or-license"
+    },
+    {
+      "path": "src/packages/mind/src/governor.ts",
+      "upstreamPath": "packages/mind/src/governor.ts",
+      "gitBlob": "1db62de3fdfec37cafc2b499e20d81ed6acac44e",
+      "sha256": "4d19fe7822ed05717e17dc50c722fc143fa373441f75174302636c9cb562e901",
+      "bytes": 7865,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/grid.ts",
+      "upstreamPath": "packages/mind/src/grid.ts",
+      "gitBlob": "36f3b6fb3c5a715b94bb096e36c2a6b23e5dcb64",
+      "sha256": "093bff172f377728deb971b2fa532287466de8d684ab5be9a5a50a7a5de6f166",
+      "bytes": 12079,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/plan.ts",
+      "upstreamPath": "packages/mind/src/plan.ts",
+      "gitBlob": "2fbecdcc31768ebc809179582441e53a22c2aa52",
+      "sha256": "c4a4cd79ab8288151117c27bf9bb3e68db8e06db205e42507605d9331bad0e89",
+      "bytes": 2973,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/ports.ts",
+      "upstreamPath": "packages/mind/src/ports.ts",
+      "gitBlob": "6c14464f8e58809fccab348fdc552e8d8cd1a6b9",
+      "sha256": "c28aaf8ff7997134162604c9334bd2aefd3574ae7e3d1d6848faadc4c79d377b",
+      "bytes": 3836,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/reply.ts",
+      "upstreamPath": "packages/mind/src/reply.ts",
+      "gitBlob": "0af2730b09e887fe63017fcf98c010f4d200f04b",
+      "sha256": "58f9739ee30c4af763d2fd5214fc6c77f6e28e53d0985064f76bf564a49ffb5b",
+      "bytes": 7134,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/rollout.ts",
+      "upstreamPath": "packages/mind/src/rollout.ts",
+      "gitBlob": "1a6e72c8723b4c80ef9ffdb727d68170ce3e6560",
+      "sha256": "d8ba7b97e91ba65f0395caad903b4141dba25c524514283322bfc1d85aeee972",
+      "bytes": 3625,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/trace.ts",
+      "upstreamPath": "packages/mind/src/trace.ts",
+      "gitBlob": "0a42d5b304867f1591d46b892399eca1825b756e",
+      "sha256": "8a6ce8c43066308558df994608429347e220386333c261341ab765a8bcdc929a",
+      "bytes": 4317,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "src/packages/mind/src/window.ts",
+      "upstreamPath": "packages/mind/src/window.ts",
+      "gitBlob": "e3d32ad9ceb2ac144a668cf611f77865464520d4",
+      "sha256": "874f87b123befda3f807da372b53ac436b7eb1677604b1540026e1eb4c839e48",
+      "bytes": 1304,
+      "mode": "100644",
+      "role": "import-closure"
+    }
+  ],
+  "transpile": {
+    "command": "node vendor/aukora-seed-app/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js",
+    "compiler": "typescript 6.0.3 (ts.transpileModule; type stripping only)",
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "ESNext",
+      "verbatimModuleSyntax": false,
+      "esModuleInterop": true
+    },
+    "rule": "emitted bytes are exactly the compiler output except import specifiers, each listed under generated[].specifierRewrites; original src bytes are checked against their existing pins before emit",
+    "layout": "lib/<upstream path>, .ts changed to .js; tests and scripts are generated alongside runtime modules",
+    "testRunnerExternals": "vitest and vitest/config are test-only imports resolved from the explicitly selected installed Vitest by run-tests.vitest.config.mjs; Vitest is not copied into the runtime closure"
+  },
+  "generated": [
+    {
+      "path": "lib/apps/brain/src/brainProvider.js",
+      "from": "src/apps/brain/src/brainProvider.ts",
+      "transpiled": true,
+      "sha256": "98b227e5238f7510b8b692770bf6089296d4ce5527d806a4a1262e4cd0189dd5",
+      "bytes": 5099,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/brainRoles.js",
+      "from": "src/apps/brain/src/brainRoles.ts",
+      "transpiled": true,
+      "sha256": "7bf5d36ccc80d927b18d1335eebfc9ee8ab758cb0bac38c5c11851c9bd0806ab",
+      "bytes": 2064,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/composeLive.js",
+      "from": "src/apps/brain/src/composeLive.ts",
+      "transpiled": true,
+      "sha256": "154425334fac569a7a2fdde3ffd706f34a227c38227ab4e2e1f11109c637e41c",
+      "bytes": 1947,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/continuity/aukoraPqcSigner.js",
+      "from": "src/apps/brain/src/continuity/aukoraPqcSigner.ts",
+      "transpiled": true,
+      "sha256": "c67d91647b764848e8145838947c5102732b69750092f5eba48ae660a8749f69",
+      "bytes": 12698,
+      "specifierRewrites": [
+        {
+          "from": "\"@noble/post-quantum/ml-dsa.js\"",
+          "to": "\"../../../../../../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/continuity/aukoraSignedHead.js",
+      "from": "src/apps/brain/src/continuity/aukoraSignedHead.ts",
+      "transpiled": true,
+      "sha256": "e7e0b545b9308faea26f9b2ccfeb3dea3089afc3fb86f91373acdd9e58b3d410",
+      "bytes": 17346,
+      "specifierRewrites": [
+        {
+          "from": "\"@noble/hashes/sha2.js\"",
+          "to": "\"../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/continuity/eraseAttestation.js",
+      "from": "src/apps/brain/src/continuity/eraseAttestation.ts",
+      "transpiled": true,
+      "sha256": "5471c3ed8f4d111558c3fbb7d45fe322dd0caad24ce80de45cfb4f372f77687d",
+      "bytes": 7114,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/hashes/sha2.js'",
+          "to": "'../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js'"
+        },
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+        },
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/continuity/eraseRootRegistry.js",
+      "from": "src/apps/brain/src/continuity/eraseRootRegistry.ts",
+      "transpiled": true,
+      "sha256": "cdf6212ccb4b805efa12219e7f1e2e93848172730b2f8548dd7bb9df22c3937a",
+      "bytes": 3671,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/continuity/locations.js",
+      "from": "src/apps/brain/src/continuity/locations.ts",
+      "transpiled": true,
+      "sha256": "e84576ffec2e17cd59b36ddfd19b585e6f63e883f107872f23840a9cfcf371bd",
+      "bytes": 3020,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/convexWorkflowStore.js",
+      "from": "src/apps/brain/src/convexWorkflowStore.ts",
+      "transpiled": true,
+      "sha256": "ad6e5792b2407dcedbcc41e6283938d210151e82cb9615476b2ae563ac75021c",
+      "bytes": 5226,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/durableSession.js",
+      "from": "src/apps/brain/src/durableSession.ts",
+      "transpiled": true,
+      "sha256": "cff944314123761dcbbbd14ed27c05b830b9d35293e3193053e24bb00c148eab",
+      "bytes": 3007,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/effectCancellation.js",
+      "from": "src/apps/brain/src/effectCancellation.ts",
+      "transpiled": true,
+      "sha256": "2837ef785c6a1c7ef17180c00176e278c75e2fa034370492692d44fda76e0bfe",
+      "bytes": 2215,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/effectEvent.js",
+      "from": "src/apps/brain/src/effectEvent.ts",
+      "transpiled": true,
+      "sha256": "abf03c3b22818e27dd52c68dd2cc7fd10a9e3da35d6eaf9c1970ef97e2be986c",
+      "bytes": 6652,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/effectEventLog.js",
+      "from": "src/apps/brain/src/effectEventLog.ts",
+      "transpiled": true,
+      "sha256": "3971f298719ed258da476e1b10edd742dfd4ad2531051bfc9fb01370ac337db1",
+      "bytes": 3099,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/effectEventStore.js",
+      "from": "src/apps/brain/src/effectEventStore.ts",
+      "transpiled": true,
+      "sha256": "efece9e7499165bb7992ea1bfbe1c5b2affcd008cb43ba5ea703a3c6119e8687",
+      "bytes": 4421,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/goldRegistry.js",
+      "from": "src/apps/brain/src/goldRegistry.ts",
+      "transpiled": true,
+      "sha256": "845efecc23c8ef0712e104853404f2e4a602c084d562beedb96b7461a9b731ca",
+      "bytes": 3206,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/evidence'",
+          "to": "'../../../../../aukora-kernel/lib/evidence.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/healthContract.js",
+      "from": "src/apps/brain/src/healthContract.ts",
+      "transpiled": true,
+      "sha256": "098c0881be96a66dcc1d9d06458dcb461e296c8cda7a7a1d7b0acd97d738d526",
+      "bytes": 651,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/index.js",
+      "from": "src/apps/brain/src/index.ts",
+      "transpiled": true,
+      "sha256": "3954ea86c1fbd821c562424334b7d679bb5272075824cf820f80fb052736e2e2",
+      "bytes": 1604,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/inklingCell.js",
+      "from": "src/apps/brain/src/inklingCell.ts",
+      "transpiled": true,
+      "sha256": "e1d8962cd517d5434bacf798b0f4fff291b1011d3c208643e6309ec820def904",
+      "bytes": 4387,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/keychain/credentialStore.js",
+      "from": "src/apps/brain/src/keychain/credentialStore.ts",
+      "transpiled": true,
+      "sha256": "ae8c665af43f0ac04ec4cca9248114a418f6411a367cbadad6a2135710cb58ed",
+      "bytes": 5188,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../../packages/evidence/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/keychain/macKeychain.js",
+      "from": "src/apps/brain/src/keychain/macKeychain.ts",
+      "transpiled": true,
+      "sha256": "3fbd3bffa371192b8312af5bb78a0808fa8d6c4a2995b86a32151fa6af4acf3a",
+      "bytes": 3186,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/localDoor.js",
+      "from": "src/apps/brain/src/localDoor.ts",
+      "transpiled": true,
+      "sha256": "6033c9c090dc416213d1b70ded658dd428a59b65201b6ebd1f73b590448d2c54",
+      "bytes": 10496,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/memoryBridge.js",
+      "from": "src/apps/brain/src/memoryBridge.ts",
+      "transpiled": true,
+      "sha256": "91e5f9abe6fa55923fda64e5c5f97e47edd6419fbc18ff649cb205198500ddac",
+      "bytes": 12084,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        },
+        {
+          "from": "'@aukora/kernel/evidence'",
+          "to": "'../../../../../aukora-kernel/lib/evidence.js'"
+        },
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/metabolismSimulator.js",
+      "from": "src/apps/brain/src/metabolismSimulator.ts",
+      "transpiled": true,
+      "sha256": "9c2aca4e81375cd9a2c4218f0d7cce5f23b39cd6f0db0c2e0c0e2513c747eeed",
+      "bytes": 4730,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/mindProposer.js",
+      "from": "src/apps/brain/src/mindProposer.ts",
+      "transpiled": true,
+      "sha256": "e95ee5c63e5967112846389708266a7e8f3f33358e9efdc8441237bbfe47e0e0",
+      "bytes": 7856,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/mind'",
+          "to": "'../../../packages/mind/index.js'"
+        },
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/nebiusProvider.js",
+      "from": "src/apps/brain/src/nebiusProvider.ts",
+      "transpiled": true,
+      "sha256": "65d417cd371088610e4ec39ea3dc2ca7dd4398043e9dcf10fb7e80d919306515",
+      "bytes": 8066,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/nodePrint.js",
+      "from": "src/apps/brain/src/nodePrint.ts",
+      "transpiled": true,
+      "sha256": "d2e56babade3c6e88c242a9e1babcc446efb5dc91fd295a3c63d7932b613336e",
+      "bytes": 7688,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/offlineExecutor.js",
+      "from": "src/apps/brain/src/offlineExecutor.ts",
+      "transpiled": true,
+      "sha256": "c5931efb50407e20cae9a0c608c4bbcbd5617cf51ac49cd54fc0185776a0fa7d",
+      "bytes": 3569,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/perceptionProvider.js",
+      "from": "src/apps/brain/src/perceptionProvider.ts",
+      "transpiled": true,
+      "sha256": "a3613ece4699cde88a173e229510f0eba9d080543d92e012f756093a123b1fbe",
+      "bytes": 3045,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/ports.js",
+      "from": "src/apps/brain/src/ports.ts",
+      "transpiled": true,
+      "sha256": "85cb8f25688105076441138378df107d76c99daebb5f5b4aa22c09efb81ec3b6",
+      "bytes": 1363,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/providerPolicy.js",
+      "from": "src/apps/brain/src/providerPolicy.ts",
+      "transpiled": true,
+      "sha256": "46f33159bc6b6459d55375ca559c6e7eaacfb95ca2570e3afc6d490345523275",
+      "bytes": 2804,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/reactiveBrainAdapter.js",
+      "from": "src/apps/brain/src/reactiveBrainAdapter.ts",
+      "transpiled": true,
+      "sha256": "d9316bb5ea770d9ea5b0d4bf6aef9aae602561e5160c0a8d9cf8c36570d49f03",
+      "bytes": 1796,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/reactiveStore.js",
+      "from": "src/apps/brain/src/reactiveStore.ts",
+      "transpiled": true,
+      "sha256": "0ab5bf0a33c9ea8eaadcb1e8309cf2500aef3b236ed022befc827043b054f8cf",
+      "bytes": 7865,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/evidence'",
+          "to": "'../../../../../aukora-kernel/lib/evidence.js'"
+        },
+        {
+          "from": "'@aukora/kernel/merkle'",
+          "to": "'../../../../../aukora-kernel/lib/merkle.js'"
+        },
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+        },
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/brain/src/receiptBridge.js",
+      "from": "src/apps/brain/src/receiptBridge.ts",
+      "transpiled": true,
+      "sha256": "0f61c4a9f4fe1b7d30f25d69b7790688c7ddbe3318d2285115b075498405be15",
+      "bytes": 1420,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/spatialContracts.js",
+      "from": "src/apps/brain/src/spatialContracts.ts",
+      "transpiled": true,
+      "sha256": "c7507b39868a025873564f10a419d2aa1f3992613137a8e7cfdc93045cef739d",
+      "bytes": 4360,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/brain/src/supervisedGeneration.js",
+      "from": "src/apps/brain/src/supervisedGeneration.ts",
+      "transpiled": true,
+      "sha256": "e9aa183508c51d65f5fd36c26f941ca4942a7303fb778f19ba873a4a04d2f887",
+      "bytes": 2749,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/scripts/fu-live-smoke.js",
+      "from": "src/apps/seed/scripts/fu-live-smoke.ts",
+      "transpiled": true,
+      "sha256": "c2337c4c3d95416b739ebe9938866d410a34a9b493d3157d01111bf2e0ae519c",
+      "bytes": 1950,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/brain'",
+          "to": "'../../brain/src/index.js'"
+        },
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/scripts/scan-public-tree.js",
+      "from": "src/apps/seed/scripts/scan-public-tree.ts",
+      "transpiled": true,
+      "sha256": "0b50bf8e46ad7aae3910e7d2ba8489e633b928f7d3db19171b3c84804c76f325",
+      "bytes": 6628,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/approveChallenge.js",
+      "from": "src/apps/seed/src/approveChallenge.ts",
+      "transpiled": true,
+      "sha256": "d05b2a7a7afdb30f2fcda4f7373cc1598572eac6cf6be839bcb5ec910ae07d04",
+      "bytes": 5589,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/approveDoor.js",
+      "from": "src/apps/seed/src/approveDoor.ts",
+      "transpiled": true,
+      "sha256": "1bab16e4150ad972c990e927626820c8ae7fb9d030171d19d69600e57399b42a",
+      "bytes": 9802,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/approveGuard.js",
+      "from": "src/apps/seed/src/approveGuard.ts",
+      "transpiled": true,
+      "sha256": "59f610463675b97bc54fb0288bbc4f0d0565a6680cd1f275e2721c4060304167",
+      "bytes": 4058,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/aumlokGate.js",
+      "from": "src/apps/seed/src/aumlokGate.ts",
+      "transpiled": true,
+      "sha256": "654ef1ded29469b405ad307ac3fa3ad6b23573e09023195bcca378ab2d15d9eb",
+      "bytes": 2660,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/authority'",
+          "to": "'../../../../../aukora-kernel/lib/authority.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/auraTrace.js",
+      "from": "src/apps/seed/src/auraTrace.ts",
+      "transpiled": true,
+      "sha256": "af21c8e55485261fbdfd7b291d5c7b49c885e6517c295842b9f99f0eabb7d41d",
+      "bytes": 9181,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/bondCeremony.js",
+      "from": "src/apps/seed/src/bondCeremony.ts",
+      "transpiled": true,
+      "sha256": "1245170cf6a2e21a753b1bab9da63ff7218b85e196ce8064a0ff039f2aea151d",
+      "bytes": 13507,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/candidatePathIntegrity.js",
+      "from": "src/apps/seed/src/candidatePathIntegrity.ts",
+      "transpiled": true,
+      "sha256": "4187e710c4615b372aa1538fc211b953f8dbadddb18627672a0115d51a84f2a5",
+      "bytes": 2386,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/candidateReferenceMonitor.js",
+      "from": "src/apps/seed/src/candidateReferenceMonitor.ts",
+      "transpiled": true,
+      "sha256": "6325058753f26855e65120fb80b1afc381b9168cf6a7b8a995e3f3ef1bf37aff",
+      "bytes": 8104,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/reducer'",
+          "to": "'../../../../../aukora-kernel/lib/reducer.js'"
+        },
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/capabilities.js",
+      "from": "src/apps/seed/src/capabilities.ts",
+      "transpiled": true,
+      "sha256": "77f9cf4730d73c8547ee153e8bdded8f5bad5934818a8ef72387864f28e0d9b0",
+      "bytes": 2358,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/ceremony.js",
+      "from": "src/apps/seed/src/ceremony.ts",
+      "transpiled": true,
+      "sha256": "b0059ac05e110c16f20c9267d2cc4bd4be084eb899a1ef9cbe8bb3960d410ab4",
+      "bytes": 9858,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/ceremonyView.js",
+      "from": "src/apps/seed/src/ceremonyView.ts",
+      "transpiled": true,
+      "sha256": "b804bc5093e78389afc3ed28ab138b4aae1bed580809c547438171bb287d6729",
+      "bytes": 3278,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/contracts.js",
+      "from": "src/apps/seed/src/contracts.ts",
+      "transpiled": true,
+      "sha256": "6184de6ecd594ba9af31f454b8ecbe440245ac582bad76824cc30ff6d045b479",
+      "bytes": 1797,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/councilPack.js",
+      "from": "src/apps/seed/src/councilPack.ts",
+      "transpiled": true,
+      "sha256": "e3a8793968586856686b2e4aa85580ac3d9217ab8459fe96c6df2fd197e19f33",
+      "bytes": 4339,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/councilRunnerBoundary.js",
+      "from": "src/apps/seed/src/councilRunnerBoundary.ts",
+      "transpiled": true,
+      "sha256": "fb7b7adbe2c6708dd4e0f8c6508380fd7d482e10b9d264cdb0f4e157cb4dcb80",
+      "bytes": 7401,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/doorGuards.js",
+      "from": "src/apps/seed/src/doorGuards.ts",
+      "transpiled": true,
+      "sha256": "0adddd3edc80f0023094237a498841d1b9dd7884b9f88b697f9cb634eb9e1dd6",
+      "bytes": 4798,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/durableCandidateMonitor.js",
+      "from": "src/apps/seed/src/durableCandidateMonitor.ts",
+      "transpiled": true,
+      "sha256": "52107601fdbff3a8f6dccbcaabaad2b9743a1405232bf61eb2ed22f1d90a4388",
+      "bytes": 9537,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel-node'",
+          "to": "'../../../packages/kernel-node/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/durableRecursion.js",
+      "from": "src/apps/seed/src/durableRecursion.ts",
+      "transpiled": true,
+      "sha256": "acffb53c017cbf0351ffcfa3fca21f841421c7ce85073d1dd5c51a48b5ab0bf4",
+      "bytes": 17483,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/effectAudit.js",
+      "from": "src/apps/seed/src/effectAudit.ts",
+      "transpiled": true,
+      "sha256": "a70ee2dabdfe7157280a25f00e8ae503f8fb80daffb0504d3695e7a7e7f187ff",
+      "bytes": 4256,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/effectCoordinator.js",
+      "from": "src/apps/seed/src/effectCoordinator.ts",
+      "transpiled": true,
+      "sha256": "febbb6dd3df8e1d1a7867a71277a88b14fa4a54abc74b5cee4f31a5caae508cd",
+      "bytes": 5692,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/effectProtocol.js",
+      "from": "src/apps/seed/src/effectProtocol.ts",
+      "transpiled": true,
+      "sha256": "37fd84d9f3b2c514d5e077687e2205d17a875bc7066d76c619b50bfa0fbe375b",
+      "bytes": 9375,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/effectSettlement.js",
+      "from": "src/apps/seed/src/effectSettlement.ts",
+      "transpiled": true,
+      "sha256": "a979b3056a7dda38b1f6d22a65c4f0b815d34a7a0a9d30eadaf59b1d2131b970",
+      "bytes": 4221,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/eventStream.js",
+      "from": "src/apps/seed/src/eventStream.ts",
+      "transpiled": true,
+      "sha256": "b594928cde3880b98f0ed6a5d4dd8d8930e8f4c5e7ff199841ab8e3a2d61eb88",
+      "bytes": 807,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/forbiddenContent.js",
+      "from": "src/apps/seed/src/forbiddenContent.ts",
+      "transpiled": true,
+      "sha256": "21d52364d999c2aa33617b1ebf30690f8d4fe8171fad699c3e9c11b32988efc1",
+      "bytes": 9900,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/fuLiveSmoke.js",
+      "from": "src/apps/seed/src/fuLiveSmoke.ts",
+      "transpiled": true,
+      "sha256": "6fa53cedceb064d570793d3e71354f0af3f26146cba56aa902e44ff26a4b2b9b",
+      "bytes": 2749,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/fuStructuredAdapter.js",
+      "from": "src/apps/seed/src/fuStructuredAdapter.ts",
+      "transpiled": true,
+      "sha256": "f7eb66cf89131e85cd39fddb9c82a7dbf165aadc260cf7d372bd14ddc6afcbd8",
+      "bytes": 6887,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        },
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/geometry.js",
+      "from": "src/apps/seed/src/geometry.ts",
+      "transpiled": true,
+      "sha256": "23cc34c89852a6619d9c7394f14ec7399a81ec853ebbb0335ef17492c21d9676",
+      "bytes": 5868,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/gitConfigThreat.js",
+      "from": "src/apps/seed/src/gitConfigThreat.ts",
+      "transpiled": true,
+      "sha256": "56bcf2968998eca73422234d05b6f061dddff0ecdef738150e3f193b62c658ae",
+      "bytes": 3548,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/governedCrossing.js",
+      "from": "src/apps/seed/src/governedCrossing.ts",
+      "transpiled": true,
+      "sha256": "0d75f5eca32bfdd83890a990c02d664d225ce2ccdf33da12d4d4bd5679461dc2",
+      "bytes": 9239,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/hermeticRehearsal.js",
+      "from": "src/apps/seed/src/hermeticRehearsal.ts",
+      "transpiled": true,
+      "sha256": "a796771f441c8e42ec4704a6a2318d6a6d6f48945ff0ccc25bccc9055f450759",
+      "bytes": 5079,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/ideEnvelope.js",
+      "from": "src/apps/seed/src/ideEnvelope.ts",
+      "transpiled": true,
+      "sha256": "bd07693f48c85827c518ab1c4de964c8fcb18acdaa975585196d3a89182bee32",
+      "bytes": 13247,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/ideSession.js",
+      "from": "src/apps/seed/src/ideSession.ts",
+      "transpiled": true,
+      "sha256": "b2fd9052774e89c9b9954ef6fcbbde1b49e780b7c8a426d3af6ad9ab30bd90e2",
+      "bytes": 4656,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/index.js",
+      "from": "src/apps/seed/src/index.ts",
+      "transpiled": true,
+      "sha256": "e359d44ea842779e3a20878b34e513b919df142e7fccfc8c87d90df4b1fa531c",
+      "bytes": 2602,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/ledger.js",
+      "from": "src/apps/seed/src/ledger.ts",
+      "transpiled": true,
+      "sha256": "57a04ec189211bab80b843589e2e8fdb0c642837a3b4131d02080b82f6386f26",
+      "bytes": 2168,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/liveEffectOps.js",
+      "from": "src/apps/seed/src/liveEffectOps.ts",
+      "transpiled": true,
+      "sha256": "78204e78d398635048fa256278828a7002302d4dc057caf371449d83d5854840",
+      "bytes": 18425,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/localCandidateStage.js",
+      "from": "src/apps/seed/src/localCandidateStage.ts",
+      "transpiled": true,
+      "sha256": "1b1c1dc5f9dea0e6906a5290d9114519a33c2e66cf442a0886816d720b398bc6",
+      "bytes": 28378,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/localCeremonyRunner.js",
+      "from": "src/apps/seed/src/localCeremonyRunner.ts",
+      "transpiled": true,
+      "sha256": "6427e14148da7a42f531b85f244bd005ec275199bc1ec7a2dab0145fb4cd9c1a",
+      "bytes": 10844,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/maternalAnchor.js",
+      "from": "src/apps/seed/src/maternalAnchor.ts",
+      "transpiled": true,
+      "sha256": "bdc4da9fdb799c5329fcaffe8f6d1e1cf4f0cddbcc261821ac5be54bef0a8059",
+      "bytes": 4612,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/memoryConstitution.js",
+      "from": "src/apps/seed/src/memoryConstitution.ts",
+      "transpiled": true,
+      "sha256": "d02b6a0b6d4ba10f06696aee296485b98a2e2820e8dfc189222aa933197c28e8",
+      "bytes": 6478,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/memorySelection.js",
+      "from": "src/apps/seed/src/memorySelection.ts",
+      "transpiled": true,
+      "sha256": "1d96aaa3f5ad88220493f744ba900798ad9b29956d4ee167b52d1bcde0c21c80",
+      "bytes": 7792,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/metabolism.js",
+      "from": "src/apps/seed/src/metabolism.ts",
+      "transpiled": true,
+      "sha256": "ce4c363130e251442cf02baf0f23bf669295489bcd67ca54cea0bed6430c8be2",
+      "bytes": 2207,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/mindDoor.js",
+      "from": "src/apps/seed/src/mindDoor.ts",
+      "transpiled": true,
+      "sha256": "f7730ab49cba57ad6bd49a07d94f2f0fcbc8d67e561269d05e96671a2991dd64",
+      "bytes": 21810,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/mockCouncil.js",
+      "from": "src/apps/seed/src/mockCouncil.ts",
+      "transpiled": true,
+      "sha256": "6853766c0a209d1b3561dc877871a56c7f729bf3ede9a161114d747b1d595b70",
+      "bytes": 1574,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/modelCellAdapter.js",
+      "from": "src/apps/seed/src/modelCellAdapter.ts",
+      "transpiled": true,
+      "sha256": "f6a45cc3eefef1a0c89d2b59ec55f67af1f9b87afd1623b59257c9ef10e78f87",
+      "bytes": 6373,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/ownerBoundary.js",
+      "from": "src/apps/seed/src/ownerBoundary.ts",
+      "transpiled": true,
+      "sha256": "c5362bbbc91cdfbc95a4e9263cbab53f870d55023b093f3d4b48688dea18e990",
+      "bytes": 9943,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        },
+        {
+          "from": "'@aukora/kernel/authority'",
+          "to": "'../../../../../aukora-kernel/lib/authority.js'"
+        },
+        {
+          "from": "'@aukora/kernel/schemas'",
+          "to": "'../../../../../aukora-kernel/lib/schema.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/ownerCustody.js",
+      "from": "src/apps/seed/src/ownerCustody.ts",
+      "transpiled": true,
+      "sha256": "cd9effde35650f5f3a66bb3be230735ad7e5372e6e56175090c53242205298cb",
+      "bytes": 5412,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/ownerFixture.js",
+      "from": "src/apps/seed/src/ownerFixture.ts",
+      "transpiled": true,
+      "sha256": "1f8cb5d4f563dc12d36c64020f2611a2d2df57be0b897946b12380b03a209e68",
+      "bytes": 3626,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/curves/ed25519.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js'"
+        },
+        {
+          "from": "'@noble/post-quantum/ml-dsa.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js'"
+        },
+        {
+          "from": "'@noble/hashes/sha2.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js'"
+        },
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+        },
+        {
+          "from": "'@aukora/kernel/authority'",
+          "to": "'../../../../../aukora-kernel/lib/authority.js'"
+        },
+        {
+          "from": "'@aukora/kernel/registries'",
+          "to": "'../../../../../aukora-kernel/lib/registry.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/pathFence.js",
+      "from": "src/apps/seed/src/pathFence.ts",
+      "transpiled": true,
+      "sha256": "685562eafb453593b1213da5482a3973b789fb5a67491e564b050a1e1919acd0",
+      "bytes": 7017,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/proposal.js",
+      "from": "src/apps/seed/src/proposal.ts",
+      "transpiled": true,
+      "sha256": "64bbfc567b6dd2ee5f76c78323b8c28fb6b7fe254be26c7927636f1607429e02",
+      "bytes": 7026,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+        },
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/proposerQualification.js",
+      "from": "src/apps/seed/src/proposerQualification.ts",
+      "transpiled": true,
+      "sha256": "ea6bf6af291f2a4ad8ef3586207ebd14fdc9e9f2325ee1834730d28bfe76439a",
+      "bytes": 10216,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/providerEgress.js",
+      "from": "src/apps/seed/src/providerEgress.ts",
+      "transpiled": true,
+      "sha256": "5745a92c9304b8d3d15370b49f5a24c91126310d103f0c65de933c9fcb8b9a9a",
+      "bytes": 3432,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/providerTransport.js",
+      "from": "src/apps/seed/src/providerTransport.ts",
+      "transpiled": true,
+      "sha256": "62d6ca39039ac0ff2bd3cc7632b1bb1f6cabc99f965e09d17006ce94afc6d3f5",
+      "bytes": 3975,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/recoveryPlanner.js",
+      "from": "src/apps/seed/src/recoveryPlanner.ts",
+      "transpiled": true,
+      "sha256": "97064654e8936eea29ee8e70d4c3c572f61122a1b8ee9d7245f05fd9f4a367e8",
+      "bytes": 4261,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/recursion.js",
+      "from": "src/apps/seed/src/recursion.ts",
+      "transpiled": true,
+      "sha256": "917cc09bb29317fdb8a3787b210163b3ec8d4d8f0577cbfb19f2bc74e5cff0da",
+      "bytes": 12471,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/evidence'",
+          "to": "'../../../packages/evidence/src/index.js'"
+        },
+        {
+          "from": "'@aukora/memory'",
+          "to": "'../../../packages/memory/index.js'"
+        },
+        {
+          "from": "'@aukora/kernel/staleness'",
+          "to": "'../../../../../aukora-kernel/lib/staleness.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/src/refSnapshot.js",
+      "from": "src/apps/seed/src/refSnapshot.ts",
+      "transpiled": true,
+      "sha256": "b4fbbb1f5df7f0290599d4047bce5054dd15ebaa630dc95c56a303db8afc40dc",
+      "bytes": 3353,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/repoIdentity.js",
+      "from": "src/apps/seed/src/repoIdentity.ts",
+      "transpiled": true,
+      "sha256": "fd7ee796e52e6e7308c9c33611ca122dabff6d53b352fede48688a0139062641",
+      "bytes": 7432,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/selectionAcceptance.js",
+      "from": "src/apps/seed/src/selectionAcceptance.ts",
+      "transpiled": true,
+      "sha256": "734cc30a7cfc8a38304e96d6db8fdb7a8841046e4a8ff2a4390d7242709ac60b",
+      "bytes": 5657,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/src/spatialCeremonyAdapter.js",
+      "from": "src/apps/seed/src/spatialCeremonyAdapter.ts",
+      "transpiled": true,
+      "sha256": "8996f98a7fb5feb2f8bbcc7b936cc2850cec6eec95d338936c8d814dd83c9426",
+      "bytes": 3936,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/apps/seed/test/containment.test.js",
+      "from": "src/apps/seed/test/containment.test.ts",
+      "transpiled": true,
+      "sha256": "0c9fe5e69103d2c9db83c6909be087f062881328cbddb646da6d4c7c159e94a1",
+      "bytes": 6538,
+      "specifierRewrites": [],
+      "externalSpecifiers": [
+        "vitest"
+      ]
+    },
+    {
+      "path": "lib/apps/seed/test/r39.security.test.js",
+      "from": "src/apps/seed/test/r39.security.test.ts",
+      "transpiled": true,
+      "sha256": "230bbf45dc21fbb794dfae75e0561a91a15e8c9def4ffff03ac1795b67360e5c",
+      "bytes": 13431,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/brain'",
+          "to": "'../../brain/src/index.js'"
+        },
+        {
+          "from": "'@aukora/council'",
+          "to": "'../../../packages/council/index.js'"
+        }
+      ],
+      "externalSpecifiers": [
+        "vitest"
+      ]
+    },
+    {
+      "path": "lib/apps/seed/test/r47.governed-crossing.test.js",
+      "from": "src/apps/seed/test/r47.governed-crossing.test.ts",
+      "transpiled": true,
+      "sha256": "2b0b03aa149abe7dd7f7f3e56a979bed44d0467ab91e1dbdc761a53219f3c416",
+      "bytes": 13093,
+      "specifierRewrites": [],
+      "externalSpecifiers": [
+        "vitest"
+      ]
+    },
+    {
+      "path": "lib/apps/seed/test/support.js",
+      "from": "src/apps/seed/test/support.ts",
+      "transpiled": true,
+      "sha256": "c2700513d4073732126af94234e71f00bf18ee58f0a8b9f6961f5d51bd1db1ed",
+      "bytes": 1897,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/brain'",
+          "to": "'../../brain/src/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/apps/seed/vitest.config.js",
+      "from": "src/apps/seed/vitest.config.ts",
+      "transpiled": true,
+      "sha256": "d9cc33fb2812672b650d223e7f7eee6d3db9691707140cc62f49cafc8e86b796",
+      "bytes": 178,
+      "specifierRewrites": [],
+      "externalSpecifiers": [
+        "vitest/config"
+      ]
+    },
+    {
+      "path": "lib/packages/council/fuDisagreement.js",
+      "from": "src/packages/council/fuDisagreement.ts",
+      "transpiled": true,
+      "sha256": "c7016ab8fc3b5aaf1da838c3628141db694769c276359fac636edf6a401c5f65",
+      "bytes": 8520,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/council/index.js",
+      "from": "src/packages/council/index.ts",
+      "transpiled": true,
+      "sha256": "39a4e2a9b70c660a9e4caa9339e946c013b52f39d4a6acd18d3a7962d1223c71",
+      "bytes": 791,
+      "specifierRewrites": [
+        {
+          "from": "'./src/aukoraFuCouncil'",
+          "to": "'./src/aukoraFuCouncil.js'"
+        },
+        {
+          "from": "'./src/aukoraFuGlyph'",
+          "to": "'./src/aukoraFuGlyph.js'"
+        },
+        {
+          "from": "'./fuDisagreement'",
+          "to": "'./fuDisagreement.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/council/src/aukoraFuCouncil.js",
+      "from": "src/packages/council/src/aukoraFuCouncil.ts",
+      "transpiled": true,
+      "sha256": "11ee48c547365a2d70f79a651ad937eb2aa3a0ac6f40c696180a8d069ad76109",
+      "bytes": 35745,
+      "specifierRewrites": [
+        {
+          "from": "'./aukoraFuGlyph'",
+          "to": "'./aukoraFuGlyph.js'"
+        },
+        {
+          "from": "'crypto'",
+          "to": "'node:crypto'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/council/src/aukoraFuGlyph.js",
+      "from": "src/packages/council/src/aukoraFuGlyph.ts",
+      "transpiled": true,
+      "sha256": "3635920bece9b3dd8ed9b8ea163f8fd58b2ae57e9947ffaa44ae33ef12de1717",
+      "bytes": 12586,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/evidence/src/canonical.js",
+      "from": "src/packages/evidence/src/canonical.ts",
+      "transpiled": true,
+      "sha256": "eb51b9429c0f25c52359ac4da15c05a26abf183a6fd657544570b138f31cf03f",
+      "bytes": 3365,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/evidence/src/catalogue.js",
+      "from": "src/packages/evidence/src/catalogue.ts",
+      "transpiled": true,
+      "sha256": "055cc8c38e5f3cdb08c236ede1a0d2a5ac89b81fa925d157e64419bbad273a60",
+      "bytes": 13081,
+      "specifierRewrites": [
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/evidence/src/digest.js",
+      "from": "src/packages/evidence/src/digest.ts",
+      "transpiled": true,
+      "sha256": "9e3f41c044df99be43324f3ececa1af54c5a00601a0e959732b22e29ab0feb36",
+      "bytes": 1343,
+      "specifierRewrites": [
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/evidence/src/framing.js",
+      "from": "src/packages/evidence/src/framing.ts",
+      "transpiled": true,
+      "sha256": "b238214b8c4a51e050301499c4f975cbfcb83ae6c06e8b8f85e6906063a9144d",
+      "bytes": 1805,
+      "specifierRewrites": [
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/evidence/src/index.js",
+      "from": "src/packages/evidence/src/index.ts",
+      "transpiled": true,
+      "sha256": "3ef96129db567727bb02907be093651c854602435f8eb4ff78d5000fb61bab1d",
+      "bytes": 4156,
+      "specifierRewrites": [
+        {
+          "from": "'./types'",
+          "to": "'./types.js'"
+        },
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./framing'",
+          "to": "'./framing.js'"
+        },
+        {
+          "from": "'./catalogue'",
+          "to": "'./catalogue.js'"
+        },
+        {
+          "from": "'./validate'",
+          "to": "'./validate.js'"
+        },
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./validate'",
+          "to": "'./validate.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/evidence/src/types.js",
+      "from": "src/packages/evidence/src/types.ts",
+      "transpiled": true,
+      "sha256": "334c4d43662d6606ffa7fd9fa3e02bd92fc36920539d401a73dcda74ac6d528d",
+      "bytes": 2092,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/evidence/src/validate.js",
+      "from": "src/packages/evidence/src/validate.ts",
+      "transpiled": true,
+      "sha256": "5f1743391c0152ed3a9337f5e82552be667d78ca72b90a5e3a05b952934fb02d",
+      "bytes": 24050,
+      "specifierRewrites": [
+        {
+          "from": "'./types'",
+          "to": "'./types.js'"
+        },
+        {
+          "from": "'./canonical'",
+          "to": "'./canonical.js'"
+        },
+        {
+          "from": "'./digest'",
+          "to": "'./digest.js'"
+        },
+        {
+          "from": "'./catalogue'",
+          "to": "'./catalogue.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/kernel-node/src/index.js",
+      "from": "src/packages/kernel-node/src/index.ts",
+      "transpiled": true,
+      "sha256": "325147f8e32ea375c95c4d2f9c1559ab73b141eec2928f8f71c3a0d5a5e04980",
+      "bytes": 86,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/kernel-node/src/trustedStateStore.js",
+      "from": "src/packages/kernel-node/src/trustedStateStore.ts",
+      "transpiled": true,
+      "sha256": "78a7b3687dcd0ff2a5bfbbdb13176b83b24bdb65458b6b18c05121753fa7a46d",
+      "bytes": 20239,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel'",
+          "to": "'../../../../../aukora-kernel/lib/index.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/memory/index.js",
+      "from": "src/packages/memory/index.ts",
+      "transpiled": true,
+      "sha256": "be5ea995ff6544b416b307db56686a10318d15186c3ace5ffda97c95db98f2f6",
+      "bytes": 784,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/containment.js",
+      "from": "src/packages/memory/src/containment.ts",
+      "transpiled": true,
+      "sha256": "4cd0ba50bd7c254457b96052d23d4811a414c84916013a8d0441da910ed6558e",
+      "bytes": 6066,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/envelope.js",
+      "from": "src/packages/memory/src/envelope.ts",
+      "transpiled": true,
+      "sha256": "c44febe5438a99c61bde66df52c8f290f156f1056c07701ef3565ff192d308d8",
+      "bytes": 5398,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/memory/src/ingestGate.js",
+      "from": "src/packages/memory/src/ingestGate.ts",
+      "transpiled": true,
+      "sha256": "6f0de9feea6486ca935b365403c80d09af499e52c2336e827e3e56afb4c6f0db",
+      "bytes": 1392,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/recall.js",
+      "from": "src/packages/memory/src/recall.ts",
+      "transpiled": true,
+      "sha256": "c24f2dddd0dd3c672a733df65f6aa7140e35c92d97d5683613944c06e6bbf9be",
+      "bytes": 4127,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/scope.js",
+      "from": "src/packages/memory/src/scope.ts",
+      "transpiled": true,
+      "sha256": "34f51b966fbd844f47b401a1a17016faa4c5b368fe802c9f837a3ee7a08ab104",
+      "bytes": 3332,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/staleness.js",
+      "from": "src/packages/memory/src/staleness.ts",
+      "transpiled": true,
+      "sha256": "f5badc25d8d42aa5e7c7c69b17ad2bfb81f35b599e88fb24cf2d9b3cefe2f276",
+      "bytes": 767,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/staleness'",
+          "to": "'../../../../../aukora-kernel/lib/staleness.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/mind/index.js",
+      "from": "src/packages/mind/index.ts",
+      "transpiled": true,
+      "sha256": "4c1c284f9fa35b6f9dbb7d69a3bd0a448eb37168225307bdcc35b96d710a508e",
+      "bytes": 1193,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/governor.js",
+      "from": "src/packages/mind/src/governor.ts",
+      "transpiled": true,
+      "sha256": "94e93646eb853b31e132efed9ddf5104e62bef47a196dae40704b652d5599801",
+      "bytes": 7452,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/grid.js",
+      "from": "src/packages/mind/src/grid.ts",
+      "transpiled": true,
+      "sha256": "9e0c36f713b297c371effbff8c7baccac927e1a0ffee103046b7fbdb05c5f4ef",
+      "bytes": 10944,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/plan.js",
+      "from": "src/packages/mind/src/plan.ts",
+      "transpiled": true,
+      "sha256": "23c0323dd3b105d6040d4939f1c25e106a4b7231c4e4e5fd9d03834360588bf7",
+      "bytes": 1225,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/ports.js",
+      "from": "src/packages/mind/src/ports.ts",
+      "transpiled": true,
+      "sha256": "6ce4e8dcf2bf3dbb8688b80a381dd5543a676917f81185de2d868faac3dc4673",
+      "bytes": 585,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/reply.js",
+      "from": "src/packages/mind/src/reply.ts",
+      "transpiled": true,
+      "sha256": "c4b6d67aa7a840263e01e39931f9eda6a5025df68f9939693854b847b8a561a0",
+      "bytes": 5921,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/rollout.js",
+      "from": "src/packages/mind/src/rollout.ts",
+      "transpiled": true,
+      "sha256": "b7c1593a210aacad0d648f2e0e3cad2f2b7adf452fbd9d487a16e8129d4ae91a",
+      "bytes": 2024,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/trace.js",
+      "from": "src/packages/mind/src/trace.ts",
+      "transpiled": true,
+      "sha256": "b267a307cbf3b9c1c91c685cb544fc5845a319927397eb8ad029f8970263bee5",
+      "bytes": 904,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/mind/src/window.js",
+      "from": "src/packages/mind/src/window.ts",
+      "transpiled": true,
+      "sha256": "70ae40f3dcc2a4fbf5b95dac41fa33370a63d80d88d38edef1f20d9d57252f74",
+      "bytes": 708,
+      "specifierRewrites": []
+    }
+  ],
+  "generatedDependencies": [
+    {
+      "specifier": "@aukora/brain",
+      "resolvesTo": "lib/apps/brain/src/index.js",
+      "sha256": "3954ea86c1fbd821c562424334b7d679bb5272075824cf820f80fb052736e2e2"
+    },
+    {
+      "specifier": "@aukora/council",
+      "resolvesTo": "lib/packages/council/index.js",
+      "sha256": "39a4e2a9b70c660a9e4caa9339e946c013b52f39d4a6acd18d3a7962d1223c71"
+    },
+    {
+      "specifier": "@aukora/evidence",
+      "resolvesTo": "lib/packages/evidence/src/index.js",
+      "sha256": "3ef96129db567727bb02907be093651c854602435f8eb4ff78d5000fb61bab1d"
+    },
+    {
+      "specifier": "@aukora/kernel",
+      "resolvesTo": "../aukora-kernel/lib/index.js",
+      "sha256": "5fde41595703e3464d89882a39a4e6193ed709032e8040a09005ab7c7f941f4c"
+    },
+    {
+      "specifier": "@aukora/kernel-node",
+      "resolvesTo": "lib/packages/kernel-node/src/index.js",
+      "sha256": "325147f8e32ea375c95c4d2f9c1559ab73b141eec2928f8f71c3a0d5a5e04980"
+    },
+    {
+      "specifier": "@aukora/kernel/authority",
+      "resolvesTo": "../aukora-kernel/lib/authority.js",
+      "sha256": "ddda96d205796d84a0bf78f23c499a87ab5da9472b401adb39231c76c5de23de"
+    },
+    {
+      "specifier": "@aukora/kernel/canonical",
+      "resolvesTo": "../aukora-kernel/lib/canonical.js",
+      "sha256": "b213762567fc959e419372e75454eaf320fd123f62aabb7538a080da11a5abf3"
+    },
+    {
+      "specifier": "@aukora/kernel/evidence",
+      "resolvesTo": "../aukora-kernel/lib/evidence.js",
+      "sha256": "c9d01b7604edac0dc26b1bf8fb5d462c1770a3e536f4390ce83f4186727da96f"
+    },
+    {
+      "specifier": "@aukora/kernel/merkle",
+      "resolvesTo": "../aukora-kernel/lib/merkle.js",
+      "sha256": "dad1426ebe55846017622de71d1ca49a41f17772c8b3b2e9a781a0f7f084f957"
+    },
+    {
+      "specifier": "@aukora/kernel/reducer",
+      "resolvesTo": "../aukora-kernel/lib/reducer.js",
+      "sha256": "48c5593a0891f30dce73f2ead0b4b9f433056744ead5fe3d1d0184b521016240"
+    },
+    {
+      "specifier": "@aukora/kernel/registries",
+      "resolvesTo": "../aukora-kernel/lib/registry.js",
+      "sha256": "4f6d9ff9752485d39614a32e7a4044e017a82428420d0e65546e587b02058ee3"
+    },
+    {
+      "specifier": "@aukora/kernel/schemas",
+      "resolvesTo": "../aukora-kernel/lib/schema.js",
+      "sha256": "a1c1c0e37e743f7066058c97c14dcf60682a015b8e0cb1b4e193c8aac0d2ac68"
+    },
+    {
+      "specifier": "@aukora/kernel/staleness",
+      "resolvesTo": "../aukora-kernel/lib/staleness.js",
+      "sha256": "aff97a35431e18b8bb634a8d27bad3ff199da21c0b4a56ba356ec8ceb10efd37"
+    },
+    {
+      "specifier": "@aukora/memory",
+      "resolvesTo": "lib/packages/memory/index.js",
+      "sha256": "be5ea995ff6544b416b307db56686a10318d15186c3ace5ffda97c95db98f2f6"
+    },
+    {
+      "specifier": "@aukora/mind",
+      "resolvesTo": "lib/packages/mind/index.js",
+      "sha256": "4c1c284f9fa35b6f9dbb7d69a3bd0a448eb37168225307bdcc35b96d710a508e"
+    },
+    {
+      "specifier": "@noble/curves/ed25519.js",
+      "resolvesTo": "../aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js",
+      "sha256": "28c6fd6157fe2d1c69ea4751844c3d8fe3ee1a496b4f10fb7b48a51c48857a21"
+    },
+    {
+      "specifier": "@noble/hashes/sha2.js",
+      "resolvesTo": "../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js",
+      "sha256": "0fb8e3c3f2c73a890be2524ac5d2542aaed4decff69e561231a86131203b3973"
+    },
+    {
+      "specifier": "@noble/hashes/utils.js",
+      "resolvesTo": "../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js",
+      "sha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f"
+    },
+    {
+      "specifier": "@noble/post-quantum/ml-dsa.js",
+      "resolvesTo": "../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js",
+      "sha256": "210a020b4933275edf89201e2a5168ee404190f2d5cfa676d0cb13b7a1072276"
+    }
+  ]
+}

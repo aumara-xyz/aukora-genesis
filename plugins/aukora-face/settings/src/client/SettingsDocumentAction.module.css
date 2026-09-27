@@ -1,0 +1,41 @@
+.action {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.openButton {
+  flex: none;
+  white-space: nowrap;
+}
+
+.openLabel {
+  white-space: nowrap;
+}
+
+.error {
+  max-width: 180px;
+  overflow: hidden;
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@container (max-width: 440px) {
+  .openButton {
+    width: 28px;
+    padding: 0;
+  }
+
+  .openLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

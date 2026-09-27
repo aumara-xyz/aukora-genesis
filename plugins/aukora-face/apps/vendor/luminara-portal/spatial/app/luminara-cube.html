@@ -1,0 +1,299 @@
+<!doctype html>
+<!-- AUMA LUMINARA · THE LIVING CUBE (working name; the true name is fixed
+     last, at the device's own pressure).
+
+     The deck as a turnable 3x3x3, rendered in a single sweep from the sealed
+     plan (docs/THE_LIVING_CUBE_PLAN.md). The engine is pure and pinned
+     (luminara-cube.js + core/tests/livingCube.test.ts); this page owns only
+     the rite, the liturgy, and the witnessing. Six gates, one thread:
+     approach · holding · cast · witnessing · return · setting down.
+
+     Ruin test: everything here derives from the sealed canon module. Found
+     without its tradition, this device reconstructs itself from number.
+     Letter-free: the key is in the keeper's hand. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the living cube</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.36); }
+  html,body { margin:0; background:#0b0c10; color:var(--text); font:14px/1.65 system-ui, sans-serif; }
+  .wrap { max-width:680px; margin:0 auto; padding:30px 20px 90px; }
+  h1 { font-size:15px; letter-spacing:0.34em; text-align:center; margin:0 0 4px;
+    background:linear-gradient(100deg,#C9D3E2,#EFE7CF 55%,#F0C25E);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { text-align:center; font-size:10.5px; letter-spacing:0.18em; color:var(--faint); margin-bottom:18px; }
+  .lnav { display:flex; gap:18px; justify-content:center; margin:9px 0 2px; }
+  .lnav a { font-size:10px; letter-spacing:0.22em; color:var(--faint); text-decoration:none; padding:3px 2px; border-bottom:1px solid transparent; }
+  .lnav a:hover { color:var(--dim); }
+  .lnav a.on { color:#EFE7CF; border-bottom-color:rgba(240,194,94,0.4); }
+  .gate { margin:0 auto 6px; max-width:520px; text-align:center; }
+  .gate-k { font-size:9px; letter-spacing:0.3em; color:var(--faint); margin:16px 0 6px; }
+  .lit { font-size:13.5px; line-height:2.0; color:rgba(238,242,255,0.78); }
+  .lit .vow { color:#EFE7CF; }
+  .stage { position:relative; width:min(94vw,560px); margin:10px auto 4px; cursor:pointer; }
+  .stage svg { width:100%; height:auto; display:block; overflow:visible; }
+  .counter { text-align:center; font-size:10.5px; font-family:ui-monospace,monospace; color:var(--faint); min-height:1.4em; }
+  .panel { max-width:560px; margin:14px auto 0; text-align:center; }
+  .depthline { font-size:13.5px; color:rgba(238,242,255,0.9); margin-bottom:10px; }
+  .heatrow { display:flex; align-items:center; gap:10px; max-width:420px; margin:0 auto 6px; font-size:12px; }
+  .heatrow .nm { flex:1; text-align:left; color:rgba(238,242,255,0.85); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .heatrow .cls { font-size:9px; letter-spacing:0.08em; color:var(--faint); width:52px; text-align:left; }
+  .heatrow .bar { flex:1.4; height:4px; border-radius:2px; background:rgba(255,255,255,0.06); overflow:hidden; }
+  .heatrow .bar i { display:block; height:100%; border-radius:2px; }
+  .heatrow .ask { font-size:10px; font-style:italic; color:rgba(233,230,220,0.7); }
+  .driftline { font-size:11.5px; color:var(--dim); margin:10px 0 2px; }
+  .weave { max-width:520px; margin:14px auto 4px; text-align:left; }
+  .weave div { font-size:11.5px; line-height:1.75; color:rgba(233,230,220,0.72); margin-bottom:7px; }
+  .weave div.ring { color:rgba(238,242,255,0.85); }
+  .weave div.silence { font-style:italic; color:rgba(233,230,220,0.8); }
+  .decl { font-size:9px; font-family:ui-monospace,monospace; color:var(--faint); word-break:break-all;
+    max-width:520px; margin:12px auto 0; line-height:1.7; }
+  .stepline { font-size:12px; color:rgba(255,205,150,0.9); min-height:1.6em; margin-top:8px; }
+  .movers { font-size:10.5px; color:var(--faint); min-height:1.5em; }
+  .hint { font-size:11px; color:var(--dim); margin-top:10px; letter-spacing:0.04em; }
+  .again { display:inline-block; margin-top:16px; font:inherit; font-size:11px; color:var(--faint);
+    background:none; border:1px solid rgba(255,255,255,0.14); border-radius:16px; padding:7px 16px; cursor:pointer; }
+  .again:hover { color:var(--text); }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>THE LIVING CUBE</h1>
+  <div class="sub">THE SEED NEVER MOVES, WHATEVER ELSE TURNS</div>
+  <nav class="lnav">
+    <a href="/app/luminara-read.html">THE WAYFINDER</a>
+    <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+    <a href="/app/luminara-ring.html">THE RING</a>
+    <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+    <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+    <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+    <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+    <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+    <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+    <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+  </nav>
+
+  <div class="gate" id="g0">
+    <div class="gate-k">THE APPROACH</div>
+    <div class="lit">
+      This is the deck, standing whole. Your convergence is at its centre.<br>
+      The centre cannot be scrambled. Only the surface drifts.<br>
+      You are not solving a puzzle. You are witnessing a drift, and walking it home.<br>
+      <span class="vow">The tool is for the finding. Found, it rests.</span><br>
+      Hold your question. Tap three times, and the turning begins.
+    </div>
+  </div>
+
+  <div class="gate" id="g1">
+    <div class="gate-k">THE HOLDING</div>
+    <div class="lit">Every card home. The Seed at the centre: your toroid at rest,
+      the point of resonant harmonic convergence the system seeks.</div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+  <div class="counter" id="counter"></div>
+
+  <div class="panel hidden" id="witness">
+    <div class="gate-k">THE WITNESSING</div>
+    <div class="depthline" id="depth"></div>
+    <div id="heat"></div>
+    <!-- THE CAST, SPOKEN (luminara-cube-read.js): the two rings in the
+         Field's own voice, the way home composed by depth, the declined
+         turns, and the asks of any Silence carried hot. Derived sentence by
+         sentence from the committed state; the 729 stays parked. -->
+    <div class="weave" id="weave"></div>
+    <div class="stepline" id="step"></div>
+    <div class="movers" id="movers"></div>
+    <div class="hint" id="hint"></div>
+    <div class="decl" id="decl"></div>
+  </div>
+
+  <div class="gate hidden" id="g5">
+    <div class="gate-k">THE SETTING DOWN</div>
+    <div class="lit">
+      The cube rests at the Seed. So does the reading.<br>
+      What the flows showed you is yours to walk without the cube.<br>
+      <span class="vow">The water was the aim. Lay the rods down.</span><br>
+      The last word is yours.
+    </div>
+    <button class="again" id="again" type="button">begin again in stillness</button>
+  </div>
+</div>
+
+<script type="module">
+import {
+  solvedState, isSolved, applyMove, applyWord, scrambleWord, returnWord,
+  heatOf, displacementOf, homeOf, classOf, castDeclaration, labelMove,
+} from '/app/luminara-cube.js';
+import { cardOf, isSilent, SILENCES, codeOf } from '/app/luminara-canon.js';
+import { metalOf } from '/app/luminara-knots.js';
+import { witnessLines } from '/app/luminara-cube-read.js';
+
+const $ = (id) => document.getElementById(id);
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ---------------------------------------------------------------------------
+// the lattice, witnessed: an exploded isometric of the 27 points of the
+// manifold: flows drawn as lines from exile to home, heat as glow. Paths as
+// they effect, not as they appear.
+const S = 52;
+const iso = ([x, y, z]) => [(x - z) * 0.866 * S, (x + z) * 0.5 * S - y * S * 1.08];
+function markSvg(st, y, metal) {
+  if (st === 0) return '<circle cx="0" cy="' + y + '" r="1.9" fill="' + metal + '" fill-opacity="0.8"/>';
+  if (st === 1) return '<rect x="-6" y="' + (y - 1) + '" width="12" height="2" rx="1" fill="' + metal + '" fill-opacity="0.8"/>';
+  return '<path d="M-6 ' + y + ' q1.6 -2.4 3.2 0 t3.2 0 t3.2 0 t3.2 0" stroke="' + metal + '" stroke-opacity="0.8" stroke-width="1.3" fill="none" stroke-linecap="round"/>';
+}
+function renderCube(state, heat = {}, showFlows = false) {
+  const maxHeat = Math.max(1, ...Object.values(heat));
+  let ghosts = '', flows = '', pieces = '';
+  for (let x = -1; x <= 1; x++) for (let y = -1; y <= 1; y++) for (let z = -1; z <= 1; z++) {
+    const [gx, gy] = iso([x, y, z]);
+    ghosts += '<circle cx="' + gx.toFixed(1) + '" cy="' + gy.toFixed(1) + '" r="1.1" fill="rgba(238,242,255,0.07)"/>';
+  }
+  const sorted = state.slice().sort((a, b) =>
+    (a.pos[0] + a.pos[2]) - (b.pos[0] + b.pos[2]) || a.pos[1] - b.pos[1]);
+  for (const pc of sorted) {
+    const metal = metalOf(pc.n);
+    const [sx, sy] = iso(pc.pos);
+    const h = heat[pc.n] || 0;
+    const hn = h / maxHeat;
+    if (showFlows && displacementOf(pc) > 0) {
+      const [hx, hy] = iso(homeOf(pc.n));
+      flows += '<line x1="' + sx.toFixed(1) + '" y1="' + sy.toFixed(1) + '" x2="' + hx.toFixed(1) + '" y2="' + hy.toFixed(1)
+        + '" stroke="' + metal + '" stroke-opacity="' + (0.08 + 0.3 * hn).toFixed(2) + '" stroke-width="1" stroke-dasharray="3 5"/>';
+    }
+    const d = codeOf(pc.n);
+    const glow = h > 0 ? ' style="filter:drop-shadow(0 0 ' + (2 + 7 * hn).toFixed(1) + 'px ' + metal + ')"' : '';
+    pieces += '<g transform="translate(' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ')"' + glow + '>'
+      + '<rect x="-17" y="-17" width="34" height="34" rx="8" fill="#0a0a0c" stroke="' + metal
+      + '" stroke-opacity="' + (pc.n === 1 ? 0.9 : 0.45) + '" stroke-width="' + (pc.n === 1 ? 1.6 : 1.1) + '"/>'
+      + markSvg(d[0], -7.5, metal) + markSvg(d[1], 0, metal) + markSvg(d[2], 7.5, metal)
+      + '<text x="12" y="-9" text-anchor="end" font-family="ui-monospace,monospace" font-size="6" fill="rgba(233,230,220,0.4)">' + pc.n + '</text>'
+      + '</g>';
+  }
+  return '<svg viewBox="-125 -135 250 270" aria-hidden="true">' + ghosts + flows + pieces + '</svg>';
+}
+
+// ---------------------------------------------------------------------------
+// the rite: one thread through the six gates
+let phase = 'approach';           // approach → casting → witnessing → walking → home
+let taps = [];
+let lastTap = 0;
+let state = solvedState();
+let scramble = null, remaining = [], stepIndex = 0;
+let drandInfo = null;
+const drandFetch = (async () => {
+  try {
+    const ctl = new AbortController();
+    setTimeout(() => ctl.abort(), 2500);
+    const r = await fetch('https://api.drand.sh/public/latest', { signal: ctl.signal }).then((x) => x.json());
+    return { round: r.round, randomness: r.randomness };
+  } catch { return null; }
+})();
+
+const stage = $('stage');
+function paint(showFlows = false) {
+  const heat = remaining.length ? heatOf(state, remaining) : {};
+  stage.innerHTML = renderCube(state, heat, showFlows);
+}
+paint();
+
+function renderWitness(seedStr) {
+  const heat = heatOf(state, remaining);
+  const depth = remaining.length;
+  $('depth').textContent = 'Of 81 turnings, the drift’s true depth is ' + depth + '.';
+  const rows = state
+    .filter((pc) => (heat[pc.n] || 0) > 0)
+    .sort((a, b) => (heat[b.n] || 0) - (heat[a.n] || 0))
+    .slice(0, 6);
+  const maxHeat = Math.max(1, ...rows.map((pc) => heat[pc.n] || 0));
+  $('heat').innerHTML = rows.map((pc) => {
+    const metal = metalOf(pc.n);
+    const h = heat[pc.n] || 0;
+    const ask = isSilent(pc.n) ? '<span class="ask">· it asks for ' + SILENCES[pc.n].asks + '</span>' : '';
+    return '<div class="heatrow"><span class="nm">' + cardOf(pc.n).name + '</span>'
+      + '<span class="cls">' + classOf(pc.n) + '</span>'
+      + '<span class="bar"><i style="width:' + Math.round(100 * h / maxHeat) + '%; background:' + metal + '"></i></span>'
+      + ask + '</div>';
+  }).join('');
+  // the cast, spoken: the module derives every sentence from the committed
+  // state, and the refusal line it carries replaces the old bare count
+  const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  $('weave').innerHTML = witnessLines(state, scramble, remaining).map((l) => {
+    const cls = /keeps its silence/.test(l) ? 'silence'
+      : /^The restless eight|^The twelve/.test(l) ? 'ring' : '';
+    return '<div' + (cls ? ' class="' + cls + '"' : '') + '>' + esc(l) + '</div>';
+  }).join('');
+  $('hint').textContent = 'Tap to walk home: ' + depth + ' steps. Nothing in this manifold moves alone.';
+  $('decl').textContent = castDeclaration(seedStr, drandInfo && drandInfo.round);
+  $('witness').classList.remove('hidden');
+}
+
+async function beginCast() {
+  phase = 'casting';
+  $('g0').classList.add('hidden');
+  drandInfo = await drandFetch;
+  const seedStr = 'cube|taps:' + taps.join(':')
+    + (drandInfo ? '|drand:' + drandInfo.round + ':' + drandInfo.randomness : '|drand:unreachable');
+  scramble = scrambleWord(seedStr);
+  for (let i = 0; i < scramble.length; i++) {
+    state = applyMove(state, scramble[i]);
+    if (i % 2 === 1 || i === scramble.length - 1) {
+      stage.innerHTML = renderCube(state);
+      $('counter').textContent = 'turning ' + (i + 1) + ' of 81';
+      await delay(34);
+    }
+  }
+  remaining = returnWord(scramble);
+  stepIndex = 0;
+  $('counter').textContent = 'the cast is committed · no redraw exists';
+  $('g1').classList.add('hidden');
+  paint(true);
+  renderWitness(seedStr);
+  phase = 'walking';
+}
+
+function stepHome() {
+  if (!remaining.length) return;
+  const m = remaining[0];
+  const movers = state
+    .filter((pc) => pc.pos[m.axis] === m.side && (classOf(pc.n) === 'edge' || classOf(pc.n) === 'corner'))
+    .map((pc) => cardOf(pc.n).name);
+  state = applyMove(state, m);
+  remaining = remaining.slice(1);
+  stepIndex++;
+  paint(true);
+  $('step').textContent = labelMove(m) + ': ' + (remaining.length ? remaining.length + ' steps remain' : 'home');
+  $('movers').textContent = 'eight move together: ' + movers.join(' · ');
+  $('depth').textContent = 'Of 81 turnings, the drift’s true depth was ' + (remaining.length + stepIndex) + '. ' + remaining.length + ' remain.';
+  if (!remaining.length && isSolved(state)) {
+    phase = 'home';
+    $('hint').textContent = '';
+    $('step').textContent = 'Every card home.';
+    $('movers').textContent = '';
+    $('counter').textContent = '';
+    $('g5').classList.remove('hidden');
+    paint();
+  }
+}
+
+document.addEventListener('pointerdown', (e) => {
+  if (e.target.closest('button, a')) return;
+  const now = performance.now();
+  if (now - lastTap < 320) return;
+  lastTap = now;
+  if (phase === 'approach') {
+    taps.push(Math.round(now) + ':' + Date.now());
+    $('counter').textContent = '●'.repeat(taps.length) + '○'.repeat(3 - taps.length);
+    if (taps.length === 3) beginCast();
+  } else if (phase === 'walking') {
+    stepHome();
+  }
+});
+$('again').addEventListener('click', () => location.reload());
+</script>
+</body>
+</html>

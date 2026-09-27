@@ -1,0 +1,887 @@
+<!doctype html>
+<!-- AUMA LUMINARA · THE INSTRUMENT: the one console. Forked from the
+     sounding seat as V2 (2026-07-26), tuned forward while V1 stood settled,
+     and made the only instrument when V1 retired to the workshop's shelf
+     (2026-08-02): the fork served its purpose and closed.
+     THE SOUNDING SEAT before the renaming: the sounding seat, opened at the architect's
+     word (2026-07-26). A playable instrument: the deck as keyboard, the plate
+     as stage, the figure and the tone as one lesson. A workshop surface,
+     unlinked from the nav until the architect graduates it, exactly as the
+     Sea stands beside the Atlas.
+
+     THE LAW OF THE SEAT (docs/LUMINARA_CYMATICS_INSTRUMENT.md, seat 7): the
+     intervals are literal frequency ratios; sound joins HERE first, never on
+     a card. One spectrum drives both faces: voiceOf hears the exact object
+     the sand plate draws, so what rings and what settles can never drift.
+
+     THE REST: the Seed is unstruck (no sand on silence, the ruling of
+     2026-07-16). Playing the Seed is how a phrase ENDS: the bow lifts, the
+     plate quiets, the last figure freezes where it landed. The cadence home,
+     played physically.
+
+     EMPTINESS rides: silent by default, every voice invited by a touch,
+     nothing autoplays, nothing is scored, nothing is stored, nothing sent. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the instrument</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34);
+    --line:rgba(255,255,255,0.08); --wg:#EFE7CF; }
+  html { scrollbar-gutter:stable; }   /* the bar's arrival never shifts the page */
+  html,body { margin:0; background:#07070a; color:var(--text); font:14px/1.6 system-ui,sans-serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:26px 16px 70px; }
+  header { text-align:center; margin-bottom:6px; }
+  h1 { font-size:16px; letter-spacing:0.26em; margin:0 0 4px;
+    background:linear-gradient(100deg,#F6CE73,#EDE7DA 55%,#C9D3E2);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:9.5px; letter-spacing:0.22em; color:var(--faint); }
+
+  /* THE CONSOLE: the readout breathes on the left, the visual holds the
+     centre, the lenses wait on the right. Two hairlines frame the stage so
+     the sides read as parts of one instrument, not margins. On a narrow
+     screen the console folds: stage first, readout, then the lenses. */
+  .console { display:grid; grid-template-columns:1fr min(620px, 52vw) 1fr;
+    grid-template-areas:"readout stage controls"; gap:22px; align-items:center; margin-top:14px; }
+  /* ONE SIZE FOR BOTH INSTRUMENTS. The knot was given its own wider console
+     for a while, and it is given back: V1 and V2 now show the strand at the
+     same six hundred and twenty, so the two versions can be compared for
+     what they DO rather than for how large they are drawn. The side tracks
+     come back to a share each, which the rails want anyway now that both of
+     them carry controls. The fit inside the frame was never touched by any
+     of this: the water law still sets it. */
+  @media (min-width:881px) {
+    /* the rails run the full height of the figure they frame, whatever
+       either happens to hold: the hairlines are the frame, not the fill */
+    .readout, .controls { align-self:stretch; }
+    .readout .lensrow button { text-align:right; }
+  }
+  .stage { position:relative; grid-area:stage; width:100%; }
+  /* THE READOUT IS ANCHORED, NOT CENTRED. Its lines come and go as cards
+     ring, so under a centred grid it slid up and down the page by half of
+     whatever it had just gained: sixty-five pixels of bounce every time a
+     hand played. It grows downward from a fixed top now, and only the
+     stage stays centred, which is the thing the eye is actually on. */
+  .readout { grid-area:readout; align-self:start; text-align:right;
+    border-right:1px solid var(--line); padding-right:18px; min-width:0; }
+  .controls { grid-area:controls; align-self:start;
+    border-left:1px solid var(--line); padding-left:18px; }
+  .rlabel, .glabel { font-size:8.5px; letter-spacing:0.3em; color:var(--faint); margin:14px 0 5px; }
+  .rlabel:first-child, .controls .glabel:first-child { margin-top:0; }
+  /* TWO PANELS, ONE FIGURE. The instrument used to hang entirely off the
+     right rail: a ladder of twenty-three buttons a thousand pixels long
+     beside a report of a hundred and forty, so the buttons rather than the
+     strand set the height of the console and the page leaned. The groups
+     are dealt across the seam the page already believed in: what is
+     SOUNDING on the left, under the lines that say what rings, and how it
+     is PLAYED on the right, under the hand. Neither rail now reaches the
+     figure, so the figure governs again and the two rails frame it. */
+  /* while the strand is the seeing, its own pane says what rings and the
+     rail says it no longer: one thing, written once. The other seeings have
+     nowhere to write, so for them the rail keeps the lines. */
+  body[data-stage="knot"] .rings, body[data-stage="field"] .rings { display:none; }
+  body[data-stage="knot"] .readout > .rlabel:nth-of-type(1),
+  body[data-stage="field"] .readout > .rlabel:nth-of-type(1) { margin-top:0; }
+  /* the markings belong to the strand, so they are offered only while the
+     strand is the seeing: on the other stages they would be switches with
+     nothing to switch */
+  .marksgroup { display:none; }
+  body[data-stage="knot"] .marksgroup, body[data-stage="field"] .marksgroup { display:block; }
+  /* THE MENUS: each family of settings folds to one line, so the rails
+     keep one height however many choices live inside them. A new lens or a
+     new marking costs the page a row in a box rather than a rung on a
+     ladder, which is what kept deforming it. The two live performance
+     switches (the mirror, the room) stay out in the open: a menu is for
+     what is set and left, not for what is played. Open or closed is not
+     remembered: the page opens the same every time, folded. */
+  .menu { border:1px solid var(--line); border-radius:8px; margin-top:8px;
+    background:rgba(255,255,255,0.02); text-align:left; }
+  .menu summary { list-style:none; cursor:pointer; display:flex;
+    justify-content:space-between; align-items:baseline; gap:8px; padding:6px 10px; }
+  .menu summary::-webkit-details-marker { display:none; }
+  .menu .mlab { font-size:8.5px; letter-spacing:0.26em; color:var(--faint); white-space:nowrap; }
+  .menu .mval { font-size:8.5px; letter-spacing:0.08em; color:var(--wg);
+    text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .menu[open] summary { border-bottom:1px solid var(--line); }
+  .menu[open] .mlab { color:var(--dim); }
+  .menu .lensrow, .menu .concordrow { padding:8px; }
+  .menu .lensrow + .lensrow { padding-top:0; }
+  .menu .padsay { padding:0 10px 8px; margin-top:0; min-height:0; }
+  .readout .menu summary { flex-direction:row-reverse; }
+  .readout .menu .mval { text-align:left; }
+  @media (max-width:880px) { .menu { text-align:center; }
+    .menu summary { justify-content:center; } .readout .menu summary { flex-direction:row; } }
+  .sidebreak { height:1px; background:var(--line); margin-top:18px; }
+  .sidebreak + .glabel { margin-top:12px; }
+  @media (max-width:880px) {
+    .console { grid-template-columns:1fr; grid-template-areas:"stage" "readout" "controls"; gap:10px; }
+    .readout, .controls { border:none; padding:0; text-align:center; }
+    .readout .lensrow, .controls .lensrow { justify-content:center; }
+    .readout .lensrow button, .controls .lensrow button { width:auto; }
+    .rlabel, .glabel { display:none; }
+  }
+  /* FIVE STAGES, ONE INSTRUMENT: the plate settles, the glow flows, the
+     harmonograph draws, the knot stands, the ring answers. The keyboard
+     never changes; only the seeing does. */
+  #plate, #lissa, #glow { display:none; width:100%; aspect-ratio:1; border-radius:50%; }
+  #knotStage { display:none; width:100%; aspect-ratio:1; }
+  body[data-stage="plate"] #plate { display:block; }
+  body[data-stage="harmo"] #lissa { display:block; }
+  body[data-stage="glow"] #glow { display:block; }
+  /* the knot takes the whole stage; its names float over the dark rather
+     than stealing height from the strand */
+  body[data-stage="knot"] #knotStage { display:block; position:relative; }
+  /* THE FIELD: the strand standing IN the sand rather than beside it. Both
+     stages already hear the same spectrum from the engine, so the pair can
+     never disagree: this is one truth seen twice at once, the figure in its
+     medium. The plate keeps the stage's flow; the knot lies over it, its
+     dark background dropped so the sand reads through. */
+  body[data-stage="field"] #plate { display:block; }
+  body[data-stage="field"] #knotStage { display:block; position:absolute; inset:0;
+    mix-blend-mode:screen; }
+  body[data-stage="field"] #knotStage canvas { mix-blend-mode:screen; }
+  #knotStage canvas { width:100%; aspect-ratio:1; display:block; }
+  /* THE DESCRIBING TEXT HOVERS IN THE CORNER OF THE PANE. It used to sit
+     centred beneath the figure and repeat itself out in the rail among the
+     buttons, so a reader looked in two places to learn one thing. It hangs
+     in the lower left now, over the open water where no strand goes, left
+     aligned and out of the way of the turning: reading the knot and reading
+     about it are one look. The rail keeps it for the other seeings, which
+     have no room of their own to write in. */
+  #knotStage .kname, #knotStage .kint, #knotStage .kair {
+    position:absolute; left:14px; text-align:left; pointer-events:none;
+    max-width:min(52%, 300px); }
+  #knotStage .kname { bottom:38px; font-size:13px; letter-spacing:0.12em; color:var(--wg); }
+  #knotStage .kint { bottom:22px; font:10px ui-monospace,monospace; color:var(--dim); }
+  #knotStage .kair { bottom:8px; font:9px ui-monospace,monospace; color:var(--faint);
+    letter-spacing:0.06em; }
+  /* the axis names itself when it is turned, and then gets out of the way */
+  #knotStage .kcam { position:absolute; left:0; right:0; top:8px; text-align:center;
+    font:9px ui-monospace,monospace; letter-spacing:0.18em; color:var(--faint);
+    pointer-events:none; }
+  .concordrow { display:flex; }
+  .concordrow button { flex:1; background:rgba(255,255,255,0.03); border:1px solid var(--line); color:var(--dim);
+    font-size:9.5px; letter-spacing:0.16em; padding:5px 10px; border-radius:8px; cursor:pointer; text-align:left; }
+  .concordrow button.on { color:var(--wg); border-color:rgba(239,231,207,0.4); }
+  @media (max-width:880px) { .concordrow { justify-content:center; } .concordrow button { flex:none; text-align:center; } }
+  .padsay { margin-top:6px; font:9px ui-monospace,monospace; letter-spacing:0.08em;
+    color:var(--faint); line-height:1.6; min-height:5.2em; }
+  .padsay b { color:var(--wg); font-weight:400; }
+  @media (max-width:880px) { .padsay { text-align:center; } }
+  /* THE HAND: five dials in a column, each naming itself and saying its own
+     value, so a bench can be read at a glance rather than by memory of which
+     slider is which */
+  .dial { display:flex; align-items:center; gap:8px; margin:2px 0 4px; }
+  .dial .dname { flex:0 0 62px; font-size:8px; letter-spacing:0.14em; color:var(--faint);
+    white-space:nowrap; }
+  .dial.moved .dname { color:var(--dim); }
+  .dial input[type=range] { flex:1; min-width:0; -webkit-appearance:none; appearance:none;
+    height:2px; background:var(--line); border-radius:2px; outline:none; cursor:pointer; }
+  .dial input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none;
+    width:9px; height:9px; border-radius:50%; background:var(--wg); cursor:pointer; }
+  .dial input[type=range]::-moz-range-thumb { width:9px; height:9px; border:none;
+    border-radius:50%; background:var(--wg); cursor:pointer; }
+  .dial .dval { flex:0 0 40px; text-align:right; font:8.5px ui-monospace,monospace; color:var(--dim); }
+  .dial.moved .dval { color:var(--wg); }
+  /* the bench says what it is doing to the sounding, in words, under the
+     dials: a slider that reports only a number teaches nothing */
+  .handsay { margin-top:7px; font:9px ui-monospace,monospace; letter-spacing:0.06em;
+    color:var(--faint); line-height:1.65; min-height:3.3em; }
+  .handsay b { color:var(--dim); font-weight:400; }
+  @media (max-width:880px) { .handsay { text-align:center; } .dial .dname { flex-basis:56px; } }
+  .companyline { min-height:20px; margin-top:6px; font-size:11.5px; }
+  .companyline .op { color:var(--faint); font-family:ui-monospace,monospace; font-size:10px; letter-spacing:0.1em; }
+  .companyline button { background:none; border:none; font:inherit; cursor:pointer; padding:0 2px;
+    border-bottom:1px dotted rgba(233,230,220,0.25); }
+  /* the cycle ring: the bar drawn around the stage, ticks as dots, the hand
+     synced to the audio clock itself, never to an animation timer */
+  #cycleRing { position:absolute; inset:-14px; width:calc(100% + 28px); height:calc(100% + 28px);
+    pointer-events:none; display:none; }
+  body.cycle #cycleRing { display:block; }
+  .ringingline { min-height:22px; font-size:12.5px; color:var(--wg); line-height:1.5; }
+  .ringingline .im { font:10px ui-monospace,monospace; color:var(--faint); margin-left:7px; }
+  .airline { min-height:16px; margin-top:6px; font:10px ui-monospace,monospace; color:var(--faint); line-height:1.6; }
+  .meetline { min-height:20px; margin-top:6px; font-size:12px; }
+  .meetline button { background:none; border:none; color:var(--wg); font:inherit; cursor:pointer;
+    border-bottom:1px dotted rgba(239,231,207,0.4); padding:0 2px; }
+  .meetline .op { color:var(--faint); font-family:ui-monospace,monospace; }
+
+  /* the lenses stand in a column beside the stage, each group under its
+     own small name; on a narrow screen they fall back to centred rows */
+  .lensrow { display:flex; flex-direction:column; align-items:stretch; gap:5px; margin:0; }
+  .lensrow button { background:rgba(255,255,255,0.03); color:var(--dim); border:1px solid var(--line);
+    border-radius:8px; font-size:9.5px; letter-spacing:0.16em; padding:5px 10px; cursor:pointer;
+    text-align:left; }
+  .lensrow button.on { color:var(--wg); border-color:rgba(239,231,207,0.4); }
+  @media (max-width:880px) {
+    .lensrow { flex-direction:row; flex-wrap:wrap; }
+    .lensrow button { text-align:center; }
+  }
+
+  .board { margin-top:12px; }
+  .houserow { display:grid; grid-template-columns:repeat(9,1fr); gap:5px; margin-bottom:6px; }
+  .hhead { font-size:9px; letter-spacing:0.3em; color:var(--faint); margin:8px 0 4px; text-align:center; }
+  .key { position:relative; border:1px solid var(--line); border-radius:9px; background:rgba(255,255,255,0.02);
+    padding:7px 2px 6px; text-align:center; cursor:pointer; user-select:none; -webkit-user-select:none;
+    touch-action:manipulation; transition:background 0.12s, border-color 0.12s; }
+  .key:active, .key.lit { background:rgba(255,255,255,0.07); border-color:var(--kc, var(--wg)); }
+  .key .q { font:9.5px ui-monospace,monospace; color:var(--kc, var(--dim)); }
+  .key .nm { font-size:9.8px; line-height:1.15; color:var(--text); margin:2px 0; }
+  .key .mk { font-size:8px; letter-spacing:0.2em; color:var(--kc, var(--faint)); opacity:0.75; }
+  .key .kb { position:absolute; top:2px; right:4px; font:8px ui-monospace,monospace; color:var(--faint); opacity:0.55; }
+  .key.rest .nm { color:var(--wg); }
+
+  .register { text-align:center; font-size:8.5px; letter-spacing:0.18em; color:var(--faint); margin-top:22px; }
+  @media (max-width:640px) { .key .kb { display:none; } .key .nm { font-size:8.6px; } }
+</style>
+  <link rel="stylesheet" href="/app/luminara-nav.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE INSTRUMENT</h1>
+    <div class="sub">THE FIGURE AND THE TONE, ONE SPECTRUM</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html" class="on">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+
+  <div class="console">
+    <aside class="readout">
+<details class="menu" id="stageMenu">
+        <summary><span class="mlab">THE STAGE</span><span class="mval"></span></summary>
+        <div class="lensrow" id="stageLens">
+          <button data-stage="plate" type="button">THE PLATE</button>
+          <button data-stage="glow" type="button">THE GLOW</button>
+          <button data-stage="harmo" type="button">THE HARMONOGRAPH</button>
+          <button data-stage="knot" class="on" type="button">THE KNOT</button>
+          <button data-stage="field" type="button">THE KNOT IN THE FIELD</button>
+        </div>
+      </details>
+<details class="menu marksgroup" id="markMenu">
+        <summary><span class="mlab">THE MARKINGS</span><span class="mval"></span></summary>
+        <div class="lensrow" id="markLens">
+          <button data-mark="surface" type="button">THE SURFACE</button>
+          <button data-mark="travel" type="button">THE TRAVEL</button>
+          <button data-mark="crossings" type="button">THE CROSSINGS</button>
+          <button data-mark="stations" type="button">THE STATIONS</button>
+          <button data-mark="counter" type="button">THE COUNTER</button>
+          <button data-mark="beat" type="button">THE BEAT</button>
+        </div>
+      </details>
+<details class="menu" id="voiceMenu">
+        <summary><span class="mlab">THE VOICE</span><span class="mval"></span></summary>
+        <div class="lensrow" id="voiceLens">
+          <button data-voice="plate" class="on" type="button">THE PLATE</button>
+          <button data-voice="interval" type="button">THE INTERVAL</button>
+          <button data-voice="ladder" type="button">THE LADDER</button>
+          <button data-voice="twentyseven" type="button">THE TWENTY-SEVEN</button>
+        </div>
+        <div class="lensrow" id="houseLens" style="margin-top:5px">
+          <button data-houses="1" class="on" type="button">THE HOUSES SPEAK</button>
+          <button data-houses="0" type="button">EVERY CARD PURE</button>
+        </div>
+      </details>
+
+      <div class="sidebreak"></div>
+      <div class="rings">
+        <div class="rlabel">WHAT RINGS</div>
+        <div class="ringingline" id="ringing">&nbsp;</div>
+        <div class="airline" id="air">&nbsp;</div>
+      </div>
+      <div class="rlabel">THE ROADS</div>
+      <div class="meetline" id="meet">&nbsp;</div>
+      <div class="companyline" id="company">&nbsp;</div>
+    </aside>
+    <div class="stage">
+      <canvas id="plate"></canvas>
+      <canvas id="lissa"></canvas>
+      <canvas id="glow"></canvas>
+      <div id="knotStage"></div>
+      <canvas id="cycleRing"></canvas>
+    </div>
+    <aside class="controls">
+<details class="menu" id="modeMenu">
+        <summary><span class="mlab">THE MODE</span><span class="mval"></span></summary>
+        <div class="lensrow" id="modeLens">
+          <button data-mode="strike" class="on" type="button">THE STRIKE</button>
+          <button data-mode="cycle" type="button">THE CYCLE</button>
+        </div>
+      </details>
+<details class="menu" id="pathMenu">
+        <summary><span class="mlab">THE PATH</span><span class="mval"></span></summary>
+        <div class="lensrow" id="pathLens">
+          <button data-path="A" class="on" type="button">A · THE INTERVAL</button>
+          <button data-path="B" type="button">B · THE COMPOSITION</button>
+        </div>
+      </details>
+<details class="menu" id="fieldMenu">
+        <summary><span class="mlab">THE FIELD</span><span class="mval"></span></summary>
+        <div class="lensrow" id="fieldLens">
+          <button data-field="scaffold" class="on" type="button">THE SCAFFOLD</button>
+          <button data-field="bessel" type="button">THE FREE EDGE</button>
+        </div>
+      </details>
+      <div class="glabel">THE MIRROR</div>
+      <div class="concordrow"><button id="concord" type="button">IN CONCORD · OFF</button></div>
+
+      <div class="glabel">THE ROOM</div>
+      <div class="concordrow"><button id="mute" type="button">SOUND · ON</button></div>
+
+<details class="menu" id="handMenu">
+        <summary><span class="mlab">THE HAND</span><span class="mval">AT THE LAW</span></summary>
+        <div class="dial" data-dial="hall">
+          <span class="dname">THE HALL</span>
+          <input type="range" autocomplete="off" id="hall" min="0" max="1" step="0.02" value="0"
+                 aria-label="the hall: how far into the room the sounding is heard">
+          <span class="dval" id="hallVal">DRY</span>
+        </div>
+        <div class="dial" data-dial="stone">
+          <span class="dname">THE STONE</span>
+          <input type="range" autocomplete="off" id="stone" min="0.4" max="6" step="0.1" value="2.6"
+                 aria-label="the stone: how large the room is, in seconds">
+          <span class="dval" id="stoneVal">2.6s</span>
+        </div>
+        <div class="dial" data-dial="shutter">
+          <span class="dname">THE SHUTTER</span>
+          <input type="range" autocomplete="off" id="shutter" min="0" max="1" step="0.02" value="1"
+                 aria-label="the shutter: how far clarity closes the voice">
+          <span class="dval" id="shutterVal">FULL</span>
+        </div>
+        <div class="dial" data-dial="closing">
+          <span class="dname">THE CLOSING</span>
+          <input type="range" autocomplete="off" id="closing" min="0" max="1" step="0.02" value="1"
+                 aria-label="the closing: how far the shutter shuts as the voice dies">
+          <span class="dval" id="closingVal">FULL</span>
+        </div>
+        <div class="dial" data-dial="edge">
+          <span class="dname">THE EDGE</span>
+          <input type="range" autocomplete="off" id="edge" min="0" max="1" step="0.02" value="0"
+                 aria-label="the edge: the shutter's own ring">
+          <span class="dval" id="edgeVal">NONE</span>
+        </div>
+        <div class="lensrow" style="margin-top:7px">
+          <button id="handLaw" type="button">BACK TO THE LAW</button>
+          <button id="handOff" type="button">AS IT WAS</button>
+        </div>
+        <div class="handsay" id="handsay">&nbsp;</div>
+      </details>
+
+<details class="menu" id="padMenu">
+        <summary><span class="mlab">THE PADS</span><span class="mval"></span></summary>
+        <div class="lensrow" id="padrow">
+          <button id="padConnect" type="button">CONNECT THE PADS</button>
+          <button id="padAnchor" type="button">SET THE FIRST PAD</button>
+          <button id="padBank" type="button">BANK · HOUSE 1</button>
+          <button id="padTest" type="button">TEST WITHOUT PADS</button>
+        </div>
+        <div class="padsay" id="padsay">not listening</div>
+      </details>
+    </aside>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="register">SILENT BY DEFAULT · EVERY VOICE INVITED BY A TOUCH · NOTHING SCORED, STORED, OR SENT</div>
+</div>
+<script type="module">
+// THE ASSEMBLY. Disassembled and reassembled at the architect's word
+// (2026-07-26): the engine (luminara-instrument.js) decides what sounds,
+// the stages (luminara-stages.js) decide how it is seen, and this page
+// only plugs them together: the rack, the keyboard, the lines, the
+// lenses. Adding a stage is one factory call; the engine never changes.
+import { SUITS, cardOf, codeMarks, knotOf, isSilent, counterOf, becomingOf } from '/app/luminara-canon.js';
+import { metalOf } from '/app/luminara-knots.js';
+import { meetOf } from '/app/luminara-cymatics.js';
+import { createSounder, gapsAmong, HALL_SECONDS, STONE_MIN, STONE_MAX } from '/app/luminara-sound.js';
+import { createMidiLane } from '/app/luminara-midi.js';
+import { createInstrument } from '/app/luminara-instrument.js';
+import { createPlateStage, createGlowStage, createHarmonographStage, createKnotStage,
+  createCycleDial, tracePoint } from '/app/luminara-stages.js';
+
+const $ = (id) => document.getElementById(id);
+let stage = 'knot';
+
+// ---- THE ENGINE AND THE RACK ----
+const sounder = createSounder();
+const engine = createInstrument({ sounder });
+const coherence = () => engine.liveCoherence();
+const plateStage = engine.addStage(createPlateStage($('plate'), { coherence }));
+engine.addStage(createGlowStage($('glow'), { coherence }));
+engine.addStage(createHarmonographStage($('lissa')));
+// the knot breathes with the measured air: the tap reads before the room's
+// door, so the figure keeps telling the truth about what rings with the
+// sound off
+const knotStage = engine.addStage(createKnotStage($('knotStage'), { level: () => sounder.level() }));
+createCycleDial($('cycleRing'), { bar: engine.cycle.bar, loops: () => engine.loops,
+  active: engine.cycle.active, now: () => sounder.now(), barZero: engine.cycle.barZero,
+  visible: () => engine.getMode() === 'cycle' });
+
+// ---- THE LINES: what rings, the air among it, the meet, the company ----
+// the air is said in two places while the strand is showing: out in the
+// rail for the other seeings, and in the corner of the pane for this one.
+// One writer for both, so they can never fall out of step.
+function setAir(text) {
+  $('air').textContent = text || ' ';
+  const pane = document.querySelector('#knotStage .kair');
+  if (pane) pane.textContent = text || '';
+}
+function renderLines() {
+  const ringing = engine.ringing;
+  if (!ringing.length) {
+    $('ringing').innerHTML = '&nbsp;'; setAir(''); $('meet').innerHTML = '&nbsp;';
+    return;
+  }
+  $('ringing').innerHTML = ringing.map((e) => {
+    const k = knotOf(e.n);
+    return '<span style="color:' + metalOf(e.n) + '">' + cardOf(e.n).name + '</span>'
+      + '<span class="im">' + k.interval + '</span>';
+  }).join(' <span class="im">·</span> ');
+  const gaps = gapsAmong(ringing.map((e) => e.voice));
+  setAir(gaps.length
+    ? 'the air beats · ' + gaps.map((g) => g + ' Hz').join(' · ')
+    : 'the air rests · no beat under thirty hertz');
+  if (ringing.length === 2) {
+    const m = meetOf(ringing[0].n, ringing[1].n);
+    $('meet').innerHTML = '<span class="op">' + cardOf(ringing[0].n).name + ' &oplus; '
+      + cardOf(ringing[1].n).name + ' &rarr;</span> '
+      + '<button type="button" data-meet="' + m + '">' + cardOf(m).name + '</button>'
+      + (isSilent(m) && m === 1 ? ' <span class="op">· the rest</span>' : '');
+  } else $('meet').innerHTML = '&nbsp;';
+}
+function renderCycleLines() {
+  if (engine.getMode() !== 'cycle') return;
+  const loops = engine.loops;
+  if (!loops.size) { $('ringing').innerHTML = '&nbsp;'; setAir(''); $('meet').innerHTML = '&nbsp;'; return; }
+  $('ringing').innerHTML = [...loops.entries()].map(([n, L]) =>
+    '<span style="color:' + metalOf(n) + '">' + cardOf(n).name + '</span>'
+    + '<span class="im">' + L.p + ' against ' + L.aq + '</span>').join(' <span class="im">·</span> ');
+  setAir('one bar of ' + engine.cycle.bar + ' s · the strand closes where the lines meet');
+  $('meet').innerHTML = '&nbsp;';
+}
+function renderCompany(n) {
+  if (!n) { $('company').innerHTML = '&nbsp;'; return; }
+  const c = counterOf(n), b = becomingOf(n);
+  let s = '<span class="op">answers</span> <button type="button" data-go="' + c + '" style="color:'
+    + metalOf(c) + '">' + cardOf(c).name + '</button>';
+  s += b === null
+    ? ' <span class="op">· settled</span>'
+    : ' <span class="op">· becomes</span> <button type="button" data-go="' + b + '" style="color:'
+      + metalOf(b) + '">' + cardOf(b).name + '</button>';
+  $('company').innerHTML = s;
+}
+$('meet').addEventListener('pointerdown', (e) => {
+  const b = e.target.closest('button[data-meet]');
+  if (b) engine.strike(Number(b.dataset.meet));
+});
+$('company').addEventListener('pointerdown', (e) => {
+  const btn = e.target.closest('button[data-go]');
+  if (btn) engine.strike(Number(btn.dataset.go));
+});
+
+// ---- THE NOTICES: the engine speaks, the page draws ----
+engine.onNotify((kind, n) => {
+  if (kind === 'touch') litKey(n);
+  else if (kind === 'struck') renderCompany(n);
+  else if (kind === 'lines') renderLines();
+  else if (kind === 'cycle') renderCycleLines();
+  else if (kind === 'rest') {
+    $('ringing').innerHTML = '<span style="color:#EFE7CF">' + cardOf(n).name
+      + '</span><span class="im">the rest · the figure stands</span>';
+    setAir('silence is an answer');
+    $('meet').innerHTML = '&nbsp;';
+    renderCompany(null);
+    }
+});
+
+// ---- THE KEYBOARD: three house-rows of nine, 1-9 / Q-O / A-L ----
+const KEYROWS = [
+  ['1','2','3','4','5','6','7','8','9'],
+  ['Q','W','E','R','T','Y','U','I','O'],
+  ['A','S','D','F','G','H','J','K','L'],
+];
+const KEYMAP = {};
+let html = '';
+SUITS.forEach((suit, s) => {
+  html += '<div class="hhead">' + suit.key + ' · ' + suit.gloss + '</div><div class="houserow">';
+  for (let i = 0; i < 9; i++) {
+    const n = 9 * s + i + 1;
+    const k = knotOf(n), metal = metalOf(n);
+    const kb = KEYROWS[s][i];
+    KEYMAP[kb] = n;
+    html += '<div class="key' + (n === 1 ? ' rest' : '') + '" data-n="' + n + '" style="--kc:' + metal + '">'
+      + '<span class="kb">' + kb + '</span>'
+      + '<div class="q">' + (k.q > 0 ? '+' + k.q : k.q) + '</div>'
+      + '<div class="nm">' + cardOf(n).name.replace(/^The /, '') + '</div>'
+      + '<div class="mk">' + codeMarks(n) + '</div>'
+      + '</div>';
+  }
+  html += '</div>';
+});
+$('board').innerHTML = html;
+// THE HOLD: press and the tone stays under the finger; lift and it rings
+// out at its own decay. Every pointer is its own finger, so touch chords
+// work; every keyboard key held is a voice held, so both hands play.
+const pointerHeld = new Map();   // pointerId → n
+$('board').addEventListener('pointerdown', (e) => {
+  const key = e.target.closest('.key');
+  if (!key) return;
+  const n = Number(key.dataset.n);
+  pointerHeld.set(e.pointerId, n);
+  holdLit(n, true);
+  engine.press(n);
+});
+const liftPointer = (e) => {
+  const n = pointerHeld.get(e.pointerId);
+  if (n === undefined) return;
+  pointerHeld.delete(e.pointerId);
+  holdLit(n, false);
+  engine.release(n);
+};
+window.addEventListener('pointerup', liftPointer);
+window.addEventListener('pointercancel', liftPointer);
+function litKey(n) {
+  const el = document.querySelector('.key[data-n="' + n + '"]');
+  if (!el) return;
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), 260);
+}
+function holdLit(n, on) {
+  const el = document.querySelector('.key[data-n="' + n + '"]');
+  if (el) el.classList.toggle('lit', on);
+}
+window.addEventListener('keydown', (e) => {
+  if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+  const n = KEYMAP[e.key.toUpperCase()];
+  if (n) { holdLit(n, true); engine.press(n); e.preventDefault(); }
+});
+window.addEventListener('keyup', (e) => {
+  const n = KEYMAP[e.key.toUpperCase()];
+  if (n) { holdLit(n, false); engine.release(n); }
+});
+function liftEveryFinger() {
+  for (const [, n] of pointerHeld) { holdLit(n, false); engine.release(n); }
+  pointerHeld.clear();
+  for (const kb in KEYMAP) { holdLit(KEYMAP[kb], false); engine.release(KEYMAP[kb]); }
+}
+window.addEventListener('blur', liftEveryFinger);   // the hand leaves the window: all lift
+// THE PAGE PUT AWAY: a hidden page is a room nobody is in, and a held voice
+// there is a drone with no hand on it. Blur alone does not always fire when
+// a page is merely put out of sight, so hiding lifts every finger too:
+// nothing of ours may sing on where it cannot be seen or stopped.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) liftEveryFinger();
+});
+
+// ---- THE MARKINGS: what the figure will say if it is asked ----
+// Each is a quantity the deck already derives, drawn on the strand only
+// when a hand turns it on. Nothing is remembered: the plain strand is what
+// the page opens on, every time.
+$('markLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-mark]');
+  if (!b) return;
+  const on = !b.classList.contains('on');
+  const set = knotStage.setMark(b.dataset.mark, on);
+  if (set === null) return;   // a name the stage does not know: nothing moves
+  b.classList.toggle('on', set);
+});
+
+// ---- THE MENUS: the summary says what stands, and a pick folds the box ----
+// The row handlers above own the choosing; this only reads the .on state
+// after they have run (hence the yielded update) and folds single-choice
+// menus once the choice lands. The markings and the pads stay open under
+// the hand: one is many switches, the other is a conversation.
+function menuify(menuId, opts = {}) {
+  const box = $(menuId);
+  const val = box.querySelector('.mval');
+  const update = () => {
+    if (opts.count) {
+      const on = box.querySelectorAll('button.on').length;
+      val.textContent = on ? on + ' ON' : 'OFF';
+    } else if (!opts.still) {
+      const b = box.querySelector((opts.from || '') + ' button.on');
+      val.textContent = b ? b.textContent : '';
+    }
+  };
+  box.addEventListener('click', (e) => {
+    if (!e.target.closest('button')) return;
+    setTimeout(() => { update(); if (opts.close) box.open = false; }, 0);
+  });
+  update();
+  return update;
+}
+// ---- THE HAND: the dials that are the player's rather than the card's ----
+// Everything else on this panel READS the canon: the stage, the voice, the
+// path and the field each choose which derivation to show, and none of them
+// can change what a card is. The bench is the one place that can, so it is
+// kept honest three ways. Every dial rests at the law it modifies, so an
+// untouched instrument sounds exactly what the canon derives. Every dial says
+// in words what it is doing, so nothing is altered silently. And BACK TO THE
+// LAW is always one press away, so no session can drift into a tuning nobody
+// meant. AS IT WAS is its opposite and just as useful: every dial to nothing,
+// which is the sounding exactly as it stood before the shaping existed, so
+// the whole of it can be heard by switching between the two.
+const HAND = [
+  { id: 'hall', law: 0, set: (v) => sounder.setReverb(v),
+    say: (v) => (v < 0.02 ? 'DRY' : Math.round(v * 100) + '%') },
+  { id: 'stone', law: HALL_SECONDS, min: STONE_MIN, max: STONE_MAX,
+    set: (v) => sounder.setStone(v), say: (v) => v.toFixed(1) + 's' },
+  { id: 'shutter', law: 1, set: (v) => sounder.setShutter(v),
+    say: (v) => (v < 0.02 ? 'OFF' : v > 0.98 ? 'FULL' : Math.round(v * 100) + '%') },
+  { id: 'closing', law: 1, set: (v) => sounder.setClosing(v),
+    say: (v) => (v < 0.02 ? 'STILL' : v > 0.98 ? 'FULL' : Math.round(v * 100) + '%') },
+  { id: 'edge', law: 0, set: (v) => sounder.setEdge(v),
+    say: (v) => (v < 0.02 ? 'NONE' : Math.round(v * 100) + '%') },
+];
+const handVal = $('handMenu').querySelector('.mval');
+
+// what the bench is doing, in the same plain words the rest of the room uses
+function handSay() {
+  const h = sounder.hand();
+  const lines = [];
+  if (h.shutter < 0.02) {
+    lines.push('the shutter is off: every card rings as bright as its house makes it.');
+  } else {
+    const far = h.shutter > 0.98 ? 'as far as its clarity asks' : Math.round(h.shutter * 100) + ' parts of the way';
+    lines.push('a card is closed <b>' + far + '</b>, so the far dissonances sound dull and the locks ring whole.');
+    if (h.closing > 0.02) {
+      lines.push(h.closing > 0.98
+        ? 'and each keeps closing as it dies, until the last of a dissonance is a bare tone.'
+        : 'and each closes a little further as it dies.');
+    } else {
+      lines.push('and holds where it was struck.');
+    }
+  }
+  if (h.edge > 0.02) lines.push('the shutter rings at its own corner: a tone the card did not name.');
+  if (h.hall > 0.02) lines.push('heard across <b>' + h.stone.toFixed(1) + 's</b> of stone.');
+  $('handsay').innerHTML = lines.join(' ');
+}
+
+function handShow() {
+  let moved = 0;
+  for (const d of HAND) {
+    const v = Number($(d.id).value);
+    $(d.id + 'Val').textContent = d.say(v);
+    const off = Math.abs(v - d.law) > 1e-6;
+    if (off) moved++;
+    $(d.id).closest('.dial').classList.toggle('moved', off);
+  }
+  handVal.textContent = moved ? moved + (moved === 1 ? ' DIAL MOVED' : ' DIALS MOVED') : 'AT THE LAW';
+  handSay();
+}
+
+for (const d of HAND) {
+  $(d.id).addEventListener('input', () => { d.set(Number($(d.id).value)); handShow(); });
+}
+// the two ends of the bench: the canon, and the sounding before there was one
+const handSet = (pick) => {
+  for (const d of HAND) { const v = pick(d); $(d.id).value = v; d.set(v); }
+  handShow();
+};
+$('handLaw').addEventListener('click', () => handSet((d) => d.law));
+$('handOff').addEventListener('click', () => handSet((d) => (d.id === 'stone' ? d.law : 0)));
+
+// THE BENCH OPENS AT THE LAW, EVERY TIME, and is pushed into the sounder
+// rather than merely displayed. Two reasons, and the second is a defect this
+// closes. A browser restores the position of a range input across a reload
+// while the script re-runs and builds a fresh sounder at its defaults, so a
+// bench that only READ its sliders at start would come back showing a shutter
+// wide open while the module still held it at the law: the knob and the
+// sounding would disagree, and the panel would report a hand nobody had. And
+// this page keeps nothing between visits by law, the same reason the pad
+// mapping is never remembered, so the honest answer to a restored dial is not
+// to obey it but to return it to the canon. The stone's range is taken from
+// the module too, so the slider cannot outlive the room it names.
+$('stone').min = STONE_MIN;
+$('stone').max = STONE_MAX;
+// pageshow rather than a plain call, because a browser restores a range
+// input's thumb AFTER the module script has run: measured here, coming back
+// to this page through history left the shutter's thumb at nought while every
+// readout beside it still said FULL, the module still held the law, and the
+// summary still said AT THE LAW. autocomplete="off" declines the restoration
+// at its source and this catches whatever any engine restores anyway, since
+// pageshow fires after it, on a fresh load and on a return from the cache
+// alike. Both are a visit, and this page keeps nothing between visits.
+window.addEventListener('pageshow', () => handSet((d) => d.law));
+handSet((d) => d.law);
+
+menuify('stageMenu', { close: true });
+menuify('modeMenu', { close: true });
+menuify('pathMenu', { close: true });
+menuify('fieldMenu', { close: true });
+menuify('voiceMenu', { from: '#voiceLens', close: true });
+menuify('markMenu', { count: true });
+menuify('padMenu', { still: true });   // padSay writes this one itself
+menuify('handMenu', { still: true });  // handShow writes this one itself
+
+// ---- THE PADS: hardware fingers on the same deck ----
+// A pad is a finger and nothing more: it chooses which card and when, and
+// the card answers exactly as it does under the mouse. Nothing about the
+// mapping is kept between visits, because this page keeps nothing.
+const pads = createMidiLane({
+  onPress: (n, m) => { holdLit(n, true); engine.press(n); padSay(n, m); },
+  onRelease: (n, m) => { holdLit(n, false); engine.release(n); padSay(n, m); },
+  onRest: () => engine.strike(1),   // the sustain pedal brings the phrase home
+  onControl: (m) => { if (m.cc !== 64) padCtl(m); },
+  onPorts: (names) => { padPorts = names; padSay(); },
+  onRaw: () => padSay(),   // every message shows, understood or not
+});
+let padPorts = [];
+let padLast = '';
+// THE DIAGNOSIS, on the page rather than in a console: a controller that
+// does nothing gives one symptom and a dozen causes, and the only way to
+// separate them is to show each link of the chain on its own. Is there a
+// door in this browser; are we allowed through it; is a port there; is
+// anything arriving at all; and is what arrives being understood.
+function padSay(n, m) {
+  if (n !== undefined && m) {
+    // the Seed is the rest, by the law of this seat, so a pad landing on it
+    // ends the phrase rather than sounding: said plainly, since a pad that
+    // silences the bench is bewildering until you know it is the cadence
+    padLast = (m.kind === 'press' ? 'pad ' : 'lift ') + m.note
+      + ' ' + String.fromCharCode(8594) + ' <b>' + cardOf(n).name + '</b>'
+      + (n === 1 ? ' ' + String.fromCharCode(183) + ' the rest: the phrase comes home' : '')
+      + (m.kind === 'press' && n !== 1 ? ' ' + String.fromCharCode(183) + ' vel ' + m.velocity : '');
+  }
+  const dot = ' ' + String.fromCharCode(183) + ' ';
+  const heard = pads.heard();
+  const lines = [];
+  lines.push(padPorts.length
+    ? '<b>' + padPorts.join(', ') + '</b>'
+    : (padAsked ? 'listening, but no port is there' : 'not listening yet'));
+  if (padAsked) {
+    lines.push(heard
+      ? heard + ' message' + (heard === 1 ? '' : 's') + ' heard' + dot + pads.lastRaw()
+      : 'nothing has arrived yet: press a pad');
+  }
+  const anchor = pads.anchor();
+  if (anchor !== null) lines.push('first pad ' + anchor + dot + 'bank ' + pads.bank());
+  if (padLast) lines.push(padLast);
+  $('padsay').innerHTML = lines.join('<br>');
+  const pv = document.querySelector('#padMenu .mval');
+  if (pv) pv.textContent = padPorts.length ? 'LISTENING' : (padAsked ? 'NO PORT' : 'OFF');
+}
+let padAsked = false;
+function padCtl(m) {
+  padLast = 'control ' + m.cc + ' ' + String.fromCharCode(183) + ' ' + m.value;
+  padSay();
+}
+$('padConnect').addEventListener('click', async () => {
+  $('padsay').textContent = 'asking for the door' + String.fromCharCode(8230);
+  const r = await pads.connect();
+  if (!r.ok) {
+    // the refusal says which refusal it was, and what undoes it
+    $('padsay').innerHTML = '<b>' + r.why + '</b>' + (r.fix ? '<br>' + r.fix : '');
+    return;
+  }
+  padAsked = true;
+  $('padConnect').classList.add('on');
+  $('padConnect').textContent = 'PADS LISTENING';
+  padPorts = r.ports;
+  padSay();
+});
+// THE CHAIN, PROVEN WITHOUT HARDWARE: this feeds the lane the exact bytes a
+// pad sends, by the same door a real port pours into. If the figure answers
+// this and not your pads, the page is sound and the fault is in the browser
+// reaching the device; if it answers neither, the fault is here.
+$('padTest').addEventListener('click', () => {
+  padAsked = true;
+  const note = (pads.anchor() === null ? 36 : pads.anchor()) + 4;
+  pads.feed([0x90, note, 100]);
+  setTimeout(() => pads.feed([0x80, note, 0]), 900);
+});
+$('padAnchor').addEventListener('click', () => {
+  pads.armAnchor();
+  $('padsay').textContent = 'strike the pad that should be the first card';
+});
+$('padBank').addEventListener('click', () => {
+  const b = pads.setBank(pads.bank() + 9);   // a whole house at a time
+  $('padBank').textContent = 'BANK ' + String.fromCharCode(183) + ' HOUSE ' + (b / 9 + 1);
+  padSay();
+});
+
+// ---- THE LENSES ----
+$('pathLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-path]');
+  if (!b || b.classList.contains('on')) return;
+  document.querySelectorAll('#pathLens button').forEach((o) => o.classList.toggle('on', o === b));
+  engine.setPath(b.dataset.path);
+});
+$('fieldLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-field]');
+  if (!b || b.classList.contains('on')) return;
+  document.querySelectorAll('#fieldLens button').forEach((o) => o.classList.toggle('on', o === b));
+  plateStage.setField(b.dataset.field);
+});
+$('stageLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-stage]');
+  if (!b || b.classList.contains('on')) return;
+  document.querySelectorAll('#stageLens button').forEach((o) => o.classList.toggle('on', o === b));
+  stage = b.dataset.stage;
+  document.body.dataset.stage = stage;
+});
+$('modeLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-mode]');
+  if (!b || b.classList.contains('on')) return;
+  document.querySelectorAll('#modeLens button').forEach((o) => o.classList.toggle('on', o === b));
+  engine.setMode(b.dataset.mode);
+  document.body.classList.toggle('cycle', engine.getMode() === 'cycle');
+});
+// ---- THE VOICE: four tone laws, each arriving with its own dress ----
+$('voiceLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-voice]');
+  if (!b || b.classList.contains('on')) return;
+  document.querySelectorAll('#voiceLens button').forEach((o) => o.classList.toggle('on', o === b));
+  engine.setVoice(b.dataset.voice);
+});
+$('houseLens').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-houses]');
+  if (!b || b.classList.contains('on')) return;
+  document.querySelectorAll('#houseLens button').forEach((o) => o.classList.toggle('on', o === b));
+  engine.setTuning({ houses: b.dataset.houses === '1' });
+});
+
+$('concord').addEventListener('click', () => {
+  engine.setConcord(!engine.getConcord());
+  $('concord').textContent = 'IN CONCORD · ' + (engine.getConcord() ? 'ON' : 'OFF');
+  $('concord').classList.toggle('on', engine.getConcord());
+});
+
+// THE ROOM: the loudspeakers only. The strikes still ring, the tap still
+// measures them, and the figure still breathes: what is silenced is the
+// room, never the sounding.
+//
+// AND IT OPENS CLOSED. EMPTINESS asks that nothing sound unbidden, and a
+// page that can be met in a shared room, or beside someone sleeping, should
+// not be the one to decide that. So the instrument is a silent instrument
+// until the room is opened by hand: the figure plays in full from the first
+// touch, and the sound is the thing you choose to add. The sounder
+// remembers the closed room before its context exists, so the very first
+// strike obeys it rather than escaping ahead of it.
+sounder.setMute(true);
+$('mute').textContent = 'SOUND ' + String.fromCharCode(183) + ' OFF';
+$('mute').classList.add('on');
+$('mute').addEventListener('click', () => {
+  const m = sounder.setMute(!sounder.isMuted());
+  $('mute').textContent = 'SOUND · ' + (m ? 'OFF' : 'ON');
+  $('mute').classList.toggle('on', m);
+});
+
+document.body.dataset.stage = 'knot';   // the page opens on the strand
+window.__SOUNDING = { keys: document.querySelectorAll('.key').length,
+  strikeCard: engine.strike, ringing: engine.ringing, loops: engine.loops, tracePoint,
+  setMode: (m) => engine.setMode(m), getMode: engine.getMode, plate: plateStage,
+  getStage: () => stage, setConcord: engine.setConcord, engine, sounder, knot: knotStage, pads };
+</script>
+</body>
+</html>

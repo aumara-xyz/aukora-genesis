@@ -1,0 +1,7 @@
+{
+  "treeSize": 4,
+  "root": "471344adb64e0a1e1506b1a72b2341c58de81d21b15a2f9ec6767ba173b201d8",
+  "atGeneration": 1,
+  "proofFromPrevious": [],
+  "source": "aukora-toy vendor/phase0/vectors/same_size_ok.json, translated into this court's wire shape. The empty proof is required, not optional: this court refuses a document with no proofFromPrevious field at all, with proof_field_absent, and that refusal is deliberate."
+}

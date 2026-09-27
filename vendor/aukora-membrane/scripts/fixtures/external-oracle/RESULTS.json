@@ -1,0 +1,2808 @@
+{
+  "summary": {
+    "oracle": "transparency-dev/merkle testdata/consistency",
+    "probeCount": 98,
+    "fourWayAgreement": {
+      "agree": 98,
+      "disagree": 0
+    },
+    "oracleMatch": {
+      "allFourMatch": 97,
+      "anyMismatch": 1
+    },
+    "perImpl": {
+      "membrane": {
+        "match": 97,
+        "miss": 1
+      },
+      "independent": {
+        "match": 97,
+        "miss": 1
+      },
+      "python": {
+        "match": 97,
+        "miss": 1
+      },
+      "rust": {
+        "match": 97,
+        "miss": 1
+      }
+    },
+    "mismatches": [
+      {
+        "path": "additional/sizes-are-equal-one-and-proof-is-empty.json",
+        "size1": 1,
+        "size2": 1,
+        "wantErr": false,
+        "desc": "sizes are equal (one) and proof is empty",
+        "expectOk": true,
+        "oks": {
+          "membrane": false,
+          "independent": false,
+          "python": false,
+          "rust": false
+        },
+        "tags": {
+          "membrane": "SHAPE",
+          "independent": "UNDETERMINED/consistency:malformed-root-digest",
+          "python": "UNDETERMINED/root_is_not_a_digest",
+          "rust": "UNDETERMINED/root_is_not_a_digest"
+        },
+        "match": {
+          "membrane": false,
+          "independent": false,
+          "python": false,
+          "rust": false
+        },
+        "allMatchOracle": false,
+        "allAgreeEachOther": true
+      }
+    ]
+  },
+  "rows": [
+    {
+      "path": "0/happy-path.json",
+      "size1": 1,
+      "size2": 1,
+      "wantErr": false,
+      "desc": "happy path",
+      "expectOk": true,
+      "oks": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "tags": {
+        "membrane": "OK",
+        "independent": "APPEND_ONLY/",
+        "python": "APPEND_ONLY/identical_trees_match",
+        "rust": "APPEND_ONLY/identical_trees_match"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/empty-proof.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "empty proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:empty-proof",
+        "python": "UNDETERMINED/empty_proof_for_different_sizes",
+        "rust": "UNDETERMINED/empty_proof_for_different_sizes"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/happy-path.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": false,
+      "desc": "happy path",
+      "expectOk": true,
+      "oks": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "tags": {
+        "membrane": "OK",
+        "independent": "APPEND_ONLY/",
+        "python": "APPEND_ONLY/valid_append_only_extension",
+        "rust": "APPEND_ONLY/valid_append_only_extension"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/modified-proof@0-bit-@4.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "modified proof@0 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/modified-proof@1-bit-@4.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "modified proof@1 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/modified-proof@2-bit-@4.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "modified proof@2 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/preceding-garbage.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/preceding-proof-@0.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding proof @0",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/preceding-root1.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/preceding-root2.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/size1-XOR-@2.json",
+      "size1": 3,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "size1 XOR @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/size1-plus-@1.json",
+      "size1": 2,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "size1 plus @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/size1-sub-@1.json",
+      "size1": 0,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "size1 sub @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/missing_prior_observation",
+        "rust": "UNDETERMINED/missing_prior_observation"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/size2-div-@2.json",
+      "size1": 1,
+      "size2": 4,
+      "wantErr": true,
+      "desc": "size2 div @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/size2-mul-@2.json",
+      "size1": 1,
+      "size2": 16,
+      "wantErr": true,
+      "desc": "size2 mul @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/swapped-roots.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "swapped roots",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/trailing-garbage.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "trailing garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/trailing-root1.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "trailing root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/trailing-root2.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "trailing root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/truncated-proof.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "truncated proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/wrong-root1.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "wrong root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "1/wrong-root2.json",
+      "size1": 1,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "wrong root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/empty-proof.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "empty proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:empty-proof",
+        "python": "UNDETERMINED/empty_proof_for_different_sizes",
+        "rust": "UNDETERMINED/empty_proof_for_different_sizes"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/happy-path.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": false,
+      "desc": "happy path",
+      "expectOk": true,
+      "oks": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "tags": {
+        "membrane": "OK",
+        "independent": "APPEND_ONLY/",
+        "python": "APPEND_ONLY/valid_append_only_extension",
+        "rust": "APPEND_ONLY/valid_append_only_extension"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/modified-proof@0-bit-@4.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "modified proof@0 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/modified-proof@1-bit-@4.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "modified proof@1 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/modified-proof@2-bit-@4.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "modified proof@2 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/preceding-garbage.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/preceding-proof-@0.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding proof @0",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/preceding-root1.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/preceding-root2.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "preceding root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/size1-XOR-@2.json",
+      "size1": 4,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "size1 XOR @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/size1-plus-@1.json",
+      "size1": 7,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "size1 plus @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/size1-sub-@1.json",
+      "size1": 5,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "size1 sub @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/size2-div-@2.json",
+      "size1": 6,
+      "size2": 4,
+      "wantErr": true,
+      "desc": "size2 div @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:older-size-exceeds-newer",
+        "python": "UNDETERMINED/invalid_tree_sizes",
+        "rust": "UNDETERMINED/invalid_tree_sizes"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/size2-mul-@2.json",
+      "size1": 6,
+      "size2": 16,
+      "wantErr": true,
+      "desc": "size2 mul @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/swapped-roots.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "swapped roots",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/trailing-garbage.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "trailing garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/trailing-root1.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "trailing root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/trailing-root2.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "trailing root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/truncated-proof.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "truncated proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/wrong-root1.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "wrong root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "2/wrong-root2.json",
+      "size1": 6,
+      "size2": 8,
+      "wantErr": true,
+      "desc": "wrong root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/empty-proof.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "empty proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:empty-proof",
+        "python": "UNDETERMINED/empty_proof_for_different_sizes",
+        "rust": "UNDETERMINED/empty_proof_for_different_sizes"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/happy-path.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": false,
+      "desc": "happy path",
+      "expectOk": true,
+      "oks": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "tags": {
+        "membrane": "OK",
+        "independent": "APPEND_ONLY/",
+        "python": "APPEND_ONLY/valid_append_only_extension",
+        "rust": "APPEND_ONLY/valid_append_only_extension"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/modified-proof@0-bit-@4.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "modified proof@0 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/modified-proof@1-bit-@4.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "modified proof@1 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/preceding-garbage.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "preceding garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/preceding-proof-@0.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "preceding proof @0",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/preceding-root1.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "preceding root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/preceding-root2.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "preceding root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/size1-XOR-@2.json",
+      "size1": 0,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "size1 XOR @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/missing_prior_observation",
+        "rust": "UNDETERMINED/missing_prior_observation"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/size1-plus-@1.json",
+      "size1": 3,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "size1 plus @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/size1-sub-@1.json",
+      "size1": 1,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "size1 sub @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/size2-div-@2.json",
+      "size1": 2,
+      "size2": 2,
+      "wantErr": true,
+      "desc": "size2 div @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:non-empty-proof-for-same-size",
+        "python": "UNDETERMINED/non_empty_proof_for_same_size",
+        "rust": "UNDETERMINED/non_empty_proof_for_same_size"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/size2-mul-@2.json",
+      "size1": 2,
+      "size2": 10,
+      "wantErr": true,
+      "desc": "size2 mul @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/swapped-roots.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "swapped roots",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/trailing-garbage.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "trailing garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/trailing-root1.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "trailing root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/trailing-root2.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "trailing root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/truncated-proof.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "truncated proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/wrong-root1.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "wrong root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "3/wrong-root2.json",
+      "size1": 2,
+      "size2": 5,
+      "wantErr": true,
+      "desc": "wrong root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/empty-proof.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "empty proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:empty-proof",
+        "python": "UNDETERMINED/empty_proof_for_different_sizes",
+        "rust": "UNDETERMINED/empty_proof_for_different_sizes"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/happy-path.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": false,
+      "desc": "happy path",
+      "expectOk": true,
+      "oks": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "tags": {
+        "membrane": "OK",
+        "independent": "APPEND_ONLY/",
+        "python": "APPEND_ONLY/valid_append_only_extension",
+        "rust": "APPEND_ONLY/valid_append_only_extension"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/modified-proof@0-bit-@4.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "modified proof@0 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/modified-proof@1-bit-@4.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "modified proof@1 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/modified-proof@2-bit-@4.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "modified proof@2 bit @4",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/preceding-garbage.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "preceding garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/preceding-proof-@0.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "preceding proof @0",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/preceding-root1.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "preceding root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/preceding-root2.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "preceding root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/size1-XOR-@2.json",
+      "size1": 4,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "size1 XOR @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "python": "UNDETERMINED/POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/size1-plus-@1.json",
+      "size1": 7,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "size1 plus @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:non-empty-proof-for-same-size",
+        "python": "UNDETERMINED/non_empty_proof_for_same_size",
+        "rust": "UNDETERMINED/non_empty_proof_for_same_size"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/size1-sub-@1.json",
+      "size1": 5,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "size1 sub @1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/size2-div-@2.json",
+      "size1": 6,
+      "size2": 3,
+      "wantErr": true,
+      "desc": "size2 div @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:older-size-exceeds-newer",
+        "python": "UNDETERMINED/invalid_tree_sizes",
+        "rust": "UNDETERMINED/invalid_tree_sizes"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/size2-mul-@2.json",
+      "size1": 6,
+      "size2": 14,
+      "wantErr": true,
+      "desc": "size2 mul @2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/swapped-roots.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "swapped roots",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "HEAD_MISMATCH",
+        "independent": "UNDETERMINED/consistency:proof-did-not-connect-to-presented_head",
+        "python": "UNDETERMINED/proof_did_not_connect_to_presented_head",
+        "rust": "UNDETERMINED/proof_did_not_connect_to_presented_head"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/trailing-garbage.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "trailing garbage",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-proof-element",
+        "python": "UNDETERMINED/proof_element_is_not_a_digest",
+        "rust": "UNDETERMINED/proof_element_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/trailing-root1.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "trailing root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/trailing-root2.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "trailing root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:unconsumed-proof-elements",
+        "python": "UNDETERMINED/unconsumed_proof_elements",
+        "rust": "UNDETERMINED/unconsumed_proof_elements"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/truncated-proof.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "truncated proof",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:proof-path-truncated",
+        "python": "UNDETERMINED/proof_path_truncated",
+        "rust": "UNDETERMINED/proof_path_truncated"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/wrong-root1.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "wrong root1",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "4/wrong-root2.json",
+      "size1": 6,
+      "size2": 7,
+      "wantErr": true,
+      "desc": "wrong root2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/consistency-check-on-empty-tree-size1-is-zero-is-useless.json",
+      "size1": 0,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "consistency check on empty tree (size1 is zero) is useless",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/missing_prior_observation",
+        "rust": "UNDETERMINED/missing_prior_observation"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/roots-do-not-match-and-sizes-are-zero.json",
+      "size1": 0,
+      "size2": 0,
+      "wantErr": true,
+      "desc": "roots do not match and sizes are zero",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/roots-do-not-not-match-and-sizes-are-one.json",
+      "size1": 1,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "roots do not not match and sizes are one",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/size1-is-greater-than-size2-again.json",
+      "size1": 2,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "size1 is greater than size2 again",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:older-size-exceeds-newer",
+        "python": "UNDETERMINED/invalid_tree_sizes",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/size1-is-greater-than-size2.json",
+      "size1": 1,
+      "size2": 0,
+      "wantErr": true,
+      "desc": "size1 is greater than size2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:older-size-exceeds-newer",
+        "python": "UNDETERMINED/invalid_tree_sizes",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/size1-is-zero-and-does-not-equal-size2.json",
+      "size1": 0,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "size1 is zero and does not equal size2",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/size1-is-zero-and-size2-is-not-zero.json",
+      "size1": 0,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "size1 is zero and size2 is not zero",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-are-equal-one-and-proof-is-empty.json",
+      "size1": 1,
+      "size2": 1,
+      "wantErr": false,
+      "desc": "sizes are equal (one) and proof is empty",
+      "expectOk": true,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "allMatchOracle": false,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-are-equal-one-but-roots-are-not.json",
+      "size1": 1,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "sizes are equal (one) but roots are not",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-are-equal-zero-and-proof-is-empty.json",
+      "size1": 0,
+      "size2": 0,
+      "wantErr": true,
+      "desc": "sizes are equal (zero) and proof is empty",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-are-equal-zero-but-roots-are-not.json",
+      "size1": 0,
+      "size2": 0,
+      "wantErr": true,
+      "desc": "sizes are equal (zero) but roots are not",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-do-not-watch-and-proof-is-empty.json",
+      "size1": 1,
+      "size2": 2,
+      "wantErr": true,
+      "desc": "sizes do not watch and proof is empty",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:malformed-root-digest",
+        "python": "UNDETERMINED/root_is_not_a_digest",
+        "rust": "UNDETERMINED/root_is_not_a_digest"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-match-but-proof-is-not-empty-and-sizes-are-one.json",
+      "size1": 1,
+      "size2": 1,
+      "wantErr": true,
+      "desc": "sizes match but proof is not empty and sizes are one",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:non-empty-proof-for-same-size",
+        "python": "UNDETERMINED/non_empty_proof_for_same_size",
+        "rust": "UNDETERMINED/non_empty_proof_for_same_size"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    },
+    {
+      "path": "additional/sizes-match-but-proof-is-not-empty-and-sizes-are-zero.json",
+      "size1": 0,
+      "size2": 0,
+      "wantErr": true,
+      "desc": "sizes match but proof is not empty and sizes are zero",
+      "expectOk": false,
+      "oks": {
+        "membrane": false,
+        "independent": false,
+        "python": false,
+        "rust": false
+      },
+      "tags": {
+        "membrane": "SHAPE",
+        "independent": "UNDETERMINED/consistency:invalid-tree-sizes",
+        "python": "UNDETERMINED/missing_prior_observation",
+        "rust": "UNDETERMINED/missing_prior_observation"
+      },
+      "match": {
+        "membrane": true,
+        "independent": true,
+        "python": true,
+        "rust": true
+      },
+      "allMatchOracle": true,
+      "allAgreeEachOther": true
+    }
+  ]
+}

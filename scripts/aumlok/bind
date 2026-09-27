@@ -1,0 +1,352 @@
+#!/usr/bin/env node
+/**
+ * The AUMLOK binding ceremony: a phrase typed by its owner derives the root this machine is bound to.
+ *
+ *   scripts/aumlok/bind --directory <private controller directory> --handle <public handle>
+ *
+ *   X8: `--handle` IS REQUIRED, and it is PUBLIC. The derivation contract `aumlok-kdf-v1` salts the key
+ *   with the handle it is given, so the root is a function of the handle AND the seven words; on a new
+ *   machine the handle is supplied first and the words are typed after it. Unlike the words, a public
+ *   name may travel on a command line.
+ *
+ * THE SAME SEVEN WORDS DERIVE THE SAME ROOT ON ANY MACHINE, AND THAT IS THE RECOVERY. Binding derives
+ * the root FROM the words and keeps the derived seed beside the record (macOS Keychain for this user,
+ * else `root-seed-v3.json` at 0600) so later approvals sign without the words being typed again. This
+ * is why the phrase is the whole of the custody story rather than one factor of two, and why nothing
+ * here prints material for a person to copy: the words they already hold ARE the thing that must not
+ * be lost.
+ *
+ * THE OWNER'S PHRASE IS TYPED INTO A TERMINAL OR THE DESKTOP CEREMONY WINDOW, AND NOWHERE ELSE. This
+ * CLI reads it from `/dev/tty`, never from `argv`, never from the environment, and never from a chat
+ * message. An argument lands in shell history and in `ps`; a phrase pasted into a conversation lands
+ * in a session log, and this lane's court greps every session log for exactly that. The tool prints
+ * no echo of what was typed and writes the phrase nowhere.
+ *
+ * THIS FILE IS NOW ARGV PARSING, INPUT AND PRINTING — AND DELIBERATELY NOTHING ELSE. The registration
+ * half lives in `plugins/aukora-aumlok/lib/ceremony.mjs`, because the desktop shell runs the SAME
+ * ceremony out of a release that no part of `scripts/aumlok/` travels into. Two copies of a
+ * key-derivation path are two paths that can disagree, and the disagreement would be invisible
+ * because each copy would be verifying itself. What remains here is the part that only makes sense
+ * at a terminal.
+ *
+ * WHAT IT DOES, in order:
+ *   0. obtains the ML-DSA-65 generator and PROVES a corresponding keypair — shape, correspondence
+ *      and a sign/verify round trip with a negative probe — BEFORE it reads anything or opens any
+ *      file, so a missing capability refuses without a phrase being typed and without a record
+ *      being touched. See `plugins/aukora-aumlok/lib/pq-generator.mjs`;
+ *   1. reads the phrase from the controlling terminal;
+ *   2. DESCRIBES it — word count and AUMLOK acrostic shape — without claiming an entropy figure,
+ *      because nobody can measure the entropy of a sentence a person chose;
+ *   3. hands it to the shared ceremony, which derives the Ed25519 owner key with `scrypt` (vetted,
+ *      no new KDF, no new curve) and registers both halves of a real hybrid key set;
+ *   4. prints the PUBLIC commitment — the did:key and a key id — the measured ML-DSA-65 proof, and
+ *      every ceiling, including the ceiling that says what the proof does NOT establish.
+ *
+ * WHAT IT IS NOT. It is not `identityBound`, not a succession claim, not hardware custody and not
+ * an attendance proof. It does not retire `OWNER_KEY_SAME_UID`: the derived key is a file on this
+ * host, readable by anything running as this UID, and a remembered phrase does not change that. It
+ * does not retire `ML_DSA_65_UNMEASURED` either: the proof establishes that the two halves
+ * correspond and round-trip, NOT that the implementation is FIPS 204 ML-DSA-65. BOTH seeds ARE the
+ * KDF output — the plan's `root = slowKDF(phrase) -> Ed25519 + ML-DSA-65 seeds` — so the same seven
+ * words derive the same hybrid root on any machine, and that is what makes the words the recovery.
+ * (An earlier sentence here said the ML-DSA-65 seed was fresh random and recoverable only from this
+ * record. That was TRUE OF THE FIRST v3 CUT and is FALSE NOW: `derive-v3.mjs` splits the 64-byte KDF
+ * output into both seeds, and this was corrected after MEASURING two bindings of one phrase in two
+ * fresh directories, which produced the same `rootId`, the same Ed25519 key and the same ML-DSA-65
+ * key. A comment that describes a defect the code no longer has is its own kind of lie.)
+ *
+ * THE KDF COST IS MEASURED HERE AND PRINTED, because the plan's first item asks for it and a cost
+ * nobody can read is a cost nobody chose. It is measured ONCE per run, before the words are read,
+ * with the ceremony's own parameters.
+ *
+ * `--allow-non-tty` exists ONLY so the court can bind a DISPOSABLE phrase without a terminal. It
+ * prints a loud notice, it is never the default, and a phrase piped through it is not a ceremony.
+ */
+import { randomBytes } from 'node:crypto'
+import { closeSync, existsSync, openSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import {
+  // ── **IMPORTED FROM THE MODULE THAT OWNS IT, BECAUSE THE PACKAGE SURFACE WITHDREW IT (AUMLOK-113)** ────
+  // This line read `generateAcrosticPhrase` out of `lib/index.mjs`, and AUMLOK-113 deliberately stopped
+  // RE-EXPORTING it there — the reviewer's point being that a public offer of a seven-word, ~14.3-bit generator
+  // contradicts the entropy ceiling this ceremony prints. A top-level import of a missing export is not a
+  // warning: **the whole script failed to load**, so every real bind died with it and two courts went red. The
+  // capability itself was never withdrawn — `ceremony-phrase.mjs` keeps it and its own courts drive it — so the
+  // CLI asks that module directly, which keeps `--generate` working without putting a generator back on the
+  // package's public surface.
+  printCeilings,
+} from '../../plugins/aukora-aumlok/lib/index.mjs'
+// **THE IMPORT IS GONE WITH THE FLAG.** *`generateAcrosticPhrase` is still exported and still used inside the
+// ceremony*, where the phrase is drawn and shown once — **this entry no longer reaches it, because an entry that can draw
+// one on demand is an entry that can hand out a ceremony without an owner.**
+// THE v3 CUSTODY PATH IS IMPORTED BY NAME FROM THE MODULES THAT OWN IT. `deriveRootFromPhrase` derives
+// the root from the words; `buildGenesisV3` fixes the identity as the epoch-0 root, which is what the
+// subject is made of; `deriveMachineKeyV3` derives the key this machine keeps instead of the root;
+// `buildRecordV3` shapes the record; `writeRecordV3` writes it in the one form its own loader accepts;
+// and the two keepers put the machine key and the ML-DSA-65 seed on disk.
+import { deriveRootFromPhrase, measureKdfSecondsPerGuess } from '../../plugins/aukora-aumlok/lib/derive-v3.mjs'
+import { buildGenesisV3 } from '../../plugins/aukora-aumlok/lib/genesis-v3.mjs'
+// THE ONE SUBJECT DERIVATION, from the module that owns it, so the line printed below and the
+// bytes on disk cannot disagree about who was just bound.
+import { aukoraIdFromGenesis } from '../../plugins/aukora-aumlok/lib/genesis.mjs'
+import { deriveMachineKeyV3 } from '../../plugins/aukora-aumlok/lib/machine-key-v3.mjs'
+import {
+  buildRecordV3,
+  keepMachineSeed,
+  writeRecordV3,
+} from '../../plugins/aukora-aumlok/lib/record-v3.mjs'
+import { LOCAL_AUMLOK_CONTROL_FILENAME } from '../../plugins/aukora-aumlok/lib/store.mjs'
+
+/** Read one `--flag value` argument, or undefined. */
+function option(flag) {
+  const index = process.argv.indexOf(flag)
+  return index === -1 ? undefined : process.argv[index + 1]
+}
+
+/** Refuse to continue, with a named reason and no partial write. */
+function refuse(reason) {
+  process.stderr.write(`bind: ${reason}\n`)
+  process.exit(2)
+}
+
+// ── the generator, standalone ────────────────────────────────────────────────────────────────
+//
+// IT READS NO FILE, AND THAT IS THE WHOLE CHANGE. This used to read `eff_large_wordlist.txt` from
+// beside this script, verify it against a pinned digest and draw seven UNRELATED EFF words. The phrase
+// this lane binds is a TRUE ACROSTIC — seven tokens whose initials spell the anchor — and it is drawn
+// from the themed tables inside `ceremony-phrase.mjs`, so there is no list to ship, pin, read or
+// tamper with, and nothing here can be defeated by deleting or editing a file.
+//
+// The output is DASH-JOINED, which is the form the ceremony window displays and compares against, and
+// the form the plugin's normaliser now folds. The two used to disagree, and the window could not bind
+// the phrase it had just drawn; a court asserts the generator's OUTPUT binds.
+// **THE SHIPPED CLI REFUSES `--generate`, BY NAME.**
+//
+// *It used to draw a phrase and print it* — **and a phrase the CLI can produce on demand is a phrase that was never a
+// ceremony.** *Seven words printed to a terminal are a value anyone can obtain without an owner decision*, so the
+// generator is no longer reachable from this entry: **the phrase is drawn INSIDE the ceremony, where it is shown once and
+// compared against, and nothing outside can ask for one.**
+//
+// **THE REFUSAL IS BY NAME RATHER THAN A SILENT DROP.** *A flag that quietly does nothing reads as a broken script* — **an
+// operator who typed it needs to know it was considered and refused, not that the tool is unwell** — *and the exit is
+// non-zero through `refuse`, so a caller cannot mistake it for a phrase that happens to be empty.*
+if (process.argv.includes('--generate')) {
+  refuse('--generate is refused: this CLI does not mint ceremony phrases. The phrase is drawn inside the ceremony and '
+    + 'shown once; a generator reachable from a terminal is not a ceremony. Use the ceremony window.')
+}
+
+const directory = option('--directory')
+if (directory === undefined) refuse('--directory is required; this ceremony has no default destination')
+// X8: THE HANDLE IS HALF OF THE KEY, AND IT COMES FIRST.
+//
+// IT IS PUBLIC, SO IT MAY TRAVEL IN `argv` — unlike the seven words, which this program reads from
+// `/dev/tty` and never from an argument, an environment variable or a chat. The handle is recorded in
+// the public record and becomes a NIP-05 `name@domain` local part; what must not be typed on a command
+// line is the half that is secret. A missing or unusable handle is refused BY NAME, before any key
+// work, and nothing is written.
+const handle = option('--handle')
+if (handle === undefined) {
+  refuse('--handle is required: aumlok-kdf-v1 derives the root from the handle AND the seven words, '
+    + 'so there is no root without it. On a new machine the handle is typed first, then the words.')
+}
+const allowNonTty = process.argv.includes('--allow-non-tty')
+
+// ── the cost of one guess, MEASURED AND PRINTED BEFORE THE WORDS ARE READ ─────────────────────
+//
+// THE PLAN'S FIRST ITEM ASKS FOR THIS NUMBER, and a KDF cost nobody can read is a cost nobody chose:
+// the phrase's entropy bounds what an attacker must try, and this bounds what each try costs them.
+// It is measured ONCE, here, with the ceremony's own parameters — the same `PHRASE_KDF_V3` the
+// derivation below uses, so the printed number is the cost of THIS derivation and not of a
+// differently-tuned one. Two samples, because one sample cannot tell a cost from a scheduling pause.
+//
+// IT RUNS BEFORE `readPhrase()` ON PURPOSE: a person should not type seven words and then watch an
+// unexplained three-second pause. The samples are independent of the phrase, so measuring first
+// changes nothing about the root it later derives.
+const kdf = await measureKdfSecondsPerGuess({ samples: 2 })
+process.stdout.write(`KDF_SECONDS_PER_GUESS: ${kdf.secondsPerGuess.toFixed(3)} `
+  + `(scrypt N=${String(kdf.N)} r=${String(kdf.r)} p=${String(kdf.p)}, ${String(kdf.samples)} samples, `
+  + 'measured on THIS machine now — it is the cost of one offline guess against the public record)\n')
+
+const absolute = resolve(directory)
+const recordPath = resolve(absolute, LOCAL_AUMLOK_CONTROL_FILENAME)
+if (existsSync(recordPath)) {
+  refuse(`${recordPath} already exists; refusing to overwrite a bound key. The same seven words `
+    + 'derive the same root on any machine, so this directory already belongs to a binding: start a '
+    + 'NEW directory rather than re-deriving into this one')
+}
+
+/**
+ * NOTHING IS DRAWN OR PROVEN HERE ANY MORE, AND THAT IS THE v3 CHANGE.
+ *
+ * v2 drew a random ML-DSA-65 seed in this process and proved the pair before reading anything, because
+ * that proof was what the record registered. In v3 BOTH seeds come out of the words: the derivation
+ * produces the Ed25519 seed and the ML-DSA-65 seed together, and `deriveRootFromPhrase` proves the two
+ * public halves correspond as part of deriving them. A seed drawn here would be a seed the words do
+ * not reproduce — which would make the seven words NOT the recovery, quietly and only on the day a
+ * person needed them.
+ *
+ * The derivation therefore happens AFTER the phrase is read and BEFORE anything is written, and the
+ * old ordering (prove, then read a secret) has no analogue: there is no capability to prove in advance
+ * when the material is the phrase itself.
+ */
+/**
+ * Read the phrase from the controlling terminal.
+ *
+ * `/dev/tty` is opened directly rather than reading stdin: stdin may be a pipe, a file or a chat
+ * harness, and a phrase must come from a terminal a person is looking at. Echo is NOT disabled here
+ * — Node has no `termios` — so the tool instead says plainly that the words will be visible, rather
+ * than implying a secrecy this program cannot provide.
+ *
+ * THE DISPOSABLE PATH READS DESCRIPTOR 0, NOT `/dev/stdin`. Those are the same thing on macOS and
+ * they are not on the Linux CI runner, where opening that path failed and every binding arm of the
+ * court went red for a reason that had nothing to do with the ceremony. A descriptor that is already
+ * open needs no path to resolve.
+ */
+function readPhrase() {
+  if (allowNonTty) {
+    process.stdout.write('NON_TTY_PHRASE_INPUT: test-only — this is not a ceremony\n')
+    // READ DESCRIPTOR 0 DIRECTLY. The organ's v2 helpers went with the custody model, and this is the
+    // whole of what they did: one bounded read from an already-open descriptor, which needs no path to
+    // resolve and so behaves the same on macOS and on the Linux CI runner.
+    return readFileSync(0, 'utf8')
+  }
+  process.stdout.write('Typed into THIS terminal. It is not passed as an argument and is never written down.\n')
+  process.stdout.write('(This program cannot disable terminal echo; the words will be visible as you type.)\n')
+  process.stdout.write('Phrase: ')
+  let fd
+  try {
+    fd = openSync('/dev/tty', 'r')
+  } catch {
+    refuse('no controlling terminal; refusing to read a phrase from anywhere else '
+      + '(use --allow-non-tty only for a DISPOSABLE phrase)')
+  }
+  try {
+    const typed = readFileSync(fd, 'utf8')
+    process.stdout.write('\n')
+    return typed
+  } finally {
+    closeSync(fd)
+  }
+}
+
+const phrase = readPhrase()
+process.stdout.write('\n')
+
+// Describe BEFORE deriving, so the shape a person is told about is the shape of the words they typed.
+//
+// THE SHAPE IS MEASURED HERE, AND `describePhrase` IS DELIBERATELY NOT USED. That function lives in
+// `binding.mjs`, which the v3 work is deleting, and MEASURED at this tip it throws
+// a phrase-shape refusal naming `1 word(s)` for EVERY phrase — including `a b c d e f g`, a
+// seven-word phrase with nothing wrong with it. Depending on it would make this ceremony refuse every
+// binding while reporting a shape defect that is not there. The word count and the acrostic shape are
+// four lines, and the two things that MATTER — that the words derive a root, and that the record is
+// written in the form its loader accepts — are enforced by the derivation and the writer below.
+const words = String(phrase).replace(/[-_]+/gu, ' ').trim().split(/\s+/u).filter(word => word.length > 0)
+const first = words[0] ?? ''
+const rest = words.slice(1)
+const acrostic = rest.length === first.length && rest.every((word, index) => word[0] === first[index])
+process.stdout.write(`PHRASE_WORDS: ${String(words.length)}\n`)
+process.stdout.write(`PHRASE_ACROSTIC: ${acrostic ? 'yes' : 'no'}\n`)
+process.stdout.write('PHRASE_ENTROPY: not measured here — the generator draws from its own tables, and '
+  + 'this program cannot measure the entropy of words a person chose\n')
+if (!acrostic) {
+  process.stdout.write('NOTE: these words do not have the AUMLOK acrostic shape '
+    + '(a first word whose letters seed the initials that follow). Recorded, not refused: this\n')
+  process.stdout.write('      program does not get to decide which words are yours.\n')
+}
+
+// ── bind: derive, write, keep ────────────────────────────────────────────────────────────────
+//
+// FOUR STEPS, AND NOTHING IS WRITTEN UNTIL THE THIRD. The words derive the root; the root shapes the
+// record; the record is written in the one form its own loader accepts; and the derived seed is kept
+// so this machine can sign later without the words. A failure in any of the first two leaves the
+// directory exactly as it was.
+//
+// THE ORDER MATTERS FOR THE SAME REASON IT DID IN v2: a record on disk is a machine that believes it
+// is bound, so the derivation is allowed to fail before anything exists.
+let root
+try {
+  root = await deriveRootFromPhrase(phrase, { handle })
+} catch (error) {
+  refuse(`the words did not derive a root: ${error instanceof Error ? error.message : String(error)}`)
+}
+
+const boundAt = new Date().toISOString()
+let record
+let written
+let kept
+try {
+  // THE GENESIS FIRST, BECAUSE THE SUBJECT COMES FROM IT. `subject = sha256(genesis)`, where the
+  // genesis is the epoch-0 public root plus a fresh nonce — so the identity this binding creates is
+  // named by the keys it STARTS with, not by the keys it happens to hold later. A refresh carries this
+  // same genesis, which is what lets the Kira chain pinned to the subject survive one.
+  //
+  // THE NONCE IS 32 CSPRNG BYTES AND IT IS THE ONLY NEW ENTROPY HERE. Two installations given the same
+  // seven words derive the same root; the nonce is what keeps them two identities rather than one that
+  // appears twice, and it is drawn per binding rather than derived from the words.
+  const genesis = buildGenesisV3({ root, genesisNonce: randomBytes(32).toString('hex') })
+  // THE MACHINE KEY IS DERIVED AND KEPT; THE ROOT SEED IS NOT THE THING THAT STAYS. The root seed
+  // exists in this process and nowhere else once the ceremony ends: what this machine holds is an HKDF
+  // of it under the pinned constant, so approvals sign without the words being typed again and a stolen
+  // machine is not a stolen identity.
+  const machine = deriveMachineKeyV3({ root, machineIndex: 0 })
+  record = buildRecordV3({
+    root,
+    boundAt,
+    genesis,
+    // THE HANDLE IS PUBLISHED WITH THE ROOT IT SALTED, so the record says which handle these words
+    // belong to — which is what a person needs on a new machine, and what a NIP-05 name@domain is read
+    // from. It is not a uniqueness claim and nothing here consults a registry.
+    handle,
+    machines: [{ index: machine.machineIndex, ed25519: machine.ed25519PublicKeyHex }],
+  })
+  written = writeRecordV3({ record, directory: absolute })
+  const keptMachine = keepMachineSeed(machine, { directory: absolute })
+  // THE ROOT SEED IS NOT WRITTEN AT ALL, AND THIS CEREMONY WAS THE WORST PLACE TO WRITE IT (Y1,
+  // 2026-09-23). It used to keep the ML-DSA-65 root seed here, reasoning that it is KDF output from the
+  // same words and that keeping the Ed25519 half instead would be the machine key's job. The reasoning
+  // was right about which half and wrong about the file: what landed was the ROOT's post-quantum seed,
+  // on the laptop, beside the machine key — the one thing the cold-root design says is re-derived from
+  // the handle and the words and kept by nobody. `root` lives in this process and nowhere else once the
+  // ceremony ends, which is what the paragraph printed below has always told the person.
+  kept = { machine: keptMachine, rootKept: false }
+} catch (error) {
+  refuse(`the record could not be written: ${error instanceof Error ? error.message : String(error)}`)
+}
+
+process.stdout.write('\n')
+process.stdout.write('BINDING: REGISTERED\n')
+process.stdout.write(`CONTROLLER: ${written.path}\n`)
+// THE SUBJECT THE RECORD ACTUALLY CARRIES, which is the genesis digest rather than the current
+// key's rootId. MEASURED while wiring this: the record stored the genesis subject from the first
+// cut of this change while THIS line still printed `root.subject`, so a person reading the
+// terminal was shown a different identity from the one that had just been written — a
+// disagreement between the screen and the disk is the one thing the ceremony may not do.
+process.stdout.write(`SUBJECT: ${record.publicRoot.genesis === undefined ? root.subject : aukoraIdFromGenesis(record.publicRoot.genesis)}\n`)
+process.stdout.write(`ROOT_ID: ${root.rootId}\n`)
+process.stdout.write(`BOUND_AT: ${boundAt}\n`)
+process.stdout.write(`SUITE: ${root.suite}\n`)
+process.stdout.write(`HANDLE: ${record.publicRoot.handle}\n`)
+process.stdout.write(`ED25519_PUBLIC: ${root.ed25519PublicKeyHex}\n`)
+process.stdout.write(`ED25519_DID_KEY: ${root.ed25519DidKey}\n`)
+process.stdout.write(`ML_DSA_65_PUBLIC: ${root.mlDsa65PublicKeyHex}\n`)
+process.stdout.write(`MACHINE_KEY_KEPT: ${kept.machine.path}  (${kept.machine.custodian}, 0600 — this machine signs with it)\n`)
+process.stdout.write(`ROOT_SEED_KEPT: none (the root is re-derived from your handle and your seven words)\n`)
+process.stdout.write('\n')
+// WHY THIS PARAGRAPH SAYS WHAT IT SAYS. The SEVEN WORDS ARE THE RECOVERY, and this is the whole of
+// what the ceremony leaves behind: printing anything else for a person to keep would tell them their
+// words were not enough, and would invite them to store material that opens nothing.
+process.stdout.write('THERE IS NOTHING HERE TO WRITE DOWN. Your seven words ARE the recovery: the same\n')
+process.stdout.write('words derive the same root on any machine. What is kept below is a MACHINE KEY\n')
+process.stdout.write('derived from that root, so this machine can sign approvals without you typing\n')
+process.stdout.write('the words again — and it cannot re-key, revoke or re-bind anything. Losing this\n')
+process.stdout.write('machine therefore costs you nothing you cannot restore from the words, and losing\n')
+process.stdout.write('THE WORDS is losing the root.\n')
+process.stdout.write('\n')
+process.stdout.write(`CUSTODY_CLASS: ${kept.machine.custodian === 'keychain' ? 'macos-keychain' : 'same-uid-posix-mode-only'}\n`)
+process.stdout.write('ATTENDANCE: this proves a phrase was typed, never that a person was present\n')
+process.stdout.write('IDENTITY_BOUND: false\n')
+process.stdout.write('SAME_UID_CEILING: the kept MACHINE KEY is a file (or keychain item) this UID can read, so a\n')
+process.stdout.write('                  process running as this user can sign APPROVALS without this ceremony —\n')
+process.stdout.write('                  and cannot re-key, revoke or re-bind, because those need the root.\n')
+printCeilings()

@@ -1,0 +1,276 @@
+{
+  "baseline_source_head": "c4323431865473fc2b961b4c1d933f4aa2075096",
+  "files": {
+    "diamond/__init__.py": {
+      "baseline": {
+        "bytes": 88,
+        "physical_lines": 3
+      },
+      "limit": {
+        "bytes": 88,
+        "physical_lines": 3
+      }
+    },
+    "diamond/approval_artifact.py": {
+      "baseline": {
+        "bytes": 54260,
+        "physical_lines": 965
+      },
+      "limit": {
+        "bytes": 54260,
+        "physical_lines": 965
+      }
+    },
+    "diamond/aumlok_approval.py": {
+      "baseline": {
+        "bytes": 24381,
+        "physical_lines": 453
+      },
+      "limit": {
+        "bytes": 24381,
+        "physical_lines": 453
+      }
+    },
+    "diamond/checkpoint.py": {
+      "baseline": {
+        "bytes": 2810,
+        "physical_lines": 83
+      },
+      "limit": {
+        "bytes": 2810,
+        "physical_lines": 83
+      }
+    },
+    "diamond/cold_verify.py": {
+      "baseline": {
+        "bytes": 5376,
+        "physical_lines": 140
+      },
+      "limit": {
+        "bytes": 5376,
+        "physical_lines": 140
+      }
+    },
+    "diamond/ed25519.py": {
+      "baseline": {
+        "bytes": 4510,
+        "physical_lines": 168
+      },
+      "limit": {
+        "bytes": 4760,
+        "physical_lines": 175
+      }
+    },
+    "diamond/hexutil.py": {
+      "baseline": {
+        "bytes": 1588,
+        "physical_lines": 58
+      },
+      "limit": {
+        "bytes": 1588,
+        "physical_lines": 58
+      }
+    },
+    "diamond/jcs.py": {
+      "baseline": {
+        "bytes": 2459,
+        "physical_lines": 94
+      },
+      "limit": {
+        "bytes": 2459,
+        "physical_lines": 94
+      }
+    },
+    "diamond/kira_evidence.py": {
+      "baseline": {
+        "bytes": 53067,
+        "physical_lines": 1004
+      },
+      "limit": {
+        "bytes": 53828,
+        "physical_lines": 1018
+      }
+    },
+    "diamond/receipt.py": {
+      "baseline": {
+        "bytes": 16447,
+        "physical_lines": 357
+      },
+      "limit": {
+        "bytes": 16447,
+        "physical_lines": 357
+      }
+    },
+    "diamond/refuse_codes.py": {
+      "baseline": {
+        "bytes": 6678,
+        "physical_lines": 155
+      },
+      "limit": {
+        "bytes": 6678,
+        "physical_lines": 155
+      }
+    },
+    "diamond/verify_pair.py": {
+      "baseline": {
+        "bytes": 5031,
+        "physical_lines": 133
+      },
+      "limit": {
+        "bytes": 5031,
+        "physical_lines": 133
+      }
+    },
+    "profiles/alpha/dispatch.py": {
+      "baseline": {
+        "bytes": 5720,
+        "physical_lines": 141
+      },
+      "limit": {
+        "bytes": 5720,
+        "physical_lines": 141
+      }
+    },
+    "profiles/alpha/legacy/keychain.py": {
+      "baseline": {
+        "bytes": 6978,
+        "physical_lines": 143
+      },
+      "limit": {
+        "bytes": 6978,
+        "physical_lines": 143
+      }
+    },
+    "profiles/alpha/legacy/receipt.py": {
+      "baseline": {
+        "bytes": 13146,
+        "physical_lines": 221
+      },
+      "limit": {
+        "bytes": 13264,
+        "physical_lines": 222
+      }
+    },
+    "profiles/alpha/legacy/witness.py": {
+      "baseline": {
+        "bytes": 7928,
+        "physical_lines": 162
+      },
+      "limit": {
+        "bytes": 7928,
+        "physical_lines": 162
+      }
+    },
+    "profiles/alpha/src/evidence/ed25519.py": {
+      "baseline": {
+        "bytes": 4997,
+        "physical_lines": 178
+      },
+      "limit": {
+        "bytes": 4997,
+        "physical_lines": 178
+      }
+    },
+    "profiles/alpha/src/receipt_v3/__init__.py": {
+      "baseline": {
+        "bytes": 1226,
+        "physical_lines": 38
+      },
+      "limit": {
+        "bytes": 1226,
+        "physical_lines": 38
+      }
+    },
+    "profiles/alpha/src/receipt_v3/canonical.py": {
+      "baseline": {
+        "bytes": 3858,
+        "physical_lines": 98
+      },
+      "limit": {
+        "bytes": 3858,
+        "physical_lines": 98
+      }
+    },
+    "profiles/alpha/src/receipt_v3/cli.py": {
+      "baseline": {
+        "bytes": 4055,
+        "physical_lines": 107
+      },
+      "limit": {
+        "bytes": 4055,
+        "physical_lines": 107
+      }
+    },
+    "profiles/alpha/src/receipt_v3/verify.py": {
+      "baseline": {
+        "bytes": 31947,
+        "physical_lines": 658
+      },
+      "limit": {
+        "bytes": 31947,
+        "physical_lines": 658
+      }
+    },
+    "scripts/verify-alpha-freeze.py": {
+      "baseline": {
+        "bytes": 6781,
+        "physical_lines": 160
+      },
+      "limit": {
+        "bytes": 6781,
+        "physical_lines": 160
+      }
+    },
+    "scripts/verify-alpha-legacy.py": {
+      "baseline": {
+        "bytes": 3679,
+        "physical_lines": 74
+      },
+      "limit": {
+        "bytes": 3679,
+        "physical_lines": 74
+      }
+    },
+    "scripts/verify-kira-evidence.py": {
+      "baseline": {
+        "bytes": 33386,
+        "physical_lines": 564
+      },
+      "limit": {
+        "bytes": 33386,
+        "physical_lines": 564
+      }
+    },
+    "vendor/phase0/verify.py": {
+      "baseline": {
+        "bytes": 10784,
+        "physical_lines": 336
+      },
+      "limit": {
+        "bytes": 10784,
+        "physical_lines": 336
+      }
+    }
+  },
+  "schema": "diamond-cold-source-budget-v1",
+  "scope": {
+    "alpha": "profiles/alpha/dispatch.py and profiles/alpha/src/**/*.py; exclude directories named tests or __pycache__",
+    "bytes": "raw file bytes, including comments and blank lines",
+    "cold": "tests/continuity-spine/boundary.py: top-level IMPORTS dictionary keys, mapped to .py paths",
+    "legacy": "profiles/alpha/legacy/{keychain,witness,receipt}.py and scripts/verify-alpha-legacy.py; include additional legacy Python modules except __pycache__ for review",
+    "physical_lines": "LF bytes plus one for a nonempty final unterminated line",
+    "standalone_freeze": "scripts/verify-alpha-freeze.py: explicit cold consumer; diamond.ed25519 already counted in cold inventory"
+  },
+  "totals": {
+    "baseline": {
+      "bytes": 311180,
+      "files": 25,
+      "physical_lines": 6493
+    },
+    "limit": {
+      "bytes": 312309,
+      "files": 25,
+      "physical_lines": 6515
+    }
+  }
+}

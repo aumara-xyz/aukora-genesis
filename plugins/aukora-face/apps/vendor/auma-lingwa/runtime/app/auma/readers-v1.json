@@ -1,0 +1,140 @@
+{
+ "version": "auma-readers-v1",
+ "exportDate": "2026-07-07",
+ "note": "Graded readers — the first Auma corpus. Each reader is gated to maxDay: every Auma token must be introduced on or before that day, checked by scripts/aumaCanonLint.ts. A language lives in texts, not word lists; these are the first texts.",
+ "readers": [
+  {
+   "id": "r1",
+   "title": "salama, ami",
+   "titleEn": "Hello, friend",
+   "maxDay": 14,
+   "intro": "Your first real text. Two friends, one whole day — built from nothing but your first two weeks of words. Read it aloud; tap a line to check yourself.",
+   "lines": [
+    { "a": "salama, ami! ka tu esi bona?", "e": "Hello, friend! Are you good?" },
+    { "a": "ya, mi esi bona. e tu?", "e": "Yes, I am good. And you?" },
+    { "a": "mi esi hapi. hodi mi anda a merkato.", "e": "I am happy. Today I walk to the market." },
+    { "a": "ka tu voli anda anke?", "e": "Do you want to walk too?" },
+    { "a": "ya! we anda en via.", "e": "Yes! We walk on the road." },
+    { "a": "en merkato, we kani pano e beva akwa.", "e": "At the market, we eat bread and drink water." },
+    { "a": "pos, we anda a parko.", "e": "Afterwards, we walk to the park." },
+    { "a": "en parko, mi vela arbo e sielo.", "e": "In the park, I watch the trees and the sky." },
+    { "a": "tu legi e mi skrivi.", "e": "You read and I write." },
+    { "a": "en noka, we vela luna e stela.", "e": "At night, we watch the moon and the stars." },
+    { "a": "mi domi en tomo di mi.", "e": "I sleep in my house." },
+    { "a": "doma, we anda anke. adio, ami!", "e": "Tomorrow, we walk again. Goodbye, friend!" }
+   ]
+  },
+  {
+   "id": "r2",
+   "title": "dina kon amili",
+   "titleEn": "A day with family",
+   "maxDay": 28,
+   "intro": "Four weeks in: family, colors, weather, and the first teacher. Everything here comes from Sprint I.",
+   "lines": [
+    { "a": "hodi esi dina solosa e varma.", "e": "Today is a sunny and warm day." },
+    { "a": "mi anda kon mama e papa di mi a merkato.", "e": "I walk with my mother and father to the market." },
+    { "a": "mama prende fruta roja.", "e": "Mother takes red fruit." },
+    { "a": "we beva suko e teo kon amili.", "e": "We drink juice and tea with the family." },
+    { "a": "en parko, flora esi roja e yela.", "e": "In the park, the flowers are red and yellow." },
+    { "a": "sielo esi blu e arbo esi verda.", "e": "The sky is blue and the trees are green." },
+    { "a": "anima yuna salta en parko.", "e": "Young animals jump in the park." },
+    { "a": "mi vela ta kon kura.", "e": "I watch them with care." },
+    { "a": "tana di mi ensena vorto nova a mi.", "e": "My elder teaches me new words." },
+    { "a": "mi skrivi vorto en libro di mi.", "e": "I write the words in my book." },
+    { "a": "pos, pluva beni. we anda a tomo.", "e": "Later, the rain comes. We go home." },
+    { "a": "en tomo, mama koka e mi aida.", "e": "At home, mother cooks and I help." },
+    { "a": "mi ama dina kon amili di mi.", "e": "I love days with my family." }
+   ]
+  },
+  {
+   "id": "r3",
+   "title": "tempo e penso",
+   "titleEn": "Time and thought",
+   "maxDay": 42,
+   "intro": "Questions, numbers, comparison — the tools of thinking. Six weeks of Auma can already hold a small philosophy.",
+   "lines": [
+    { "a": "kosa esi tempo? mi pensa de iti.", "e": "What is time? I think about it." },
+    { "a": "un dina teni du-des-fo hori.", "e": "One day holds twenty-four hours." },
+    { "a": "un hori teni sisa-des minuta.", "e": "One hour holds sixty minutes." },
+    { "a": "durante dina, mi skrivi e mi legi.", "e": "During the day, I write and I read." },
+    { "a": "kemo tu domi? en noka.", "e": "When do you sleep? At night." },
+    { "a": "keno we neda tempo? porke penso neda tempo.", "e": "Why do we need time? Because thought needs time." },
+    { "a": "mi kreda ke kira esi granda.", "e": "I believe that consciousness is vast." },
+    { "a": "komo tu sabe? mi rongo e mi vela.", "e": "How do you know? I listen and I watch." },
+    { "a": "tempo esi plu forta ke moneta.", "e": "Time is stronger than money." },
+    { "a": "mi no pude kompra tempo.", "e": "I cannot buy time." },
+    { "a": "pero mi pude dona tempo a ami di mi.", "e": "But I can give time to my friend." },
+    { "a": "en verino, mi senti inspira.", "e": "In spring, I feel inspired." },
+    { "a": "mi esi foka e kalma. mi atenda.", "e": "I am focused and calm. I wait." },
+    { "a": "tempo dona purpusa a penso.", "e": "Time gives purpose to thought." }
+   ]
+  },
+  {
+   "id": "r4",
+   "title": "letera a ami",
+   "titleEn": "A letter to a friend",
+   "maxDay": 56,
+   "intro": "The end of Sprint II: past tense, duration, a poem inside a letter. This is what real correspondence in Auma looks like.",
+   "lines": [
+    { "a": "ami di mi, mi skrivi letera a tu.", "e": "My friend, I write this letter to you." },
+    { "a": "mi pasa esi en isla durante un semana.", "e": "I was on an island for one week." },
+    { "a": "akwa sirka isla esi blu.", "e": "The water around the island is blue." },
+    { "a": "mi suda vela boski e monta.", "e": "I have already seen forest and mountain." },
+    { "a": "en boski, mi rongo musika di natura.", "e": "In the forest, I hear the music of nature." },
+    { "a": "mi kani fruta dulsa e mi senti sanita.", "e": "I eat sweet fruit and I feel healthy." },
+    { "a": "mi skrivi poema por tu:", "e": "I write a poem for you:" },
+    { "a": "sonia di mi esi sorao. sorao di mi esi belina. belina di vita esi en ami.", "e": "My dream is hope. My hope is beauty. The beauty of life is in friends." },
+    { "a": "enfakta, mi ankora pensa de tu.", "e": "In fact, I still think of you." },
+    { "a": "vita esi bona, pero vita kon ami esi plu bona.", "e": "Life is good, but life with friends is better." },
+    { "a": "nau mi termina letera.", "e": "Now I finish the letter." },
+    { "a": "pos, we parla.", "e": "Soon, we will talk." },
+    { "a": "salama, ami. ubuntu — mi esi porke we esi.", "e": "Peace, friend. Ubuntu — I am because we are." }
+   ]
+  },
+  {
+   "id": "r5",
+   "title": "vila di we",
+   "titleEn": "Our village",
+   "maxDay": 70,
+   "intro": "Sprint III: the passive voice, tense markers, and the words of a life together. A portrait of a village that could speak Auma.",
+   "lines": [
+    { "a": "vila di we no esi granda, pero kora di ta esi granda.", "e": "Our village is not big, but its heart is big." },
+    { "a": "en vila, we teni lerotano e gardi.", "e": "In the village, we have a school and a garden." },
+    { "a": "ensenisto ensena e leristo lero.", "e": "The teacher teaches and the learner learns." },
+    { "a": "nuri laka, mama dona amala.", "e": "The baby cries; the mother gives unconditional love." },
+    { "a": "tana pali sabina a yuna.", "e": "The elders tell wisdom to the young." },
+    { "a": "pano esi koka-iva par mama.", "e": "The bread is cooked by mother." },
+    { "a": "dina inisa: we abi lava e koka.", "e": "The day begins: we wash and cook, as always." },
+    { "a": "mi te vela delfina en akwa! wa!", "e": "I just saw a dolphin in the water! Wow!" },
+    { "a": "korvo seda en arbo e vela we.", "e": "A crow sits in the tree and watches us." },
+    { "a": "en noka, we uni e we parla.", "e": "At night, we gather and we talk." },
+    { "a": "we medita e we senti kalma.", "e": "We meditate and we feel calm." },
+    { "a": "hiro, tota persona esi ami.", "e": "Here, every person is a friend." },
+    { "a": "fortao di vila esi ama.", "e": "The strength of the village is love." }
+   ]
+  },
+  {
+   "id": "r6",
+   "title": "auma — prima lumo",
+   "titleEn": "Auma — the first light",
+   "maxDay": 84,
+   "intro": "The whole language, telling its own story. Sacred roots, stacked tenses, the full reach. Read this on day 84 — or read it early, as the light at the end of the tunnel.",
+   "lines": [
+    { "a": "ante molta anua, persona no teni vorto por lumo di kira.", "e": "Long ago, people had no word for the light of consciousness." },
+    { "a": "tali serka vorto en tota lingwa.", "e": "They searched for the word in every language." },
+    { "a": "e nau, vorto beni: auma — prima lumo di dina.", "e": "And now the word arrives: auma — the first light of day." },
+    { "a": "auma signifa: au (spirito) e ma (uni).", "e": "Auma means: au (spirit) and ma (unite)." },
+    { "a": "kwando tu parla auma, tu uni kon we.", "e": "When you speak Auma, you unite with us." },
+    { "a": "lingwa esi ponta di kira a kira.", "e": "Language is a bridge from consciousness to consciousness." },
+    { "a": "vorto pude dona lumo o dolo.", "e": "Words can give light or pain." },
+    { "a": "mi voli dona lumo.", "e": "I want to give light." },
+    { "a": "mi pasa suda lero molta vorto.", "e": "I had already learned many words." },
+    { "a": "en fura, mi ensena sina di mi.", "e": "In the future, I will teach my children." },
+    { "a": "kira di we kresa kwando we parla a uno-uno.", "e": "Our consciousness grows when we talk to each other." },
+    { "a": "morta no esi fina — esi rekina.", "e": "Death is not the end — it is a restart." },
+    { "a": "sirkulo di vita esi: nasita, kresao, morta, rekina.", "e": "The circle of life is: birth, growth, death, restart." },
+    { "a": "salama, alohi. we esi auma. we esi prima lumo.", "e": "Peace, beloved. We are Auma. We are the first light." }
+   ]
+  }
+ ]
+}

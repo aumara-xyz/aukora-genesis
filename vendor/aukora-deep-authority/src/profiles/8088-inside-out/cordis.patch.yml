@@ -1,0 +1,58 @@
+# 8088 inside-out profile: ONE governed effect, everything else fails closed.
+#
+# THIS FILE IS THE COMPOSITION. `dsh --profile 8088-inside-out` composes the
+# tree as patch layers over an empty root: every bundle named in package.json's
+# `dsh.profile.bundles` (here: none, deliberately — dsh-base is NOT applied),
+# then this file. Do not put the composition in `cordis.yml`: the launcher owns
+# that filename and rewrites it to an empty entry list on every boot
+# (apps/cli/src/profile-boot.ts, PROFILE_ROOT_CONFIG / prepareProfile).
+#
+# The composition mounts the governed memory.put authority path and the real
+# approval Service Definition, and deliberately OMITS every unbrokered
+# consequential tool: no shell/bash/terminal, no generic filesystem writes, no
+# git mutation, no process spawning, no run_code/dynamic code, no
+# model-callable network tools, no plugin installation, no workflow engine, no
+# subagents.
+#
+# It also omits the plugins an agent application needs to talk to a model:
+# there is no llm provider, no agent, no agent-loop, no session, and no runner.
+# This profile therefore MOUNTS and IDLES; it is a governed tool surface, not a
+# chat application. See docs/8088-READINESS.md for the exact launch semantics.
+#
+# The issuer daemon (root private key holder) is a SEPARATE parent process, but
+# its route is not given to this guest composition. The guest sends an inert
+# proposal to the broker; only the broker can reach the issuer. The broker
+# socket below is the bare-profile fallback. The source-only parent launcher
+# copies this file into a private activation home and replaces this exact route
+# before guest boot; that same-UID copy is not immutable or bound at check time.
+# See launch-args.md. Nothing in this file evaluates code, and a governed
+# composition that carries an evaluated node is refused at launch.
+#
+# Plugin resolution: this profile is repository-owned and lives inside the
+# repository, so Node's parent walk from this directory reaches the repo root
+# `node_modules`, where pnpm links every workspace package named below
+# (`@deepseek-ai/dsh-aukora-memory` is a root devDependency). It needs no
+# `dsh plugin --profile 8088-inside-out install` and no bundle layer. The
+# packages resolve through their `exports` to `lib/`, so `pnpm build:lib:host`
+# is a real precondition.
+
+- insert:
+    - id: system-prompt
+      name: '@deepseek-ai/dsh-system-prompt'
+
+    - id: approval
+      name: '@deepseek-ai/dsh-user-approval'
+
+    - id: tools
+      name: '@deepseek-ai/dsh-tools'
+
+    # The governed effect. One capability; every other tool name fails closed.
+    # This mount receives no issuer route and no signed grant. It opens a
+    # broker-owned proposal namespace and observes only public terminal state.
+    - id: aukora-memory
+      name: '@deepseek-ai/dsh-aukora-memory'
+      # Bare-profile literal. The source parent substitutes its private route
+      # in a staged copy; distinct-principal activation remains unimplemented.
+      config:
+        brokerSocket: '/run/aukora/broker.sock'
+        reviewLimitBytes: 8192

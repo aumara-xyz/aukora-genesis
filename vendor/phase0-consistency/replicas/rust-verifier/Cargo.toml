@@ -1,0 +1,13 @@
+[package]
+name = "aukora-verify-rs"
+version = "0.1.1"
+edition = "2021"
+publish = false
+
+[dependencies]
+sha2 = "0.10"
+serde_json = "1"
+
+[[bin]]
+name = "serde-probe"
+path = "src/serde_probe.rs"

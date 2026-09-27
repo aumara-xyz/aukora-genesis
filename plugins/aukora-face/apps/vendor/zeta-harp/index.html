@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>Zeta Harp — Riemann-Siegel Phase Observatory</title>
+<!--
+  KNOWN MATHEMATICS / INTERACTIVE SCIENTIFIC AND ARTISTIC INSTRUMENT /
+  NOT EVIDENCE FOR RH OR GHP
+  Built by the donor under instruments/zeta_harp_v2/ (its "Gates 3-6"). Self-contained: no CDN,
+  no network — verified in this repository by scan, and that half of this sentence is the only
+  external-flavoured claim in the file the file can point at: itself.
+  The donor's MATH_SPEC.md did NOT travel with this page and is not in this repository; every
+  "MATH_SPEC section N" below names a section of a document phi does not have.
+-->
+<style>
+/* Zeta Harp v2 — observatory chrome. Museum-dark, hairline, no neon grid. */
+:root {
+  --bg: #0a0f1c;
+  --ink: #c6d1e2;
+  --dim: #6b7890;
+  --faint: #3a4459;
+  --blue: #5b8ef2;    /* positive real contribution */
+  --purple: #a06bff;  /* negative real contribution */
+  --gold: #e2b45a;    /* resultant */
+  --hair: rgba(198, 214, 240, 0.13);
+  --panel: rgba(7, 10, 18, 0.82);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --serif: Georgia, "Times New Roman", serif;
+  --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+body { font-family: var(--sans); color: var(--ink); font-size: 15.5px; }
+canvas#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+.hud { position: fixed; z-index: 5; pointer-events: none; }
+.hud * { pointer-events: auto; }
+
+/* ---- top bar ---------------------------------------------------------- */
+#topbar {
+  top: 0; left: 0; right: 0; display: flex; align-items: flex-start;
+  justify-content: space-between; padding: 14px 18px 0;
+}
+#masthead h1 {
+  font-family: var(--serif); font-weight: 400; letter-spacing: 0.42em;
+  font-size: 15px; color: var(--ink); text-transform: uppercase;
+}
+#masthead .sub {
+  font-family: var(--serif); font-style: italic; font-size: 12px;
+  letter-spacing: 0.04em; color: var(--dim); margin-top: 3px;
+}
+#foldLink {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em;
+  color: var(--dim); background: var(--panel); border: 1px solid var(--hair);
+  padding: 7px 16px; border-radius: 2px; text-decoration: none;
+}
+#foldLink:hover { color: var(--gold); border-color: rgba(226, 180, 90, 0.45); }
+button.ghost {
+  font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.1em;
+  background: var(--panel); color: var(--ink); border: 1px solid var(--hair);
+  padding: 7px 16px; cursor: pointer; border-radius: 2px;
+}
+button.ghost:hover { border-color: rgba(198, 214, 240, 0.4); }
+button.ghost.on { color: var(--gold); border-color: rgba(226, 180, 90, 0.45); }
+
+#presets { display: flex; gap: 6px; }
+.chip {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+  color: var(--dim); background: rgba(16,22,38,0.6);
+  border: 1px solid rgba(148,163,184,0.14); border-radius: 999px;
+  padding: 4px 12px; cursor: pointer;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.chip:hover { color: var(--ink); border-color: rgba(148,163,184,0.35); }
+.chip.on { color: var(--gold); border-color: rgba(226,180,90,0.45); }
+
+/* ---- generic panel ----------------------------------------------------- */
+.panel {
+  position: fixed; z-index: 6; background: rgba(16,22,38,0.72);
+  border: 1px solid rgba(148,163,184,0.14); border-radius: 16px; padding: 14px 16px;
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.panel h2 {
+  font-family: var(--mono); font-size: 12px; font-weight: 400;
+  letter-spacing: 0.18em; color: var(--dim); text-transform: uppercase;
+  margin-bottom: 8px; display: flex; justify-content: space-between; gap: 12px;
+}
+.panel h2 .x { cursor: pointer; color: var(--faint); }
+.panel h2 .x:hover { color: var(--ink); }
+.hidden { display: none !important; }
+.mono { font-family: var(--mono); }
+.dim { color: var(--dim); }
+.caveat {
+  font-family: var(--mono); font-size: 12px; color: var(--dim);
+  line-height: 1.6; letter-spacing: 0.02em; margin-top: 8px; max-width: 340px;
+}
+.kv { font-family: var(--mono); font-size: 12.5px; line-height: 1.75; }
+.kv .k { color: var(--dim); }
+.kv .v { color: var(--ink); }
+.kv .g { color: var(--gold); }
+
+/* ---- the map: always-visible bottom strip (was the Z ribbon panel) ------- */
+#ribbonPanel {
+  position: fixed; z-index: 6; left: 18px; width: min(72%, calc(100vw - 284px));
+  bottom: 6px; height: 90px;
+  display: flex; align-items: stretch; gap: 10px; padding: 5px 8px 5px 12px;
+  background: rgba(16,22,38,0.72); border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+#ribbon { flex: 1; min-width: 0; height: 100%; display: block; cursor: crosshair; touch-action: none; }
+#ribbon.scrubbing { cursor: ew-resize; }
+#mapChips { display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+#ribbonSide { display: flex; flex-direction: column; justify-content: center; gap: 5px; align-items: flex-end; }
+#ribbonSide .presetRow { display: flex; gap: 5px; }
+.layerToggle {
+  cursor: pointer; user-select: none; display: inline-flex; align-items: center;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; color: var(--dim);
+  border: 1px solid rgba(148,163,184,0.14); border-radius: 999px; padding: 3px 10px;
+}
+.layerToggle:hover { color: var(--ink); }
+.layerToggle .swatch { display: inline-block; width: 10px; height: 2px; margin-right: 5px; }
+.layerToggle.off { opacity: 0.32; }
+
+/* ---- flower ------------------------------------------------------------ */
+/* edge-anchored windows never reach the central 40% of the viewport:
+   left windows are capped at 30vw - 24px, right windows likewise */
+#flowerPanel { left: 18px; top: 64px; width: min(384px, calc(30vw - 24px)); max-height: calc(100vh - 300px); overflow-y: auto; }
+#flower { width: 100%; aspect-ratio: 1; display: block; cursor: pointer; }
+
+/* ---- inspector --------------------------------------------------------- */
+#inspectorPanel { left: 18px; top: 64px; width: min(300px, calc(30vw - 24px)); }
+
+/* ---- microscope -------------------------------------------------------- */
+#microPanel { left: 18px; top: 64px; width: min(430px, calc(30vw - 24px)); max-height: calc(100vh - 300px); overflow-y: auto; }
+#microHead { font-family: var(--mono); font-size: 12px; color: var(--dim);
+  letter-spacing: 0.03em; margin: -2px 0 8px; }
+#microZeroSel { width: 100%; background: #101827; color: var(--ink);
+  border: 1px solid var(--hair); font-family: var(--mono); font-size: 12.5px;
+  padding: 4px; margin-bottom: 8px; }
+#microCurve { width: 100%; height: 130px; display: block; }
+#microBars { width: 100%; height: 150px; display: block; margin-top: 8px; }
+
+/* ---- fence ------------------------------------------------------------- */
+#fencePanel {
+  inset: 0; z-index: 20; overflow-y: auto; border: none; border-radius: 0;
+  background: rgba(10, 15, 28, 0.97); padding: 48px 0;
+}
+#fenceInner { max-width: 780px; margin: 0 auto; padding: 0 24px; }
+#fenceInner h2 { font-family: var(--serif); font-size: 16px; letter-spacing: 0.28em;
+  color: var(--ink); text-transform: uppercase; margin: 26px 0 10px; display: block; }
+#fenceInner p, #fenceInner li {
+  font-size: 14px; line-height: 1.75; color: var(--ink); margin-bottom: 8px;
+}
+#fenceInner .frm { font-family: var(--mono); font-size: 13px; color: var(--gold);
+  background: rgba(226, 180, 90, 0.05); border-left: 2px solid rgba(226, 180, 90, 0.3);
+  padding: 8px 12px; margin: 8px 0; white-space: pre-wrap; line-height: 1.7; }
+#fenceInner .lawline { font-family: var(--mono); font-size: 12px; color: var(--dim);
+  letter-spacing: 0.05em; line-height: 1.8; }
+#fenceInner table { border-collapse: collapse; font-family: var(--mono);
+  font-size: 12px; margin: 8px 0; }
+#fenceInner td, #fenceInner th { border: 1px solid var(--hair); padding: 4px 10px;
+  color: var(--ink); font-weight: 400; text-align: left; }
+#fenceInner th { color: var(--dim); }
+/* the 12px floor holds inside math notation too: no shrunken sub/superscripts */
+#fenceInner sub, #fenceInner sup { font-size: 12px; line-height: 0; position: relative; vertical-align: baseline; }
+#fenceInner sub { top: 0.3em; }
+#fenceInner sup { top: -0.45em; }
+
+/* ---- left column: the crossing event label -------------------------------
+   The only transient text on the main screen. LEFT edge, left-justified,
+   just above the chart strip. Nothing is centered over the tunnel. */
+#leftCol {
+  position: fixed; left: 18px; bottom: 112px; z-index: 7; pointer-events: none;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  max-width: min(430px, calc(30vw - 24px)); text-align: left;
+}
+
+/* ---- the indicators: torus + flower inset, top-right glass column -------- */
+#indicators {
+  position: fixed; right: 12px; top: 50px; z-index: 6; width: 208px;
+  display: flex; flex-direction: column; gap: 5px; padding: 10px 12px;
+  background: rgba(16,22,38,0.72); border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+#torusViews { display: flex; gap: 4px; }
+.tor-view {
+  flex: 1; font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
+  color: var(--dim); background: rgba(16,22,38,0.6);
+  border: 1px solid rgba(148,163,184,0.14); border-radius: 999px;
+  padding: 3px 0; cursor: pointer; text-align: center;
+}
+.tor-view:hover { color: var(--ink); border-color: rgba(148,163,184,0.35); }
+.tor-view.on { color: var(--gold); border-color: rgba(226,180,90,0.45); }
+#torusCv, #sliceCv { aspect-ratio: 1; display: block; margin: 0 auto;
+  background: rgba(7,10,18,0.55); border: 1px solid rgba(148,163,184,0.12); }
+#torusCv { width: 148px; border-radius: 10px; }
+#sliceCv { width: 88px; border-radius: 50%; }
+#torusLbl { text-align: center; font-family: var(--mono); font-size: 12px;
+  letter-spacing: 0; color: var(--dim); line-height: 1.35; }
+
+/* ---- the control cluster: the only controls, one compact group ------------
+   bottom-right, just above the chart strip: PLAY · SPEED · ZOOM · SOUND ·
+   VOLUME. Nothing else on the screen is a playback control. */
+#cluster {
+  position: fixed; right: 18px; bottom: 10px; z-index: 6; width: 240px;
+  display: flex; flex-direction: column; gap: 3px; padding: 9px 14px;
+  background: rgba(16,22,38,0.72); border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.cl-row { display: grid; grid-template-columns: 64px 1fr; align-items: center; gap: 8px; }
+.cl-lbl { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--dim); }
+.cl-note { font-size: 12px; line-height: 1.25; color: var(--dim); }
+#playBtn { width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(198,214,240,0.3); background: rgba(7,10,18,0.6);
+  display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+#playBtn:hover { border-color: rgba(198,214,240,0.55); }
+#playBtn .ic-pause { display: block; width: 9px; height: 12px;
+  border-left: 3px solid var(--ink); border-right: 3px solid var(--ink); }
+#playBtn .ic-play { display: block; width: 0; height: 0; margin-left: 3px;
+  border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+  border-left: 10px solid var(--ink); }
+#soundToggle, #quantToggle { width: 100%; font-family: var(--mono); font-size: 12.5px;
+  letter-spacing: 0.14em; padding: 4px 0; color: var(--dim); background: rgba(7,10,18,0.6);
+  cursor: pointer; border: 1px solid rgba(148,163,184,0.25); border-radius: 999px; }
+#soundToggle:hover, #quantToggle:hover { color: var(--ink); }
+#soundToggle.on, #quantToggle.on { color: #8fd0a8; border-color: rgba(143,208,168,0.5); }
+.cl-chips { display: flex; gap: 8px; }
+.cl-chip { flex: 1; font-family: var(--mono); font-size: 13px; letter-spacing: 0.06em;
+  padding: 10px 0; color: var(--dim); background: rgba(7,10,18,0.6); cursor: pointer;
+  border: 1px solid rgba(148,163,184,0.25); border-radius: 999px; }
+.cl-chip:hover { color: var(--ink); border-color: rgba(198,214,240,0.5); }
+.cl-chip.on { color: var(--mint); border-color: rgba(125,211,168,0.5); }
+#cluster input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%;
+  height: 2px; background: var(--faint); outline: none; display: block; }
+#cluster input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none;
+  width: 11px; height: 11px; border-radius: 50%; background: var(--ink); cursor: pointer; }
+#cluster input[type="range"]::-moz-range-thumb { width: 11px; height: 11px; border-radius: 50%;
+  background: var(--ink); border: none; cursor: pointer; }
+#soundViz { width: 100%; height: 16px; display: block; }
+#soundErr { display: none; font-family: var(--mono); font-size: 12px;
+  color: #d98a8a; line-height: 1.5; text-align: left; }
+#soundErr.on { display: block; }
+
+/* a left-anchored window takes precedence over the left column */
+body.leftwin #leftCol { opacity: 0 !important; pointer-events: none !important; }
+
+/* ---- fence close chip (top-right of the fence overlay) -------------------- */
+#fenceClose {
+  position: fixed; top: 16px; right: 20px; z-index: 21;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+  color: var(--dim); background: rgba(16,22,38,0.72);
+  border: 1px solid rgba(148,163,184,0.14); border-radius: 999px;
+  padding: 5px 14px; cursor: pointer;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+#fenceClose:hover { color: var(--ink); border-color: rgba(148,163,184,0.4); }
+
+/* ---- the crossing event label: left column, mono 13px, left-justified ---- */
+#eventLabel {
+  font-family: var(--mono);
+  font-size: 13px; letter-spacing: 0.12em; color: var(--gold);
+  text-align: left; opacity: 0; transition: opacity 0.5s; line-height: 1.8;
+  text-shadow: 0 0 18px rgba(4, 6, 11, 0.9); pointer-events: none;
+  max-width: 100%;
+}
+#eventLabel .sub2 { font-size: 12px; color: var(--dim); letter-spacing: 0.08em; }
+
+/* ---- intro A: the dramatic flight -----------------------------------------
+   Purely visual: the tunnel flying on its own. Every text-bearing HUD
+   element is faded out for the whole flight; nothing is overlaid. */
+.hud { transition: opacity 1.6s ease; }
+body.introA .hud { opacity: 0 !important; pointer-events: none !important; }
+@media (prefers-reduced-motion: reduce) { .hud { transition: none; } }
+
+/* ---- intro B: the controls tour -------------------------------------------
+   Max three beats, LEFT-anchored, serif 19px, on a generous radial scrim,
+   each pointing at the actual controls via the SVG connectors. */
+#tourBeat {
+  position: fixed; left: 18px; top: 36%; z-index: 8; max-width: 300px;
+  font-family: var(--serif); font-size: 19px; line-height: 1.55; color: #efe6d2;
+  text-align: left; padding: 40px 52px; opacity: 0; transition: opacity 0.8s ease;
+  background: radial-gradient(ellipse at center, rgba(3, 5, 10, 0.92) 0%,
+    rgba(3, 5, 10, 0.66) 52%, rgba(3, 5, 10, 0) 76%);
+  border-radius: 50%; pointer-events: none;
+}
+#tourBeat.on { opacity: 1; }
+#tourBeat:empty { display: none; }
+@media (prefers-reduced-motion: reduce) { #tourBeat { transition: none; } }
+#tourSVG { position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: 7; pointer-events: none; }
+#tourSVG .bp { fill: none; stroke: rgba(226, 180, 90, 0.5); stroke-width: 1;
+  stroke-dasharray: 3 4; }
+#tourSVG .bpdot { fill: var(--gold); opacity: 0.85; }
+
+#vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 52%, rgba(2, 3, 6, 0.55) 100%); }
+#fade { position: fixed; inset: 0; z-index: 29; background: #0a0f1c; pointer-events: none;
+  transition: opacity 2.2s; }
+
+#glLost{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:32ch;
+padding:14px 16px;border:1px solid rgba(255,255,255,.18);border-radius:8px;
+background:rgba(0,0,0,.72);color:#cfd6e4;font:15px/1.5 ui-monospace,monospace;text-align:center;z-index:40}
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="vignette"></div>
+
+<div id="topbar" class="hud">
+  <div id="masthead">
+    <h1 id="mastTitle">Zeta Harp</h1>
+    <div class="sub" id="mastSub">known mathematics &middot; not evidence &middot; every number checkable</div>
+  </div>
+  <a id="foldLink" href="./fold.html">the machine it belongs to &rarr;</a>
+</div>
+
+<div id="leftCol" class="hud">
+  <div id="eventLabel"></div>
+</div>
+
+<aside id="indicators" class="hud" aria-label="position indicators">
+  <div id="torusViews" role="group" aria-label="torus view">
+    <button class="tor-view on" id="torViewShadow" data-view="shadow" aria-pressed="true">SHADOW</button>
+    <button class="tor-view" id="torViewSlice" data-view="slice" aria-pressed="false">SLICE</button>
+    <button class="tor-view" id="torViewUnfold" data-view="unfold" aria-pressed="false">UNFOLD</button>
+  </div>
+  <canvas id="torusCv"></canvas>
+  <div id="torusLbl">the torus — the formula's phases, turning</div>
+  <canvas id="sliceCv"></canvas>
+</aside>
+
+<aside id="cluster" class="hud" aria-label="controls">
+  <div class="cl-row">
+    <button id="playBtn" aria-label="play or pause" aria-pressed="true"><span class="ic-pause"></span></button>
+    <span class="cl-lbl">PLAY</span>
+  </div>
+  <div class="cl-note">fly on your own</div>
+  <div class="cl-row">
+    <span class="cl-lbl">SPEED</span>
+    <input type="range" id="speedSlider" min="0" max="100" value="35" aria-label="speed">
+  </div>
+  <div class="cl-note">how fast you climb</div>
+  <div class="cl-row">
+    <span class="cl-lbl">ZOOM</span>
+    <input type="range" id="zoomSlider" min="0" max="100" value="26" aria-label="zoom">
+  </div>
+  <div class="cl-note">pull back or dive in</div>
+  <div class="cl-row" id="cpSound">
+    <span class="cl-lbl">SOUND</span>
+    <button id="soundToggle" aria-pressed="false">OFF</button>
+  </div>
+  <div class="cl-note">the sum as sound</div>
+  <div class="cl-row">
+    <span class="cl-lbl">VOLUME</span>
+    <input type="range" id="soundVol" min="0" max="100" value="35" aria-label="volume">
+  </div>
+  <div class="cl-note">loudness</div>
+  <div class="cl-row">
+    <span class="cl-lbl">DEGREES</span>
+    <button id="quantToggle" aria-pressed="false">OFF</button>
+  </div>
+  <div class="cl-note">snap voices to a scale &mdash; prettier, not pure math (off = raw law)</div>
+  <div class="cl-note">three ways to look closer</div>
+  <div class="cl-row cl-chips">
+    <button class="cl-chip" id="chipFlower" aria-pressed="false">flower</button>
+    <button class="cl-chip" id="chipScope" aria-pressed="false">scope</button>
+    <button class="cl-chip" id="chipFence" aria-pressed="false">fence</button>
+  </div>
+  <canvas id="soundViz"></canvas>
+  <div id="soundErr" role="status"></div>
+</aside>
+
+<div id="ribbonPanel" class="hud">
+  <canvas id="ribbon" width="1200" height="110"></canvas>
+  <div id="mapChips">
+    <span class="layerToggle" id="lyrM" title="the strings (tunnel)"><span class="swatch" style="background:var(--blue)"></span>M</span>
+    <span class="layerToggle" id="lyrZ" title="the resultant (chart + tunnel)"><span class="swatch" style="background:var(--gold)"></span>Z</span>
+    <span class="layerToggle" id="lyrR" title="the fixture remainder (chart)"><span class="swatch" style="background:var(--purple)"></span>R</span>
+  </div>
+  <div id="ribbonSide">
+    <div class="presetRow" id="presets">
+      <button class="chip" data-t="130">130</button>
+      <button class="chip" data-t="10000">10&#8308;</button>
+      <button class="chip" data-t="1000000">10&#8310;</button>
+      <button class="chip" data-t="100000000">10&#8312;</button>
+    </div>
+  </div>
+</div>
+
+<div id="flowerPanel" class="panel hidden">
+  <h2><span></span><span class="x" data-close="flowerPanel">[close]</span></h2>
+  <canvas id="flower" width="712" height="712"></canvas>
+  <div class="caveat">the vertical axis is auxiliary; the resultant is never |Z|</div>
+</div>
+
+<div id="inspectorPanel" class="panel hidden">
+  <h2>Term inspector <span class="x" data-close="inspectorPanel">[close]</span></h2>
+  <div class="kv" id="inspectorBody">click a helix or a phasor to select a term</div>
+  <div style="margin-top:8px"><button class="ghost" id="voiceBtn">voice this term</button></div>
+</div>
+
+<div id="microPanel" class="panel hidden">
+  <h2>Zero microscope — refined reference list <span class="x" data-close="microPanel">[close]</span></h2>
+  <div id="microHead">the microscope &mdash; zooms on the nearest crossing</div>
+  <select id="microZeroSel"></select>
+  <canvas id="microCurve" width="800" height="260"></canvas>
+  <canvas id="microBars" width="800" height="300"></canvas>
+  <div class="kv" id="microNums"></div>
+  <div class="caveat">Zeros above come only from the embedded refined reference list
+  (Odlyzko-derived table, refined with high-precision Z; NOT certified). Sign changes of
+  the main sum computed here are "computed crossings (finite approximation)" — the offset
+  between our crossing and the reference ordinate is the finite-sum error, shown above.
+  The reference table covers t &lt; ~75000; no reference zeros exist in this build above
+  that height.</div>
+</div>
+
+<div id="fencePanel" class="panel hidden">
+  <button id="fenceClose" data-close="fencePanel">[close]</button>
+  <div id="fenceInner"><h2 style="margin-top:0">The fence</h2>
+<p class="lawline">KNOWN MATHEMATICS / INTERACTIVE SCIENTIFIC AND ARTISTIC INSTRUMENT /
+NOT EVIDENCE FOR RH OR GHP</p>
+<p>This page renders and sonifies one object: the Riemann-Siegel main sum for Hardy's
+Z-function on the critical line. All of the mathematics below is standard (DLMF 25.10)
+and none of it is claimed as new. Every number on screen is computed from these formulas
+— nothing here is measured from nature, and nothing here certifies anything.</p>
+
+<h2>The formulas</h2>
+<div class="frm">Z(t) = e<sup>i&theta;(t)</sup> &zeta;(&frac12; + it)&emsp;(real for real t)
+
+&theta;(t) &asymp; (t/2)&thinsp;ln(t/2&pi;) &minus; t/2 &minus; &pi;/8 + 1/(48t) + 7/(5760t&sup3;)&emsp;(working asymptotic)
+&theta;&prime;(t) &asymp; &frac12;&thinsp;ln(t/2&pi;) &minus; 1/(48t&sup2;) &minus; 7/(1920t&#8308;)
+
+N(t) = &lfloor;&radic;(t/2&pi;)&rfloor;
+a<sub>n</sub> = 2/&radic;n&emsp;(computed spectral amplitude)
+&phi;<sub>n</sub>(t) = &theta;(t) &minus; t&thinsp;ln n
+c<sub>n</sub>(t) = a<sub>n</sub> cos &phi;<sub>n</sub>(t)
+M(t) = &Sigma;<sub>n=1..N(t)</sub> c<sub>n</sub>(t)&emsp;(the main sum — everything drawn and heard)
+R_ref(t) = Z_ref(t) &minus; M(t)&emsp;(remainder, by subtraction from high-precision reference)
+
+t<sub>n</sub> = 2&pi;n&sup2;&emsp;(CUTOFF-ENTRY height of term n — a height, never a frequency)
+h<sub>n</sub>(u) = ( a<sub>n</sub> cos &phi;<sub>n</sub>(u), a<sub>n</sub> sin &phi;<sub>n</sub>(u), scale_t &middot; (u &minus; t&#8320;) )&emsp;(3D phase trajectory)
+f_audio_n = v_t &middot; (&theta;&prime;(t) &minus; ln n)/2&pi;&emsp;(Truth Audio law)</div>
+
+<h2>What is omitted</h2>
+<p>The geometry and the audio render the main sum M(t) only. The remainder
+R_ref(t) = Z_ref(t) &minus; M(t) is <em>not</em> drawn as geometry; it is shown as a
+separate labeled trace where fixture data exists, and disclosed here. Fixture-measured
+scale of the omitted remainder (max |R_ref| over each embedded reference window):</p>
+<table id="fenceRTable"><tr><th>window</th><th>height range</th><th>max |R_ref|</th><th>RMS R_ref</th><th>max |M|</th></tr></table>
+<p class="lawline" id="fenceRNote"></p>
+
+<h2>Disclosed rendering and audio constants</h2>
+<p class="lawline" id="fenceDisclosures">(live values fill in here)</p>
+<p>These are the only free constants in Truth Mode. There are no fitted parameters, no
+per-string tuning, no frequency remapping. The phasor pictures use the imaginary part of
+the phasor sum as an AUXILIARY visualization coordinate: only the real part equals M(t),
+and the magnitude of the phasor sum is never labeled |Z|.</p>
+
+<h2>Labeling laws in force</h2>
+<p class="lawline">
+&bull; amplitudes 2/&radic;n are "computed spectral", never "measured"<br>
+&bull; 2&pi;n&sup2; is a cutoff-entry height, never a frequency<br>
+&bull; sign changes of the main sum are "computed crossings (finite approximation)";
+sign changes of fixture Z_ref are "computed reference crossings"; neither is a certified zero<br>
+&bull; the refined zero list is Odlyzko-derived and mpmath-refined, NOT certified<br>
+&bull; heights near 10&#8312; sit at the float64 phase-accuracy frontier (~10&#8315;&#8311; rad);
+that is where this instrument's honest range ends</p>
+
+<h2>Validation</h2>
+<p>The donor's record, inherited and NOT verifiable in this repository: before this page
+shipped, the inline &theta;, &theta;&prime; and M(t) were checked
+against frozen high-precision fixtures (mpmath, 80 significant digits) on four windows —
+W1 [100,160], W2 near 10&#8308;, W3 near 10&#8310;, W4 near 10&#8312; — plus a
+40-entry refined zero list. Compact excerpts of those fixtures are embedded in this page
+and drawn as the reference overlays. <b>The full-precision originals, their SHA-256 manifest and
+the check harness did not travel with this page and are not in this repository</b> &mdash; what you
+can check here is what is here: the embedded excerpts, and the in-page recomputation of the inline
+main sum against them reported in the table above.</p>
+<table id="fenceVTable"><tr><th>window</th><th>points embedded</th><th>max |M_inline &minus; M_fixture|</th></tr></table>
+
+<h2>The Riemann fence</h2>
+<p><b>Nothing in this instrument is evidence for or against the Riemann Hypothesis.</b>
+It draws a finite, classical approximation to a function whose zeros are the subject of
+that conjecture, and it checks its own arithmetic against the reference fixtures embedded in
+it. That is
+all it does. If it is beautiful, the beauty belongs to the mathematics, not to any claim.</p>
+
+<p style="margin-top:24px"><button class="ghost" data-close="fencePanel">return to the instrument [i]</button></p>
+</div>
+</div>
+
+<div id="fade"></div>
+<svg id="tourSVG" class="hud" aria-hidden="true"></svg>
+<div id="tourBeat" class="hud" aria-live="polite"></div>
+
+<script src="js/zh-fixtures-1.js"></script>
+<script src="js/zh-fixtures-2.js"></script>
+<script src="js/zh-math.js"></script>
+<script src="js/zh-app-1-state.js"></script>
+<script src="js/zh-app-2-gl.js"></script>
+<script src="js/zh-app-3-panels.js"></script>
+<script src="js/zh-app-4-audio.js"></script>
+<script src="js/zh-app-5-orchestration.js"></script>
+<script src="js/zh-app-6-main.js"></script>
+</body>
+</html>

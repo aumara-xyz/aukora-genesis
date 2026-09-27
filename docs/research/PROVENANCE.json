@@ -1,0 +1,87 @@
+{
+  "repo": "aumara-xyz/aukora-deep (local clone ~/aukora-great-merge/clones/aukora-deep)",
+  "commit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+  "paths": [
+    "docs/AUKORA-BOUNDARY-ARCHITECTURE.md",
+    "archive/research/AUKORA-SKELETON-KEY-II.md",
+    "archive/research/THE-GOLDEN-BOUNDARY.md",
+    "LICENSE",
+    "LICENSE.MIT",
+    "LICENSING.md"
+  ],
+  "method": "git archive <commit> <paths> | tar -x; each gitBlob re-derived with `git hash-object` on the copied file and equal to `git ls-tree -r <commit>`",
+  "files": [
+    {
+      "path": "LICENSE",
+      "local": "LICENSE",
+      "gitBlob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "path": "LICENSE.MIT",
+      "local": "LICENSE.MIT",
+      "gitBlob": "c1f7a78e89e4e4dc7b86664c3b3c76eb5eee1785",
+      "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be",
+      "bytes": 1065
+    },
+    {
+      "path": "LICENSING.md",
+      "local": "LICENSING.md",
+      "gitBlob": "d43d7ac844a5d319a007eb0816ff0cfb79d71685",
+      "sha256": "1b0f6edf96d7a46bdc43f369a78129c62acc5e7f278c43908e9f571cd28ee601",
+      "bytes": 3113
+    },
+    {
+      "path": "docs/AUKORA-BOUNDARY-ARCHITECTURE.md",
+      "local": "src/docs/AUKORA-BOUNDARY-ARCHITECTURE.md",
+      "gitBlob": "4b619fd18aae0797aecf578420fc18e47b3ae58d",
+      "sha256": "d2dd28bbb871f980c3676ef7bc4e6c0d182d62d703bb0d44894a3cf86e24953f",
+      "bytes": 94346
+    },
+    {
+      "path": "archive/research/AUKORA-SKELETON-KEY-II.md",
+      "local": "src/archive/research/AUKORA-SKELETON-KEY-II.md",
+      "gitBlob": "23f175c7e97f79ddf94f83688bc1b10d7511670c",
+      "sha256": "d9916e18fe7c7f21c7b18358705f76c7bd50d6ad05616310fa6abfc96e4d5267",
+      "bytes": 55250
+    },
+    {
+      "path": "archive/research/THE-GOLDEN-BOUNDARY.md",
+      "local": "src/archive/research/THE-GOLDEN-BOUNDARY.md",
+      "gitBlob": "32cc1284b6e1bcb9f7463c81477ad369e649ea8a",
+      "sha256": "6c54a24afe87a6624b4c592e0426334b142e7a9df2390dcf92d91cbe7917d1d3",
+      "bytes": 66533
+    }
+  ],
+  "superseded": {
+    "repo": "aumara-xyz/aukora-os (local clone ~/aukora-great-merge/clones/aukora-os)",
+    "commit": "a313d13bcacf2989316f2a5aafaa6aca049e48fb",
+    "paths": [
+      "scripts/dev/aukora-memory-signer-daemon.ts"
+    ],
+    "status": "superseded: its role is covered in Genesis by aumlok-signer.mjs and the owner daemon; kept as a record, not wired, not runnable here",
+    "license": "aukora-os carries no LICENSE or NOTICE at its root at this commit; aukora-ide/NOTICE there covers the OpenCode-derived IDE, not scripts/dev/",
+    "files": [
+      {
+        "path": "scripts/dev/aukora-memory-signer-daemon.ts",
+        "local": "superseded/aukora-memory-signer-daemon.ts",
+        "gitBlob": "f72a483dc2a136f6d34b17f87333496b01fcca39",
+        "sha256": "b11a171893877f107dec5fd6aaccf3262547e8ddba81a8dfd329e80dab0a8337",
+        "bytes": 13760
+      }
+    ],
+    "unimportedDependencies": [
+      {
+        "path": "aukora-ide/gate/risk.ts",
+        "gitBlob": "37d28c9b4b1cfec19d53b584e42d7d6c52f1eb48",
+        "bytes": 62589
+      },
+      {
+        "path": "aukora-ide/integration/opencode-runtime/secretShape.ts",
+        "gitBlob": "3c947d4f49151dccc10d19203cd1fc9302a9d08d",
+        "bytes": 2952
+      }
+    ]
+  }
+}

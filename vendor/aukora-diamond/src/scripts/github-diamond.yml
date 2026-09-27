@@ -1,0 +1,45 @@
+name: diamond
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  diamond:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: venv + pynacl
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install pynacl
+          echo "SHA=$(git rev-parse HEAD)"
+          git rev-parse HEAD
+
+      - name: Diamond court
+        run: |
+          . .venv/bin/activate
+          export PYTHONPATH="$PWD"
+          ./scripts/diamond.sh
+
+      - name: Stranger demo
+        run: |
+          . .venv/bin/activate
+          export PYTHONPATH="$PWD"
+          ./scripts/stranger-demo.sh
+
+      - name: Print SHA
+        run: |
+          echo "DIAMOND_CI_SHA=$(git rev-parse HEAD)"
+          git rev-parse HEAD

@@ -1,0 +1,469 @@
+/* Workspace rows stay compact; Session and search rows use the spatial
+   shell's mint outlined-card treatment. Hover swaps remain pure CSS:
+   project folder -> chevron + action buttons; session time -> ellipsis. */
+
+.projectRow,
+.sessionRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 8px;
+  padding: 0 8px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--dsw-alias-label-primary);
+}
+
+.projectRow:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.sessionRow:hover {
+  transform: translateX(3px);
+}
+
+.sessionRow.selected {
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-mint) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--dsw-static-spatial-mint) 14%, transparent);
+}
+
+.searchResultRow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: calc(100% - 4px);
+  min-height: 64px;
+  margin-inline: 2px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-mint) 30%, transparent);
+  border-radius: 14px;
+  padding: 10px 16px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  color: var(--dsw-alias-label-primary);
+  transition:
+    transform 200ms var(--ds-ease-in-out),
+    border-color 250ms var(--ds-ease-in-out),
+    box-shadow 250ms var(--ds-ease-in-out),
+    background 250ms var(--ds-ease-in-out);
+}
+
+.searchResultRow:hover {
+  transform: translateX(3px);
+}
+
+.searchResultRow.selected {
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-mint) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--dsw-static-spatial-mint) 14%, transparent);
+}
+
+.searchResultHeading {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.searchResultTitle {
+  min-width: 0;
+  margin-left: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.searchResultMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-left: 20px;
+}
+
+.searchResultWorkspace,
+.searchResultSnippet {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.searchResultWorkspace {
+  flex: none;
+  max-width: 40%;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.searchResultSnippet {
+  flex: 1;
+  min-width: 0;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* Compact one-line Workspace row after removing the session-count subtitle. */
+.projectRow {
+  height: 34px;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.projectRow .rowActions {
+  height: 20px;
+}
+
+/* Spatial Session card: mint outline, roomy hit target, and inward motion. */
+.sessionRow {
+  width: calc(100% - 4px);
+  min-height: 64px;
+  height: auto;
+  margin-inline: 2px;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-mint) 30%, transparent);
+  border-radius: 14px;
+  background: transparent;
+  transition:
+    transform 200ms var(--ds-ease-in-out),
+    border-color 250ms var(--ds-ease-in-out),
+    box-shadow 250ms var(--ds-ease-in-out),
+    background 250ms var(--ds-ease-in-out);
+  /* Mount fade: session rows appear by unfolding a group (or the tree
+     mounting). Stable row keys keep already-visible rows from replaying it. */
+  animation: row-in 150ms var(--ds-ease-in-out);
+}
+
+.threadMark {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+}
+
+.threadMark > img {
+  display: block;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.threadStatus {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--dsw-specific-spatial-lane);
+  border-radius: 50%;
+  background: var(--dsw-specific-spatial-lane);
+}
+
+/* The row's own trefoil turns while its Session is running — one mark, turning,
+   with nothing drawn over it. */
+.turning {
+  animation: thread-mark-turn 1.6s linear infinite;
+}
+
+@keyframes thread-mark-turn {
+  to { transform: rotate(360deg); }
+}
+
+/* Motion beside every running row that a reader cannot stop by looking away:
+   the preference wins, and the mark holds still. */
+@media (prefers-reduced-motion: reduce) {
+  .turning { animation: none; }
+}
+
+.sessionRow .title {
+  margin: 0 6px 0 0;
+}
+
+.flatSessionRowWithoutStatus .title {
+  margin-left: 0;
+}
+
+@keyframes row-in {
+  from { opacity: 0; }
+}
+
+.slot {
+  flex: none;
+  width: 16px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.folderActive {
+  color: var(--dsw-alias-state-business-primary);
+}
+
+
+/* Project leading slot: folder by default, expand arrow on row hover. */
+.projectRow .chevron { display: none; }
+.projectRow:hover .chevron { display: inline-flex; }
+.projectRow:hover .folder { display: none; }
+
+/* Expand arrow (filled triangle): points right closed, rotates to point down open. */
+.arrow {
+  transition: transform 150ms var(--ds-ease-in-out);
+}
+
+.arrowOpen {
+  transform: rotate(90deg);
+}
+
+.projectText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.sessionRow .title {
+  flex: 1;
+}
+
+.pinMarker {
+  flex: none;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--dsw-static-spatial-violet);
+}
+
+.pinMarker svg {
+  width: 14px;
+  height: 14px;
+}
+
+.unreadMarker {
+  flex: none;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.unreadMarker svg {
+  width: 14px;
+  height: 14px;
+}
+
+.archiveMarker {
+  flex: none;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--dsw-static-spatial-gold);
+}
+
+.archived {
+  cursor: pointer;
+}
+
+.sessionMeta {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 0;
+  max-width: 36%;
+  line-height: 16px;
+}
+
+.workspace {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+
+.time {
+  flex: none;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Trailing action buttons surface on hover only (figma 27:4668 / 27:4656):
+   bare 16px glyphs, gap 12, tertiary grey. */
+.rowActions {
+  flex: none;
+  display: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.projectRow:hover .rowActions,
+.sessionRow:hover .rowActions,
+.projectRow:focus-within .rowActions,
+.sessionRow:focus-within .rowActions,
+.projectRow.menuOpen .rowActions,
+.sessionRow.menuOpen .rowActions {
+  display: inline-flex;
+}
+
+.sessionRow:hover .sessionMeta,
+.sessionRow:focus-within .sessionMeta,
+.sessionRow.menuOpen .sessionMeta {
+  display: none;
+}
+
+.sessionRow:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: -2px;
+}
+
+/* An open row menu pins the row's hover affordances while its dropdown is up. */
+.projectRow.menuOpen {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.sessionRow.menuOpen {
+  transform: translateX(3px);
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-mint) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--dsw-static-spatial-mint) 14%, transparent);
+}
+
+/* Session drag insert marker: a leading chevron and 2px rule between rows,
+   absolutely positioned so it neither resembles a row border nor changes layout. */
+.sessionRow.dropBefore,
+.sessionRow.dropAfter {
+  position: relative;
+}
+
+.sessionRow.dropBefore::before,
+.sessionRow.dropAfter::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 4px;
+  height: 12px;
+  background:
+    linear-gradient(
+      55deg,
+      transparent calc(50% - 1px),
+      var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ) 0 0 / 5px 7px no-repeat,
+    linear-gradient(
+      125deg,
+      transparent calc(50% - 1px),
+      var(--dsw-alias-state-business-primary) calc(50% - 1px) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    ) 0 5px / 5px 7px no-repeat,
+    linear-gradient(
+      var(--dsw-alias-state-business-primary) 0 0
+    ) 4px 5px / calc(100% - 4px) 2px no-repeat;
+  pointer-events: none;
+}
+
+.sessionRow.dropBefore::before {
+  top: -7px;
+}
+
+.sessionRow.dropAfter::after {
+  bottom: -7px;
+}
+
+/* Hover-card body (figma 169:16903): dark surface, fixed colors both themes. */
+.hoverContent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hoverTitle {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-primary, #FFFFFF);
+  overflow-wrap: break-word;
+}
+
+.hoverPath {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-secondary, #CFD3D6);
+  word-break: break-all;
+}
+
+.hoverTime {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-secondary, #CFD3D6);
+}
+
+.hoverStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary, #ADB2B8);
+}
+
+.iconButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 4px;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.iconButton:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+/* Chevrons ride the caption grey (#ADB2B8); the folder glyph stays one step
+   darker (tertiary, #81858C) per the cell spec. */
+.chevron {
+  color: var(--dsw-alias-label-caption);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sessionRow,
+  .searchResultRow,
+  .arrow {
+    animation: none;
+    transition: none;
+  }
+}

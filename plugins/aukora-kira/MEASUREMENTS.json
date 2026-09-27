@@ -1,0 +1,127 @@
+{
+  "schema": "aukora-kira-lexical-bench.v1",
+  "measuredAt": "2026-09-16T14:24:34.178Z",
+  "measuredSources": {
+    "conversation.mjs": "87bcbe6283ad533158b8ea1f15b5ca16089459c1651d8de0a5eba7f8ec56307e",
+    "index.js": "0fad5b6ce609098789efbcc44814309a6152c07bb7fa352dd4362eb0f73ee76f",
+    "parameters.mjs": "c41f3e7742bce30f5951ad272b36667f728b851a61d24509d001baa34fb511f1",
+    "read-owner.mjs": "4accb72ab9e0d1851b70186baf13bf4e03dc43efb14242be6f7040ba098a7428",
+    "record.mjs": "26e5d5f6ee19119410b06f267d873bfd323ea5100527d6109349d0d360a24c4f",
+    "retrieval.mjs": "5e1cc031e2914b669863c3a356542eca09f91c3619c0c6d7a16b7ca8ab70a923",
+    "tools.mjs": "484e8170a0791661bd97fd67e4590a3c49c1d1644daf13cbaf5c81d3c7bffa20"
+  },
+  "runtime": {
+    "node": "v22.23.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "method": {
+    "name": "lexical-bm25-bigram",
+    "digest": "e7395c0ad06e7b7a8624b6128e19c182e4b9ff124796332f478ed3c96f47623a",
+    "constants": {
+      "k1": 1.2,
+      "b": 0.75,
+      "bigramWeight": 0.1,
+      "minScore": 0.12,
+      "ambiguousGap": 0.035
+    }
+  },
+  "corpus": {
+    "records": 1000,
+    "turns": 200
+  },
+  "cpu": {
+    "unit": "milliseconds",
+    "note": "Every figure is a wall-clock duration in this process. stage/compile/rank/openTurn are single observations; the rest are over the configured turn count.",
+    "stageRecord": {
+      "count": 1000,
+      "p50": 0.008,
+      "p95": 0.01,
+      "mean": 0.011,
+      "max": 0.925
+    },
+    "compileIndex": {
+      "count": 1,
+      "ms": 1.312,
+      "records": 1000
+    },
+    "rank": {
+      "count": 200,
+      "p50": 2.704,
+      "p95": 3.807,
+      "mean": 2.704,
+      "max": 4.179
+    },
+    "openTurn": {
+      "count": 1,
+      "ms": 44.671
+    },
+    "turn": {
+      "count": 200,
+      "p50": 30.68,
+      "p95": 36.088,
+      "mean": 31.136,
+      "max": 57.894
+    },
+    "readOwnerAcquire": {
+      "count": 403,
+      "p50": 0.043,
+      "p95": 0.073,
+      "mean": 0.05,
+      "max": 0.342
+    },
+    "snapshotVerify": {
+      "count": 50,
+      "p50": 10.038,
+      "p95": 10.548,
+      "mean": 10.064,
+      "max": 10.75
+    },
+    "snapshotDigest": {
+      "count": 50,
+      "p50": 3.56,
+      "p95": 3.716,
+      "mean": 3.545,
+      "max": 3.844
+    },
+    "pluginTurn": {
+      "count": 200,
+      "p50": 30.599,
+      "p95": 35.865,
+      "mean": 31.038,
+      "max": 57.796
+    },
+    "attribution": "turn = 2 x readOwnerAcquire + pluginTurn. readOwnerAcquire is the injected read owner answering (cheap here: it hands over an in-memory snapshot). pluginTurn is Kira validating, ranking, navigating and publishing, and it is dominated by snapshotVerify: the plugin re-derives recordId and contentSha256 for every record in the snapshot on every acquisition, which is the pinned broker's own posture. At this corpus size that is 2 x snapshotVerify per turn; the ranking itself is the much smaller rank figure, and snapshotDigest is the snapshot-key hash that makes invalidation exact."
+  },
+  "footprint": {
+    "retained": {
+      "records": 1000,
+      "snapshotBytes": 843906,
+      "indexBytes": 319387,
+      "stateBytes": 589,
+      "stateCeilingBytes": 8192,
+      "pluginBytes": 319976,
+      "readOwnerBytes": 1462808
+    },
+    "vectorBytes": 0,
+    "vectorNote": "The lexical method stores no vectors. The static-embedding, INT8 and ternary options in the migration inventory are NOT implemented and NOT measured here: no encoder is deployed by this build, so their bytes are unknown rather than zero.",
+    "process": {
+      "heapUsedDeltaBytes": 22173064,
+      "note": "Observed heap delta for building the corpus, index and session in this process. An observation, not a GC-precise retained-size measurement."
+    }
+  },
+  "descriptive": {
+    "retrievalStatusCounts": {
+      "match": 0,
+      "ambiguous": 200,
+      "insufficient": 0,
+      "exhausted": 0
+    },
+    "note": "Counts of which status the method returned. This is not an accuracy, quality, or correctness measure, and no generated answer is produced or scored anywhere in this file."
+  },
+  "openedAvailability": "found",
+  "counters": {
+    "reads": 402,
+    "builds": 1
+  }
+}

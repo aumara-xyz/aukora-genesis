@@ -1,0 +1,8 @@
+# aukora-membrane organs: the AUMLOK ceremony and hybrid crypto spine, the Aura organ, the core/swarm cell program, and the Crush engine
+From aukora-membrane @7283a8dd9a034e2ebac751695c57fd85c85c52e1: organs/aumlok/, organs/aura/, core/swarm/, organs/engines/crush.ts, the in-repo files they import, and their tests. Copied with `git archive` and laid out under src/ at the upstream paths. LICENSE is AGPL-3.0, and upstream has no NOTICE. PROVENANCE.json gives each file's blob, sha256 and bytes.
+Tests (bun 1.3; run from this directory; they write src/.aukora/, so delete it afterwards):
+`cd src && mkdir -p .aukora/home .aukora/state && for t in scripts/aumlok-door-smoke.ts scripts/ternary-packer-verify.ts $(ls scripts/swarm/validate-*.ts | grep -vE 'full-audit|move-37-3-recovery|move-37-4|move-37-5'); do HOME=$PWD/.aukora/home AUKORA_STATE_ROOT=$PWD/.aukora/state bun run "$t" >/dev/null && echo "PASS $t" || echo "FAIL $t"; done; bun test ./organs/aura/figure-golden-vectors.test.ts`
+Measured 2026-09-27: 24 of the 24 bun-run scripts passed. The one bun test fails to load because its imports live only in aukora-phi (see unresolvedImports in PROVENANCE.json).
+Four validators are left out because they `git archive` or `git worktree add` pinned membrane commits in the enclosing repository, which here would be Genesis: full-audit, move-37-3-recovery, move-37-4 and move-37-5.
+organs/engines/crush.ts, organs/aura/{state,figure}.ts and organs/witness/*.mjs keep donor import paths that resolve only in aukora-phi @a099901. The crypto spine needs @noble/{curves,hashes,post-quantum}, which are pinned in src/bun.lock and not vendored.
+STATUS: imported byte for byte, not yet wired into Genesis.

@@ -1,0 +1,18 @@
+{
+  "id": "nfd-decompose",
+  "why": "APFS stores names decomposed (NFD). A composed name typed into a policy file does not string-equal the decomposed name the filesystem returns, so one file has two spellings.",
+  "incident": "aukora-seed src/paths.mjs header - one of three ways macOS lies about paths.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "law/café.js": "ORIGINAL\n"
+    }
+  },
+  "attempt": {
+    "path": "law/café.js",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

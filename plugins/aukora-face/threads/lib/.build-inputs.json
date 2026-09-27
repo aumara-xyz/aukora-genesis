@@ -1,0 +1,31 @@
+{
+  "face": "threads",
+  "srcDigest": "23c6dee5224cb8ba00c5c974c1129b7f0d10b4825efb7d47c0f185e6cad3d187",
+  "files": [
+    "package.json",
+    "src/client/ThreadHeaderActions.module.css",
+    "src/client/ThreadHeaderActions.tsx",
+    "src/client/ThreadIcons.tsx",
+    "src/client/ThreadListHeaderActions.module.css",
+    "src/client/ThreadListHeaderActions.tsx",
+    "src/client/WorkspaceBrowser.module.css",
+    "src/client/WorkspaceBrowser.tsx",
+    "src/client/WorkspacePicker.module.css",
+    "src/client/WorkspacePicker.tsx",
+    "src/client/contract/slots.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/navigation.ts",
+    "src/client/rows/Rows.module.css",
+    "src/client/rows/Rows.tsx",
+    "src/client/stores.ts",
+    "src/client/subagent-lineage.ts",
+    "src/client/thread-store.ts",
+    "src/client/tree.ts",
+    "src/css-modules.d.ts",
+    "src/index.ts",
+    "src/invariant.ts",
+    "tsdown.config.ts"
+  ],
+  "builtAt": "2026-09-26T23:45:53Z"
+}

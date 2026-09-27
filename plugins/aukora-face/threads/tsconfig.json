@@ -1,0 +1,44 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    { "path": "../ui-workspace" },
+    { "path": "../../core/session" },
+    { "path": "../ui-session" },
+    { "path": "../ui-renderer" },
+    { "path": "../../api/remotes/tsconfig.client.json" },
+    { "path": "../../util/workspace-path" },
+    { "path": "../../api/workspace-controller/tsconfig.client.json" },
+    { "path": "../../api/session-controller/tsconfig.client.json" },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../ui-slots"
+    },
+    {
+      "path": "../ui-primitives"
+    },
+    {
+      "path": "../connection/tsconfig.client.json"
+    },
+    {
+      "path": "../aukora-face-sidebar"
+    },
+    {
+      "path": "../ui-conversation"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    }
+  ]
+}

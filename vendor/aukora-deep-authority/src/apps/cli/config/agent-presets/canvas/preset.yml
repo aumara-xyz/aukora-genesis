@@ -1,0 +1,3 @@
+name: 画布模式
+description: 面向 Auma Canvas 的语音视觉 Agent：先画后说，用画布渲染工具把完整场景直接呈现在屏幕上。
+order: 5

@@ -1,0 +1,738 @@
+<!doctype html>
+<!-- AUMA LUMINARA · THE HARMONIC LANGUAGE: the interactive guide, begun at
+     the architect's word (2026-07-26). The aim: teach the language by
+     PLAYING the instruments already built, one module at a time, each
+     module a working instrument scaled to its one lesson.
+
+       I   THE THREE MARKS      build a code by hand: three trits, one card
+       II  THE TWENTY-SEVEN     the whole lattice, adapted from the Living
+                                Cube: the three digits as visible coordinates,
+                                the built code lighting its own cell
+       III FROM CODE TO TORUS   the count as a winding: the procession of
+                                toroids, the plate beneath as its one hand
+       IV  THE GLYPH BENCH      one word held still and read whole, carried
+                                from the Ring: the sealed face, its form and
+                                its relations, its words in three tenses
+
+     One selection threads them all: a wheel, a cell, a seat or an arrow
+     moves every module at once, and the procession walks on beneath.
+
+     Modules to come: the intervals heard (the sounding's laws), the
+     becomings as cadences, the meet. The guide grows module by module.
+
+     EMPTINESS rides: silent by default, every voice invited by a touch.
+     Every figure is drawn from the sealed canon through the shared
+     renderers; the guide composes and never authors. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the harmonic language</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34);
+    --line:rgba(255,255,255,0.08); --wg:#EFE7CF; }
+  html,body { margin:0; background:#07070a; color:var(--text); font:14px/1.65 system-ui,sans-serif; }
+  .wrap { max-width:880px; margin:0 auto; padding:26px 18px 80px; }
+  header { text-align:center; margin-bottom:8px; }
+  h1 { font-size:16px; letter-spacing:0.26em; margin:0 0 4px;
+    background:linear-gradient(100deg,#F6CE73,#EDE7DA 55%,#C9D3E2);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:9.5px; letter-spacing:0.22em; color:var(--faint); }
+  .lnav { display:flex; gap:18px; justify-content:center; margin:9px 0 2px; flex-wrap:wrap; }
+  .lnav a { font-size:10px; letter-spacing:0.22em; color:var(--faint); text-decoration:none; padding:3px 2px; border-bottom:1px solid transparent; }
+  .lnav a:hover { color:var(--dim); }
+  .lnav a.on { color:#EFE7CF; border-bottom-color:rgba(240,194,94,0.4); }
+
+  .module { margin-top:44px; text-align:center; }
+  .mhead { font-size:12px; letter-spacing:0.3em; color:var(--wg); margin-bottom:4px; }
+  .mlesson { font-size:13px; color:var(--dim); max-width:640px; margin:0 auto 18px; }
+  .mlesson.under { margin:22px auto 0; text-align:left; }
+  @media (max-width:700px) { .mlesson.under { text-align:center; } }
+  .mlesson b { color:var(--text); font-weight:600; }
+
+  /* I · the three marks: three big trit wheels, the card appearing live */
+  .picker { display:flex; gap:26px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .trits { display:flex; gap:10px; }
+  .trit { width:86px; border:1px solid var(--line); border-radius:12px; padding:10px 6px 8px;
+    text-align:center; cursor:pointer; user-select:none; background:rgba(255,255,255,0.02);
+    transition:border-color 0.15s; }
+  .trit:hover { border-color:rgba(240,194,94,0.3); }
+  .trit .tl { font-size:8.5px; letter-spacing:0.22em; color:var(--faint); }
+  .trit svg { display:block; margin:8px auto 6px; }
+  .trit .ts { font-size:9.5px; letter-spacing:0.14em; color:var(--dim); }
+  .built { flex:0 1 auto; min-width:240px; display:flex; gap:16px; align-items:center; text-align:left; }
+  .built svg { width:130px; height:auto; flex:none; }
+  .bfacts .bname { font-size:15px; letter-spacing:0.1em; color:var(--wg); }
+  .bfacts .bline { font:11px ui-monospace,monospace; color:var(--faint); margin-top:4px; line-height:1.7; }
+  .bfacts .bhear { margin-top:8px; }
+  .bhear button { background:rgba(255,255,255,0.03); color:var(--dim); border:1px solid var(--line);
+    border-radius:8px; font-size:9.5px; letter-spacing:0.16em; padding:5px 11px; cursor:pointer; }
+  .bhear button:hover { color:var(--wg); border-color:rgba(239,231,207,0.4); }
+
+  /* II · the lattice: three slabs, the digits as coordinates */
+  .lattice { display:flex; gap:20px; flex-wrap:wrap; }
+  .slab { flex:1; min-width:210px; }
+  .slabh { text-align:center; font-size:9.5px; letter-spacing:0.24em; color:var(--faint); margin-bottom:6px; }
+  .slabgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+  .lcell { border:1px solid var(--line); border-radius:9px; padding:6px 3px 5px; text-align:center;
+    cursor:pointer; user-select:none; background:rgba(255,255,255,0.015);
+    transition:border-color 0.15s, box-shadow 0.15s; }
+  .lcell:hover { border-color:rgba(240,194,94,0.3); }
+  .lcell.you { border-color:var(--cm); box-shadow:0 0 11px var(--cm); }
+  .lcell .lstack { display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:4px; }
+  .lcell .lstack svg { display:block; }
+  .lcell .lmk { font-size:9px; letter-spacing:0.24em; color:var(--cm, var(--dim)); opacity:0.7; }
+  /* the still point: the Seed stands at the centre of the centre slab, and
+     is marked as the place the whole lattice reflects through */
+  .lcell.seed { border-color:rgba(239,231,207,0.28); }
+  .lcell .lnm { font-size:8.6px; color:var(--dim); margin-top:2px; }
+  .latsay { min-height:20px; margin-top:12px; font-size:12px; text-align:center; color:var(--wg); }
+  .latsay .im { font:10px ui-monospace,monospace; color:var(--faint); margin-left:8px; }
+
+  /* III · the winding: the torus leads at size, the plate is its control
+     beneath, and the lesson reads last, under the thing it describes */
+  .torwrap { max-width:760px; margin:0 auto 14px; text-align:center; }
+  #torCanvas { width:100%; aspect-ratio:10/7; display:block; }
+  .torcap { font:11px ui-monospace,monospace; letter-spacing:0.18em; color:var(--wg); min-height:18px; }
+  .torcount { font:10px ui-monospace,monospace; letter-spacing:0.14em; color:var(--faint); min-height:16px; margin-top:2px; }
+
+  /* IV · the plate, adapted whole from the ring */
+  /* the Ring's own spacing, brought back whole: the glyph fills its cell,
+     the padding is a hair, the name is pulled up into the figure rather
+     than set below it, and the touched pair is a soft wash instead of a
+     drawn box. The plate breathes; the boxes were what crowded it. */
+  .platewrap { position:relative; overflow-x:auto; }
+  .plategrid { display:grid; grid-template-columns:repeat(9,1fr); gap:2px 8px; min-width:660px; }
+  /* no transition here, as the Ring has none: the dyad answers the hover at
+     once, which is also what a plate does */
+  .pcell { text-align:center; cursor:pointer; border-radius:8px; padding:1px 0 5px;
+    border:1px solid transparent; user-select:none; }
+  .pcell svg { width:100%; height:auto; display:block; }
+  .pnm { font-size:9px; letter-spacing:0.06em; color:rgba(233,230,220,0.7); margin-top:-2px; }
+  .ptq { font:8.5px ui-monospace,monospace; color:rgba(233,230,220,0.32); }
+  .pcell.lit { background:rgba(240,194,94,0.06); }
+  /* the walking seat: the toroid now on stage glows softly in white-gold
+     and the glow travels with the cycle or the touch, cell to cell */
+  .pcell.now { border-color:rgba(239,231,207,0.4);
+    box-shadow:0 0 12px rgba(239,231,207,0.22), inset 0 0 8px rgba(239,231,207,0.06); }
+  .pcell.now svg { filter:brightness(1.22); }
+  .pcell.dim { opacity:0.35; }
+  #plateAxis { position:absolute; inset:0; pointer-events:none; }
+  .ctlrow { text-align:center; margin-top:10px; }
+  .ctlrow button { background:rgba(255,255,255,0.03); color:var(--dim); border:1px solid var(--line);
+    border-radius:8px; font-size:9.5px; letter-spacing:0.16em; padding:5px 12px; cursor:pointer; }
+  .ctlrow button:hover { color:var(--wg); border-color:rgba(239,231,207,0.4); }
+  .ctlrow button.on { color:var(--wg); border-color:rgba(239,231,207,0.45);
+    box-shadow:0 0 9px rgba(239,231,207,0.16); }
+  .platesay { text-align:center; font-size:10.5px; color:var(--dim); min-height:1.6em; margin:8px auto 0; }
+
+  /* IV · the glyph bench, carried from the Ring: the sealed face at centre,
+     its form at one hand and its relations at the other, its own words in
+     three tenses beneath */
+  .benchrow { display:flex; justify-content:center; align-items:center; gap:22px; flex-wrap:wrap; }
+  .panel { width:186px; display:flex; flex-direction:column; gap:8px; text-align:left; }
+  .panel .rw { margin-bottom:0; }
+  .study { width:min(88vw,264px); border-radius:14px; overflow:hidden; position:relative;
+    border:1px solid var(--e); box-shadow:0 0 26px var(--e);
+    background:radial-gradient(130% 62% at 50% 20%, var(--t), rgba(0,0,0,0) 62%),
+               radial-gradient(140% 80% at 50% 18%, rgba(24,21,14,.92), rgba(4,4,4,1) 70%); }
+  .face { aspect-ratio:150/210; display:flex; flex-direction:column; position:relative; }
+  .cn { position:absolute; font:10px ui-monospace,monospace; color:rgba(233,230,220,.34); }
+  .cn.l { top:9px; left:11px; color:var(--m); }
+  .cn.r { top:9px; right:11px; }
+  .cn.bl { bottom:15px; left:11px; }
+  .cn.b { bottom:15px; right:11px; color:var(--cm); }
+  .fig { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; padding:12px 12px 0; }
+  .fig svg { width:76%; height:auto; max-height:100%; overflow:visible; }
+  .side { flex:none; display:flex; justify-content:center; margin:-10px 0 -2px; opacity:.85; }
+  .side svg { width:38%; height:auto; overflow:visible; }
+  .foot { flex:none; text-align:center; padding:0 8px 34px; }
+  .mk { font:9.9px ui-monospace,monospace; letter-spacing:.32em; color:var(--m); opacity:.78; }
+  .nm { font-size:13.2px; font-weight:600; color:#F2EFE6; margin-top:3px; text-transform:uppercase; letter-spacing:.14em; }
+  .rw { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:5px; }
+  .lb { font-size:8.5px; letter-spacing:.18em; text-transform:uppercase; color:rgba(233,230,220,.32); white-space:nowrap; }
+  .vl { font-size:11px; color:#e9e6dc; text-align:right; }
+  .vl .q { font-family:ui-monospace,monospace; color:var(--m); }
+  .bar { display:block; height:2px; border-radius:1px; background:var(--m); opacity:.5; }
+  .barbg { flex:1; height:2px; border-radius:1px; background:rgba(255,255,255,.07); max-width:110px; }
+  .defbtns { display:flex; justify-content:center; gap:10px; margin:14px 0 0; flex-wrap:wrap; }
+  .defbtn { background:rgba(255,255,255,0.03); color:var(--dim); border:1px solid var(--line);
+    border-radius:8px; font-size:9.5px; letter-spacing:0.16em; padding:5px 11px; cursor:pointer; }
+  .defbtn:hover { color:var(--wg); border-color:rgba(239,231,207,0.4); }
+  .defbtn.on { color:var(--wg); border-color:rgba(239,231,207,0.45); }
+  .defwrap { max-width:620px; margin:12px auto 0; }
+  .ess { font-size:10.5px; font-style:italic; line-height:1.55; color:rgba(233,230,220,.55);
+    text-align:center; margin-bottom:10px; }
+  .deft { font-size:12px; line-height:1.7; color:rgba(233,230,220,.8); text-align:left; }
+  .defq { font-size:11.5px; font-style:italic; color:var(--dim); margin-top:9px; text-align:center; }
+  .sil { font-size:10.5px; font-style:italic; color:rgba(240,194,94,.8); text-align:center; margin-bottom:9px; }
+  .keys { text-align:center; font-size:9.5px; letter-spacing:0.16em; color:var(--faint); margin-top:14px; }
+
+  .tocome { margin-top:48px; text-align:center; font-size:9.5px; letter-spacing:0.22em; color:var(--faint); }
+  .register { text-align:center; font-size:8.5px; letter-spacing:0.18em; color:var(--faint); margin-top:26px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE HARMONIC LANGUAGE</h1>
+    <div class="sub">A GUIDE THAT TEACHES BY BEING PLAYED</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html" class="on">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+
+  <!-- ==================== I · THE THREE MARKS ==================== -->
+  <div class="module">
+    <div class="mhead">I · THE THREE MARKS</div>
+    <div class="mlesson">Everything in this language is built from one alphabet of three:
+      <b>still</b> (a dot), <b>moving</b> (a bar), <b>turning</b> (a wave). And every word in it is
+      exactly three letters long, one for each depth of a moment: <b>the world</b> around you,
+      <b>the between</b> that joins you to things, <b>the heart</b>. Three marks with three choices
+      each: three times three times three, twenty-seven. That is the whole language. Nothing in it
+      was invented; the counting produced it, and the names came after. Touch the wheels and build
+      a word.</div>
+    <div class="picker">
+      <div class="trits" id="trits"></div>
+      <div class="built">
+        <div id="builtKnot"></div>
+        <div class="bfacts">
+          <div class="bname" id="builtName"></div>
+          <div class="bline" id="builtLine"></div>
+          <div class="bhear"><button id="builtHear" type="button">HEAR IT</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== II · THE TWENTY-SEVEN ==================== -->
+  <div class="module">
+    <div class="mhead">II · THE TWENTY-SEVEN</div>
+    <div class="mlesson">Here is the whole language at once, laid out so the three marks are
+      literally an address: the mark of <b>the world</b> chooses one of the three tables, the mark
+      of <b>the between</b> chooses the row, the mark of <b>the heart</b> chooses the column. The
+      card you built above is glowing in its own metal: three choices are a place among
+      twenty-seven. Touch any cell to hear it. This is the Living Cube&rsquo;s lattice, unrolled flat
+      for a first meeting; the cube itself waits in the portal when the three axes are familiar.</div>
+    <div class="lattice" id="lattice"></div>
+    <div class="latsay" id="latsay">&nbsp;</div>
+  </div>
+
+  <!-- ==================== III · FROM CODE TO TORUS ==================== -->
+  <div class="module">
+    <div class="mhead">III · FROM THE CODE TO THE TORUS</div>
+    <div class="torwrap">
+      <canvas id="torCanvas"></canvas>
+      <div class="torcap" id="torCode">&nbsp;</div>
+      <div class="torcount" id="torCount">&nbsp;</div>
+      <div class="ctlrow"><button id="torConcord" type="button">IN CONCORDANCE · OFF</button></div>
+    </div>
+    <div class="platewrap">
+      <div class="plategrid" id="plategrid"></div>
+      <svg id="plateAxis" aria-hidden="true"></svg>
+    </div>
+    <div class="platesay" id="platesay">&nbsp;</div>
+    <div class="mlesson under">Read the three marks as a number: the world counts nines, the
+      between counts threes, the heart counts ones, and stillness counts nothing, a bar adds, a
+      wave takes away. Every word lands on its own number between minus thirteen and thirteen,
+      each exactly once. And that number is a <b>winding recipe</b>: lay a thread on a ring and
+      send it <b>through the hole</b> that many times while it goes <b>around</b>. At whole
+      numbers the thread comes home and closes into a knot, and that knot IS the card&rsquo;s
+      form. Between the whole numbers it never closes at all: the open water. The procession above
+      walks the whole count on its own, silence at its centre, and on the plate the card now on
+      stage glows, the glow travelling seat to seat as the walk goes. The plate is the hand: touch
+      any card to call its toroid up, watch it tie itself, and hear it; hover to see its
+      <b>answer</b> light across the axis, for reversing every motion turns each word into exactly
+      one other, and together they sum to silence. Switch on <b>IN CONCORDANCE</b> to put that
+      answer on the torus beside its card: one form, two threads, turning opposite ways, because
+      reversing the motions reverses the winding. The Seed answers itself, so it stands
+      alone.</div>
+  </div>
+
+  <!-- ==================== IV · THE GLYPH BENCH ==================== -->
+  <div class="module">
+    <div class="mhead">IV · THE GLYPH BENCH</div>
+    <div class="mlesson">Everything so far has been the language&rsquo;s shape. Here is one word
+      of it held still and read whole: the card as the deck prints it, its <b>form</b> at one hand
+      and its <b>relations</b> at the other, and beneath, its own words. A card says three things
+      rather than one, because a word means differently depending on where in a moment it stands:
+      at <b>the root</b>, at <b>the present</b>, at <b>the becoming</b>. Choose the tense and the
+      same card speaks again. Walk the deck with the arrow keys, or touch anything above: the
+      wheels, the lattice, the plate. The bench follows whatever the hand chooses, and stands
+      still while the procession walks.</div>
+    <div class="benchrow">
+      <div class="panel" id="lpanel"></div>
+      <div class="study" id="study"></div>
+      <div class="panel" id="rpanel"></div>
+    </div>
+    <div class="defbtns">
+      <button class="defbtn on" data-t="0" type="button">TREFOIL · ROOT</button>
+      <button class="defbtn" data-t="1" type="button">GENUS · PRESENT</button>
+      <button class="defbtn" data-t="2" type="button">PHI · BECOMING</button>
+    </div>
+    <div class="defwrap" id="def"></div>
+    <div class="keys">&#8592; &#8594; WALK THE COUNT</div>
+  </div>
+
+  <div class="tocome">TO COME · THE INTERVALS HEARD · THE BECOMINGS AS CADENCES · THE MEET</div>
+  <div class="register">SILENT BY DEFAULT · EVERY VOICE INVITED BY A TOUCH · NOTHING SCORED, STORED, OR SENT</div>
+</div>
+<script type="module">
+import { CARDS, SUITS, cardOf, codeOf, codeMarks, isSilent, SILENCES, knotOf, counterOf,
+  becomingOf, emanationOf } from '/app/luminara-canon.js';
+import { textOf } from '/app/luminara-81.js';
+import { knotSvg, metalOf, WHITEGOLD } from '/app/luminara-knots.js';
+import { spectrumOf } from '/app/luminara-cymatics.js';
+import { voiceOf, createSounder } from '/app/luminara-sound.js';
+
+const $ = (id) => document.getElementById(id);
+const F = (v) => v.toFixed(1);
+const sounder = createSounder();
+const hear = (n) => {
+  const v = voiceOf(spectrumOf(n, 'A'));
+  if (v.struck) sounder.strike(v, 0, 1.6);
+  return v.struck;
+};
+const DEPTHS = ['THE WORLD', 'THE BETWEEN', 'THE HEART'];
+const STATE_WORD = ['still', 'moving', 'turning'];
+// the marks drawn, never typed: the same three the canon names
+function markSVG(d, color, w = 34) {
+  const h = 12;
+  if (d === 0) return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 34 12"><circle cx="17" cy="6" r="3.4" fill="' + color + '"/></svg>';
+  if (d === 1) return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 34 12"><line x1="3" y1="6" x2="31" y2="6" stroke="' + color + '" stroke-width="2.6" stroke-linecap="round"/></svg>';
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 34 12"><path d="M3 6 Q9 0 17 6 T31 6" stroke="' + color + '" stroke-width="2.3" fill="none" stroke-linecap="round"/></svg>';
+}
+const cardFromCode = (d) => 9 * d[0] + 3 * d[1] + d[2] + 1;
+
+// ---- I · THE THREE MARKS: the picker ----
+const built = [0, 0, 0];   // field, middle, core
+function renderTrits() {
+  $('trits').innerHTML = built.map((d, i) => {
+    const n = cardFromCode(built);
+    return '<div class="trit" data-i="' + i + '" role="button" tabindex="0" aria-label="' + DEPTHS[i] + '">'
+      + '<div class="tl">' + DEPTHS[i] + '</div>'
+      + markSVG(d, metalOf(n))
+      + '<div class="ts">' + STATE_WORD[d] + '</div></div>';
+  }).join('');
+}
+function renderBuilt() {
+  const n = cardFromCode(built);
+  const k = knotOf(n);
+  const colors = k.kind === 'link' ? [metalOf(n), metalOf(counterOf(n))] : [metalOf(n)];
+  $('builtKnot').innerHTML = knotSvg(k.p, k.q, colors, 0.35, 0.6);
+  $('builtName').textContent = cardOf(n).name;
+  $('builtLine').innerHTML = 'code ' + codeOf(n).join('') + ' · count ' + (k.q > 0 ? '+' + k.q : k.q)
+    + ' · ' + k.interval + '<br>answers ' + cardOf(counterOf(n)).name;
+  renderLattice();   // the lattice follows: your word glows in its place
+}
+$('trits').addEventListener('pointerdown', (e) => {
+  const t = e.target.closest('.trit');
+  if (!t) return;
+  const i = +t.dataset.i;
+  built[i] = (built[i] + 1) % 3;
+  select(cardFromCode(built));
+});
+$('builtHear').addEventListener('click', () => {
+  const n = cardFromCode(built);
+  if (!hear(n)) $('builtLine').innerHTML += '<br>the Seed is silence: it sounds by not sounding';
+});
+
+// ---- II · THE TWENTY-SEVEN: the lattice, the digits as coordinates ----
+// THE SIGNED ORDER: the states are not a list but a number line. Still is
+// zero, moving is plus one, turning is minus one, so laid out by their own
+// signs each axis runs turning, still, moving, and stillness sits in the
+// middle of all three. The Seed, still in every depth, therefore stands at
+// the dead centre of the centre slab, and because an answer negates every
+// digit, EVERY card's answer is its point-reflection through the Seed: the
+// lattice becomes the same mirror the plate is, by arithmetic rather than
+// by arrangement. The slabs fall RA, AUM, MA, which is the plate's own
+// house order arrived at independently.
+const SIGNED = [2, 0, 1];   // turning (−1) · still (0) · moving (+1)
+function renderLattice() {
+  const you = cardFromCode(built);
+  $('lattice').innerHTML = SIGNED.map((f) => {
+    let cells = '';
+    for (const m of SIGNED) {
+      for (const c of SIGNED) {
+        const n = cardFromCode([f, m, c]);
+        const metal = metalOf(n);
+        const marks = codeOf(n).map((d) => markSVG(d, metal, 22)).join('');
+        cells += '<div class="lcell' + (n === you ? ' you' : '') + (n === 1 ? ' seed' : '')
+          + '" data-n="' + n + '" style="--cm:' + metal + '" role="button" tabindex="0">'
+          + '<div class="lstack">' + marks + '</div>'
+          + '<div class="lmk">' + codeOf(n).join('') + '</div>'
+          + '<div class="lnm">' + cardOf(n).name.replace(/^The /, '') + '</div></div>';
+      }
+    }
+    return '<div class="slab"><div class="slabh">' + SUITS[f].key + ' · the world '
+      + STATE_WORD[f] + '</div><div class="slabgrid">' + cells + '</div></div>';
+  }).join('');
+}
+$('lattice').addEventListener('pointerdown', (e) => {
+  const cell = e.target.closest('.lcell');
+  if (!cell) return;
+  const n = +cell.dataset.n;
+  const k = knotOf(n);
+  // the thread runs both ways: touching a cell writes its code back into
+  // the wheels above, so the picker and the lattice are one instrument
+  // seen twice, whichever end the hand is on
+  select(n);
+  $('latsay').innerHTML = cardOf(n).name
+    + '<span class="im">' + codeOf(n).join('') + ' · ' + k.interval
+    + (knotOf(n).q === 0 ? ' · the silence at the centre' : '') + '</span>';
+});
+
+// ---- III · THE PROCESSION: the toroids cycling, the count walked ----
+// The winding no longer waits for a hand: it walks the whole count on its
+// own, from minus thirteen up through silence to thirteen and around
+// again. Each form ties at teaching pace, stands turning for a breath,
+// then LOOSENS back into the open water (the instrument's own exit: the
+// ring relaxing outward, the winding flattening toward the plain circle)
+// before the next crystallises. Passing zero the procession breathes
+// through the Seed: a lap of the language holds one silence. A touch
+// anywhere (the wheels, the lattice, the line) calls that card and the
+// procession walks on from it; HOLD THIS FORM stays with one. Sound stays
+// touch-only: the procession is seen, never self-sounding.
+const tor = (() => {
+  const canvas = $('torCanvas'), ctx = canvas.getContext('2d');
+  const SQRT2 = Math.SQRT2, TILT = 1.05;
+  // the walk cuts clean (the architect's word): the procession shows each
+  // toroid whole, standing and turning, then the next: no transition at
+  // all. The tying survives in one place only: a card CALLED by touch
+  // still forms itself, because that is where the forming lesson lives.
+  const TIE_S = 1.4, STAND_S = 4.2;
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const byQ = CARDS.map((c) => c.n).sort((a, b) => knotOf(a).q - knotOf(b).q);
+  let W = 0, H = 0, dpr = 1, prev = 0;
+  let cur = null;    // the card on stage
+  let mate = null;   // its answer, when the concordance is on
+  let spin = 0;      // a magnitude: each form signs it by its own q
+  let concord = false;
+  const flowing = !REDUCED;   // reduced motion stills the walk
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const r = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width * dpr)); H = Math.max(1, Math.round(r.height * dpr));
+    canvas.width = W; canvas.height = H;
+  }
+  resize();
+  if (window.ResizeObserver) new ResizeObserver(resize).observe(canvas);
+  function proj(pt, s, grow, tube) {
+    const R = SQRT2 * grow;
+    const x0 = (R + tube * pt[2]) * pt[0], y0 = (R + tube * pt[2]) * pt[1], z0 = tube * pt[3];
+    const cs = Math.cos(s), sn = Math.sin(s);
+    const x = x0 * cs - y0 * sn, y = x0 * sn + y0 * cs;
+    const ct = Math.cos(TILT), st = Math.sin(TILT);
+    const y2 = y * ct - z0 * st, z2 = y * st + z0 * ct;
+    const d = 7.5, k = d / (d - z2);
+    return [x * k, y2 * k, z2];
+  }
+  function build(p, q) {
+    const g = q === 0 ? p : (function gcd(a, b) { return b ? gcd(b, a % b) : a; })(p, Math.abs(q));
+    const per = 300, comps = [];
+    for (let c = 0; c < g; c++) {
+      const pts = [];
+      for (let i = 0; i <= per; i++) {
+        const t = (i / per) * (2 * Math.PI / g);
+        const th = p * t, ph = q * t + (2 * Math.PI * c) / g;
+        pts.push([Math.cos(th), Math.sin(th), Math.cos(ph), Math.sin(ph)]);
+      }
+      comps.push(pts);
+    }
+    return comps;
+  }
+  // phase of the current form: tie (touch-called only), stand, done;
+  // holding pins it at stand
+  function phaseOf(now) {
+    const t = now - cur.t0;
+    if (t < TIE_S) return { name: 'tie', u: t / TIE_S };
+    if (!flowing || t < TIE_S + STAND_S) return { name: 'stand', u: 0 };
+    return { name: 'done', u: 1 };
+  }
+  function draw(now) {
+    if (!cur) return;
+    const ph = phaseOf(now);
+    const tieU = ph.name === 'tie' ? ph.u * ph.u * (3 - 2 * ph.u) : 1;
+    const grow = 1, tube = 1, fade = 1;
+    ctx.fillStyle = 'rgb(7,7,9)';
+    ctx.fillRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2, scale = Math.min(cx, cy) * (0.9 / (SQRT2 + 1));
+    // the torus itself, faint: fourteen meridian rings so the surface reads
+    ctx.strokeStyle = 'rgba(239,231,207,0.10)';
+    ctx.lineWidth = Math.max(1, dpr * 0.6);
+    for (let m = 0; m < 14; m++) {
+      const th = (m / 14) * 2 * Math.PI;
+      ctx.beginPath();
+      for (let i = 0; i <= 26; i++) {
+        const phh = (i / 26) * 2 * Math.PI;
+        const pt = [Math.cos(th), Math.sin(th), Math.cos(phh), Math.sin(phh)];
+        const pr = proj(pt, spin, 1, 1);
+        i ? ctx.lineTo(cx + pr[0] * scale, cy - pr[1] * scale)
+          : ctx.moveTo(cx + pr[0] * scale, cy - pr[1] * scale);
+      }
+      ctx.stroke();
+    }
+    // both threads into one depth-sorted pass, so the pair truly braids:
+    // each signs the shared spin by its own count, so the answer turns the
+    // other way by construction rather than by choreography
+    const segs = [];
+    for (const form of [cur, mate]) {
+      if (!form) continue;
+      const sp = spin * (Math.sign(form.q) || 1);
+      form.pts.forEach((pts, ci) => {
+        const upto = Math.max(2, Math.round(pts.length * tieU));
+        for (let i = 1; i < upto; i++) {
+          const A = proj(pts[i - 1], sp, grow, tube);
+          const B = proj(pts[i], sp, grow, tube);
+          segs.push({ a: A, b: B, z: (A[2] + B[2]) / 2, color: form.colors[ci % form.colors.length] });
+        }
+      });
+    }
+    segs.sort((s1, s2) => s1.z - s2.z);
+    for (const s2 of segs) {
+      const depth = Math.max(0, Math.min(1, (s2.z + 2.5) / 5));
+      ctx.strokeStyle = s2.color;
+      ctx.globalAlpha = (0.25 + 0.68 * depth) * fade * (mate ? 0.82 : 1);
+      ctx.lineWidth = Math.max(1, dpr * (0.8 + 2.4 * depth) * (0.6 + 0.4 * fade));
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(cx + s2.a[0] * scale, cy - s2.a[1] * scale);
+      ctx.lineTo(cx + s2.b[0] * scale, cy - s2.b[1] * scale);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    if (ph.name === 'tie') {
+      if (cur.aq === 0) $('torCount').textContent = 'no windings: the plain circle';
+      else {
+        const thr = Math.min(cur.aq, Math.floor(ph.u * cur.aq));
+        const aro = Math.min(cur.p, Math.floor(ph.u * cur.p));
+        $('torCount').textContent = 'through the hole ×' + thr + ' · around the ring ×' + aro
+          + (cur.pts.length > 1 ? ' · ' + cur.pts.length + ' strands at once' : '');
+      }
+    } else if (mate) {
+      $('torCount').textContent = 'in concordance · ×' + cur.aq
+        + ' through each way · the two sum to silence';
+    } else {
+      $('torCount').textContent = cur.aq === 0
+        ? 'closed without a single turn: the Seed, silence'
+        : 'closed: ×' + cur.aq + ' through, ×' + cur.p + ' around · the thread came home';
+    }
+  }
+  (function loop(nowMs) {
+    requestAnimationFrame(loop);
+    if (canvas.offsetParent === null || document.hidden) { prev = 0; return; }
+    const now = nowMs / 1000;
+    const dt = Math.min(0.1, prev ? now - prev : 0.016);
+    prev = now;
+    if (!cur) return;
+    const ph = phaseOf(now);
+    if (ph.name !== 'tie') spin += dt * 0.35;
+    if (ph.name === 'done' && flowing) {
+      const i = byQ.indexOf(cur.n);
+      wind(byQ[(i + 1) % 27], true);   // the procession walks the count
+    }
+    draw(now);
+  })(performance.now());
+  const formOf = (n) => {
+    const k = knotOf(n);
+    const colors = k.kind === 'link' ? [metalOf(n), metalOf(counterOf(n))] : [metalOf(n)];
+    return { n, p: k.p, q: k.q, aq: Math.abs(k.q), colors, pts: build(k.p, k.q) };
+  };
+  function wind(n, auto) {
+    const k = knotOf(n);
+    cur = { ...formOf(n), t0: performance.now() / 1000 };
+    // the answer joins when the concordance stands; the Seed answers
+    // itself, so it stands alone
+    const cn = counterOf(n);
+    mate = concord && cn !== n ? formOf(cn) : null;
+    if (auto) cur.t0 -= TIE_S;   // the procession cuts: the form arrives whole
+    spin = 0;
+    $('torCode').textContent = codeOf(n).join('') + ' → count ' + (k.q > 0 ? '+' + k.q : k.q)
+      + ' → ' + cardOf(n).name + (mate ? ' & ' + cardOf(mate.n).name : '');
+    markPlateNow(mate ? [n, mate.n] : [n]);   // the glow travels, both seats in concordance
+  }
+  function markPlateNow(ns) {
+    const want = new Set(Array.isArray(ns) ? ns : [ns]);
+    document.querySelectorAll('.pcell').forEach((c) => {
+      const i = +c.dataset.i;
+      c.classList.toggle('now', typeof seatCard === 'function' && want.has(seatCard(i)));
+    });
+  }
+  $('torConcord').addEventListener('click', () => {
+    concord = !concord;
+    $('torConcord').textContent = 'IN CONCORDANCE · ' + (concord ? 'ON' : 'OFF');
+    $('torConcord').classList.toggle('on', concord);
+    if (cur) wind(cur.n, true);   // the pair joins or parts at once
+  });
+  return { wind: (n) => wind(n, false), current: () => cur && cur.n };
+})();
+
+// ---- IV · THE PLATE: the Ring room's own, seated for the lesson ----
+const houseRow = (h) => CARDS.map((c) => c.n).filter((n) => Math.floor((n - 1) / 9) === h)
+  .sort((a, b) => knotOf(a).q - knotOf(b).q);
+const SEATS = [...houseRow(2), ...houseRow(0), ...houseRow(1)];
+const counterSeat = (i) => 26 - i;
+const seatCard = (i) => SEATS[i];
+function plateGlyphSvg(n) {
+  const k = knotOf(n);
+  const colors = k.kind === 'link' ? [metalOf(n), metalOf(counterOf(n))] : [metalOf(n)];
+  return knotSvg(k.p, k.q, colors, 0.5, 0.34);
+}
+function renderPlate() {
+  $('plategrid').innerHTML = SEATS.map((_, i) => {
+    const n = seatCard(i), k = knotOf(n);
+    return '<div class="pcell" data-i="' + i + '" tabindex="0" role="button" aria-label="' + cardOf(n).name + '">'
+      + plateGlyphSvg(n)
+      + '<div class="pnm">' + cardOf(n).name + '</div>'
+      + '<div class="ptq">T(' + k.p + ',' + k.q + ')</div></div>';
+  }).join('');
+}
+function clearPlate() {
+  document.querySelectorAll('.pcell').forEach((c) => c.classList.remove('lit', 'dim'));
+  $('plateAxis').innerHTML = '';
+  $('platesay').innerHTML = '&nbsp;';
+}
+function showPlateDyad(i) {
+  const j = counterSeat(i);
+  const cells = document.querySelectorAll('.pcell');
+  cells.forEach((c, m) => {
+    c.classList.toggle('lit', m === i || m === j);
+    c.classList.toggle('dim', m !== i && m !== j);
+  });
+  const wrap = document.querySelector('.platewrap').getBoundingClientRect();
+  const A = cells[i].getBoundingClientRect(), B = cells[j].getBoundingClientRect();
+  const ax = A.left + A.width / 2 - wrap.left, ay = A.top + A.height / 2 - wrap.top;
+  const bx = B.left + B.width / 2 - wrap.left, by = B.top + B.height / 2 - wrap.top;
+  const axisEl = $('plateAxis');
+  axisEl.setAttribute('viewBox', '0 0 ' + wrap.width + ' ' + wrap.height);
+  axisEl.innerHTML = i === j ? '' : '<line x1="' + F(ax) + '" y1="' + F(ay) + '" x2="' + F(bx)
+    + '" y2="' + F(by) + '" stroke="' + WHITEGOLD
+    + '" stroke-opacity="0.35" stroke-width="1" stroke-dasharray="2 5"/>';
+  const a = seatCard(i), b = seatCard(j);
+  $('platesay').textContent = i === j
+    ? cardOf(a).name + ' · the still point, answering itself'
+    : cardOf(a).name + ' answers ' + cardOf(b).name + ' · the axis passes through the Seed';
+}
+const plateEl = $('plategrid');
+plateEl.addEventListener('mouseover', (e) => { const c = e.target.closest('.pcell'); if (c) showPlateDyad(+c.dataset.i); });
+plateEl.addEventListener('mouseleave', clearPlate);
+plateEl.addEventListener('pointerdown', (e) => {
+  const c = e.target.closest('.pcell');
+  if (!c) return;
+  const i = +c.dataset.i;
+  showPlateDyad(i);
+  // the touch chooses: the plate is the guide's hand, and the whole guide
+  // follows it: the wheels, the torus, the bench
+  const a = seatCard(i), b = seatCard(counterSeat(i));
+  select(a);
+  // and the pair heard: the card, then its answer a breath later, the
+  // same tones beating opposite ways: the mirror audible
+  if (a !== b) setTimeout(() => hear(b), 420);
+});
+
+
+renderTrits(); renderBuilt(); renderPlate();
+tor.wind(cardFromCode(built));
+
+// ---- IV · THE GLYPH BENCH: one word held still and read whole ----
+// Carried from the Ring: the sealed face exactly as the deck prints it, the
+// form at one hand and the relations at the other, and the card's own words
+// from the 81 corpus at the tense the buttons choose. It follows deliberate
+// choices only (a wheel, a cell, a seat, an arrow) and stands still while
+// the procession walks, because a page that re-writes itself every four
+// seconds cannot be read.
+const KIND = { circle: 'the unknot', coil: 'a coil', knot: 'a knot' };
+let benchN = 1, tense = 0;
+function showBench(n) {
+  benchN = n;
+  const card = cardOf(n), k = knotOf(n), e = emanationOf(n);
+  const an = counterOf(n), bec = becomingOf(n);
+  const m = metalOf(n), cm = metalOf(an);
+  const mv = codeOf(n).filter((x) => x !== 0).length;
+  const colors = k.kind === 'link' ? [m, cm] : [m];
+  const aq = Math.abs(k.q);
+  const kind = k.kind === 'link' ? k.components + ' bound rings' : KIND[k.kind];
+  const suit = SUITS[codeOf(n)[0]];
+  const row = (l, v) => '<div class="rw"><span class="lb">' + l + '</span><span class="vl">' + v + '</span></div>';
+  const glow = 'filter:drop-shadow(0 0 4px ' + m + '55) drop-shadow(0 0 12px '
+    + (k.kind === 'link' ? cm : m) + '28)';
+  const studyEl = $('study');
+  studyEl.style.cssText = '--m:' + m + ';--cm:' + cm + ';--e:' + m + '3a;--t:' + m + '06';
+  studyEl.innerHTML =
+    '<div class="face">'
+    + '<div class="cn l">' + n + '</div>'
+    + '<div class="cn r">' + (k.q > 0 ? '+' + k.q : k.q) + '</div>'
+    + '<div class="cn bl">' + (k.q === 0 ? '0' : k.q < 0 ? '+' + -k.q : '' + -k.q) + '</div>'
+    + '<div class="cn b">' + an + '</div>'
+    + '<div class="fig" style="' + glow + '">' + knotSvg(k.p, k.q, colors, 0.16 + 0.11 * mv, 0.7) + '</div>'
+    + '<div class="side" style="filter:drop-shadow(0 0 4px ' + m + '55)">'
+      + knotSvg(k.p, k.q, colors, 1.22, 0.5) + '</div>'
+    + '<div class="foot"><div class="mk">' + codeMarks(n) + '</div>'
+      + '<div class="nm">' + card.name + '</div></div>'
+    + '</div>';
+  $('lpanel').style.cssText = '--m:' + m + ';';
+  $('lpanel').innerHTML =
+      row('interval', k.interval + ' <span class="q">' + aq + ':' + k.p + '</span>')
+    + row('form', '<span class="q">T(' + k.p + ',' + k.q + ')</span> · ' + kind)
+    + '<div class="rw"><span class="lb">depth</span><span class="barbg"><span class="bar" style="width:'
+      + (k.genus ? Math.max(4, Math.round((k.genus / 36) * 100)) : 0) + '%"></span></span>'
+      + '<span class="vl"><span class="q">' + k.genus + '</span></span></div>'
+    + row('emanation', '<span class="q">' + e.zones.map((z) => z.harmonic).join(' · ') + '</span>'
+      + (e.struck ? '' : ' · unstruck'));
+  $('rpanel').style.cssText = '--m:' + m + ';';
+  $('rpanel').innerHTML =
+      row('house', suit.key)
+    + row('stands', '<span class="q">' + (k.q > 0 ? '+' + k.q : k.q) + '</span> of 27')
+    + row('answers', an === n ? 'itself' : cardOf(an).name + ' <span class="q">' + an + '</span>')
+    + row('becomes', bec == null ? 'at rest' : cardOf(bec).name + ' <span class="q">' + bec + '</span>');
+  renderDef();
+}
+function renderDef() {
+  const t = textOf(benchN, tense);
+  $('def').innerHTML =
+      (isSilent(benchN)
+        ? '<div class="sil">A Silence. Asks for ' + SILENCES[benchN].asks + '.</div>' : '')
+    + '<div class="ess">' + cardOf(benchN).essence + '</div>'
+    + '<div class="deft">' + t.f + '</div>'
+    + '<div class="defq">' + t.q + '</div>';
+}
+for (const b of document.querySelectorAll('.defbtn')) {
+  b.addEventListener('click', () => {
+    tense = Number(b.dataset.t);
+    for (const o of document.querySelectorAll('.defbtn')) o.classList.toggle('on', o === b);
+    renderDef();
+  });
+}
+// the arrows walk the count, and the whole guide walks with them
+const walkOrder = CARDS.map((c) => c.n).sort((a, b) => knotOf(a).q - knotOf(b).q);
+window.addEventListener('keydown', (ev) => {
+  if (ev.key !== 'ArrowRight' && ev.key !== 'ArrowLeft') return;
+  const i = walkOrder.indexOf(benchN);
+  ev.preventDefault();
+  select(walkOrder[(i + (ev.key === 'ArrowRight' ? 1 : 26)) % 27]);
+});
+
+// ---- THE ONE SELECTION: every hand in the guide comes through here ----
+function select(n) {
+  built.splice(0, 3, ...codeOf(n));
+  renderTrits(); renderBuilt();
+  tor.wind(n);
+  showBench(n);
+  hear(n);
+}
+showBench(1);
+
+window.__LANGUAGE = { built, cardFromCode, seats: SEATS.length,
+  cells: () => document.querySelectorAll('.lcell').length };
+</script>
+</body>
+</html>

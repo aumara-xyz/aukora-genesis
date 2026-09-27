@@ -1,0 +1,41 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+  },
+  "files": [
+    "src/css-modules.d.ts",
+    "src/documents-route.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/documents-loader.ts",
+    "src/client/markdown.ts",
+    "src/client/MarkdownView.tsx",
+    "src/client/DocumentsIcons.tsx",
+    "src/client/DocumentsMenu.tsx",
+    "src/client/DocumentsSurface.tsx"
+  ],
+  "references": [
+    { "path": "./tsconfig.host.json" },
+    { "path": "../aukora-face-layout" },
+    { "path": "../ui-session" },
+    { "path": "../ui-renderer" },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../ui-layout"
+    },
+    {
+      "path": "../ui-slots"
+    }
+  ]
+}

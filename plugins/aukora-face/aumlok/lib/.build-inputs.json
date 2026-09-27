@@ -1,0 +1,24 @@
+{
+  "face": "aumlok",
+  "srcDigest": "9b51398a00e70c79c60cde006a6ec69aaac5db623d419c38395bd577c36ee75c",
+  "files": [
+    "package.json",
+    "src/client/Aumlok.module.css",
+    "src/client/AumlokMenu.tsx",
+    "src/client/AumlokSurface.tsx",
+    "src/client/badge.ts",
+    "src/client/binding-bridge.ts",
+    "src/client/control-projection.ts",
+    "src/client/control-status-loader.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/record-projection.ts",
+    "src/client/surface-state.ts",
+    "src/control-projection.ts",
+    "src/css-modules.d.ts",
+    "src/index.ts",
+    "src/invariant.ts",
+    "tsdown.config.ts"
+  ],
+  "builtAt": "2026-09-26T23:45:58Z"
+}

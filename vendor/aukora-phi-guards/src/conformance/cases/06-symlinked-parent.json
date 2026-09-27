@@ -1,0 +1,22 @@
+{
+  "id": "symlinked-parent",
+  "why": "The leaf is innocent and its PARENT is the alias. A leaf-only check misses this entirely.",
+  "incident": "baseline - the reason resolution walks the deepest existing ancestor rather than the leaf.",
+  "fixture": {
+    "dirs": [
+      "world",
+      "secrets"
+    ],
+    "files": {
+      "secrets/key.txt": "SECRET\n"
+    },
+    "symlinks": {
+      "world/sub": "secrets"
+    }
+  },
+  "attempt": {
+    "path": "world/sub/key.txt",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

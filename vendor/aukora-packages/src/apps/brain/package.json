@@ -1,0 +1,41 @@
+{
+  "name": "@aukora/brain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Aukora organism brain: a reactive, receipt-chained, growing memory store (Convex-backed adapter) built on the pure @aukora/memory and @aukora/kernel contracts. Adapter, not a portable package.",
+  "author": "Aumara",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@aukora/kernel": "0.1.0",
+    "@aukora/evidence": "0.1.0",
+    "@aukora/memory": "0.1.0",
+    "@noble/hashes": "2.2.0",
+    "@aukora/council": "0.1.0",
+    "@noble/post-quantum": "0.6.1",
+    "@aukora/mind": "*"
+  },
+  "devDependencies": {
+    "convex": "1.42.2",
+    "convex-test": "0.0.54"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "verify": "tsc -p tsconfig.json && vitest run --config vitest.config.ts",
+    "dev:local": "convex dev",
+    "local:up": "node scripts/local-ctl.mjs up",
+    "local:hold": "node scripts/local-ctl.mjs hold",
+    "local:health": "node scripts/local-ctl.mjs health",
+    "local:down": "node scripts/local-ctl.mjs down",
+    "compose:live": "AUKORA_LIVE_COMPOSE=1 vitest run --config vitest.config.ts test/live.compose.test.ts",
+    "local:status": "node scripts/local-ctl.mjs status",
+    "organism:up": "node scripts/organism-ctl.mjs up",
+    "organism:status": "node scripts/organism-ctl.mjs status",
+    "organism:down": "node scripts/organism-ctl.mjs down",
+    "canary:r51": "node scripts/r51-canary.mjs"
+  }
+}

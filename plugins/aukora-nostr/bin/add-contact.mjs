@@ -1,0 +1,321 @@
+#!/usr/bin/env node
+/**
+ * ADD A CONTACT — the step that has no UI, made into a command instead of hand-written JSON.
+ *
+ *   node plugins/aukora-nostr/bin/add-contact.mjs \
+ *     --state <stateDir> --npub <npub1…> --controller <64 hex> [--name <name>]
+ *
+ * WHY THIS EXISTS. The Messages face READS `<stateDir>/nostr/contacts.json` and there is no writer
+ * for it anywhere in the repository — so today a contact is added by typing a JSON document by hand.
+ * That is the step the friend-facing notes describe, and it is the step most likely to fail: the
+ * document needs an exact domain, an exact key set, a 64-hex controller key and a `binding` key that
+ * must be PRESENT even when it is null, and the face refuses the whole file — not the entry — when
+ * any of that is wrong. A refused file means the Messages screen shows no contacts at all, with no
+ * clue which character was wrong.
+ *
+ * SO THIS VALIDATES BEFORE IT WRITES, AND IT NEVER CLOBBERS. An existing file that this tool cannot
+ * parse is a REFUSAL, not something to overwrite: the file may hold contacts this tool does not
+ * understand, and silently replacing a contacts list is how someone loses the ability to message
+ * people they had already paired with.
+ *
+ * WHAT THIS TOOL DELIBERATELY DOES NOT DO. It does not invent a binding. A binding is a signed
+ * statement by the OTHER person's controller, and fabricating one here would turn a verifiable claim
+ * into a made-up one — the contact is added UNBOUND (`binding: null`), which is an honest state the
+ * face already understands and reports. Passing `--binding <path>` attaches one they actually issued.
+ */
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { randomBytes } from 'node:crypto'
+import { dirname, join, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+import { npubDecode } from '../lib/identity.mjs'
+import { isMainModule } from '../lib/is-main.mjs'
+
+/** The `domain` every contacts document must carry. A different one is a different format. */
+export const CONTACTS_DOMAIN = 'aukora:nostr-contacts:v1'
+
+/** Why this command refused, by name rather than as a boolean. */
+export const ADD_CONTACT_REFUSE = Object.freeze({
+  USAGE: 'nostr:add-contact-usage',
+  BAD_NPUB: 'nostr:add-contact-bad-npub',
+  BAD_CONTROLLER: 'nostr:add-contact-bad-controller',
+  EXISTING_UNREADABLE: 'nostr:add-contact-existing-unreadable',
+  BAD_BINDING: 'nostr:add-contact-bad-binding',
+  /** Another writer holds the lock and its hold is not stale. A RETRY LATER is the answer. */
+  LOCKED: 'nostr:add-contact-locked',
+  /** `mode: 'insert'` found an entry for this npub. THE ANTI-OVERWRITE REFUSAL, held under the lock. */
+  ALREADY_PRESENT: 'nostr:add-contact-already-present',
+  /** `setContactConfirmation` was pointed at an npub this list does not carry. */
+  NO_SUCH_CONTACT: 'nostr:add-contact-no-such-contact',
+})
+
+/**
+ * How long a lock may sit before it is treated as abandoned.
+ *
+ * A PROCESS THAT DIES BETWEEN `openSync` AND `unlinkSync` LEAVES ITS LOCK BEHIND, and a lock with no
+ * stale rule is a contacts file nobody can ever write to again — worse than the race it prevents. The
+ * window is generous because the critical section is a read, a compare and a rename.
+ */
+const LOCK_STALE_MS = 30_000
+
+/** How long to wait for a LIVE lock before giving up. Long enough for a rename, short enough to be an answer. */
+const LOCK_WAIT_MS = 2_000
+
+/** How long between attempts while waiting. */
+const LOCK_RETRY_MS = 5
+
+/**
+ * Run `body` holding an exclusive lock beside the contacts document.
+ *
+ * THE LOCK IS `O_EXCL` — `openSync(path, 'wx')` — WHICH IS ATOMIC ON THE FILESYSTEM and therefore the
+ * only part of this that can be trusted to be a mutual exclusion rather than a hopeful check. It wraps
+ * READ → CHECK → WRITE → RENAME, because the whole point is that no other writer can slip between the
+ * check and the write: checking outside the lock is exactly the race this closes.
+ *
+ * @param {string} file - the contacts document path.
+ * @param {() => unknown} body - the critical section.
+ * @returns whatever `body` returns.
+ */
+function withContactsLock(file, body) {
+  const lock = `${file}.lock`
+  mkdirSync(dirname(file), { recursive: true, mode: 0o700 })
+  let handle
+  // A LIVE LOCK IS WAITED FOR, NOT REFUSED ON. The critical section is a read, a compare and a rename,
+  // so a holder is busy for MICROSECONDS — and refusing immediately means two people adding DIFFERENT
+  // friends at the same moment lose one of them. That is the lost update this lock exists to prevent,
+  // arriving by a different door. MEASURED by the court, not reasoned about: the first version threw
+  // `nostr:add-contact-locked` and the two-different-npubs arm caught one add going missing.
+  const deadline = Date.now() + LOCK_WAIT_MS
+  for (;;) {
+    try {
+      handle = openSync(lock, 'wx', 0o600)
+      break
+    } catch (cause) {
+      if (cause?.code !== 'EEXIST') throw cause
+      // It is either a live writer or a dead one; the age is the only thing that can tell them apart.
+      let ageMs = 0
+      try { ageMs = Date.now() - statSync(lock).mtimeMs } catch { ageMs = 0 }
+      if (ageMs >= LOCK_STALE_MS) {
+        // STALE: the writer that made it is gone. Take it, and say so rather than pretending it was free.
+        try { rmSync(lock, { force: true }) } catch { /* the next open says whether it worked */ }
+        continue
+      }
+      if (Date.now() >= deadline) {
+        throw refuse(ADD_CONTACT_REFUSE.LOCKED,
+          `${lock} is held by another writer (${Math.round(ageMs / 1000)}s old) and did not clear within `
+          + `${String(LOCK_WAIT_MS)}ms; nothing was written. Retry in a moment.`)
+      }
+      // SLEEP SYNCHRONOUSLY: this function is sync by design, and `Atomics.wait` on a shared buffer is
+      // the one way to yield without turning every caller into a promise.
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, LOCK_RETRY_MS)
+    }
+  }
+  try {
+    writeFileSync(lock, `${String(process.pid)} ${new Date().toISOString()}
+`, { mode: 0o600, flag: 'a' })
+    return body()
+  } finally {
+    // RELEASED ON EVERY PATH, INCLUDING A THROW INSIDE THE CRITICAL SECTION.
+    try { closeSync(handle) } catch { /* already closed */ }
+    try { rmSync(lock, { force: true }) } catch { /* the stale rule cleans it up */ }
+  }
+}
+
+const HEX64 = /^[0-9a-f]{64}$/iu
+const refuse = (code, detail) => Object.assign(new Error(detail), { code })
+
+/** `--flag value`, where an unknown flag is an error rather than something ignored. */
+function parseArgs(argv, known) {
+  const out = {}
+  for (let i = 0; i < argv.length; i++) {
+    const flag = argv[i]
+    if (!flag.startsWith('--')) throw refuse(ADD_CONTACT_REFUSE.USAGE, `unexpected argument ${flag}`)
+    if (!known.has(flag)) throw refuse(ADD_CONTACT_REFUSE.USAGE, `unknown argument ${flag}; known: ${[...known].join(' ')}`)
+    const value = argv[++i]
+    if (value === undefined || value.startsWith('--')) throw refuse(ADD_CONTACT_REFUSE.USAGE, `${flag} needs a value`)
+    out[flag.slice(2)] = value
+  }
+  return out
+}
+
+/** The path of the contacts document inside a state directory. */
+export function contactsPath(stateDir) {
+  return join(resolve(stateDir), 'nostr', 'contacts.json')
+}
+
+/**
+ * Read the existing document, or refuse.
+ *
+ * A MISSING file is not an error — that is the first contact. A file that exists and cannot be read
+ * as a contacts document IS an error, and it is one this command will not resolve by overwriting.
+ *
+ * @param {string} file - the contacts document path.
+ * @returns {readonly object[]} the existing contacts.
+ */
+export function readExistingContacts(file) {
+  if (!existsSync(file)) return Object.freeze([])
+  let parsed
+  try {
+    parsed = JSON.parse(readFileSync(file, 'utf8'))
+  } catch (cause) {
+    throw refuse(ADD_CONTACT_REFUSE.EXISTING_UNREADABLE,
+      `${file} exists but is not JSON (${cause?.message ?? cause}); refusing to overwrite a contacts list this tool cannot read`)
+  }
+  if (parsed?.domain !== CONTACTS_DOMAIN || !Array.isArray(parsed.contacts)) {
+    throw refuse(ADD_CONTACT_REFUSE.EXISTING_UNREADABLE,
+      `${file} exists but is not a ${CONTACTS_DOMAIN} document; refusing to overwrite it`)
+  }
+  return Object.freeze(parsed.contacts)
+}
+
+/**
+ * Add or update one contact, and write the document back.
+ *
+ * @param {Readonly<{stateDir: string, npub: string, controller: string, name?: string, bindingPath?: string}>} input - who to add and where.
+ * @returns {Readonly<Record<string, unknown>>} what was written.
+ */
+export function addContact(input) {
+  const stateDir = resolve(input.stateDir)
+  // VALIDATE EVERYTHING BEFORE TOUCHING THE FILE, so a bad argument cannot leave a half-written list.
+  try {
+    npubDecode(input.npub)
+  } catch (cause) {
+    throw refuse(ADD_CONTACT_REFUSE.BAD_NPUB, `--npub is not a decodable npub: ${cause?.message ?? cause}`)
+  }
+  if (!HEX64.test(input.controller ?? '')) {
+    throw refuse(ADD_CONTACT_REFUSE.BAD_CONTROLLER,
+      '--controller must be the other side\'s controller ed25519 public key: 64 hex characters')
+  }
+  let binding = null
+  if (input.bindingPath !== undefined) {
+    try {
+      binding = JSON.parse(readFileSync(resolve(input.bindingPath), 'utf8'))
+    } catch (cause) {
+      throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, `--binding could not be read as JSON: ${cause?.message ?? cause}`)
+    }
+  }
+
+  const file = contactsPath(stateDir)
+  const name = input.name ?? input.npub.slice(0, 16)
+
+  // INSERT-ONLY IS THE DEFAULT FOR A CALLER THAT SAYS SO, AND UPSERT REMAINS FOR THE COMMAND LINE.
+  // A person running this by hand to fix a key means to replace it; a BUTTON must not be able to
+  // re-point a friend silently, so `insert` refuses an npub that is already there.
+  const insertOnly = input.mode === 'insert'
+
+  // EVERYTHING THAT READS THE FILE HAPPENS INSIDE THE LOCK. A check outside it would be the race this
+  // exists to close: read, decide, and let another writer land in between.
+  return withContactsLock(file, () => {
+    const existing = readExistingContacts(file)
+    const already = existing.some(current => {
+      if (current?.npub === input.npub) return true
+      // CANONICAL, NOT LITERAL: two encodings of one key are one friend.
+      try { return npubDecode(current?.npub) === npubDecode(input.npub) } catch { return false }
+    })
+    if (insertOnly && already) {
+      throw refuse(ADD_CONTACT_REFUSE.ALREADY_PRESENT,
+        `${input.npub} is already in ${file}; this writer is insert-only and will not re-point an existing contact.`)
+    }
+    const entry = { npub: input.npub, name, peerControllerKey: input.controller.toLowerCase(), binding }
+
+    // UPSERT BY Npub: re-adding somebody updates them in place. Appending would produce two entries for
+    // one person, and the face resolves by npub, so which one won would depend on document order.
+    const others = existing.filter(current => current?.npub !== input.npub)
+    const contacts = [...others, entry]
+
+    mkdirSync(dirname(file), { recursive: true, mode: 0o700 })
+    // WRITE BESIDE AND RENAME: a crash mid-write leaves the old list intact rather than a truncated one.
+    // THE TEMP NAME IS UNIQUE PER WRITER: a shared `<file>.tmp` lets two writers fill the same file and
+    // rename each other's half-written bytes into place. The lock already excludes them; this is the
+    // second belt, for a writer that ignores the lock or a lock that went stale mid-write.
+    const temporary = `${file}.${String(process.pid)}.${randomBytes(6).toString('hex')}.tmp`
+    try {
+      writeFileSync(temporary, `${JSON.stringify({ domain: CONTACTS_DOMAIN, contacts }, null, 2)}\n`, { mode: 0o600 })
+      renameSync(temporary, file)
+    } catch (cause) {
+      try { rmSync(temporary, { force: true }) } catch { /* the sweep below catches it */ }
+      throw cause
+    }
+    return Object.freeze({ path: file, total: contacts.length, replaced: existing.length !== others.length, entry })
+  })
+}
+
+/**
+ * Attach the owner's signed confirmation to an EXISTING contact.
+ *
+ * IT ADDS A FIELD AND NOTHING ELSE. It will not create a contact, will not change a binding, and will
+ * not touch the peer's controller key: a confirmation is a statement ABOUT a key, and a writer that
+ * could also change the key would let one call move the thing it is a statement about.
+ *
+ * THE SAME LOCK AS AN ADD, for the same reason — a confirmation arriving while somebody adds a friend
+ * must not lose either write. The caller is expected to have VERIFIED the confirmation already; this
+ * writes what it is given, and the rule about what may be written lives where the signature is checked.
+ *
+ * @param {{stateDir: string, npub: string, confirmation: unknown}} input - where, whom, and the document.
+ * @returns {Readonly<{path: string, total: number, entry: object}>} what was written.
+ */
+export function setContactConfirmation(input) {
+  const file = contactsPath(resolve(input.stateDir))
+  return withContactsLock(file, () => {
+    const existing = readExistingContacts(file)
+    const index = existing.findIndex(current => current?.npub === input.npub)
+    if (index === -1) {
+      throw refuse(ADD_CONTACT_REFUSE.NO_SUCH_CONTACT,
+        `${input.npub} is not in ${file}; a confirmation is a statement about a contact, so there must be one.`)
+    }
+    const contacts = existing.map((current, at) => (at === index ? { ...current, confirmation: input.confirmation } : current))
+    const temporary = `${file}.${String(process.pid)}.${randomBytes(6).toString('hex')}.tmp`
+    try {
+      writeFileSync(temporary, `${JSON.stringify({ domain: CONTACTS_DOMAIN, contacts }, null, 2)}\n`, { mode: 0o600 })
+      renameSync(temporary, file)
+    } catch (cause) {
+      try { rmSync(temporary, { force: true }) } catch { /* nothing else to do */ }
+      throw cause
+    }
+    return Object.freeze({ path: file, total: contacts.length, entry: contacts[index] })
+  })
+}
+
+const USAGE = [
+  'usage: add-contact.mjs --state <dir> --npub <npub1…> --controller <64 hex> [--name <name>] [--binding <path>]',
+  '  --state      the app state directory (the document is written to <state>/nostr/contacts.json)',
+  '  --npub       the other side\'s Nostr address',
+  '  --controller the other side\'s controller ed25519 public key, 64 hex characters',
+  '  --name       what to call them on the Messages screen (default: the start of their npub)',
+  '  --binding    a binding document THEY issued, if you have one; without it the contact is UNBOUND',
+  '  --mode       upsert (default) replaces an entry for this npub; insert refuses one that exists',
+].join('\n')
+
+async function main(argv) {
+  try {
+    const args = parseArgs(argv, new Set(['--state', '--npub', '--controller', '--name', '--binding', '--mode']))
+    if (args.state === undefined || args.npub === undefined || args.controller === undefined) {
+      throw refuse(ADD_CONTACT_REFUSE.USAGE, '--state, --npub and --controller are all required')
+    }
+    const result = addContact({
+      stateDir: args.state,
+      npub: args.npub,
+      controller: args.controller,
+      name: args.name,
+      bindingPath: args.binding,
+      // DEFAULT UPSERT, BECAUSE THIS IS A REPAIR TOOL RUN BY HAND. `--mode insert` is what a caller
+      // that must not re-point an existing friend uses, and it is the mode the button takes.
+      mode: args.mode,
+    })
+    console.log(`contacts    : ${result.path}`)
+    console.log(`name        : ${result.entry.name}`)
+    console.log(`npub        : ${result.entry.npub}`)
+    console.log(`controller  : ${result.entry.peerControllerKey}`)
+    console.log(`binding     : ${result.entry.binding === null ? 'none — this contact is UNBOUND until they issue one' : 'attached'}`)
+    console.log(`total       : ${result.total}${result.replaced ? ' (an existing entry for this npub was replaced)' : ''}`)
+    return 0
+  } catch (cause) {
+    console.error(`${cause?.code ?? 'error'}: ${cause?.message ?? cause}`)
+    if (cause?.code === ADD_CONTACT_REFUSE.USAGE) console.error(USAGE)
+    return cause?.code === ADD_CONTACT_REFUSE.USAGE ? 2 : 1
+  }
+}
+
+if (isMainModule(import.meta.url)) {
+  process.exitCode = await main(process.argv.slice(2))
+}

@@ -1,0 +1,1108 @@
+.surface {
+  /* Sidebar geometry, copied: the thread lane's root padding and inline
+     padding variable, so both lanes seat their brand row identically. */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px var(--dsh-messages-inline-padding);
+  box-sizing: border-box;
+  overflow: hidden;
+  /* The sheets are positioned against this box rather than the viewport: the lane is what has a
+     width, and a fixed panel would cover the shell and measure the window instead of the lane. */
+  position: relative;
+  /* Lane width answers the hot-corner clearance query below. */
+  container-type: inline-size;
+  /* No paint of its own. The lane already carries the surface wash, and the
+     centered surface stack is narrower than the lane at the single-lane
+     measure: an opaque fill here would cover only the middle of the lane and
+     draw its own edges down both sides. */
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+}
+
+.surface[hidden] {
+  display: none;
+}
+
+/* List view: the thread lane's own structure — brand row with the action
+   cluster, search seat, then card rows filling the pane. Values copied from
+   the lane; the person accent is blue where the lane uses mint. The lane
+   fills whatever pane it is given, so a two-thirds or full-bleed pane reads
+   as one wide list rather than a narrow column adrift in it. */
+.lane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* The lane's own logo row: 60px seat, identical padding, and the same
+   hot-corner reserve so the action cluster never sits under the shell's
+   invisible corner target. */
+.brandRow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 60px;
+  padding: 8px 0 8px 4px;
+  padding-right: calc(
+    var(--dsh-hot-corner-size, 74px)
+    + var(--dsh-hot-corner-gutter, 10px)
+    - var(--dsh-messages-inline-padding)
+  );
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.brandMark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-static-spatial-blue);
+}
+
+.brandName {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Brand-row cluster and 28px icon buttons, copied from the lane's toolbar. */
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 9px;
+  padding: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 1px;
+}
+
+.iconButton[aria-pressed='true'] {
+  background: color-mix(in srgb, currentColor 13%, transparent);
+}
+
+.pinAction[aria-pressed='true'] {
+  color: var(--dsw-static-spatial-violet);
+}
+
+.unreadAction[aria-pressed='true'] {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.archiveAction[aria-pressed='true'] {
+  color: var(--dsw-static-spatial-gold);
+}
+
+/* The whole honesty surface: one slim gold line under the brand row. The colour is a
+   second signal, never the only one: each status keeps the line's own dot and its full
+   sentence, so the posture is readable without separating gold from green. */
+.posture {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  margin: 0 0 4px;
+  padding: 0 4px;
+  color: var(--dsw-static-spatial-gold);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.posture::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dsw-static-spatial-gold);
+}
+
+/* A connected route reads green; a route that has not answered keeps the gold. */
+.posture[data-posture='connected'] {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.posture[data-posture='connected']::before {
+  background: var(--dsw-alias-state-success-primary);
+}
+
+/* Which store the rows below actually came from used to be a line under the banner, with the path
+   in monospace beside it. It is a fact about the read rather than about a row, and a path under a
+   list is a line nobody reads and every eye stops on: it is a row in the details sheet now, reached
+   by the info button. The scene itself is still on the lane as `data-messages-source`. */
+
+/* A refusal or an unreadable answer: the named reason, in the place the list would be.
+   It never quietly replaces rows that were there — it sits above them and says so. */
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: none;
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);
+  border-radius: 12px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.noticeTitle {
+  font-weight: 600;
+}
+
+.noticeReason {
+  color: var(--dsw-static-spatial-gold);
+  overflow-wrap: anywhere;
+  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+}
+
+/* Signal's row: avatar, then two lines — name with the marks at its end, preview under it. The
+   name never leaves the row and never wraps: it ellipsizes, and the two marks beside it are the only
+   things in the row that are not words. */
+.contactRow {
+  align-items: center;
+  min-height: 64px;
+}
+
+.rowMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rowTop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.rowTitleInMain {
+  flex: 0 1 auto;
+  min-width: 0;
+  /* AND IT CAN NEVER BE WIDER THAN WHAT HOLDS IT. `min-width` alone lets it shrink only if the container is itself
+     constrained; this makes the ceiling explicit, which is what turns the ellipsis on. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 570;
+}
+
+/* The one trust mark a row carries: a shield in the state's colour, no word beside it. The state's
+   own sentence is the mark's accessible name — a row does not spell trust, and this is the signal the
+   colour cannot carry alone for a reader who cannot separate the four. */
+.trustMark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.trustMark[data-state='VERIFIED'] {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.trustMark[data-state='TEST'] {
+  color: var(--dsw-static-spatial-gold);
+}
+
+.trustMark[data-state='UNBOUND'] {
+  color: var(--dsw-static-spatial-blue);
+}
+
+.trustMark[data-state='FOREIGN'] {
+  color: var(--dsw-alias-state-error-primary, #d9534f);
+}
+
+/* Unread is a dot, not a badge: the state is one bit and it costs the row no words. */
+.unreadDot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--dsw-alias-state-success-primary);
+}
+
+.pinMark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  color: var(--dsw-static-spatial-violet);
+}
+
+/* The time is the last thing on the name's line and it stays there: pushed right by its own
+   margin so a long name shrinks before it, and never taken out of the row by one. */
+.time {
+  flex: none;
+  margin-left: auto;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* The preview: one line, and it is the newest thing this screen actually holds. */
+.rowPreview {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* ---- The four state badges ---------------------------------------------------------
+   Four signals per state, none of them colour alone: a distinct glyph, the state word
+   in small caps, a distinct fill/dash weight, and a `title` plus a visually-hidden
+   sentence on the element itself. Gold, green, blue and red are the fourth signal. */
+
+.badge {
+  /* IT MAY SHRINK, BECAUSE A ROW THAT IS NARROWER THAN ITS BADGE MUST NOT PUSH THE BADGE OFF THE PANE. This was
+     `flex: none`: at third width the trust badge measured 369px inside a 341px pane, so its right edge was off
+     the surface — a stranger with a narrow window saw it cut. The full sentence stays in the visually-hidden
+     span for assistive technology, so nothing is lost to a screen reader when the visible word ellipsises. */
+  flex: 0 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid currentColor;
+  font-size: 10px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge[data-state='VERIFIED'] {
+  color: var(--dsw-alias-state-success-primary);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--dsw-alias-state-success-primary) 16%, transparent);
+}
+
+.badge[data-state='TEST'] {
+  color: var(--dsw-static-spatial-gold);
+  border-radius: 4px;
+  border-style: dashed;
+  background: color-mix(in srgb, var(--dsw-static-spatial-gold) 12%, transparent);
+}
+
+.badge[data-state='UNBOUND'] {
+  color: var(--dsw-static-spatial-blue);
+  border-radius: 9px;
+  border-style: dotted;
+  background: color-mix(in srgb, var(--dsw-static-spatial-blue) 10%, transparent);
+}
+
+.badge[data-state='FOREIGN'] {
+  color: var(--dsw-alias-state-error-primary, #d9534f);
+  border-radius: 2px;
+  background: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--dsw-alias-state-error-primary, #d9534f) 22%, transparent) 0 4px,
+    transparent 4px 8px
+  );
+}
+
+.badgeWord {
+  /* The word is what makes the badge readable without the colour; the glyph sits beside it. */
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- The SAS seat, and the seat that deliberately is not one ----------------------- */
+
+.sas {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 40%, transparent);
+  background: color-mix(in srgb, var(--dsw-static-spatial-violet) 10%, transparent);
+  max-width: 100%;
+}
+
+.sasAbsent {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  border: 1px dashed var(--dsw-alias-border-l2);
+  max-width: 100%;
+}
+
+.sasGlyph {
+  flex: none;
+  display: inline-flex;
+  color: var(--dsw-static-spatial-violet);
+  margin-top: 2px;
+}
+
+.sasAbsentGlyph {
+  flex: none;
+  display: inline-flex;
+  color: var(--dsw-alias-label-tertiary);
+  margin-top: 2px;
+}
+
+.sasBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.sasLabel {
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--dsw-static-spatial-violet);
+}
+
+/* The digits are the one large thing here: a person reads them out loud. */
+.sasDigits {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  color: var(--dsw-alias-label-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.sasHint {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* The honest alternative: a sentence, never digits, never a dash that could be read as
+   a value, and never anything shaped like a code to compare. */
+.sasAbsentText {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+/* ---- The send receipt, as a mark ---------------------------------------------------
+   A receipt is a MARK beside the message it is about, never a paragraph over the composer. The
+   per-copy tone is still what makes a refused copy visually distinct rather than merely differently
+   worded: `delivered` is reached only when every copy this send reported was accepted, and it is the
+   only one painted as success. The four marks are four shapes as well as four colours, so "kept yours,
+   theirs refused" cannot be read as a clean send by someone who cannot separate green from gold. */
+
+.receiptMark {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.receiptMark[data-receipt='pending'] {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.receiptMark[data-receipt='delivered'] {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+.receiptMark[data-receipt='partial'] {
+  color: var(--dsw-static-spatial-gold);
+}
+
+.receiptMark[data-receipt='refused'] {
+  color: var(--dsw-alias-state-error-primary, #d9534f);
+}
+
+/* The thread notice: what the conversation view says when the route offers no thread. */
+.threadNotice {
+  margin: 0;
+  padding: 6px 8px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.searchRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex: none;
+  padding: 0 4px;
+  margin-bottom: 6px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+}
+
+/* The one scrolling region, with the lane's stable gutter so revealing the
+   thumb never reflows a row. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  padding-bottom: 12px;
+}
+
+/* Session-card grammar copied from the lane's rows (64px seat, 14px radius,
+   rightward hover) with the blue accent instead of mint. */
+.personRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 4px);
+  min-height: 64px;
+  margin-inline: 2px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-blue) 32%, transparent);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 200ms var(--ds-ease-in-out),
+    border-color 250ms var(--ds-ease-in-out),
+    box-shadow 250ms var(--ds-ease-in-out);
+}
+
+.personRow:hover {
+  transform: translateX(3px);
+}
+
+.personRow:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-blue) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--dsw-static-spatial-blue) 14%, transparent);
+}
+
+/* THE ROW'S VERBS ARE NOT IN THE RESTING ROW. They trade places with the time on hover and on focus,
+   the same exchange the thread lane makes, and the info verb is here because it opens the sheet the
+   row's key and source moved into. This cluster is `display: none` at rest and it has to be: the render
+   probe caught the first version of this row, where a trim of the old stylesheet took these rules with
+   it, the cluster stayed on screen taking 118px, and the contact's name was clipped at a third of the
+   width. Four verbs beside every name is also the "too many little boxes" verdict itself. */
+.rowActions {
+  flex: none;
+  display: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.personRow:hover .rowActions,
+.personRow:focus-within .rowActions {
+  display: inline-flex;
+}
+
+.personRow:hover .time,
+.personRow:focus-within .time {
+  display: none;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--dsw-static-spatial-blue) 24%, transparent);
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.listEmpty {
+  margin: 0;
+  padding: 8px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Open conversation: the thread view's own composition — title capsule,
+   scrolling message column, composer card pinned below. */
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  width: min(100%, 720px);
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding-top: calc(var(--dsh-hot-corner-size, 74px) * 0.4);
+}
+
+/* Title capsule copied from the open thread: l2 stroke, 16px radius,
+   transparent, 50px seat. */
+.threadHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  min-height: 50px;
+  padding: 8px 12px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 16px;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+/* The lane places a 74px hot corner at each shell edge, above every surface.
+   The centered column clears both corners from 868px of lane width
+   (720 column + 24 surface padding + 2 x 74); below that, reserve the same
+   hit area inside the outline so back and the row verbs stay clickable
+   instead of cycling the pane. The AI conversation header reserves the same
+   way at its own column width. */
+@container (max-width: 868px) {
+  .threadHeader {
+    padding-inline: 74px;
+  }
+}
+
+/* The chip and the verbs ride together, so the second line of a narrow header is one unit rather
+   than a chip that drifts away from the controls it belongs beside. */
+.headerTail {
+  /* IT MAY SHRINK, BECAUSE THE BADGE INSIDE IT CANNOT SHRINK PAST ITS PARENT. With `flex: none` here the tail sized
+     itself to its widest child, so the badge's own `max-width: 100%` was a ceiling on a box that had already grown:
+     at third width the trust badge measured 369px inside a 341px pane and its right edge was off the surface. */
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* The one trust word a conversation says out loud, and only when it is not verified: a shield with a
+   slash and the word "Unverified", which opens the sheet that says exactly which state this is. */
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid currentColor;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--dsw-static-spatial-gold);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.chip[data-trust-chip='FOREIGN'] {
+  color: var(--dsw-alias-state-error-primary, #d9534f);
+  border-style: dashed;
+}
+
+.chip[data-trust-chip='UNBOUND'] {
+  color: var(--dsw-static-spatial-blue);
+  border-style: dotted;
+}
+
+.chipWord {
+  display: inline-block;
+}
+
+.threadTitle {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 8px;
+}
+
+/* Their side is a bubble too, and this is the fix for Peter's live screenshot: it was plain
+   left-aligned text with no fill, so a received message and a line of the page looked the same and
+   he could not tell he had been written to. Two signals, not one: alignment, and a fill with a
+   stroke. The colour is not the signal — the shape is. */
+.msgThem {
+  align-self: flex-start;
+  margin: 0;
+  max-width: min(525px, 82%);
+  padding: 10px 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* Your side is the user bubble: r22 fill, 10x16 padding, right-aligned. */
+.msgMe {
+  align-self: flex-end;
+  margin: 0;
+  max-width: min(525px, 82%);
+  padding: 10px 16px;
+  border-radius: 22px;
+  background: var(--dsw-specific-bubble);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+/* Text stays one column and wraps inside the bubble; a message is text, and the mark below it is
+   the only thing in the bubble that is not. */
+.bubbleText {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* The AI composer card's surface: 22px radius, input-major fill, thin
+   stroke, lv2 elevation. */
+.composerCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: none;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+  border-radius: 22px;
+  background: var(--dsw-specific-input-major);
+  box-shadow: var(--dsw-shadow-lv2);
+}
+
+.composerCard textarea {
+  min-height: 24px;
+  max-height: 120px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  resize: none;
+  outline: none;
+}
+
+.composerRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* The send circle: 34px, info-fill blue, white glyph; empty draft sits at
+   0.4 opacity exactly like the AI composer. */
+.sendCircle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 999px;
+  background: var(--dsw-alias-button-info-fill);
+  color: var(--dsw-alias-label-primary, #fff);
+  cursor: pointer;
+  transition: background-color 100ms ease;
+}
+
+.sendCircle:hover:not(:disabled) {
+  background: var(--dsw-alias-button-info-hover);
+}
+
+.sendCircle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---- The two one-tap sheets ---------------------------------------------------------
+   What a row must not carry, one tap away. Positioned inside the surface, because the surface is
+   what has a width: a fixed panel would cover the shell and measure the window instead of the lane. */
+
+.sheetBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 10px;
+  box-sizing: border-box;
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 34%, transparent);
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 520px);
+  max-height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 18px;
+  background: var(--dsw-specific-input-major);
+  box-shadow: var(--dsw-shadow-lv2);
+  color: var(--dsw-alias-label-primary);
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  min-width: 0;
+  margin-bottom: 8px;
+}
+
+.sheetTitle {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 600;
+}
+
+.sheetBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sheetBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheetSentence {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.sheetRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sheetLabel {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sheetValue {
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+/* The npub in full: monospace, and wrapping rather than ellipsizing, because a person checks a key
+   character by character and an ellipsis in the middle of one is not a check. This is the only place
+   the whole key is shown, and it is one tap from the row's own info button. */
+.npub {
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+/* Launcher row copy: same grammar as the sibling registries; the shell's
+   global menu-button rule owns hover/active visuals. */
+.menuItem {
+  width: 100%;
+}
+
+.menuItemActive {
+  width: 100%;
+}
+
+.menuCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: right;
+}
+
+.menuCopy strong {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 570;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuCopy span {
+  overflow: hidden;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- NARROW PANES, AND WHY THESE COME LAST ------------------------------------------
+   A container query does NOT outrank the rule it overrides: `@container (max-width: 560px)` carries
+   the same specificity as a plain class selector, so a base declaration written BELOW it wins and the
+   narrow layout silently never applies. That is not hypothetical — the first version of this block sat
+   above `.headerTail { flex: none }`, the header stayed on one line, and the render probe measured the
+   contact's name at 5px wide at a third of the width: exactly the defect the block was written to fix.
+   These live at the end of the file so that no later base rule can take the narrow pane away again.
+   At a third of the width the reserve the shell's hot corner needs (74px) no longer fits beside a
+   name, a chip and four verbs, so both headers take a second line instead of clipping the name. */
+
+/* THE BRAND ROW ALSO BECOMES TWO LINES RATHER THAN CLIPPING ITS NAME. Six verbs and a 72px corner
+   reserve do not fit beside a title at a third of the width, and the title is the part that loses:
+   the same failure Peter saw in the thread header. Here the reserve stays on the line the buttons are
+   actually on, and the title keeps the first line to itself. */
+@container (max-width: 560px) {
+  .brandRow {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 60px;
+    row-gap: 4px;
+    padding-right: 4px;
+  }
+
+  .brandActions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    padding-right: calc(
+      var(--dsh-hot-corner-size, 74px)
+      + var(--dsh-hot-corner-gutter, 10px)
+      - var(--dsh-messages-inline-padding)
+    );
+  }
+}
+
+/* BELOW THE WIDTH WHERE ONE LINE STILL FITS, THE HEADER BECOMES TWO RATHER THAN SHRINKING THE NAME
+   OUT OF EXISTENCE. This is Peter's live screenshot: at a third of the width the contact's name left
+   the thread header entirely, because a flex row that cannot fit keeps its non-shrinking parts — the
+   back button, the chip and three verbs — and gives the name whatever is left, which was nothing. The
+   name gets a line of its own here, and the chip and the verbs move to a second line pushed clear of
+   the right hot corner. Nothing is hidden and nothing wraps: the header is just taller. */
+@container (max-width: 560px) {
+  .threadHeader {
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding-inline: 4px 74px;
+  }
+
+  .threadTitle {
+    text-align: left;
+  }
+
+  .headerTail {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+}
+
+/*
+ * THE CONFIRMATION BLOCK IN THE VERIFY SHEET. The button is a full-width action because it is a sentence a
+ * person agrees with rather than a label they tap, and the note under it is muted: it is the honest state of
+ * the signing path, not an error.
+ */
+.verifyConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dsh-spatial-gap, 6px);
+  margin-top: var(--dsh-spatial-gap, 6px);
+}
+
+.verifyConfirmButton {
+  font: inherit;
+  font-weight: 600;
+  text-align: start;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a3c);
+  background: var(--dsw-alias-interactive-bg-hover, #24282e);
+  color: var(--dsw-alias-label-primary, #e8eaed);
+}
+
+.verifyConfirmNote {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  line-height: 17px;
+}
+/*
+ * THE ADD-CONTACT SHEET. Three labelled fields and one action, in the site's own tokens — the audit
+ * (`scripts/face/token-audit.mjs`) refuses a colour or a font that does not come from them, and
+ * `tests/aukora-surface-tokens.test.mjs` keeps that refusal honest.
+ */
+.addHint {
+  margin: 0 0 var(--dsh-spatial-gap, 8px);
+  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  line-height: 18px;
+}
+
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dsh-spatial-gap, 8px);
+}
+
+.addField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.addLabel {
+  color: var(--dsw-alias-label-secondary, #b8bcc4);
+}
+
+.addInput {
+  font: inherit;
+  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a3c);
+  background: var(--dsw-alias-bg-layer-1, #17181a);
+  color: var(--dsw-alias-label-primary, #e8eaed);
+}
+
+.addSubmit {
+  font: inherit;
+  font-weight: 600;
+  padding: 9px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--dsw-alias-border-l2, #3a3a3c);
+  background: var(--dsw-alias-interactive-bg-hover, #24282e);
+  color: var(--dsw-alias-label-primary, #e8eaed);
+}
+
+.addSubmit:disabled {
+  cursor: default;
+  color: var(--dsw-alias-label-tertiary, #8b9099);
+}
+
+.addRefusal {
+  margin: var(--dsh-spatial-gap, 8px) 0 0;
+  color: var(--dsw-alias-label-error, #f2555a);
+  line-height: 18px;
+}
+
+.addReason {
+  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.addAdded {
+  margin: var(--dsh-spatial-gap, 8px) 0 0;
+  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  line-height: 18px;
+}

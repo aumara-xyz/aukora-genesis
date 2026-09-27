@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "repository": "aukora-diamond",
+  "commit": "0d3cc665d88a905d89f22211546ec7e445cb5c46",
+  "subject": "Diamond's cold Kira evidence consumer, vendored into Genesis so one release can verify its own exported evidence",
+  "upstream": {
+    "repository": "aukora-diamond",
+    "commit": "0d3cc665d88a905d89f22211546ec7e445cb5c46",
+    "tree": "e4bc6f0d9ba05b966ee5116e630763f47ce59a03",
+    "note": "0d3cc66 is Diamond's origin/main. It adds the small-order/non-canonical point refusals (diamond/ed25519.py, diamond/kira_evidence.py) and binds the receipt/entry/record content digest before the optional --store check. Eight of the nine files below were re-hashed against THIS commit; LICENSE is the one exception and is held at 74004738 \u2014 see `license`."
+  },
+  "license": "AGPL-3.0. LICENSE here is HELD at 7400473825c5af4c17657604bf3d9c3c749ff1a1 and is deliberately NOT the file 0d3cc66 carries: the later commit deletes the 17-line copyright and permission notice that opens the file, leaving the AGPL-3.0 body. Re-vendoring it would drop that notice, so the hold is recorded rather than silently followed or silently papered over. No licence text was written or edited by hand; the decision belongs to review.",
+  "layout": "upstream paths are preserved VERBATIM below vendor/diamond-cold/ (diamond/ and scripts/), so the verifier resolves its own package exactly as it does upstream. It is invoked with an explicit --package-root naming this directory; nothing here relies on a sibling checkout.",
+  "provenance": "git -C ~/aukora-diamond show <commit>:<path> > vendor/diamond-cold/<path>, one file at a time; no byte was edited after extraction. diamond/kira_evidence.py and diamond/ed25519.py were (re)copied this way at 0d3cc66; the other six pinned code files were copied this way at 74004738 and are byte-identical at both commits, so their bytes were left untouched. LICENSE is NOT byte-identical at both and was therefore left at 74004738.",
+  "scope": "This is the COLD KIRA EVIDENCE CLOSURE ONLY. The legacy grant/demo/loader runtime is deliberately absent: the packet that scoped this increment says not to copy the whole Diamond repository merely because a distiller copies directories.",
+  "runtime": {
+    "interpreter": "python3",
+    "entry": "scripts/verify-kira-evidence.py",
+    "packageRoot": ".",
+    "note": "The entry point is Python, not Node. It is a SEPARATE PROCESS from the running app and is never on the request path."
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "86712de00df8dafebf3cdc7e9dd6c0174b265ff0",
+      "sha256": "1f7e2277a29ae557cc0c3ae44a50e51934045bc95bf1311ff933fb312aa0b27e",
+      "bytes": 35209,
+      "note": "DEPARTS FROM UPSTREAM BYTES: the copyright-holder line was changed to 'Copyright (c) 2026 Aumara and Peter Viviani' by the 2026-09-26 licensing decision. THIS IS AUKORA'S OWN VENDORED PROJECT, so its holder line is ours to correct; the upstream text of the licence itself is otherwise untouched."
+    },
+    {
+      "path": "diamond/__init__.py",
+      "upstreamPath": "diamond/__init__.py",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "aa3dbd46c8dff3b6f5ab120a235305a29f4051b6",
+      "sha256": "48eb118ec734d2c4e165367e2b7d534e7278bdd7e72b178fb1d6026093e149db",
+      "bytes": 88
+    },
+    {
+      "path": "diamond/approval_artifact.py",
+      "upstreamPath": "diamond/approval_artifact.py",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "5f9e0a3acf344368a0558f9ca498d0aef36af727",
+      "sha256": "53eb34ee1a3e607bccee0685d4299d98a7e378390b1c9cb6d10deb81f4149e3b",
+      "bytes": 54260
+    },
+    {
+      "path": "diamond/aumlok_approval.py",
+      "upstreamPath": "diamond/aumlok_approval.py",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "3b1d31a51a95046f2b2921d7ec268e3e6e3ed272",
+      "sha256": "0c92a389abe16ba2767d9ea543a3b53e01dd43121d2ed5f17abb25d5b5f69494",
+      "bytes": 24381
+    },
+    {
+      "path": "diamond/ed25519.py",
+      "upstreamPath": "diamond/ed25519.py",
+      "upstreamCommit": "0d3cc665d88a905d89f22211546ec7e445cb5c46",
+      "upstreamBlobSha1": "4ef39d0207c6713c2c9c5283a5922cc8a954d2c8",
+      "sha256": "9030712e962525fec5b48e6dba2a6e60789715a5d87d982540f2eeb167100d6f",
+      "bytes": 4760
+    },
+    {
+      "path": "diamond/hexutil.py",
+      "upstreamPath": "diamond/hexutil.py",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "3205f8c2ccb662e609d246da9727a84c48958243",
+      "sha256": "82d1f9a3b7caa9c288573506eb788808f1f69c35f1f5140dba5af533cf975388",
+      "bytes": 1588
+    },
+    {
+      "path": "diamond/jcs.py",
+      "upstreamPath": "diamond/jcs.py",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "6a05e3c100cd1da2b89a06b8adb162e3eb4b18ec",
+      "sha256": "cf8f1558dbaa72d914a650ac52ca4d0e7442af9ec8c1a232187f667df60e9848",
+      "bytes": 2459
+    },
+    {
+      "path": "diamond/kira_evidence.py",
+      "upstreamPath": "diamond/kira_evidence.py",
+      "upstreamCommit": "0d3cc665d88a905d89f22211546ec7e445cb5c46",
+      "upstreamBlobSha1": "529474c82b0bf390931e62e13f46ff9d00238f74",
+      "sha256": "3155d704dceac4f3873129974836adcfd1a398e399a504f7708a8563c921a264",
+      "bytes": 53828
+    },
+    {
+      "path": "scripts/verify-kira-evidence.py",
+      "upstreamPath": "scripts/verify-kira-evidence.py",
+      "upstreamCommit": "7400473825c5af4c17657604bf3d9c3c749ff1a1",
+      "upstreamBlobSha1": "e9d1f29e2558117d454c9119e8c36efec4b68fee",
+      "sha256": "bd153146c74f7f99721d6b1230dd6aa0dc0a51065192e26a3dbc13310eb088d7",
+      "bytes": 33386
+    }
+  ]
+}

@@ -1,0 +1,1833 @@
+<!doctype html>
+<!-- AUMA LUMINARA · THE READING BENCH (experiment surface, pre-distillation).
+     THE WAYFINDER (named and sealed by the architect, 2026-07-16):
+     one wheel, three resolutions: the readings of 3, 9, and 27 are not
+     separate readings. Depth is radial (heart innermost, world outermost),
+     time is angular (root lower-left, present at the crown, becoming
+     lower-right), state is fine angle at the deepest grain.
+     THE AESTHETIC PASS (the architect: "lets go", 2026-07-16):
+       I   THE LIVING KNOTS: the glyphs turn slowly in true 3D on a canvas
+           projector; direction is the deck's own kinetics (sign of q: flow
+           forward, turning counter, the Seed alone holds still).
+       II  THE TYING, the rite: the centre blinks as the draw commits, a
+           bell-ring blooms in the card's metal, and each knot TIES ITSELF:
+           the strand growing along its own curve and closing. The sand
+           resonances retire from the rite (they live on the instrument).
+       III THE ORRERY: orbit rings instead of boxed cells (borders wake
+           under the touch), curved rim labels, a breathing still centre,
+           and a shallow perspective tilt with slow precession.
+       IV  THE CONSTELLATION: dyad and becoming lines wake between kin
+           cells; at 27 the whole deck is a star chart of its own structure.
+     Motion respects prefers-reduced-motion, pauses when hidden, ~30fps.
+     The 9 resolves the cast (D28); the 27 unfolds the whole deck, every
+     card exactly once (THE UNFOLDING, sealed, 2026-07-16). Casting is by
+     randomisation always: the seed is declared, replayable, and carries
+     every level. Browse is composed, never presented as drawn. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the reading bench</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34); --line:rgba(255,255,255,0.08); }
+  html,body { margin:0; background:#0a0b0e; color:var(--text); font:14px/1.65 system-ui, sans-serif; }
+  .wrap { max-width:880px; margin:0 auto; padding:26px 18px 80px; }
+  header { text-align:center; margin-bottom:14px; }
+  h1 { font-size:15px; letter-spacing:0.34em; margin:0 0 3px;
+    background:linear-gradient(100deg,#C9D3E2,#EFE7CF 55%,#F0C25E);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:10px; letter-spacing:0.2em; color:var(--faint); }
+  .modes { display:flex; gap:8px; justify-content:center; margin:14px 0 4px; flex-wrap:wrap; }
+  .modes button { background:none; border:1px solid var(--line); color:var(--dim); font:11px/1 system-ui;
+    letter-spacing:0.12em; padding:7px 14px; border-radius:20px; cursor:pointer; }
+  .modes button.on { color:var(--text); border-color:rgba(240,194,94,0.5); }
+  .modes button:hover:not(:disabled) { border-color:rgba(240,194,94,0.4); color:var(--text); }
+  .modes button:disabled { opacity:0.35; cursor:default; }
+  .hint { text-align:center; font-size:11.5px; color:var(--dim); margin:8px 0 4px; min-height:1.4em; }
+  /* a silent hint closes its band rather than holding a blank line. The
+     min-height above still steadies the live flow, whose hints are never
+     empty; only a replay arrives with nothing to say. */
+  .hint:empty { display:none; }
+  /* THE WAYFINDER: the stage everything happens on (III: the orrery) */
+  #stage { width:min(92vw, 540px); margin:2px auto 0; perspective:1150px; }
+  /* Before a cast every output box below the wheel is empty, but each still
+     carried its margins (and #wdetailBox a reserved 2.6em), stacking into a
+     dead band under the instrument. Empty means gone. */
+  #wdetailBox:empty, #descents:empty, .seed:empty, .whole:empty, .threads:empty { display:none; }
+  .qwrap { display:flex; justify-content:center; padding:12px 22px 0; }
+  .qbox { width:min(460px, 100%); font:inherit; font-size:13px; color:var(--text); text-align:center;
+    background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:22px;
+    padding:10px 18px; outline:none; transition:border-color 0.2s ease, opacity 0.3s ease; }
+  .qbox::placeholder { color:var(--faint); font-style:italic; }
+  .qbox:focus { border-color:rgba(240,194,94,0.5); }
+  .qbox[readonly] { opacity:0.6; cursor:default; }
+  .cast-centre.ready { cursor:pointer; }
+  .cast-centre.ready:hover .still-centre { fill-opacity:0.9; }
+  .centre-halo { animation:centrehalo 3.2s ease-in-out infinite; }
+  @keyframes centrehalo { 0%,100% { stroke-opacity:0.16; } 50% { stroke-opacity:0.4; } }
+  @media (prefers-reduced-motion: reduce) { .centre-halo { animation:none; stroke-opacity:0.26; } }
+  .orrery { position:relative; transform:rotateX(13deg); transform-style:preserve-3d;
+    animation:precess 90s ease-in-out infinite; }
+  @keyframes precess {
+    0%,100% { transform:rotateX(11.5deg) rotateZ(-1.2deg); }
+    50%     { transform:rotateX(15deg)   rotateZ(1.2deg); }
+  }
+  .orrery svg.wheel { display:block; width:100%; height:auto; overflow:visible; }
+  .orrery canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+  @media (prefers-reduced-motion: reduce) {
+    .orrery { animation:none; transform:rotateX(12deg); }
+  }
+  .wheel-cell { cursor:pointer; transition:stroke-opacity 0.25s ease, fill 0.25s ease; stroke-opacity:0; }
+  .wheel-cell:hover { stroke-opacity:0.5; }
+  .wheel-cell.on { stroke-opacity:0.8; fill:rgba(240,194,94,0.04); }
+  .cons { transition:stroke-opacity 0.3s ease; }
+  .cons.lit { stroke-opacity:0.55 !important; }
+  /* the standing cell: where this hour lives on the frame, a slow breath */
+  .standing { animation:standpulse 8s ease-in-out infinite; }
+  @keyframes standpulse { 0%,100% { stroke-opacity:0.2; } 50% { stroke-opacity:0.42; } }
+  @media (prefers-reduced-motion: reduce) { .standing { animation:none; stroke-opacity:0.3; } }
+  /* the cube's skin: the instrument's living cymatics mapped INTO each face's
+     3d plane: the whole surface covered, clipped to the face's own edges */
+  .fsurface { position:absolute; overflow:hidden; pointer-events:none; transform-origin:0 0; }
+  .fsurface canvas { position:absolute; display:block; }
+  .still-centre { animation:breathe 6s ease-in-out infinite; transform-origin:0 0; }
+  @keyframes breathe { 0%,100% { opacity:0.45; } 50% { opacity:0.8; } }
+  @media (prefers-reduced-motion: reduce) { .still-centre { animation:none; } }
+  .wlaw { text-align:center; font-size:10.5px; font-style:italic; color:var(--faint); margin:12px 0 4px; }
+  #wdetailBox { text-align:center; font-size:12px; color:rgba(238,242,255,0.85); max-width:560px; margin:10px auto 0; min-height:2.6em; }
+  #wdetailBox .wg { font-size:10px; letter-spacing:0.16em; color:var(--faint); text-transform:uppercase; }
+  #wdetailBox .wm { font:10.5px ui-monospace,monospace; color:var(--dim); }
+  #wdetailBox .ws { color:rgba(240,194,94,0.85); font-style:italic; }
+  #wdetailBox .wq2 { font-size:12.5px; font-style:italic; color:#EFE7CF; margin-top:4px; }
+  #wdetailBox .wst { font-size:11.5px; color:rgba(233,230,220,0.55); margin-top:5px; }
+  #wdetailBox .wagain { font-size:9px; letter-spacing:0.16em; color:rgba(240,194,94,0.55); margin-top:6px; }
+  #wdetailBox .descBtn { background:none; border:1px solid var(--line); color:var(--dim); font:10px system-ui;
+    letter-spacing:0.1em; padding:4px 10px; border-radius:12px; cursor:pointer; margin-top:7px; }
+  #wdetailBox .descBtn:hover { border-color:rgba(240,194,94,0.4); color:var(--text); }
+  /* THE DESCENT: journals beneath the wheel, one column per position */
+  #descents { display:flex; gap:16px; justify-content:center; max-width:760px; margin:12px auto 0; }
+  #descents .dcol { width:min(32%, 240px); }
+  #descents .dhead { text-align:center; font-size:9px; letter-spacing:0.2em; color:var(--faint); margin-bottom:4px; }
+  .dstands { font-size:9px; letter-spacing:0.1em; color:var(--faint); text-align:center; margin-bottom:4px; }
+  .dstep { border-left:2px solid rgba(240,194,94,0.3); padding:5px 9px; margin:6px 0; text-align:left; }
+  .dstep .dwithin { font-size:9px; letter-spacing:0.14em; color:var(--faint); }
+  .dstep .dname { font-size:12px; letter-spacing:0.08em; }
+  .dstep .dmarks { font:10px ui-monospace,monospace; color:var(--dim); margin-left:6px; }
+  .dstep .dq { font-size:11px; font-style:italic; color:rgba(239,231,207,0.75); margin-top:3px; }
+  .wsil { font-size:9px; letter-spacing:0.14em; color:rgba(240,194,94,0.8); margin-top:3px; }
+  .seed { text-align:center; font:10px ui-monospace,monospace; color:var(--faint); word-break:break-all; margin:12px 0 0; }
+  /* silent to the eye, spoken to the reader who is read to: the witness line
+     under the dial. Not display:none, which would silence it everywhere. */
+  .sr { position:absolute; width:1px; height:1px; margin:0; overflow:hidden;
+    clip-path:inset(50%); white-space:nowrap; }
+  /* the cast dial: the astrolabe's own face at HALF the astrolabe's width,
+     min(92vw, 280px), at the architect's word (11 August 2026). CHOSEN and
+     said plainly: at 280px a unit is 1.35px, so every stroke renders at half
+     the weight it was ruled for on the astrolabe. The record sits quieter
+     than the live instrument, which suits a record. It carries no animation
+     and no hit layer, both deliberately: see luminara-cast-dial.js. */
+  #castDial { display:flex; justify-content:center; margin:22px 0 6px; }
+  #castDial:empty { display:none; }
+  .castdial { width:min(92vw, 280px); height:auto; display:block; }
+  .whole { text-align:center; font-style:italic; font-size:13px; color:rgba(238,242,255,0.85); margin:10px 0 2px; }
+  .threads { margin:14px auto 2px; max-width:600px; }
+  .threads .t { font-size:12px; color:var(--dim); padding:6px 10px; border-left:2px solid rgba(240,194,94,0.35); margin:6px 0; }
+  /* THE ANSWERING SPREAD: the cast met with its own reversed mirror. Derived
+     from the counter, which is canon; nothing here is a second cast. */
+  .mirror { text-align:center; margin:12px auto 6px; }
+  .mirror button { background:none; border:1px solid var(--line); color:var(--dim); font:10.5px system-ui;
+    letter-spacing:0.14em; padding:6px 13px; border-radius:9px; cursor:pointer; }
+  .mirror button:hover { border-color:rgba(240,194,94,0.4); color:var(--text); }
+  .mirrorbox { margin-top:9px; }
+  .mirrorbox table { margin:0 auto; border-collapse:collapse; font:11px ui-monospace,monospace; }
+  .mirrorbox td { padding:3px 8px; white-space:nowrap; }
+  .mirrorbox .mpos { color:var(--faint); font-size:9.5px; letter-spacing:0.14em; text-align:right; }
+  .mirrorbox .mcard { color:rgba(239,231,207,0.9); text-align:right; }
+  .mirrorbox .mknot { color:var(--faint); font-size:10px; }
+  .mirrorbox .mjoin { color:rgba(240,194,94,0.7); }
+  .mirrorbox .mans { color:rgba(140,178,222,0.9); }
+  .mirrorbox .mnull { color:var(--faint); font-size:10px; text-align:left; }
+  .mirrorbox tr.mform td { color:var(--faint); font-size:10px; text-align:left; padding:0 8px 9px;
+    font-family:system-ui,sans-serif; max-width:430px; white-space:normal; line-height:1.6; }
+  .mirrornote { font-size:10px; letter-spacing:0.1em; color:var(--faint); margin-top:9px; line-height:1.7;
+    max-width:520px; margin-left:auto; margin-right:auto; }
+  #reading { max-width:640px; margin:0 auto; }
+  section.pos { border-top:1px solid var(--line); margin-top:22px; padding-top:14px; }
+  .poshead { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+  .poshead .pname { font-size:12px; letter-spacing:0.22em; color:#EFE7CF; }
+  .poshead .cname { font-size:14px; letter-spacing:0.12em; }
+  .poshead .meta { font:10.5px ui-monospace,monospace; color:var(--faint); }
+  .silent-flag { font-size:10px; letter-spacing:0.18em; color:rgba(240,194,94,0.8); border:1px solid rgba(240,194,94,0.3);
+    padding:2px 8px; border-radius:10px; }
+  .voice { margin:12px 0; }
+  .voice .vname { font-size:10px; letter-spacing:0.22em; color:var(--faint); margin-bottom:3px; }
+  /* the depth walk: the marks said in words, standing right after them in
+     the head's meta line. Italic so the derived words and the head's other
+     tokens cannot be mistaken for one another. */
+  .poshead .mwalk { font-style:italic; color:rgba(233,230,220,0.55); }
+  .voice .vtext { font-size:13px; color:rgba(238,242,255,0.86); }
+  .voice.q .vtext { font-style:italic; color:#EFE7CF; font-size:13.5px; }
+  .seedrow { display:flex; gap:6px; justify-content:center; align-items:center; margin:22px 0 2px; flex-wrap:wrap; }
+  .seedrow input { background:#101116; border:1px solid var(--line); color:var(--dim); font:11px ui-monospace,monospace;
+    padding:6px 9px; border-radius:8px; width:min(340px, 70vw); }
+  .seedrow button { background:none; border:1px solid var(--line); color:var(--dim); font:10.5px system-ui;
+    padding:6px 11px; border-radius:8px; cursor:pointer; }
+  /* THE GUIDE: the beginner's door, standing where the card browser stood.
+     Static content in the bench's own registers; the study of single glyphs
+     lives on THE RING. */
+  #browsePane { margin-top:6px; }
+  #browsePane .opening { font-size:12.5px; color:var(--dim); text-align:center; margin:14px auto 4px; max-width:600px; }
+  #browsePane .sect { max-width:680px; margin:26px auto 0; }
+  #browsePane .sect h2 { font-size:10px; letter-spacing:0.26em; color:var(--faint); font-weight:400; margin:0 0 10px; text-align:center; }
+  #browsePane .panel { border:1px solid var(--line); border-radius:14px; padding:16px 20px; }
+  #browsePane .panel p { font-size:12.5px; color:var(--dim); margin:0 0 10px; }
+  #browsePane .panel p:last-child { margin-bottom:0; }
+  #browsePane .panel b { font-weight:400; color:#EFE7CF; letter-spacing:0.04em; }
+  #browsePane ol, #browsePane ul { margin:0; padding-left:20px; }
+  #browsePane li { font-size:12.5px; color:var(--dim); margin-bottom:9px; }
+  #browsePane li:last-child { margin-bottom:0; }
+  #browsePane li b { font-weight:400; color:#EFE7CF; letter-spacing:0.04em; }
+  #browsePane .term { display:grid; grid-template-columns:132px 1fr; gap:6px 16px; align-items:baseline; }
+  #browsePane .term dt { font-size:10px; letter-spacing:0.18em; color:#EFE7CF; }
+  #browsePane .term dd { margin:0; font-size:12.5px; color:var(--dim); }
+  #browsePane .marks { font:12px ui-monospace, monospace; letter-spacing:0.3em; color:#EFE7CF; }
+  #browsePane .aside { border-left:1px solid rgba(240,194,94,0.3); padding:2px 0 2px 14px; margin:14px 0 0;
+    font-size:12px; color:var(--dim); font-style:italic; }
+  #browsePane a.inline { color:#EFE7CF; text-decoration:none; border-bottom:1px solid rgba(240,194,94,0.35); }
+  #browsePane a.inline:hover { border-bottom-color:rgba(240,194,94,0.7); }
+  #browsePane .glaws { text-align:center; font-size:9.5px; letter-spacing:0.16em; color:var(--faint); margin-top:30px; line-height:2; }
+  @media (max-width: 560px) {
+    #browsePane .term { grid-template-columns:1fr; gap:2px; }
+    #browsePane .term dd { margin-bottom:10px; }
+  }
+  /* THE DEPTHS: the nine's weave and the whole field, read beneath the three */
+  #depthRead:empty { display:none; }
+  #depthRead { max-width:600px; margin:18px auto 0; }
+  #depthRead .dh { text-align:center; font-size:10px; letter-spacing:0.26em; color:var(--faint); margin-bottom:8px; }
+  /* the description: what this depth IS, said once above what it found */
+  #depthRead .ddesc { font-size:11px; line-height:1.6; color:var(--dim); font-style:italic;
+    max-width:600px; margin:0 auto 12px; text-align:center; }
+  #depthRead .dlaw { display:block; font-style:normal; color:rgba(239,231,207,0.7); margin-top:5px; }
+  #depthRead .dhl { text-align:center; font-size:12px; color:#EFE7CF; margin-bottom:10px; }
+  #depthRead .dl { font-size:11.5px; line-height:1.65; color:var(--dim); margin-bottom:6px; }
+  #depthRead .dl b { font-weight:400; color:rgba(239,231,207,0.85); }
+  #depthRead .dnote { text-align:center; font-size:9px; letter-spacing:0.16em; color:var(--faint); margin-top:10px; }
+  /* THE CELLS, READ: the corpus voices at depth. The sections reuse the same
+     .pos/.voice dress the cast wears, so the eye learns one shape; only the
+     tense subheads and the station line are this panel's own. */
+  #cellsRead { max-width:640px; margin:0 auto; }
+  #cellsRead .ch { text-align:center; font-size:10px; letter-spacing:0.26em; color:var(--faint); margin:26px 0 6px; }
+  #cellsRead .cdesc { font-size:11px; line-height:1.6; color:var(--dim); font-style:italic; text-align:center; margin-bottom:4px; }
+  #cellsRead .claw { display:block; font-style:normal; color:rgba(239,231,207,0.7); margin-top:5px; font-size:11px; text-align:center; }
+  #cellsRead .tensehead { text-align:center; font-size:10.5px; letter-spacing:0.3em; color:rgba(239,231,207,0.75);
+    margin-top:30px; padding-top:10px; border-top:1px solid var(--line); }
+  #cellsRead .cellstation { font:10px ui-monospace,monospace; color:var(--faint); margin-top:12px; }
+  #cellsRead .cnote { text-align:center; font-size:9px; letter-spacing:0.16em; color:var(--faint); margin-top:14px; }
+  /* THE SHELF: the vessel's own casts, kept in this browser and nowhere else */
+  .shelf { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin:22px auto 4px; max-width:640px; }
+  .shelf:empty { display:none; }
+  .shelf .chip { display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    border:1px solid var(--line); border-radius:20px; padding:5px 11px 5px 12px;
+    font-size:11px; color:var(--dim); background:none; max-width:230px; }
+  .shelf .chip:hover { color:var(--text); border-color:rgba(240,194,94,0.35); }
+  .shelf .chip.on { color:#EFE7CF; border-color:rgba(240,194,94,0.55); }
+  .shelf .chip .lbl { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .shelf .chip .cellno { font:9.5px ui-monospace,monospace; color:var(--faint); }
+  .shelf .chip .forget { font-size:12px; line-height:1; color:var(--faint); opacity:0; padding:0 1px; }
+  .shelf .chip:hover .forget { opacity:0.75; }
+  .shelf .chip .forget:hover { color:#EFE7CF; }
+  .shelf .shelfnote { flex-basis:100%; text-align:center; font-size:9px; letter-spacing:0.16em;
+    color:var(--faint); margin-top:3px; }
+  .register { text-align:center; font-size:10px; letter-spacing:0.14em; color:var(--faint); margin-top:26px; }
+</style>
+  <link rel="stylesheet" href="/app/luminara-nav.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE WAYFINDER</h1>
+    <div class="sub">THE TWENTY-SEVEN, CAST AND READ AT THREE DEPTHS</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html" class="on">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+  <div class="modes">
+    <button id="mCast" class="on">CAST</button>
+    <button id="lvl3">3</button>
+    <button id="lvl9">9 · resolve</button>
+    <button id="lvl27">27 · unfold</button>
+    <button id="viewBtn">VIEW · RING</button>
+    <button id="sToggle">SOUND · OFF</button>
+    <button id="mBrowse">GUIDE</button>
+  </div>
+
+  <div id="castPane">
+    <div class="qwrap"><input id="questionIn" class="qbox" type="text" maxlength="140" spellcheck="false"
+      placeholder="hold your question, or leave it, and hold silence"></div>
+    <div class="hint" id="hint"></div>
+    <div id="stage"><div class="orrery" id="orrery"><svg class="wheel" id="wheelSvg"></svg><canvas id="knotLayer"></canvas></div></div>
+    <div id="wdetailBox"></div>
+    <div id="descents"></div>
+    <div class="seed" id="seedOut"></div>
+    <div class="whole" id="whole"></div>
+    <div class="threads" id="threads"></div>
+    <!-- THE DEPTHS sit here, directly under the wheel, because a change of
+         depth must be visible at the moment it is made. Below them the
+         three-card reading stands unchanged, as the refinement law requires:
+         nearer the wheel is not above it in standing. -->
+    <div id="depthRead"></div>
+    <!-- THE CELLS, READ (the architect's word, 2026-07-26): the corpus's own
+         text layer, pulled through to the depths. At 9 and 27 every cell
+         speaks its five voices in its column's tense, exactly as the three
+         speak below: same corpus, same shared renderer, so the depths and
+         the cast can never drift apart. The structural read above keeps its
+         seat: the arrangement first, then the voices. -->
+    <div id="cellsRead"></div>
+    <!-- THE READING, HEARD stood here (the three positions struck into one
+         air) and was struck from the bench at the architect's word, 11 August
+         2026. The ambient cast-sound toggle remains the bench's one voice; a
+         chord button beside the text was a second door to the same sound. -->
+    <!-- THE ANSWERING SPREAD: the same cast met with its own reversed mirror,
+         position by position. Not a second cast and not a second reading: the
+         counter is a canon relation and this is the one seed read from the
+         other side, so no entropy, no rite, and nothing is kept. What it
+         shows is the deck's own arithmetic, that every dyad sums to the null.
+         Invited by a touch, exactly as the air is; nothing appears unasked. -->
+    <div class="mirror" id="mirrorRow" style="display:none">
+      <button id="meetMirror" type="button">MEET IT WITH ITS MIRROR</button>
+      <div class="mirrorbox" id="mirrorBox"></div>
+    </div>
+    <div id="reading"></div>
+    <!-- THE CAST DIAL: the astrolabe's own face, given the committed stamp
+         instead of a clock. Seated below the reading and above the shelf at
+         the architect's word (11 August 2026): the words of the cast come
+         first, then its sky, then the record of past casts. It is empty until
+         a cast commits, and on a replay it draws the sky of the ORIGINAL
+         commit, read from the journal, never the sky of tonight.
+
+         THE WITNESS LINE NOW LIVES UNDER THE FIGURE, SILENT (the architect's
+         word, same day): the dial shows what the line used to say, so the
+         text left the surface. It did not leave the page. The face above is
+         aria-hidden like every generated figure here, and this line is what a
+         reader who is read to receives instead: the cell, its name, the
+         phase, the window and the instant, as real text. It becomes visible
+         in exactly one case, a replayed cast whose witness is unknown, when
+         there is no dial and the absence needs explaining. -->
+    <div id="castDial"></div>
+    <div class="seed sr" id="witnessOut"></div>
+    <div class="shelf" id="shelf"></div>
+    <div class="seedrow">
+      <input id="seedIn" placeholder="paste a declared seed to replay a cast" spellcheck="false">
+      <button id="replay">replay</button>
+      <button id="clear">clear · new cast</button>
+    </div>
+  </div>
+
+  <div id="browsePane" style="display:none">
+    <div class="opening">You need to know four things to begin: what the instrument is, how to ask,
+      how to read what lands, and what it will never do. This page is those four, and nothing else
+      is required first.</div>
+
+    <div class="sect">
+      <h2>I &middot; WHAT IT IS</h2>
+      <div class="panel">
+        <p>Twenty-seven cards. Each one is three marks deep: <span class="marks">&#9679;</span> what
+        holds still, <span class="marks">&#8212;</span> what flows, <span class="marks">&#126;</span>
+        what turns, read at three layers. Three states at three layers is twenty-seven exactly, so the
+        deck is not a collection anyone assembled. It is a complete counting, and no card is missing
+        or spare.</p>
+        <p>A cast draws three of them into three positions and composes a reading from what the deck
+        already holds: how each card stands to its opposite, what it settles into, which house it
+        belongs to. <b>Nothing is looked up in a book of meanings and nothing is written for the
+        occasion.</b></p>
+        <p><b>It is a mirror, not an oracle.</b> The instrument has no knowledge of your life, no
+        access to any fact in the world, no news of any person, and no information about what will
+        happen. What it offers is a fixed set of relations to meet your own question inside, at a
+        moment you chose, with an arrangement you did not.</p>
+        <div class="aside">If that sounds like less than fortune telling, it is. It is also the only
+          version of this that can be honest, and the whole instrument is built to hold the
+          difference.</div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>II &middot; THE WAY TO APPROACH</h2>
+      <div class="panel">
+        <p style="margin-bottom:12px">Seven lines, from the Caster&rsquo;s Law. They are invitations
+        and not gates: nothing here is enforced by the machine, and nothing here is optional in
+        practice.</p>
+        <ol>
+          <li><b>Come settled, not urgent.</b> The oracle is not for emergencies. Crisis deserves
+            people, not cards.</li>
+          <li><b>Bring one true question.</b> Hold its shape. You need not write it down.</li>
+          <li><b>Cast once, then live with it.</b> Asking again soon is correcting course, not rolling
+            again.</li>
+          <li><b>Receive as a mirror, not a verdict.</b> The cards show; they never command. If a
+            reading seems to tell you what to do, you have read past it.</li>
+          <li><b>Silence is an answer.</b> Where a position refuses interpretation, meet what it asks
+            instead.</li>
+          <li><b>The becoming is movement already underway:</b> a bearing, never a promise.</li>
+          <li><b>The last word is yours.</b> The reading ends where your own knowing begins.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>III &middot; HOW TO CAST</h2>
+      <div class="panel">
+        <p>Touch <b>CAST</b> above and the bench returns. The box at the top holds your question, or
+        holds your silence: both are allowed, and an unasked cast is not a lesser one. What you type
+        is kept with the cast as its own record, and it never touches which cards fall.</p>
+        <p>Then touch the still centre of the wheel. The rite takes about nine seconds and cannot be
+        hurried, which is deliberate: the pause between deciding to ask and being answered is part of
+        the asking. Three cards land, and the cast is committed.</p>
+        <p>Committed means exactly that. The three that fell are the reading, and they are never
+        redrawn, never overturned by anything you do afterwards, and never quietly improved.</p>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>IV &middot; READING THE THREE</h2>
+      <div class="panel">
+        <p style="margin-bottom:12px">The three positions, in the deck&rsquo;s own words:</p>
+        <dl class="term">
+          <dt>TREFOIL</dt><dd>the root &middot; what is knotted in: what cannot be undone</dd>
+          <dt>GENUS</dt><dd>the present &middot; the live cut of the present</dd>
+          <dt>PHI</dt><dd>the becoming &middot; what draws forward: trajectory, never prediction</dd>
+        </dl>
+        <p style="margin:14px 0 12px">Each card then speaks in five voices, and they are five
+        different kinds of statement rather than five restatements:</p>
+        <!-- the crossing leads, at the architect's word: the reading greets
+             the person before it shows them a diagram. The order here is the
+             corpus's own VOICES array, quoted rather than restated. -->
+        <dl class="term">
+          <dt>THE CROSSING</dt><dd>the human register: world, between, heart</dd>
+          <dt>THE FIGURE</dt><dd>the deck speaks its own geometry, and carries the walk of the three depths</dd>
+          <dt>WITH THE FLOW</dt><dd>the cleanest slope: the walk, never the walker</dd>
+          <dt>AGAINST THE FLOW</dt><dd>the shadow, and where the carry lands</dd>
+          <dt>THE QUESTION</dt><dd>ends in agency: always yours to answer or decline</dd>
+        </dl>
+        <p style="margin-top:14px">Two of those are worth naming plainly for a first reading. <b>With
+        the flow and against the flow describe the walk, never the walker.</b> They are two roads out
+        of the same ground, not a verdict on your character, and the shadow is there so a road can be
+        recognised, not so anyone can be accused. And <b>the last voice always ends in a question,</b>
+        by law, because the reading is designed to hand the matter back to you rather than close it.</p>
+        <p>To sit with one card at a time outside any cast,
+        <a class="inline" href="/app/luminara-ring.html">THE RING</a> holds the whole deck as a
+        walkable count.</p>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>V &middot; THE SILENCES</h2>
+      <div class="panel">
+        <p>Four of the twenty-seven do not speak: <b>The Resonance</b>, <b>The Labyrinth</b>,
+        <b>The Mask</b> and <b>The Witness</b>. They are the edges of the map: where one lands, the
+        question has walked out of the region where symbols work, and the card says so instead of
+        inventing terrain. Each keeps a silence under its own name and asks for one thing. The
+        Resonance keeps The Depths and asks for descent; The Labyrinth keeps The Expanse and asks
+        for expansion of the frame; The Mask keeps The Threshold and asks for surrender; The Witness
+        keeps The Return and asks for recognition. A Silence is not the instrument failing to
+        answer, and not a blank to be filled by the cards beside it. <b>Meet what it asks rather
+        than reading around it.</b></p>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>VI &middot; THE THREE DEPTHS</h2>
+      <div class="panel">
+        <p>The buttons marked <b>3</b>, <b>9</b> and <b>27</b> read the same cast at three
+        resolutions. There are no others: three, nine and twenty-seven are the deck&rsquo;s own
+        scales, and a spread of any other size would be a shape borrowed from somewhere else.</p>
+        <p><b>The coarse reading always stands.</b> Nine refines three and never replaces it;
+        twenty-seven refines both. If a deeper reading seems to contradict the three that fell, it is
+        the deeper reading being misread. Depth is a closer look at what was already committed, never
+        a second attempt at it.</p>
+        <p><b>At nine,</b> each position opens into three cells: the world, the between, the heart.
+        Read across and each line carries a motion of its own, and the relations that happened to
+        land together surface as dyads standing open and currents running inside the spread.</p>
+        <p><b>At twenty-seven,</b> the whole deck falls at once, every card exactly once. So the
+        reading is not a list of twenty-seven meanings: it is an arrangement. Every card has a home,
+        the cell bearing its own number, and the deal records where each one sat instead. Cards at
+        home, seats exchanged, and long carry-loops are what you are reading there.</p>
+        <div class="aside">The instrument always tells you what chance expected in the same breath as
+          what it found. A random deal puts exactly one card at home, so &ldquo;one card stands at
+          home&rdquo; is ordinary weather and means nothing at all. Read the departures from
+          expectation, never the raw count. The full ruling stands in the map room as
+          <a class="inline" href="/app/luminara-map-room.html#/law-of-spreads">THE LAW OF SPREADS</a>.</div>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>VII &middot; KEEPING A CAST</h2>
+      <div class="panel">
+        <p>Every committed cast prints a <b>declared seed</b>, a short string beneath the wheel. That
+        seed is the cast: paste it back at any time, on any copy of this portal, and the same three
+        cards land in the same order. Nothing is stored on a server to make that work, and the
+        reading is reproducible by arithmetic rather than by record.</p>
+        <p>At the moment of commitment the instrument also takes a <b>witness</b>: where the sun, the
+        moon and the lunar node stood, and how much of the moon was lit. It is taken once and never
+        retaken, so a replayed cast still carries the sky of the hour it was first asked. The sky has
+        no influence whatever on which cards fall; it is a timestamp written in the sky&rsquo;s own
+        language.</p>
+        <p>Casts collect on the <b>shelf</b> at the foot of the bench. Touch one to return to it, and
+        the box at the top becomes a place to name it. Naming changes the label and nothing else: the
+        seed, the sky and the three cards are the committed record and are never rewritten. All of it
+        lives in this browser, on this machine, and is never sent anywhere.</p>
+      </div>
+    </div>
+
+    <div class="sect">
+      <h2>VIII &middot; WHAT IT WILL NEVER DO</h2>
+      <div class="panel">
+        <p style="margin-bottom:12px">Three refusals, from the Caster&rsquo;s Law. They are structural
+        rather than promised: the instrument is built so that breaking them would mean rebuilding it.</p>
+        <ul>
+          <li><b>No operation.</b> The oracle describes; it never does. No effects, no promised
+            outcomes, nothing performed upon the world or upon you.</li>
+          <li><b>No prediction.</b> Trajectory, never prediction. No fates, no dates, no dooms; the
+            becoming is a bearing, not a sentence.</li>
+          <li><b>No authority.</b> A reading never stands above the querent, gives no verdict on
+            anyone&rsquo;s character, and never tells anyone what to do.</li>
+        </ul>
+        <p style="margin-top:12px">And the first line of the approach is the one worth repeating last,
+        because it is the one most likely to be needed and least likely to be read in time. <b>The
+        oracle is not for emergencies. Crisis deserves people, not cards.</b> If something is
+        genuinely wrong, close this and call someone who can answer.</p>
+      </div>
+    </div>
+
+    <div class="glaws">DERIVED, NEVER AUTHORED &middot; WEATHER, NEVER VERDICT<br>
+      THE CARDS SHOW &middot; THEY NEVER COMMAND &middot; THE LAST WORD IS YOURS</div>
+  </div>
+
+  <div class="register">WHAT LANDS IS A MIRROR, NOT A VERDICT · THE CAST IS BY RANDOMISATION, DECLARED AND REPLAYABLE</div>
+</div>
+
+<script type="module">
+import { POSITIONS, CARDS, drawOne, cardOf, codeOf, codeMarks, isSilent, SILENCES, knotOf, counterOf, becomingOf, standingCellOf } from '/app/luminara-canon.js';
+import { metalOf, knotPaths, glyphInk, WHITEGOLD, GOLD, SILVER, BRONZE } from '/app/luminara-knots.js';
+import { skyCellOf, skyOf, elongationOf, litFraction, nodeDistance, DRAGON_WINDOW_DEG }
+  from '/app/luminara-sky.js';
+// the dial draws a stamp and nothing else: it is never given a date, so it
+// cannot draw the sky of now even by mistake
+import { castDialSvg } from '/app/luminara-cast-dial.js';
+import { textOf, readingOf, wideReadingOf, descentReadingOf, unfoldedReadingOf } from '/app/luminara-81.js';
+import { fieldReadingOf, cycleLine, fieldHeadline, nineWeaveOf, weaveLines } from '/app/luminara-field.js';
+import { formLine } from '/app/luminara-form.js';
+import { voicesHtml } from '/app/luminara-voices.js';
+import { paintSkin } from '/app/luminara-skin.js';
+import { spectrumOf } from '/app/luminara-cymatics.js';
+import { voiceOf, createSounder } from '/app/luminara-sound.js';
+
+const $ = (id) => document.getElementById(id);
+const rgbOf = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const posName = (i) => POSITIONS[i].name;
+const PHI = (1 + Math.sqrt(5)) / 2;
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------------------------------------------------------------------------
+// THE LIVING KNOTS (pathway I) + THE TYING (pathway II): one canvas, every
+// glyph, slowly turning in true 3D. The knots are golden-torus curves; each
+// frame re-projects them at a view that advances with the deck's own
+// kinetics: direction = sign(q), flow turns forward, turning counter, the
+// Seed alone holds still. During the rite the same engine ties each knot:
+// the strand grows along its own curve and closes. ~30fps; paused when
+// hidden; prefers-reduced-motion holds the projection still.
+// ---------------------------------------------------------------------------
+// The drawn wheel spans y -152..161; the box kept 8 units of slack above and 19
+// below, which read as dead space. Trimmed to 4 either side. The WIDTH is left
+// at 320 on purpose: it sets the scale, so changing it would resize the wheel
+// rather than the space around it.
+const VB = { x: -160, y: -156, w: 320, h: 321 };
+const SECTOR_AT = [150, -90, 30].map((d) => d * Math.PI / 180);   // root · present · becoming
+const RINGS = [[92, 126], [58, 92], [24, 58]];                    // world · between · heart
+const SPOKE_R = 75;
+const OMEGA = 0.045;                                              // rad/s: one turn ≈ 140s, a drift not a spin
+const MOLTEN_MIX = 0.20, DARKC = [16, 9, 3], WHITEC = [255, 255, 255];
+const lerp3 = (A, B, t) => [0, 1, 2].map((i) => A[i] + (B[i] - A[i]) * t);
+const rampCache = {};
+function rampOf(hex) {
+  if (rampCache[hex]) return rampCache[hex];
+  const M = rgbOf(hex), steps = [];
+  for (let i = 0; i < 24; i++) {
+    const t = i / 23;
+    const molten = t < 0.55
+      ? lerp3(DARKC, M, 0.30 + 0.70 * (t / 0.55))
+      : lerp3(M, WHITEC, 0.52 * ((t - 0.55) / 0.45));
+    steps.push(lerp3(M, molten, MOLTEN_MIX).map((v) => v | 0));
+  }
+  return (rampCache[hex] = steps);
+}
+const curveCache = {};
+function curveOf(p, q) {
+  const key = p + '_' + q;
+  if (curveCache[key]) return curveCache[key];
+  const R = PHI, r = 1;
+  const g = q === 0 ? 1 : gcd(p, Math.abs(q));
+  const pf = p / g, qf = q / g;
+  const per = Math.round(0.62 * Math.min(520, Math.max(150, 30 * pf + 13 * Math.abs(qf))));
+  const comps = [];
+  for (let c = 0; c < g; c++) {
+    const phase = 2 * Math.PI * c / g;
+    const pts = new Float32Array((per + 1) * 3);
+    for (let j = 0; j <= per; j++) {
+      const t = j / per * 2 * Math.PI;
+      const tube = qf * t + phase, lon = pf * t;
+      pts[j * 3] = (R + r * Math.cos(tube)) * Math.cos(lon);
+      pts[j * 3 + 1] = (R + r * Math.cos(tube)) * Math.sin(lon);
+      pts[j * 3 + 2] = r * Math.sin(tube);
+    }
+    comps.push(pts);
+  }
+  return (curveCache[key] = comps);
+}
+
+const canvas = $('knotLayer');
+const kctx = canvas.getContext('2d');
+let actors = [];          // {p,q,colors,beta,x,y,sc,dir,phase0,tie:{t0,ms}|null}
+let pulses = [];          // {x,y,hex,t0,ms}
+let blink = null;         // {t0,ms}
+let lastDraw = 0, pxScale = 1, dpr = 1;
+
+function sizeCanvas() {
+  dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const r = $('orrery').getBoundingClientRect();
+  const wCss = r.width || 1;
+  canvas.width = Math.round(wCss * dpr);
+  canvas.height = Math.round(wCss * VB.h / VB.w * dpr);
+  pxScale = canvas.width / VB.w;
+}
+const PX = (vx) => (vx - VB.x) * pxScale;
+const PY = (vy) => (vy - VB.y) * pxScale;
+window.addEventListener('resize', sizeCanvas);
+
+function actorKnot(n, x, y, sc) {
+  const k = knotOf(n);
+  const moving = codeOf(n).filter((s) => s !== 0).length;
+  const colors = (k.kind === 'link' ? [metalOf(n), metalOf(counterOf(n))] : [metalOf(n)]);
+  return {
+    p: k.p, q: k.q, colors, beta: 0.16 + 0.11 * moving,
+    x, y, sc,
+    dir: k.q > 0 ? 1 : k.q < 0 ? -1 : 0,   // the deck's own kinetics; the Seed holds still
+    phase0: 0, tie: null,
+  };
+}
+function actorBack(x, y, sc) {
+  // the deck's back: the symmetric triquetra, resting, turning gently
+  return { p: 2, q: 3, colors: [WHITEGOLD], beta: 0, x, y, sc, dir: 1, phase0: -Math.PI / 2, tie: null };
+}
+
+function drawActor(a, now) {
+  const comps = curveOf(a.p, a.q);
+  const theta = a.phase0 + (REDUCED ? 0 : a.dir * OMEGA * now / 1000);
+  const ct = Math.cos(theta), st = Math.sin(theta);
+  const cb = Math.cos(a.beta), sb = Math.sin(a.beta);
+  // the tying: the strand exists only up to its grown fraction
+  let frac = 1;
+  if (a.tie) {
+    frac = Math.min(1, (now - a.tie.t0) / a.tie.ms);
+    frac = frac * frac * (3 - 2 * frac);
+    if (frac >= 1) a.tie = null;
+  }
+  const segs = [];
+  let zLo = Infinity, zHi = -Infinity;
+  for (const pts of comps) {
+    const nPts = pts.length / 3;
+    const upto = Math.max(2, Math.ceil(nPts * frac));
+    const proj = new Float32Array(upto * 3);
+    for (let j = 0; j < upto; j++) {
+      const x3 = pts[j * 3], y3 = pts[j * 3 + 1], z3 = pts[j * 3 + 2];
+      const rx = x3 * ct - y3 * st, ry = x3 * st + y3 * ct;
+      const Y = ry * cb - z3 * sb, Z = ry * sb + z3 * cb;
+      proj[j * 3] = rx; proj[j * 3 + 1] = Y; proj[j * 3 + 2] = Z;
+      if (Z < zLo) zLo = Z; if (Z > zHi) zHi = Z;
+    }
+    segs.push(proj);
+  }
+  const zSpan = Math.max(1e-6, zHi - zLo);
+  const flat = [];
+  segs.forEach((proj, ci) => {
+    const nPts = proj.length / 3;
+    for (let j = 0; j < nPts - 1; j++) {
+      flat.push([proj[j * 3], proj[j * 3 + 1], proj[(j + 1) * 3], proj[(j + 1) * 3 + 1],
+        (proj[j * 3 + 2] + proj[(j + 1) * 3 + 2]) / 2, ci]);
+    }
+  });
+  flat.sort((u, v) => u[4] - v[4]);
+  const cxp = PX(a.x), cyp = PY(a.y), s = a.sc * pxScale;
+  kctx.lineCap = 'round';
+  for (const [x1, y1, x2, y2, zm, ci] of flat) {
+    const zn = (zm - zLo) / zSpan;
+    const col = rampOf(a.colors[ci % a.colors.length])[Math.round(zn * 23)];
+    kctx.strokeStyle = 'rgba(' + col[0] + ',' + col[1] + ',' + col[2] + ',' + (0.20 + 0.78 * zn).toFixed(2) + ')';
+    kctx.lineWidth = Math.max(0.5, (0.055 + 0.135 * zn) * s);
+    kctx.beginPath();
+    kctx.moveTo(cxp + x1 * s, cyp + y1 * s);
+    kctx.lineTo(cxp + x2 * s, cyp + y2 * s);
+    kctx.stroke();
+  }
+}
+
+function drawFrame(now) {
+  kctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const a of actors) drawActor(a, now);
+  // the bell-rings (II): a struck circle blooming in the card's metal
+  pulses = pulses.filter((pl) => now - pl.t0 < pl.ms);
+  for (const pl of pulses) {
+    const t = (now - pl.t0) / pl.ms;
+    const c = rgbOf(pl.hex);
+    kctx.strokeStyle = 'rgba(' + c.join(',') + ',' + ((1 - t) * 0.55).toFixed(2) + ')';
+    kctx.lineWidth = Math.max(0.6, 1.4 * dpr * (1 - t));
+    kctx.beginPath();
+    kctx.arc(PX(pl.x), PY(pl.y), (6 + t * 62) * pxScale, 0, 6.28318);
+    kctx.stroke();
+  }
+  // the pupil blink (II): the still centre registers the commitment
+  if (blink) {
+    const t = (now - blink.t0) / blink.ms;
+    if (t >= 1) blink = null;
+    else {
+      const c = rgbOf(WHITEGOLD);
+      kctx.fillStyle = 'rgba(' + c.join(',') + ',' + ((1 - t) * 0.85).toFixed(2) + ')';
+      kctx.beginPath();
+      kctx.arc(PX(0), PY(0), (2.4 + t * 7) * pxScale, 0, 6.28318);
+      kctx.fill();
+    }
+  }
+}
+(function loop(now) {
+  requestAnimationFrame(loop);
+  if (document.hidden || $('castPane').style.display === 'none') return;
+  const animating = pulses.length || blink || actors.some((a) => a.tie);
+  if (REDUCED && !animating && now - lastDraw < 1000) return;   // still projection
+  if (now - lastDraw < 33) return;                              // ~30fps
+  lastDraw = now;
+  if (canvas.width === 0) sizeCanvas();
+  drawFrame(now);
+})(performance.now());
+
+// ---------------------------------------------------------------------------
+// THE ORRERY (pathway III) + THE CONSTELLATION (pathway IV), the SVG body:
+// orbit rings, curved rim labels, the breathing still centre, touch-woken
+// cell borders, and the kin-lines between cells.
+// ---------------------------------------------------------------------------
+function arcCell(a0, a1, r0, r1) {
+  const p = (a, r) => (Math.cos(a) * r).toFixed(2) + ' ' + (Math.sin(a) * r).toFixed(2);
+  return 'M' + p(a0, r0) + ' L' + p(a0, r1)
+    + ' A' + r1 + ' ' + r1 + ' 0 0 1 ' + p(a1, r1)
+    + ' L' + p(a1, r0)
+    + ' A' + r0 + ' ' + r0 + ' 0 0 0 ' + p(a0, r0) + ' Z';
+}
+const GAP = 3 * Math.PI / 180;
+// ---------------------------------------------------------------------------
+// THE TWO PROJECTIONS, one object, two views (the mihrab seeing, 2026-07-16):
+// RING: the counting circle, the torus seen flat. CUBE: the Living Cube
+// seen corner-on: three rhombic faces at 120° around the Seed's corner (the
+// Return's corner hidden directly behind it: the carry seam at the still
+// centre), the mihrab's own tumbling-blocks geometry. The three corner-edges
+// land exactly on the bezel's seam ticks; the reading frame is the cube's
+// slots, the deck its cubies, the Unfolding a configuration.
+// ---------------------------------------------------------------------------
+let view = 'ring';
+// the stack exists only where the whole deck stands: below 27 it reads as cube
+const effView = () => (view === 'stack' && level !== 27 ? 'cube' : view);
+const CUBE_L = 126;
+const dirV = (deg) => [Math.cos(deg * Math.PI / 180), Math.sin(deg * Math.PI / 180)];
+// per face (root · present · becoming): the two corner-edge basis vectors,
+// u carries depth (heart nearest the corner), v carries state
+const FACE_UV = [[dirV(90), dirV(210)], [dirV(210), dirV(-30)], [dirV(-30), dirV(90)]];
+const facePt = (col, a, b) => {
+  const [u, v] = FACE_UV[col];
+  return [(u[0] * a + v[0] * b) * CUBE_L, (u[1] * a + v[1] * b) * CUBE_L];
+};
+// where a position's glyph stands, in the current projection
+const stationPos = (col) => effView() === 'ring'
+  ? [Math.cos(SECTOR_AT[col]) * SPOKE_R, Math.sin(SECTOR_AT[col]) * SPOKE_R]
+  : facePt(col, 0.5, 0.5);
+function quadPath(col, a0, a1, b0, b1) {
+  const e = 0.016;
+  const P = (a, b) => { const p = facePt(col, a, b); return p[0].toFixed(1) + ' ' + p[1].toFixed(1); };
+  return 'M' + P(a0 + e, b0 + e) + ' L' + P(a1 - e, b0 + e) + ' L' + P(a1 - e, b1 - e) + ' L' + P(a0 + e, b1 - e) + ' Z';
+}
+function cubeFrame(level) {
+  const hex = [-90, -30, 30, 90, 150, 210].map((d) => dirV(d).map((c) => c * CUBE_L));
+  let s = '<path d="M' + hex.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L')
+    + ' Z" fill="none" stroke="' + WHITEGOLD + '" stroke-opacity="0.11" stroke-width="0.5"/>';
+  for (const deg of [-30, 90, 210]) {
+    const [x, y] = dirV(deg);
+    s += '<line x1="0" y1="0" x2="' + (x * CUBE_L).toFixed(1) + '" y2="' + (y * CUBE_L).toFixed(1)
+      + '" stroke="' + WHITEGOLD + '" stroke-opacity="0.1" stroke-width="0.45"/>';
+  }
+  if (level > 3) {
+    for (let col = 0; col < 3; col++) {
+      for (const f of [1 / 3, 2 / 3]) {
+        const A = facePt(col, f, 0), B = facePt(col, f, 1);
+        s += '<line x1="' + A[0].toFixed(1) + '" y1="' + A[1].toFixed(1) + '" x2="' + B[0].toFixed(1) + '" y2="' + B[1].toFixed(1)
+          + '" stroke="' + WHITEGOLD + '" stroke-opacity="0.06" stroke-width="0.4"/>';
+        if (level === 27) {
+          const A2 = facePt(col, 0, f), B2 = facePt(col, 1, f);
+          s += '<line x1="' + A2[0].toFixed(1) + '" y1="' + A2[1].toFixed(1) + '" x2="' + B2[0].toFixed(1) + '" y2="' + B2[1].toFixed(1)
+            + '" stroke="' + WHITEGOLD + '" stroke-opacity="0.06" stroke-width="0.4"/>';
+        }
+      }
+    }
+  }
+  return s;
+}
+// ---------------------------------------------------------------------------
+// THE STACK, the third projection (the layer-resonance seeing, 2026-07-16):
+// the cube exploded into its three STATE-layers: three 3×3 planes floating
+// in isometric space, stillness at the crown, each with its harmonic figure
+// hovering over its surface at its own resolution on the canon's 3·6·9
+// ladder: threefold over the still, sixfold over the flow, ninefold over the
+// turning. The figures pattern the FRAME's geometry (the slots), never the
+// cards: the instrument ruling and EMPTINESS hold untouched.
+// ---------------------------------------------------------------------------
+const ISO_A = 26, ISO_X = 0.866 * ISO_A, ISO_Y = 0.5 * ISO_A;
+const LAYER_Y = [-104, 0, 104];        // still · flow · turning, crown downward
+const PERSP = [0.86, 0.93, 1.0];       // perspective on every layer: the upper planes recede
+const stackPt = (s, a, b) => {
+  const p = PERSP[s];
+  return [ISO_X * p * (a - b), LAYER_Y[s] + ISO_Y * p * (a + b - 3)];
+};
+function stackCell(s, t, d) {
+  const e = 0.07;
+  const P = (a, b) => { const p = stackPt(s, a, b); return p[0].toFixed(1) + ' ' + p[1].toFixed(1); };
+  return 'M' + P(t + e, d + e) + ' L' + P(t + 1 - e, d + e) + ' L' + P(t + 1 - e, d + 1 - e) + ' L' + P(t + e, d + 1 - e) + ' Z';
+}
+// the harmonic emblem: an n-fold rose, squashed to lie in the iso air
+function harmonicRose(n, cx, cy, R, squash = 0.45) {
+  let dd = '';
+  for (let k = 0; k <= 120; k++) {
+    const th = k / 120 * 2 * Math.PI;
+    const r = R * (0.55 + 0.45 * Math.cos(n * th));
+    dd += (k ? 'L' : 'M') + (cx + r * Math.cos(th)).toFixed(1) + ' ' + (cy + squash * r * Math.sin(th)).toFixed(1);
+  }
+  return dd + 'Z';
+}
+function stackFrame() {
+  let s = '';
+  const CAP = ['the stillness · threefold', 'the flow · sixfold', 'the turning · ninefold'];
+  for (let L = 0; L < 3; L++) {
+    const c = [[0, 0], [3, 0], [3, 3], [0, 3]].map(([a, b]) => stackPt(L, a, b));
+    s += '<path d="M' + c.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L')
+      + ' Z" fill="rgba(255,255,255,0.008)" stroke="' + WHITEGOLD + '" stroke-opacity="0.11" stroke-width="0.5"/>';
+    // the layer's symbol, floating between the planes: the original seeing
+    s += '<path d="' + harmonicRose(3 * (L + 1), 0, LAYER_Y[L] - 50, 26)
+      + '" fill="none" stroke="' + WHITEGOLD + '" stroke-opacity="0.26" stroke-width="0.5"/>';
+    s += '<text x="82" y="' + (LAYER_Y[L] + 2) + '" font-size="5.6" font-style="italic" fill="rgba(233,230,220,0.4)">' + CAP[L] + '</text>';
+  }
+  s += '<text x="0" y="152" text-anchor="middle" font-size="5.4" letter-spacing="4.6" fill="rgba(239,231,207,0.36)">THE WAYFINDER</text>';
+  return s;
+}
+// THE CUBE'S SKIN, the harmonic wash as the architect specified it: the
+// three resonance representations (threefold · sixfold · ninefold, worked on
+// the instrument) mapped INTO the 3d plane of each face, the entire surface
+// of the cube covered, all three dimensions accounted for. The face mapping
+// is the canon's own: the positions ARE the three motions worn by time
+// (root=still, present=flow, becoming=turning, the sealed affinities), so
+// the root face wears the threefold in bronze, the present the sixfold in
+// silver, the becoming the ninefold in gold, and each surface moves as its
+// motion moves. Each pattern is a living sand plate whose canvas is affine-
+// mapped by the face's own basis and clipped to the face's edges: tilework
+// on the solid, never on the cards. The stack's layers wear the same skins
+// flat (state per layer), since its planes are the cube taken apart.
+// The painting itself now flows through the brush engine (luminara-skin.js:
+// the bridge toward the cymatics-and-sound exploration layer): the bench
+// only converts its viewBox geometry to pixels and chooses the painter's
+// VALUES. A shaded cube reads as solid through three values under one
+// light: the top face lightest, the lower-left mid, the lower-right dark,
+// and the canon agrees with the physics, because the top face (the present)
+// has the FLOW affinity and so paints with the luminous GLOW brush, while
+// the still root and turning becoming paint with matte SAND.
+let surfaces = [];
+// the cymatic layer rests for now, by the architect's word: the bridge
+// (luminara-skin.js) stands ready; flip this to re-skin the solid
+const SKINS_ON = false;
+function destroySurfaces() {
+  for (const p of surfaces) p.destroy();
+  surfaces = [];
+}
+function mountSurfaces(v) {
+  if (!SKINS_ON) return;
+  const orrery = $('orrery');
+  const sw = orrery.clientWidth;
+  if (!sw) return;
+  const k = sw / VB.w;
+  const px = (p) => [(p[0] - VB.x) * k, (p[1] - VB.y) * k];
+  const vec = (p) => [p[0] * k, p[1] * k];
+  if (v === 'cube') {
+    const SHADE = [0.62, 0.85, 0.45];   // root mid · present light · becoming dark
+    for (let col = 0; col < 3; col++) {
+      const [u, vv] = FACE_UV[col];
+      surfaces.push(paintSkin({
+        container: orrery, before: $('wheelSvg'),
+        originPx: px([0, 0]),
+        Upx: vec([u[0] * CUBE_L, u[1] * CUBE_L]),
+        Vpx: vec([vv[0] * CUBE_L, vv[1] * CUBE_L]),
+        state: col, opacity: SHADE[col], rotDeg: -135,
+      }));
+    }
+  } else if (v === 'stack') {
+    const SHADE = [0.78, 0.64, 0.52];   // lit from above, receding downward
+    for (let st = 0; st < 3; st++) {
+      const o = stackPt(st, 0, 0);
+      const U = [stackPt(st, 3, 0)[0] - o[0], stackPt(st, 3, 0)[1] - o[1]];
+      const V = [stackPt(st, 0, 3)[0] - o[0], stackPt(st, 0, 3)[1] - o[1]];
+      surfaces.push(paintSkin({
+        container: orrery, before: $('wheelSvg'),
+        originPx: px(o), Upx: vec(U), Vpx: vec(V),
+        state: st, opacity: SHADE[st], rotDeg: 0,
+      }));
+    }
+  }
+}
+function orbitRings(radii) {
+  return radii.map((r) =>
+    '<circle r="' + r + '" fill="none" stroke="' + WHITEGOLD + '" stroke-opacity="0.07" stroke-width="0.5"/>').join('');
+}
+// (I, revised) THE BUTTON BECOMES THE CENTRE: a generous invisible touch
+// target riding with the visible breathing dot; the halo only shows once
+// idle and ready to be touched (mid-rite and post-cast it is a landmark
+// only: the cells become the touch after the cast lands).
+const stillCentre = (ready) => '<g class="cast-centre' + (ready ? ' ready' : '') + '">'
+  + (ready ? '<circle class="centre-halo" r="8" fill="none" stroke="' + WHITEGOLD + '" stroke-width="0.6"/>' : '')
+  + '<circle r="15" fill="transparent"/>'
+  + '<circle class="still-centre" r="2.4" fill="' + WHITEGOLD + '" fill-opacity="0.6"/></g>';
+// THE BEZEL: the outer ring that contains the words and the symbols, so
+// the Wayfinder closes into one object. Two hairlines bound the band; short
+// ticks mark the three seams of time; the instrument's name is engraved
+// along the bottom of the band. Room remains for what becomes apparent.
+function bezel() {
+  let s = '<circle r="131" fill="none" stroke="' + WHITEGOLD + '" stroke-opacity="0.11" stroke-width="0.5"/>'
+    + '<circle r="152" fill="none" stroke="' + WHITEGOLD + '" stroke-opacity="0.11" stroke-width="0.5"/>';
+  for (const deg of [-30, 90, 210]) {
+    const a = deg * Math.PI / 180;
+    s += '<line x1="' + (Math.cos(a) * 131).toFixed(1) + '" y1="' + (Math.sin(a) * 131).toFixed(1)
+      + '" x2="' + (Math.cos(a) * 136.5).toFixed(1) + '" y2="' + (Math.sin(a) * 136.5).toFixed(1)
+      + '" stroke="' + WHITEGOLD + '" stroke-opacity="0.14" stroke-width="0.5"/>';
+  }
+  // the name, dropped to sit just above the outer ring, letters well spaced
+  const r = 160, a0 = 108 * Math.PI / 180, a1 = 72 * Math.PI / 180;
+  const P = (a, rr) => (Math.cos(a) * rr).toFixed(1) + ' ' + (Math.sin(a) * rr).toFixed(1);
+  s += '<defs><path id="bezelName" d="M' + P(a0, r) + ' A' + r + ' ' + r + ' 0 0 0 ' + P(a1, r) + '"/></defs>'
+    + '<text font-size="5.4" letter-spacing="4.6" fill="rgba(239,231,207,0.36)">'
+    + '<textPath href="#bezelName" startOffset="50%" text-anchor="middle">THE WAYFINDER</textPath></text>';
+  return s;
+}
+// ONE LINE per sector: the symbol at the arc's centre, the position name
+// to its side, and the card's name joining the line once the knot is woven.
+// Flipped upright in the lower half; the same relation for all three.
+const RIM_R = 140;
+// ONE HOME for the rim's type and its seating, because the emblem and the words
+// it belongs to have to agree and they are drawn by two different functions.
+//
+// BOTH ARE CENTRED ON THE RING, at the architect's word. The emblem is easy: it
+// is centred on its own point, and that point is on the ring. The words are not,
+// because text on a path sits its BASELINE on the path and the glyphs stand
+// entirely above it, so a label left alone hangs off the ring rather than
+// straddling it. RIM_TEXT_DY pushes the baseline out by a third of the size, so
+// the body of the lettering closes over the line the way the emblem does.
+const RIM_FS = 8.4;        // the station name: TREFOIL, GENUS, PHI
+const RIM_FS_BIG = 9.6;    // the card that landed there
+const RIM_TEXT_DY = +(RIM_FS * 0.34).toFixed(2);
+const RIM_TEXT_DY_BIG = +(RIM_FS_BIG * 0.34).toFixed(2);
+function rimLabel(id, r, centerDeg, small, big) {
+  const lower = centerDeg > -10 && centerDeg < 190;
+  const span = 64;
+  const a0 = (centerDeg - span / 2) * Math.PI / 180, a1 = (centerDeg + span / 2) * Math.PI / 180;
+  const P = (a, rr) => (Math.cos(a) * rr).toFixed(1) + ' ' + (Math.sin(a) * rr).toFixed(1);
+  const arc = lower
+    ? 'M' + P(a1, r) + ' A' + r + ' ' + r + ' 0 0 0 ' + P(a0, r)
+    : 'M' + P(a0, r) + ' A' + r + ' ' + r + ' 0 0 1 ' + P(a1, r);
+  let s = '<defs><path id="rim' + id + '" d="' + arc + '"/></defs>';
+  s += '<text font-size="' + RIM_FS + '" dy="' + RIM_TEXT_DY + '" letter-spacing="1.6" fill="rgba(239,231,207,0.72)"><textPath href="#rim' + id + '" startOffset="43.5%" text-anchor="end">' + small + '</textPath></text>';
+  if (big) s += '<text font-size="' + RIM_FS_BIG + '" dy="' + RIM_TEXT_DY_BIG + '" font-style="italic" fill="rgba(238,242,255,0.9)"><textPath href="#rim' + id + '" startOffset="56.5%" text-anchor="start">' + big + '</textPath></text>';
+  return s;
+}
+// the classic Aumara triquetra: three interlaced vesica loops, each drawn as
+// a BAND (a whitegold edge with a dark centre), one sharp point up, woven by
+// draw order. No ring: the knot alone.
+function triquetraEmblem() {
+  // THE TRIQUETRA as the architect's own reference draws it: three vesica loops
+  // on a circle, one point up, each an OUTLINED RIBBON rather than a single
+  // line, woven over and under.
+  //
+  // Each loop is struck three times, in this order and for these reasons:
+  //   1. the field's colour at BAND + 2*GAP, which cuts a clean gap through
+  //      whatever has already been drawn, so the loop passes visibly over it;
+  //   2. whitegold at BAND, the ribbon itself;
+  //   3. the field's colour at BAND - 2*EDGE, hollowing it, which leaves the
+  //      two thin parallel edges the reference is drawn with.
+  // Three passes over three loops weave the figure without a single clip path
+  // or mask, and the whole emblem stays plain SVG that a print can rasterise.
+  const p = 6.2, rr = 6.2;
+  const BAND = 2.0, GAP = 0.5, EDGE = 0.34;
+  const tip = (deg) => { const a = deg * Math.PI / 180; return [(p * Math.cos(a)).toFixed(2), (-p * Math.sin(a)).toFixed(2)]; };
+  const V = [tip(90), tip(210), tip(330)];   // sharp points: top · lower-left · lower-right
+  const petal = (A, B) => 'M' + A[0] + ' ' + A[1] + 'A' + rr + ' ' + rr + ' 0 0 1 ' + B[0] + ' ' + B[1]
+    + 'A' + rr + ' ' + rr + ' 0 0 1 ' + A[0] + ' ' + A[1] + 'Z';
+  const strk = (d, col, w, op) => '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="'
+    + w.toFixed(2) + '"' + (op ? ' stroke-opacity="' + op + '"' : '') + ' stroke-linejoin="round"/>';
+  let s = '';
+  for (let i = 0; i < 3; i++) {
+    const d = petal(V[i], V[(i + 1) % 3]);
+    s += strk(d, '#0a0b0e', BAND + 2 * GAP)
+      + strk(d, WHITEGOLD, BAND, '0.85')
+      + strk(d, '#0a0b0e', BAND - 2 * EDGE);
+  }
+  return s;
+}
+// the position emblems, centred on the rim line and standing radially: tops
+// toward the centre on the lower stations, matching how the text flips upright:
+// the triquetra · the genus (a torus ring) · phi itself
+function posEmblem(col, centerDeg) {
+  const a = centerDeg * Math.PI / 180, r = RIM_R;
+  const x = (Math.cos(a) * r).toFixed(1), y = (Math.sin(a) * r).toFixed(1);
+  const lower = centerDeg > -10 && centerDeg < 190;
+  const rot = (lower ? centerDeg - 90 : centerDeg + 90).toFixed(1);   // in line with the text's own tops
+  // no offset: the emblem is centred on its own point and that point is on the
+  // ring, which is the whole ask. The words meet it there by RIM_TEXT_DY.
+  const seat = '<g transform="translate(' + x + ' ' + y + ') rotate(' + rot + ')">';
+  if (col === 0) {
+    return seat + triquetraEmblem() + '</g>';
+  }
+  if (col === 1) {
+    // the genus: a torus ring, seen down its axis. Struck at the triquetra's
+    // own outer radius so the three stations read as one set rather than three
+    // sizes, and given the ribbon's edge weight for the same reason.
+    return seat + '<g opacity="0.78">'
+      + '<circle r="5.6" fill="none" stroke="' + WHITEGOLD + '" stroke-width="0.9"/>'
+      + '<circle r="2.05" fill="none" stroke="' + WHITEGOLD + '" stroke-width="0.9"/></g></g>';
+  }
+  return seat + '<text dy="4.6" text-anchor="middle" font-size="13.2" fill="' + WHITEGOLD + '" fill-opacity="0.85" font-style="italic">φ</text></g>';
+}
+// the constellation: kin-lines between the cells now standing on the map
+function constellation(cells, posOf) {
+  let s = '';
+  for (let i = 0; i < cells.length; i++) {
+    for (let j = 0; j < cells.length; j++) {
+      if (i === j) continue;
+      const a = cells[i].n, b = cells[j].n;
+      const [x1, y1] = posOf(i), [x2, y2] = posOf(j);
+      if (j > i && counterOf(a) === b) {
+        s += '<line class="cons" data-a="' + i + '" data-b="' + j + '" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2
+          + '" stroke="' + WHITEGOLD + '" stroke-opacity="0.10" stroke-width="0.5"/>';
+      }
+      if (becomingOf(a) === b) {
+        const mx = x1 + (x2 - x1) * 0.86, my = y1 + (y2 - y1) * 0.86;
+        s += '<line class="cons bec" data-a="' + i + '" data-b="' + j + '" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2
+          + '" stroke="' + metalOf(a) + '" stroke-opacity="0.09" stroke-width="0.45" stroke-dasharray="1.5 2.5"/>'
+          + '<circle class="cons bec" data-a="' + i + '" data-b="' + j + '" cx="' + mx + '" cy="' + my + '" r="1" fill="' + metalOf(a) + '" fill-opacity="0.18"/>';
+      }
+    }
+  }
+  return s;
+}
+
+// ---------------------------------------------------------------------------
+// THE RITE (II), one committed touch: the centre blinks as the draw
+// commits, then sector by sector a bell-ring blooms and the knot ties
+// itself out of nothing. The reading opens when the last knot closes.
+// ---------------------------------------------------------------------------
+let parts = [], drawn = [], done = false, turning = false;
+let timers = [];
+const TIE_MS = 1700;
+let castSeed = null, paths = [[], [], []];
+let level = 3, wideR = null, unfolded = null;
+
+// THE SOUND (2026-07-18): the reading finds its voice. EMPTINESS holds by
+// construction, exactly as on the Resonance instrument: silent by default,
+// a voice only ever invited by a touch (the centre that casts, the cell
+// that reads), never autoplayed, no AudioContext until the first strike,
+// every envelope closes, the sounder destroyed when the toggle rests. The
+// voice is the same spectrum the knot is drawn from (path A, the figure
+// heard): a card you can see and hear is no more a verdict than one you
+// can only see.
+let soundOn = false, sounder = null;
+function soundCard(n, when = 0) {
+  if (!soundOn) return;
+  if (!sounder) sounder = createSounder();
+  sounder.strike(voiceOf(spectrumOf(n, 'A')), when);
+}
+
+const HINTS = {
+  first: 'Touch the centre. It turns the cast.',
+  tying: 'The knots tie themselves…',
+  done: 'Cast. · touch a cell to read it · touch it again to open the next depth · the dial walks back up',
+};
+const later = (fn, ms) => { timers.push(setTimeout(fn, ms)); };
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+const clearFx = () => { pulses = []; blink = null; };
+
+function soundCast() {
+  turning = true;
+  $('questionIn').readOnly = true;   // the touch commits the question, held as it was
+  $('questionIn').classList.add('held');
+  parts = [Math.round(performance.now() * 1000) + '.' + Date.now()];
+  const seed = 'bench3|' + parts.join('|');
+  drawn = [];
+  for (let i = 0; i < 3; i++) drawn.push(drawOne(seed + '|' + (i + 1), drawn));
+  $('hint').textContent = HINTS.tying;
+  renderIdleWheel(true);              // bare sectors; the backs give way
+  actors = [];
+  blink = { t0: performance.now(), ms: 600 };   // the pupil registers the draw
+  later(() => {
+    // the three rise together: one chord, not an arpeggio, in the eye and
+    // now in the ear. The three positions sound at once; a Silence among
+    // them is heard as its own gap in the chord.
+    for (let i = 0; i < 3; i++) {
+      const [x, y] = stationPos(i);
+      pulses.push({ x, y, hex: metalOf(drawn[i]), t0: performance.now(), ms: 850 });
+      const a = actorKnot(drawn[i], x, y, view === 'ring' ? 13.5 : 10.8);
+      a.tie = { t0: performance.now() + 150, ms: TIE_MS };
+      actors.push(a);
+      soundCard(drawn[i]);
+    }
+  }, 380);
+  later(() => {
+    turning = false; done = true;
+    complete();
+  }, 380 + TIE_MS + 350);
+}
+
+// ===========================================================================
+// THE WITNESS (stage one of the timekeeping, 21 July 2026). At the moment a
+// cast COMMITS, the sky's state is written beside the seed: the sky cell,
+// the civil cell, the three longitudes, the phase, and whether the dragon's
+// window stood open. THE FIREWALL IS ABSOLUTE: the stamp is computed after
+// the rite completes and feeds nothing.
+//
+// Said precisely, because the older wording here read "the clock never
+// touches the draw", and that is not true and had better not be: the clock
+// is exactly what seeds it. soundCast builds the seed from performance.now()
+// and Date.now() and picks the three from it, and that is what makes a cast
+// unsteerable. What never touches the draw is THE SKY. No longitude, no
+// phase, no cell and no window is computed until complete(), by which time
+// the three have already fallen and cannot be revisited. The pin in
+// core/tests/skyWitness.test.ts words it correctly: taken from the wall
+// clock after the rite, never from anything the entropy path produced. The
+// cast dial inherits that firewall by construction, being handed a stamp
+// and never given a date at all.
+// The stamp is checkable forever: anyone with the time can recompute the
+// sky and verify it, which is what a witness is for. The journal is the
+// vessel's own (localStorage, this browser, capped, unmined): the Log's
+// substrate, one hand's mirror, never a profile.
+// ===========================================================================
+const JOURNAL_KEY = 'luminara-portal-journal-v1';
+const QUESTION_PLACEHOLDER = 'hold your question, or leave it, and hold silence';
+function loadJournal() {
+  try { return JSON.parse(localStorage.getItem(JOURNAL_KEY)) || []; } catch { return []; }
+}
+function journalKeep(entry) {
+  try {
+    const all = loadJournal();
+    all.unshift(entry);
+    localStorage.setItem(JOURNAL_KEY, JSON.stringify(all.slice(0, 200)));
+  } catch { /* a full or refused store never blocks the reading */ }
+}
+// THE SHELF. The vessel's own casts, kept in this browser and nowhere else:
+// touch one to return to it. A cast's LABEL is what was asked, since a
+// question is the truest name a reading has; where nothing was asked the
+// sky's own witness names it instead. The label may be renamed at the box
+// afterwards, and renaming touches ONLY the label: the seed, the stamp and
+// the drawn three are the committed record and are never rewritten.
+function journalUpdate(seed, patch) {
+  try {
+    const all = loadJournal();
+    const i = all.findIndex((e) => e.seed === seed);
+    if (i < 0) return;
+    all[i] = { ...all[i], ...patch };
+    localStorage.setItem(JOURNAL_KEY, JSON.stringify(all));
+  } catch { /* a refused store never blocks the reading */ }
+}
+function journalForget(seed) {
+  try {
+    localStorage.setItem(JOURNAL_KEY, JSON.stringify(loadJournal().filter((e) => e.seed !== seed)));
+  } catch { /* fine */ }
+}
+const labelOf = (e) => (e.name || e.question || '').trim()
+  || (cardOf(e.stamp.cell).name.toLowerCase() + ', ' + e.stamp.lit + '% lit');
+
+function renderShelf() {
+  const all = loadJournal();
+  if (!all.length) { $('shelf').innerHTML = ''; return; }
+  $('shelf').innerHTML = all.map((e) => {
+    const day = e.stamp.iso.slice(5, 10);
+    return '<button class="chip' + (e.seed === castSeed ? ' on' : '') + '" data-seed="'
+      + e.seed.replace(/"/g, '&quot;') + '" type="button">'
+      + '<span class="cellno">' + day + '</span>'
+      + '<span class="lbl">' + labelOf(e).replace(/[<>&]/g, '') + '</span>'
+      + '<span class="forget" data-forget="1" title="forget this cast">&times;</span></button>';
+  }).join('') + '<div class="shelfnote">THE VESSEL&rsquo;S OWN &middot; THIS BROWSER ONLY &middot; NEVER SENT</div>';
+}
+$('shelf').addEventListener('click', (ev) => {
+  const chip = ev.target.closest('.chip');
+  if (!chip) return;
+  const seed = chip.dataset.seed;
+  if (ev.target.dataset.forget) { journalForget(seed); renderShelf(); return; }
+  replayCast(seed);
+});
+
+function skyStampOf(date) {
+  const sky = skyOf(date);
+  const elong = elongationOf(sky);
+  return {
+    iso: date.toISOString(),
+    cell: skyCellOf(date).n,
+    civil: standingCellOf(date).index + 1,
+    sun: Math.round(sky.sun * 10) / 10,
+    moon: Math.round(sky.moon * 10) / 10,
+    node: Math.round(sky.node * 10) / 10,
+    elong: Math.round(elong * 10) / 10,
+    lit: Math.round(litFraction(elong) * 100),
+    window: nodeDistance(sky) <= DRAGON_WINDOW_DEG,
+  };
+}
+function witnessLine(st, suffix) {
+  return 'under · sky cell ' + st.cell + ' · ' + cardOf(st.cell).name
+    + ' · the moon ' + st.lit + '% lit'
+    + ' · the window ' + (st.window ? 'open' : 'closed')
+    + ' · ' + st.iso.slice(0, 16).replace('T', ' ') + 'Z'
+    + (suffix ? ' · ' + suffix : '');
+}
+
+function complete() {
+  castSeed = 'bench3|' + parts.join('|');
+  $('seedOut').textContent = 'seed · ' + castSeed;
+  const stamp = skyStampOf(new Date());
+  journalKeep({ seed: castSeed, stamp, drawn: drawn.slice(), question: $('questionIn').value.trim() });
+  $('castDial').innerHTML = castDialSvg(stamp, drawn);
+  // the dial speaks to the eye; the line speaks the same record to the ear
+  $('witnessOut').className = 'seed sr';
+  $('witnessOut').textContent = witnessLine(stamp, 'witnessed at commit');
+  // the box now names rather than asks: the question is already committed
+  $('questionIn').readOnly = false;
+  $('questionIn').classList.remove('held');
+  $('questionIn').placeholder = 'name this cast';
+  renderShelf();
+  $('seedIn').value = castSeed;
+  level = 3; wideR = null; unfolded = null;
+  renderWheel(); setDial();
+  $('depthRead').innerHTML = '';
+  $('cellsRead').innerHTML = '';
+  renderReading(drawn);
+  $('hint').textContent = HINTS.done;
+}
+function renderReading(cast) {
+  const r = readingOf(cast);
+  $('whole').textContent = r.whole;
+  $('threads').innerHTML = r.threads.map((t) => '<div class="t">' + t.line + '</div>').join('');
+  $('reading').innerHTML = r.sections.map(voicesHtml).join('');
+  $('mirrorRow').style.display = '';
+  $('mirrorBox').innerHTML = '';
+}
+
+// THE ANSWERING SPREAD. Book Two's move, made an object rather than a
+// doctrine: a knot met with its own reversed mirror is concordant to trivial
+// one level up, and in the deck the counter IS that mirror, sending T(p,q) to
+// T(p,-q) exactly. So each position is shown beside its answer, and the count
+// each pair sums to is shown with it, which is always the null.
+//
+// What this does NOT say is as deliberate as what it does. It speaks only
+// from the counter and the signed count, both canon relations the depths
+// already use. It does not speak genus, knot class, or whether a card can be
+// undone alone: those are derived from the knot map and are true, but whether
+// a READING may say them is a ruling not yet made, and an instrument does not
+// take a ruling by shipping it.
+function renderMirror(cast) {
+  const rows = cast.map((n, i) => {
+    const a = counterOf(n), k = knotOf(n), ka = knotOf(a);
+    const sign = (v) => (v > 0 ? '+' + v : String(v));
+    return '<tr>'
+      + '<td class="mpos">' + POSITIONS[i].name.toUpperCase() + '</td>'
+      + '<td class="mcard">' + cardOf(n).name + '</td>'
+      + '<td class="mknot">T(' + k.p + ',' + k.q + ')</td>'
+      + '<td class="mjoin">&#8596;</td>'
+      + '<td class="mans">' + cardOf(a).name + '</td>'
+      + '<td class="mknot">T(' + ka.p + ',' + ka.q + ')</td>'
+      + '<td class="mnull">' + sign(k.q) + ' &middot; ' + sign(ka.q) + ' &rarr; 0</td>'
+      + '</tr>'
+      // the strand's own shape, beneath the pair it belongs to: what kind of
+      // form it is and what joining completes it. Derived in luminara-form.js,
+      // which speaks the strand and never the person holding the card.
+      + '<tr class="mform"><td></td><td colspan="6">' + formLine(n) + '</td></tr>';
+  }).join('');
+  // the still point is the deck's only self-answering card, and a cast draws
+  // without replacement, so at most one position can ever show it
+  const still = cast.map((n, i) => (counterOf(n) === n ? POSITIONS[i].name : null)).filter(Boolean);
+  const note = 'Each pair sums to the null on the count, and the counter of the '
+    + 'counter is the card again: the answer answers back. Nothing above was '
+    + 'cast. It is this one seed, read from the other side.'
+    + (still.length ? ' At ' + still[0] + ' the card is its own answer: the still '
+      + 'point is already the whole of its dyad, and asks for no other side.' : '')
+    + ' The lines beneath each pair describe the strand itself, computed from its '
+    + 'two windings: what kind of form it is, and what joining completes its '
+    + 'boundary. They say nothing about you.';
+  $('mirrorBox').innerHTML = '<table>' + rows + '</table>'
+    + '<div class="mirrornote">' + note + '</div>';
+}
+$('meetMirror').addEventListener('click', () => {
+  if (!done || drawn.length !== 3) return;
+  renderMirror(drawn);
+});
+
+function reset() {
+  clearTimers(); clearFx();
+  turning = false; done = false;
+  parts = []; drawn = [];
+  castSeed = null; paths = [[], [], []];
+  level = 3; wideR = null; unfolded = null;
+  if (view === 'stack') { view = 'cube'; setViewLabel(); }   // the stack lives at 27
+  ['seedOut', 'castDial', 'witnessOut', 'whole', 'threads', 'reading', 'wdetailBox', 'descents', 'mirrorBox'].forEach((id) => { $(id).innerHTML = ''; });
+  $('mirrorRow').style.display = 'none';
+  $('questionIn').value = ''; $('questionIn').readOnly = false; $('questionIn').classList.remove('held');
+  $('questionIn').placeholder = QUESTION_PLACEHOLDER;   // asking again
+  $('depthRead').innerHTML = '';
+  setDial();
+  renderIdleWheel();
+  renderShelf();
+  $('hint').textContent = HINTS.first;
+}
+
+// the idle Wayfinder: faint sectors, orbit rim, the backs resting and
+// gently turning on the spokes (bare = mid-rite, backs gone)
+function renderIdleWheel(bare) {
+  const v = effView();
+  let s = bezel() + (v === 'ring' ? orbitRings([126]) : cubeFrame(3));
+  if (v === 'cube') {
+    const VEIL = [0.10, 0, 0.22];
+    for (let col = 0; col < 3; col++) if (VEIL[col]) {
+      s += '<path d="' + quadPath(col, 0, 1, 0, 1) + '" fill="rgba(0,0,0,' + VEIL[col] + ')" pointer-events="none"/>';
+    }
+  }
+  for (let col = 0; col < 3; col++) {
+    const shape = v === 'ring'
+      ? arcCell(SECTOR_AT[col] - Math.PI / 3 + GAP, SECTOR_AT[col] + Math.PI / 3 - GAP, 24, 126)
+      : quadPath(col, 0, 1, 0, 1);
+    s += '<path d="' + shape + '" fill="rgba(255,255,255,0.006)" stroke="' + WHITEGOLD + '" stroke-opacity="0.08" stroke-width="0.4"/>';
+    s += rimLabel('i' + col, RIM_R, [150, -90, 30][col], posName(col).toUpperCase(), '');
+    s += posEmblem(col, [150, -90, 30][col]);
+  }
+  s += stillCentre(!bare);
+  $('wheelSvg').setAttribute('viewBox', VB.x + ' ' + VB.y + ' ' + VB.w + ' ' + VB.h);
+  $('wheelSvg').innerHTML = s;
+  sizeCanvas();
+  destroySurfaces();
+  mountSurfaces(v);
+  if (!bare) {
+    actors = [0, 1, 2].map((col) => {
+      const [x, y] = stationPos(col);
+      return actorBack(x, y, 6.3);
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// THE RESOLUTIONS, one instrument: 3 (the cast), 9 (D28, the wide), 27
+// (THE UNFOLDING, sealed: the whole deck, every card exactly once).
+// ---------------------------------------------------------------------------
+function cellsAt(lvl) {
+  if (lvl === 3) return drawn.map((n, t) => ({
+    n, name: cardOf(n).name, marks: codeMarks(n), silent: isSilent(n),
+    ask: isSilent(n) ? SILENCES[n].asks : null,
+    gloss: POSITIONS[t].name + ' · ' + POSITIONS[t].gloss,
+    question: textOf(n, t).q,
+    posIndex: t,
+  }));
+  return (lvl === 9 ? wideR : unfolded).cells;
+}
+function cellPosOf(lvl) {
+  if (effView() === 'stack') {
+    // the exploded cube: layer = state, plane = time × depth
+    return (i) => {
+      const t = (i / 9) | 0, d = ((i / 3) | 0) % 3, st = i % 3;
+      return stackPt(st, t + 0.5, d + 0.5);
+    };
+  }
+  if (effView() === 'cube') {
+    // depth runs from the corner outward: the heart nearest the still centre
+    if (lvl === 3) return (i) => facePt(i, 0.5, 0.5);
+    if (lvl === 9) return (i) => {
+      const col = (i / 3) | 0, d = i % 3, sBand = 2 - d;
+      return facePt(col, (sBand + 0.5) / 3, 0.5);
+    };
+    return (i) => {
+      const col = (i / 9) | 0, d = ((i / 3) | 0) % 3, st = i % 3;
+      return facePt(col, ((2 - d) + 0.5) / 3, (st + 0.5) / 3);
+    };
+  }
+  if (lvl === 3) return (i) => [Math.cos(SECTOR_AT[i]) * SPOKE_R, Math.sin(SECTOR_AT[i]) * SPOKE_R];
+  if (lvl === 9) return (i) => {
+    const col = (i / 3) | 0, d = i % 3, rm = (RINGS[d][0] + RINGS[d][1]) / 2;
+    return [Math.cos(SECTOR_AT[col]) * rm, Math.sin(SECTOR_AT[col]) * rm];
+  };
+  const SUB = 38 * Math.PI / 180, SPAN = 34.5 * Math.PI / 180;
+  return (i) => {
+    const col = (i / 9) | 0, d = ((i / 3) | 0) % 3, st = i % 3;
+    const am = SECTOR_AT[col] - 57 * Math.PI / 180 + st * SUB + SPAN / 2;
+    const rm = (RINGS[d][0] + RINGS[d][1]) / 2;
+    return [Math.cos(am) * rm, Math.sin(am) * rm];
+  };
+}
+// the cell's outline in the current projection
+function cellShape(lvl, i) {
+  if (effView() === 'stack') {
+    const t = (i / 9) | 0, d = ((i / 3) | 0) % 3, st = i % 3;
+    return stackCell(st, t, d);
+  }
+  if (effView() === 'cube') {
+    if (lvl === 3) return quadPath(i, 0, 1, 0, 1);
+    if (lvl === 9) {
+      const col = (i / 3) | 0, sBand = 2 - (i % 3);
+      return quadPath(col, sBand / 3, (sBand + 1) / 3, 0, 1);
+    }
+    const col = (i / 9) | 0, d = ((i / 3) | 0) % 3, st = i % 3, sBand = 2 - d;
+    return quadPath(col, sBand / 3, (sBand + 1) / 3, st / 3, (st + 1) / 3);
+  }
+  if (lvl === 3) {
+    const a0 = SECTOR_AT[i] - Math.PI / 3 + GAP, a1 = SECTOR_AT[i] + Math.PI / 3 - GAP;
+    return arcCell(a0, a1, 24, 126);
+  }
+  if (lvl === 9) {
+    const col = (i / 3) | 0, d = i % 3;
+    const a0 = SECTOR_AT[col] - Math.PI / 3 + GAP, a1 = SECTOR_AT[col] + Math.PI / 3 - GAP;
+    return arcCell(a0, a1, RINGS[d][0], RINGS[d][1]);
+  }
+  const SUB = 38 * Math.PI / 180, SPAN = 34.5 * Math.PI / 180;
+  const col = (i / 9) | 0, d = ((i / 3) | 0) % 3, st = i % 3;
+  const a0 = SECTOR_AT[col] - 57 * Math.PI / 180 + st * SUB;
+  return arcCell(a0, a0 + SPAN, RINGS[d][0], RINGS[d][1]);
+}
+function renderWheel() {
+  const v = effView();
+  const cells = cellsAt(level);
+  const posOf = cellPosOf(level);
+  let s = v === 'stack' ? stackFrame()
+    : bezel() + (v === 'ring'
+      ? orbitRings(level === 3 ? [126] : [24, 58, 92, 126])
+      : cubeFrame(level));
+  if (v === 'cube') {
+    // the shading veils: three values under one light, the solid reads
+    const VEIL = [0.10, 0, 0.22];   // root mid · present lit · becoming shadow
+    for (let col = 0; col < 3; col++) if (VEIL[col]) {
+      s += '<path d="' + quadPath(col, 0, 1, 0, 1) + '" fill="rgba(0,0,0,' + VEIL[col] + ')" pointer-events="none"/>';
+    }
+  }
+  s += constellation(cells, posOf);
+  // THE FIELD OVERLAY at 27: fixed points wear home-rings, counter-swaps
+  // draw their chords. The loops stay in the reading below, or the wheel
+  // would web itself illegible: the panel carries what the eye cannot.
+  if (level === 27 && unfolded) {
+    const f = fieldReadingOf(unfolded.cells);
+    for (const n of f.fixed) {
+      const [x, y] = posOf(n - 1);
+      s += '<circle cx="' + x + '" cy="' + y + '" r="12" fill="none" stroke="' + WHITEGOLD
+        + '" stroke-width="0.9" stroke-opacity="0.55" pointer-events="none"/>'
+        + '<circle cx="' + x + '" cy="' + y + '" r="15" fill="none" stroke="' + WHITEGOLD
+        + '" stroke-width="0.45" stroke-opacity="0.3" pointer-events="none"/>';
+    }
+    for (const [a, b] of f.counterSwaps) {
+      const [x1, y1] = posOf(a - 1), [x2, y2] = posOf(b - 1);
+      s += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2
+        + '" stroke="' + WHITEGOLD + '" stroke-width="1" stroke-opacity="0.35" pointer-events="none"/>';
+    }
+  }
+  cells.forEach((c, i) => {
+    const d0 = cellShape(level, i);
+    s += '<path class="wheel-cell" data-ci="' + i + '" d="' + d0
+      + '" fill="rgba(255,255,255,0.01)" stroke="' + metalOf(c.n) + '" stroke-width="0.5"/>';
+    if (c.silent) {
+      const [x, y] = posOf(i);
+      const hr = level === 3 ? (v === 'ring' ? 38 : 30) : level === 9 ? 16 : (v === 'stack' ? 8 : 10);
+      s += '<circle cx="' + x + '" cy="' + y + '" r="' + hr + '" fill="none" stroke="' + WHITEGOLD + '" stroke-opacity="0.2" stroke-width="0.5"/>';
+    }
+  });
+  // THE STANDING CELL: where this hour lives on the frame. Derived from
+  // the clock, never drawn (CANDOUR); weather of the moment (WEATHER).
+  const stand = standingCellOf();
+  const standIdx = level === 3 ? stand.time
+    : level === 9 ? stand.time * 3 + stand.depth
+    : stand.index;
+  s += '<path class="standing" d="' + cellShape(level, standIdx)
+    + '" fill="none" stroke="' + WHITEGOLD + '" stroke-width="0.7" stroke-dasharray="2.5 3" pointer-events="none"/>';
+  if (v !== 'stack') {
+    s += stillCentre();
+    if (level > 3) {
+      // depth named down the bottom seam: the heart nearest the still centre
+      const DL = v === 'ring'
+        ? [['the heart', 41], ['the between', 75], ['the world', 109]]
+        : [['the heart', 23], ['the between', 65], ['the world', 107]];
+      DL.forEach(([t, r]) => {
+        s += '<text x="0" y="' + (r + 2) + '" text-anchor="middle" font-size="5.6" fill="rgba(233,230,220,0.35)">' + t + '</text>';
+      });
+    }
+    for (let col = 0; col < 3; col++) {
+      s += rimLabel('r' + col, RIM_R, [150, -90, 30][col], posName(col).toUpperCase(), cardOf(drawn[col]).name);
+      s += posEmblem(col, [150, -90, 30][col]);
+    }
+  }
+  $('wheelSvg').setAttribute('viewBox', VB.x + ' ' + VB.y + ' ' + VB.w + ' ' + VB.h);
+  $('wheelSvg').innerHTML = s;
+  sizeCanvas();
+  // the cube's skin covers its faces at every level; the stack wears it flat
+  destroySurfaces();
+  mountSurfaces(v);
+  // the living knots take their stations (the faces hold them a touch smaller)
+  const scOf = level === 3 ? () => (v === 'ring' ? 13.5 : 10.8)
+    : level === 9 ? (i) => (v === 'ring' ? 4.9 + 0.6 * (2 - (i % 3)) : 5.1)
+    : (i) => (v === 'stack' ? 3.1 : 3.8 - 0.3 * (((i / 3) | 0) % 3));
+  actors = cells.map((c, i) => {
+    const [x, y] = posOf(i);
+    return actorKnot(c.n, x, y, scOf(i));
+  });
+  const cs = cells;
+  document.querySelectorAll('.wheel-cell').forEach((cell) => {
+    cell.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      // the first touch READS: the cell's voices stay in reach at every
+      // scale; only a second touch on the same cell opens the ladder
+      // (a cell re-touched at 3 resolves to 9; at 9 it unfolds to 27).
+      const wasOn = cell.classList.contains('on');
+      showDetail(cs[Number(cell.dataset.ci)]);
+      soundCard(cs[Number(cell.dataset.ci)].n);   // the touched cell speaks its own voice
+      document.querySelectorAll('.wheel-cell.on').forEach((x) => x.classList.remove('on'));
+      cell.classList.add('on');
+      if (!wasOn) {
+        // the reading stands; the way deeper is named, not taken
+        if (castSeed && level < 27) {
+          const again = document.createElement('div');
+          again.className = 'wagain';
+          again.textContent = level === 3 ? 'touch again: the nine resolves within it' : 'touch again: the twenty-seven unfolds';
+          $('wdetailBox').appendChild(again);
+        }
+        return;
+      }
+      if (level === 3 && castSeed) {
+        if (!wideR) wideR = wideReadingOf(castSeed, drawn);
+        level = 9; renderWheel(); setDial(); renderDepthRead();
+      } else if (level === 9 && castSeed) {
+        if (!unfolded) unfolded = unfoldedReadingOf(castSeed);
+        level = 27; renderWheel(); setDial(); renderDepthRead();
+      }
+    });
+    // the constellation wakes under the touch
+    cell.addEventListener('pointerenter', () => {
+      const ci = cell.dataset.ci;
+      document.querySelectorAll('.cons').forEach((l) => {
+        l.classList.toggle('lit', l.dataset.a === ci || l.dataset.b === ci);
+      });
+    });
+    cell.addEventListener('pointerleave', () => {
+      document.querySelectorAll('.cons.lit').forEach((l) => l.classList.remove('lit'));
+    });
+  });
+  // The box holds its silence until a cell is touched. It used to open with
+  // the clock's own line naming where the hour stood, struck at the
+  // architect's word (11 August 2026): the present hour is the astrolabe's
+  // room, and the bench is the cast's. The standing cell still breathes on
+  // the wheel; the sentence about it belonged to the other instrument.
+}
+function showDetail(c) {
+  let html = '<span class="wg">' + c.gloss + '</span> · ' + c.name
+    + ' <span class="wm">' + c.marks + '</span>'
+    + (c.silent ? ' · <span class="ws">a Silence, asks for ' + c.ask + '</span>' : '')
+    + (c.station ? '<div class="wst">' + c.station + '</div>' : '')
+    + '<div class="wq2">' + c.question + '</div>';
+  if (c.posIndex !== undefined && paths[c.posIndex].length < 3) {
+    html += '<button class="descBtn" data-pi="' + c.posIndex + '">descend within</button>';
+  }
+  $('wdetailBox').innerHTML = html;
+  const btn = $('wdetailBox').querySelector('.descBtn');
+  if (btn) btn.addEventListener('click', () => descendAt(Number(btn.dataset.pi), c));
+}
+function descendAt(i, cell) {
+  if (!castSeed || !drawn[i]) return;
+  const d = descentReadingOf(castSeed, drawn, i, paths[i]);
+  if (!d) return;
+  paths[i] = d.path;
+  let col = document.querySelector('#descents .dcol[data-pi="' + i + '"]');
+  if (!col) {
+    col = document.createElement('div');
+    col.className = 'dcol'; col.dataset.pi = String(i);
+    col.innerHTML = '<div class="dhead">WITHIN ' + posName(i).toUpperCase() + '</div><div class="dstands">the outer card stands</div>';
+    $('descents').appendChild(col);
+  }
+  col.insertAdjacentHTML('beforeend',
+    '<div class="dstep">'
+      + '<div class="dwithin">within ' + d.within + ' · level ' + d.level + '</div>'
+      + '<div><span class="dname">' + d.name + '</span><span class="dmarks">' + d.marks + '</span></div>'
+      + (d.silent ? '<div class="wsil">A SILENCE · ASKS FOR ' + d.ask.toUpperCase() + '</div>' : '')
+      + '<div class="dq">' + d.voices.q + '</div>'
+    + '</div>');
+  if (cell) showDetail(cell);
+}
+function setDial() {
+  $('lvl3').classList.toggle('on', done && level === 3);
+  $('lvl9').classList.toggle('on', done && level === 9);
+  $('lvl27').classList.toggle('on', done && level === 27);
+  $('lvl9').textContent = wideR ? '9' : '9 · resolve';
+  $('lvl27').textContent = unfolded ? '27' : '27 · unfold';
+  $('lvl3').disabled = !castSeed;
+  $('lvl9').disabled = !castSeed;
+  $('lvl27').disabled = !castSeed || !wideR;   // the ladder climbs in order
+}
+// THE DEPTHS, READ. At 9 the weave: the three lines the grid never speaks,
+// the dyads standing open, the currents running inside the spread. At 27
+// the whole field: the permutation spoken as D28 ruled it. Derived from
+// the deal alone; the three-reading above always stands.
+function displayCycleLine(cyc) {
+  if (cyc.length <= 6) return cycleLine(cyc);
+  const nm = (n) => cardOf(n).name;
+  return 'A carry-loop of ' + cyc.length + ': ' + nm(cyc[0]) + ' sits in ' + nm(cyc[1])
+    + '’s seat; ' + nm(cyc[1]) + ' in ' + nm(cyc[2]) + '’s; and on through '
+    + (cyc.length - 3) + ' more seats until the remainder returns where it began.';
+}
+// THE CELLS, READ (2026-07-26): the corpus text layer pulled through to the
+// depths. Each cell already knows its column's tense; textOf serves the five
+// voices for any card at any tense; voicesHtml is the one shared renderer.
+// So this is composition, not authorship: nothing is written here that the
+// corpus does not already say, and the section a cell renders at 9 is
+// exactly the section the same card would render in the cast at that tense.
+const TENSE_HEADS = ['THE ROOT · WHAT CARRIES', 'THE PRESENT · WHAT STANDS', 'THE BECOMING · WHAT CALLS'];
+const HOUSE_KEYS = ['AUM', 'MA', 'RA'];
+function cellSection(cell) {
+  const n = cell.n, k = knotOf(n), bec = becomingOf(n), t = cell.affinity.time;
+  return {
+    n,
+    name: cell.name,
+    position: { name: cell.gloss },
+    silent: cell.silent,
+    ask: cell.ask,
+    marks: cell.marks,
+    interval: k.interval,
+    house: HOUSE_KEYS[codeOf(n)[0]],
+    counter: { n: counterOf(n), name: cardOf(counterOf(n)).name },
+    becoming: bec === null
+      ? { settled: true }
+      : { settled: false, n: bec, name: cardOf(bec).name },
+    voices: textOf(n, t),
+  };
+}
+function cellsReadHtml(cells, perTense) {
+  let s = '';
+  cells.forEach((c, i) => {
+    if (i % perTense === 0) s += '<div class="tensehead">' + TENSE_HEADS[(i / perTense) | 0] + '</div>';
+    s += '<div class="cellstation">' + c.station + '</div>' + voicesHtml(cellSection(c));
+  });
+  return s;
+}
+function renderCellsRead() {
+  const box = $('cellsRead');
+  if (!castSeed || level === 3) { box.innerHTML = ''; return; }
+  if (level === 9 && wideR) {
+    box.innerHTML = '<div class="ch">THE NINE · THE CELLS, READ</div>'
+      + '<div class="cdesc">Each cell&rsquo;s own five voices, spoken in its column&rsquo;s tense: the same corpus '
+      + 'the cast reads from, through the same renderer, so the depths and the cast cannot drift.'
+      + '<b class="claw">' + wideR.law + '</b></div>'
+      + cellsReadHtml(wideR.cells, 3)
+      + '<div class="cnote">THE OUTER THREE STAND · THE NINE REFINE, NEVER REPLACE</div>';
+    return;
+  }
+  if (level === 27 && unfolded) {
+    box.innerHTML = '<div class="ch">THE UNFOLDING · THE CELLS, READ</div>'
+      + '<div class="cdesc">The arrangement stands first: the field above is the reading, and these '
+      + 'voices refine it seat by seat, never replace it. Every card speaks once, in the tense of '
+      + 'the column where it landed.'
+      + '<b class="claw">' + unfolded.law + '</b></div>'
+      + cellsReadHtml(unfolded.cells, 9)
+      + '<div class="cnote">EVERY CARD EXACTLY ONCE · WEATHER, NEVER VERDICT</div>';
+  }
+}
+// THE PAGE NEVER MOVES ITSELF. A depth touch renders the panel and stops
+// there: the reader scrolls, or does not. Reaching into the window to drag
+// someone's view is the instrument acting rather than showing, and it reads
+// as a lurch even when the arithmetic beneath it is right.
+function renderDepthRead() {
+  renderCellsRead();   // the voices ride with the structure, one choke point
+  const box = $('depthRead');
+  if (!castSeed || level === 3) { box.innerHTML = ''; return; }
+  if (level === 9 && wideR) {
+    const weave = nineWeaveOf(drawn, wideR.cells);
+    box.innerHTML = '<div class="dh">THE NINE · THE WEAVE</div>'
+      + '<div class="ddesc">Each house of the cast opens into three cells: the world, the between and '
+      + 'the heart. Read across the tenses and a line carries a motion of its own, taken from each '
+      + 'card&rsquo;s own house rather than assigned to it. What follows is the weave the grid holds '
+      + 'but never speaks: the lines and their motions, then the relations that happened to land '
+      + 'together, every one of them the deck&rsquo;s own.'
+      + '<b class="dlaw">' + wideR.law + '</b></div>'
+      + weaveLines(weave).map((l) => '<div class="dl">' + l + '</div>').join('')
+      + '<div class="dnote">THE OUTER THREE STAND · THE NINE REFINE, NEVER REPLACE</div>';
+    return;
+  }
+  if (level === 27 && unfolded) {
+    const f = fieldReadingOf(unfolded.cells);
+    const parts = [];
+    for (const n of f.fixed) parts.push(cycleLine([n]));
+    for (const sw of f.counterSwaps) parts.push(cycleLine(sw));
+    for (const sw of f.swaps.filter((x) => counterOf(x[0]) !== x[1])) parts.push(cycleLine(sw));
+    for (const cyc of f.loops) parts.push(displayCycleLine(cyc));
+    box.innerHTML = '<div class="dh">THE WHOLE FIELD · HOW IT FELL</div>'
+      + '<div class="ddesc">At this depth the whole deck falls at once, every card exactly once, so '
+      + 'the reading is not a list of twenty-seven meanings. It is an arrangement: every card has a '
+      + 'home, the cell bearing its own number, and the deal is the record of where each one sat '
+      + 'instead. Cards at home, seats exchanged, and the long carry-loops are read below, and '
+      + 'counted against what chance alone expects.'
+      + '<b class="dlaw">' + unfolded.law + '</b></div>'
+      + '<div class="dhl">' + fieldHeadline(f) + '</div>'
+      + parts.map((l) => '<div class="dl">' + l + '</div>').join('')
+      + '<div class="dnote">THE FIELD IS THE PERMUTATION · WEATHER, NEVER VERDICT</div>';
+  }
+}
+
+$('lvl3').addEventListener('click', () => {
+  if (!castSeed) return;
+  mode(true);
+  if (view === 'stack') { view = 'cube'; setViewLabel(); }   // the stack lives at 27
+  level = 3; renderWheel(); setDial(); renderDepthRead();
+});
+$('lvl9').addEventListener('click', () => {
+  if (!castSeed) return;
+  mode(true);
+  if (view === 'stack') { view = 'cube'; setViewLabel(); }
+  if (!wideR) wideR = wideReadingOf(castSeed, drawn);   // one committed draw
+  level = 9; renderWheel(); setDial(); renderDepthRead();
+});
+$('lvl27').addEventListener('click', () => {
+  if (!castSeed || !wideR) return;
+  mode(true);
+  if (!unfolded) unfolded = unfoldedReadingOf(castSeed); // the whole deck, once
+  level = 27; renderWheel(); setDial(); renderDepthRead();
+});
+// THE PROJECTION: one object, three views; the toggle changes the seeing,
+// never the reading. The stack joins the cycle only once the deck stands
+// whole at 27 (the exploded cube is the Unfolding's native ceremony).
+const setViewLabel = () => { $('viewBtn').textContent = 'VIEW · ' + view.toUpperCase(); };
+$('viewBtn').addEventListener('click', () => {
+  if (turning) return;
+  const order = (unfolded && level === 27) ? ['ring', 'cube', 'stack'] : ['ring', 'cube'];
+  const at = order.indexOf(view);
+  view = order[(at + 1) % order.length];
+  setViewLabel();
+  mode(true);
+  if (done) renderWheel(); else renderIdleWheel();
+});
+
+// the touch that begins it all: the button IS the centre now, not the stage
+$('stage').addEventListener('pointerdown', (e) => {
+  if (turning || done) return;
+  if (!e.target.closest('.cast-centre')) return;
+  soundCast();
+});
+
+// SOUND: silent until asked. Turning it off closes and forgets the sounder,
+// so no AudioContext lingers; turning it on arms nothing until the next touch.
+$('sToggle').addEventListener('click', () => {
+  soundOn = !soundOn;
+  $('sToggle').textContent = soundOn ? 'SOUND · ON' : 'SOUND · OFF';
+  $('sToggle').classList.toggle('on', soundOn);
+  if (!soundOn && sounder) { sounder.destroy(); sounder = null; }
+});
+
+// ---- replay: the declared seed re-lands the same cast (no rite, no tying) ----
+function replayCast(s) {
+  const p = s.split('|');
+  const seeds = p.length >= 4
+    ? [p.slice(0, p.length - 2).join('|'), p.slice(0, p.length - 1).join('|'), s]
+    : [s + '|1', s + '|2', s + '|3'];
+  clearTimers(); clearFx();
+  turning = false; done = true;
+  parts = []; drawn = [];
+  paths = [[], [], []];
+  ['wdetailBox', 'descents'].forEach((id) => { $(id).innerHTML = ''; });
+  $('questionIn').value = ''; $('questionIn').readOnly = false; $('questionIn').classList.remove('held');
+  seeds.forEach((sd) => { drawn.push(drawOne(sd, drawn)); });
+  castSeed = s;
+  $('seedOut').textContent = 'seed · ' + s + ' · replayed';
+  // the witness is taken once, at the original commit: a replay reads the
+  // journal and never stamps anew, or the witness would be worthless
+  const kept = loadJournal().find((e) => e.seed === s);
+  // the dial follows the witness exactly: the original stamp and the original
+  // three, or nothing at all. A cast whose witness is unknown gets no dial
+  // rather than a guess, even though the replay recomputes the same three
+  // from the seed: the dial draws records, not derivations of its own.
+  $('castDial').innerHTML = kept ? castDialSvg(kept.stamp, kept.drawn) : '';
+  // with a dial standing, the line stays silent beneath it; with the witness
+  // unknown there is no dial, and the absence is explained aloud instead
+  $('witnessOut').className = kept ? 'seed sr' : 'seed';
+  $('witnessOut').textContent = kept
+    ? witnessLine(kept.stamp, 'witnessed at the original cast')
+    : 'witness unknown · cast elsewhere, or before the witness began';
+  level = 3; wideR = null; unfolded = null;
+  renderWheel(); setDial();
+  $('depthRead').innerHTML = '';
+  $('cellsRead').innerHTML = '';
+  renderReading(drawn);
+  // the hint stays silent on a replay (its sentence was struck at the
+  // architect's word, 11 August 2026): the seed line already says
+  // "replayed", and a reader standing in a finished cast needs no coaching
+  // toward the next one. The empty hint collapses; see .hint:empty.
+  $('hint').textContent = '';
+  // the box returns to naming, carrying whatever this cast is called
+  $('questionIn').value = kept ? (kept.name || kept.question || '') : '';
+  $('questionIn').placeholder = 'name this cast';
+  renderShelf();
+}
+// THE NAMING. While a cast stands open the box is a label, not a question:
+// what is typed renames the chip and nothing else. The seed, the stamp and
+// the drawn three are the committed record and stay exactly as they were.
+$('questionIn').addEventListener('input', () => {
+  if (!castSeed) return;                       // before a cast, it is the question
+  journalUpdate(castSeed, { name: $('questionIn').value.trim() });
+  renderShelf();
+});
+
+$('replay').addEventListener('click', () => {
+  const s = $('seedIn').value.trim();
+  if (s) replayCast(s);
+});
+$('clear').addEventListener('click', reset);
+
+reset();
+renderShelf();   // the vessel's kept casts stand ready from the first breath
+
+
+// ===========================================================================
+// THE GUIDE (recast at the architect's word, 22 July 2026): the beginner's
+// door, static on purpose, standing where the card browser stood. The
+// browser and the census live on in git history; the study of single
+// glyphs belongs to THE RING next door.
+// ===========================================================================
+
+// ---- mode switch; CAST is one button: forward, reset, and a fresh cast.
+// BROWSE opens the Guide, which came home at the split of 19 July 2026 ----
+function mode(cast) {
+  $('castPane').style.display = cast ? '' : 'none';
+  $('browsePane').style.display = cast ? 'none' : '';
+  $('mCast').classList.toggle('on', cast);
+  $('mBrowse').classList.toggle('on', !cast);
+}
+$('mCast').addEventListener('click', () => {
+  mode(true);
+  if (turning) return;
+  reset();
+  soundCast();
+});
+$('mBrowse').addEventListener('click', () => mode(false));
+
+
+if (location.hash === '#guide') mode(false);
+</script>
+</body>
+</html>

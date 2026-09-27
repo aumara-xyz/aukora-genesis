@@ -1,0 +1,24 @@
+{
+  "face": "messages",
+  "srcDigest": "343021f489eb19b9276e8897cee482eb068779ae8f32d8ffa7f680f4b34eb437",
+  "files": [
+    "package.json",
+    "src/add-contact-route.ts",
+    "src/client/Messages.module.css",
+    "src/client/MessagesIcons.tsx",
+    "src/client/MessagesMenu.tsx",
+    "src/client/MessagesSurface.tsx",
+    "src/client/add-contact.ts",
+    "src/client/contacts-client.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/confirm-contact-route.ts",
+    "src/contacts-store.ts",
+    "src/css-modules.d.ts",
+    "src/index.ts",
+    "src/invariant.ts",
+    "src/messages-route.ts",
+    "tsdown.config.ts"
+  ],
+  "builtAt": "2026-09-27T06:17:40Z"
+}

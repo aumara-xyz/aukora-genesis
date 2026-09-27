@@ -1,0 +1,39 @@
+{
+  "formatVersion": 1,
+  "name": "client-hmr-events-auth",
+  "reason": "/plugins/events answered 200 to an unauthenticated request while every other app-added route consults ctx.connection; the SSE channel gets the same browser authentication as the rest of the app, and connection becomes a declared dependency so the plugin fails closed (no channel) rather than open when the service is absent.",
+  "edits": [
+    {
+      "path": "packages/client/hmr/src/index.ts",
+      "find": "export const inject = ['clientModules', 'webServer']",
+      "replace": "export const inject = ['clientModules', 'webServer', 'connection']",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/client/hmr/src/index.ts",
+      "find": "      handler: (req, res) => {\n        // Named routes match ahead of the carrier's method gate; keep the old\n        // global 405 semantics for non-GET hits on this endpoint.\n",
+      "replace": "      handler: (req, res) => {\n        // Same browser authentication as every other app-added route: no\n        // session cookie, no channel.\n        const connection = ctx.get('connection')\n        if (connection !== undefined) {\n          const rejection = connection.requestRejection(req)\n          if (rejection !== undefined) {\n            res.writeHead(rejection)\n            res.end(req.method === 'HEAD' ? undefined : rejection === 401 ? 'unauthorized' : 'forbidden')\n            return\n          }\n        }\n        // Named routes match ahead of the carrier's method gate; keep the old\n        // global 405 semantics for non-GET hits on this endpoint.\n",
+      "occurrences": 1
+    }
+  ],
+  "expectAfterApply": [
+    {
+      "path": "packages/client/hmr/src/index.ts",
+      "contains": "connection.requestRejection(req)"
+    },
+    {
+      "path": "packages/client/hmr/src/index.ts",
+      "contains": "'clientModules', 'webServer', 'connection'"
+    }
+  ],
+  "expectAfterBuild": [
+    {
+      "path": "packages/client/hmr/lib/index.js",
+      "contains": "connection.requestRejection(req)"
+    },
+    {
+      "path": "packages/client/hmr/lib/index.js",
+      "contains": "\"connection\""
+    }
+  ]
+}

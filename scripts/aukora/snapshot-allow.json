@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "about": "Files that advance.mjs --snapshot / --replace-root may publish although snapshot-scan.mjs flags them: obviously fake fixtures, public third-party author addresses, pinned evidence that names a local path, and the scanners' own rule text. An entry covers only these exact bytes (sha256) and only the listed rules; a changed byte or a new rule refuses again. A snapshot that changes this file says so in the popup.",
+  "files": [
+    {
+      "path": "apps/aukora-desktop/eye.mjs",
+      "sha256": "b721eaf9b83e3c19c5e616b0e6d4291a89777407f7895b99068bda67b6ca21ce",
+      "rules": [
+        "token:url-userinfo-v1"
+      ],
+      "why": "A comment shows a URL-parsing attack (a loopback URL with a userinfo part); no credential."
+    },
+    {
+      "path": "apps/aukora-desktop/main.mjs",
+      "sha256": "562b09a031f99680c4d8d92091568f5470916e87b149e9feeea98a02520783cd",
+      "rules": [
+        "token:url-userinfo-v1"
+      ],
+      "why": "A comment shows a URL-parsing attack (a loopback URL with a userinfo part); no credential."
+    },
+    {
+      "path": "apps/aukora-desktop/package-lock.json",
+      "sha256": "17c382614adea863c6f1621050be241c93c437e92cf89994a086362261b5df88",
+      "rules": [
+        "email"
+      ],
+      "why": "The public author address of a third-party npm package, as the package itself publishes it."
+    },
+    {
+      "path": "apps/aukora-desktop/url-policy.mjs",
+      "sha256": "8c6d6f2b028f9449a9f4d7d0d2a39c734f34d21bbfa462777ab9c5e1bedb99b7",
+      "rules": [
+        "token:url-userinfo-v1"
+      ],
+      "why": "A comment shows a URL-parsing attack (a loopback URL with a userinfo part); no credential."
+    },
+    {
+      "path": "plugins/aukora-face/apps/vendor/auma-live/original-closure/core/src/changeRiskClassifier.ts",
+      "sha256": "a4f58539bb51f6dc8b45501ae351cf7ad1ad34f44ddb4d7848884f24195e9784",
+      "rules": [
+        "patent-marker"
+      ],
+      "why": "A classifier rule that matches patent file names; it carries no patent text."
+    },
+    {
+      "path": "plugins/aukora-nostr/lib/vendor/noble-ciphers/licenses/noble-ciphers.LICENSE",
+      "sha256": "f36671a5487c9c5050efacb58011c37c24c55a889803cb036cf9d9a6347c1e2d",
+      "rules": [
+        "email"
+      ],
+      "why": "The public author address in a third-party license or README (noble-ciphers upstream text)."
+    },
+    {
+      "path": "scripts/aukora/snapshot-scan.mjs",
+      "sha256": "6cf4daa99a90effed839040e8b18b568117fd72c71bc9885e88fabb493285ae9",
+      "rules": [
+        "private-marker",
+        "patent-marker"
+      ],
+      "why": "The snapshot scanner: its rules and comments spell the markers it looks for."
+    },
+    {
+      "path": "tests/public-evidence.test.mjs",
+      "sha256": "50df195f8ad179c4f96931813e3bb8fb2777bc1fa30bc89fa64158add7a9b9f7",
+      "rules": [
+        "token:pem-private-key"
+      ],
+      "why": "A test plants a PEM header around the word \"redacted\" and checks that a generated test key is refused; no key is committed."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/README.md",
+      "sha256": "12a58ac1edde12d6604131ef97067d25eb168d7b85e48a84f3ad7e0a59cbb039",
+      "rules": [
+        "home-path"
+      ],
+      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/README.zh.md",
+      "sha256": "17d6c349aeb158193ab7c2367ba72a2b4f3a7fb90d75a826017067c4955fe322",
+      "rules": [
+        "home-path"
+      ],
+      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/operation.json",
+      "sha256": "a48e7307f1528bd45c23d4cfb3cf5181fc93263623d0df8a1dc3727ab62ec3f2",
+      "rules": [
+        "home-path"
+      ],
+      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/receipt.json",
+      "sha256": "8c35124cfd3f2f2b3191c4e3ddb53442b3ccf4ce6fd658e386e930b38bc48e7c",
+      "rules": [
+        "home-path"
+      ],
+      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/verify-output.txt",
+      "sha256": "bc392b6c56ebb57ebf170dc987bf8e90a2cc3a6419bdd5524dfa6384c574bd3c",
+      "rules": [
+        "home-path"
+      ],
+      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/courts/open-findings.json",
+      "sha256": "2110970dad8df359cd0fc7c495de7f333913c73659bc4241be9a8e02ee062f83",
+      "rules": [
+        "home-path"
+      ],
+      "why": "An upstream findings record that cites a path on the owner's Mac (a username, no content)."
+    },
+    {
+      "path": "vendor/aukora-deep-authority/src/vendor/loader/package.json",
+      "sha256": "40cf4a563afabae89b14199e4c985ce4c07df9202962c5f4b714a9135e126c29",
+      "rules": [
+        "email"
+      ],
+      "why": "The public author address of a third-party npm package, as the package itself publishes it."
+    },
+    {
+      "path": "vendor/aukora-diamond/src/tests/kira-evidence/evidence/PRODUCER.md",
+      "sha256": "aa15fe49761071588a98d26003f9dec2288e4d95b035a8a04d646997de3cdb1a",
+      "rules": [
+        "home-path"
+      ],
+      "why": "A fixture producer record that names the worktree path it was minted in (a username, no content)."
+    },
+    {
+      "path": "vendor/aukora-evidence/lib-test/evidencePackV1.test.js",
+      "sha256": "11e8fbc394a82db9e35a5a81eb0639b735d5f1bda19ccd03555f71a08db2fd12",
+      "rules": [
+        "email",
+        "token:jwt-v1",
+        "token:openrouter-key",
+        "token:url-userinfo-v1"
+      ],
+      "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
+    },
+    {
+      "path": "vendor/aukora-evidence/lib-test/r56.providerTokenShapes.test.js",
+      "sha256": "49ea6b65c3f6b624b817601d204f78ef6b11ee1294de728a65f4baedf2df8eac",
+      "rules": [
+        "token:huggingface-token",
+        "token:tinker-key",
+        "token:tinker-raw",
+        "token:tinker-token"
+      ],
+      "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
+    },
+    {
+      "path": "vendor/aukora-evidence/lib-test/r57.swarmRunEvidenceV1.test.js",
+      "sha256": "d82ca2df1490d071f2b24ebaa1f8a106d9d85c688f9a349d1cdca0073720947e",
+      "rules": [
+        "token:huggingface-token",
+        "token:tinker-token"
+      ],
+      "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
+    },
+    {
+      "path": "vendor/aukora-evidence/lib/catalogue.js",
+      "sha256": "055cc8c38e5f3cdb08c236ede1a0d2a5ac89b81fa925d157e64419bbad273a60",
+      "rules": [
+        "private-marker",
+        "token:url-userinfo-v1"
+      ],
+      "why": "The secret catalogue itself: its pattern text spells the shapes it detects."
+    },
+    {
+      "path": "vendor/aukora-evidence/src/catalogue.ts",
+      "sha256": "718f02edeeed1405c17182be8d1d5ddc9915b9fdfa5e513bf96d0bb57595f872",
+      "rules": [
+        "private-marker",
+        "token:url-userinfo-v1"
+      ],
+      "why": "The secret catalogue itself: its pattern text spells the shapes it detects."
+    },
+    {
+      "path": "vendor/aukora-evidence/test/evidencePackV1.test.ts",
+      "sha256": "92005793af6d31eca5442759745a0f19fada0977a75c79568962107e20129b1f",
+      "rules": [
+        "email",
+        "token:jwt-v1",
+        "token:openrouter-key",
+        "token:url-userinfo-v1"
+      ],
+      "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
+    },
+    {
+      "path": "vendor/aukora-evidence/test/r56.providerTokenShapes.test.ts",
+      "sha256": "d010e4d6a5921001cdff02de998d2d86d1d1b7240c02bc4c8fb0c9061e7600c9",
+      "rules": [
+        "token:huggingface-token",
+        "token:tinker-key",
+        "token:tinker-raw",
+        "token:tinker-token"
+      ],
+      "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
+    },
+    {
+      "path": "vendor/aukora-evidence/test/r57.swarmRunEvidenceV1.test.ts",
+      "sha256": "cef678f7c0512a3f7e553bfd3b65a099f2e3b56ce62ced70572542a34fc0bcb6",
+      "rules": [
+        "token:huggingface-token",
+        "token:tinker-token"
+      ],
+      "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
+    },
+    {
+      "path": "vendor/aukora-governed-recall/src/PROVENANCE.md",
+      "sha256": "a8b86f039576372887cb62a091eb61a82155a20fa4ea06331280e13f8a29349d",
+      "rules": [
+        "home-path"
+      ],
+      "why": "An upstream provenance note that names a worktree path on the owner's Mac (a username, no content)."
+    },
+    {
+      "path": "vendor/aukora-kernel/deps/@noble/ciphers@2.2.0/LICENSE",
+      "sha256": "f36671a5487c9c5050efacb58011c37c24c55a889803cb036cf9d9a6347c1e2d",
+      "rules": [
+        "email"
+      ],
+      "why": "The public author address in a third-party license or README (noble-ciphers upstream text)."
+    },
+    {
+      "path": "vendor/aukora-kernel/deps/@noble/ciphers@2.2.0/README.md",
+      "sha256": "e8b7fa9b8536b67d1bf535b219c095e22fd1a011abf7970b3d268abd6771f4da",
+      "rules": [
+        "email"
+      ],
+      "why": "The public author address in a third-party license or README (noble-ciphers upstream text)."
+    },
+    {
+      "path": "vendor/aukora-membrane-organs/src/core/swarm/fractal-court-fixtures.ts",
+      "sha256": "3c0f8ba4b347d49e7b3bd90367aa02acfbaf12c47e6a357c2bfdbed211cee1cf",
+      "rules": [
+        "token:pem-private-key"
+      ],
+      "why": "A court fixture with a truncated, non-key PEM body (\"MIIEv...\" then \"...\") that the court must refuse."
+    },
+    {
+      "path": "vendor/aukora-membrane-organs/src/core/swarm/schemas/fixtures/SandboxProfileV1.valid.json",
+      "sha256": "dce86cbb9b42adc2c57ce65d9c451156e90cb6ad0efca37c11c8746aadd90570",
+      "rules": [
+        "home-path"
+      ],
+      "why": "A schema fixture with example sandbox paths under the owner's home (a username, no content)."
+    },
+    {
+      "path": "vendor/aukora-membrane-organs/src/scripts/swarm/validate-cell-c4.ts",
+      "sha256": "0738bbc252ce74c79ab9c998dc9463bb7e184cf177e2e881bbe9f8db86b992f1",
+      "rules": [
+        "home-path"
+      ],
+      "why": "An upstream validation script that names a local model-cache path (a username, no content)."
+    },
+    {
+      "path": "vendor/aukora-phi-guards/src/PROVENANCE.md",
+      "sha256": "a8b86f039576372887cb62a091eb61a82155a20fa4ea06331280e13f8a29349d",
+      "rules": [
+        "home-path"
+      ],
+      "why": "An upstream provenance note that names a worktree path on the owner's Mac (a username, no content)."
+    },
+    {
+      "path": "vendor/aukora-phi-guards/src/surface/door.ts",
+      "sha256": "24404bf7e9b496dfb83989f882d94bbefd596fa14bea5c92f7a49bf24de6686d",
+      "rules": [
+        "email"
+      ],
+      "why": "An invented attacker address in a guard comment."
+    },
+    {
+      "path": "vendor/aukora-seed-app/lib/apps/seed/scripts/scan-public-tree.js",
+      "sha256": "0b50bf8e46ad7aae3910e7d2ba8489e633b928f7d3db19171b3c84804c76f325",
+      "rules": [
+        "email"
+      ],
+      "why": "Invented example addresses in a comment of a public-tree scanner."
+    },
+    {
+      "path": "vendor/aukora-seed-app/lib/apps/seed/test/r39.security.test.js",
+      "sha256": "230bbf45dc21fbb794dfae75e0561a91a15e8c9def4ffff03ac1795b67360e5c",
+      "rules": [
+        "email",
+        "token:aws-access-key-id"
+      ],
+      "why": "Security test fixtures: AWS's documented example key and invented addresses the scanner must refuse."
+    },
+    {
+      "path": "vendor/aukora-seed-app/lib/apps/seed/test/r47.governed-crossing.test.js",
+      "sha256": "2b0b03aa149abe7dd7f7f3e56a979bed44d0467ab91e1dbdc761a53219f3c416",
+      "rules": [
+        "token:openrouter-key"
+      ],
+      "why": "A synthetic sk-or- key (an alphabet run) that the governed crossing must refuse."
+    },
+    {
+      "path": "vendor/aukora-seed-app/lib/packages/evidence/src/catalogue.js",
+      "sha256": "055cc8c38e5f3cdb08c236ede1a0d2a5ac89b81fa925d157e64419bbad273a60",
+      "rules": [
+        "private-marker",
+        "token:url-userinfo-v1"
+      ],
+      "why": "The secret catalogue itself: its pattern text spells the shapes it detects."
+    },
+    {
+      "path": "vendor/aukora-seed-app/src/apps/seed/scripts/scan-public-tree.ts",
+      "sha256": "64fcaa046dc53bbda4102fc6aecd63ef3ad145e515db2f8280f0358fd45ead79",
+      "rules": [
+        "email"
+      ],
+      "why": "Invented example addresses in a comment of a public-tree scanner."
+    },
+    {
+      "path": "vendor/aukora-seed-app/src/apps/seed/test/r39.security.test.ts",
+      "sha256": "0f81dced4172c854f9395bcd685daccc4d26aa15670e6e7d9bc55eb409c9f35b",
+      "rules": [
+        "email",
+        "token:aws-access-key-id"
+      ],
+      "why": "Security test fixtures: AWS's documented example key and invented addresses the scanner must refuse."
+    },
+    {
+      "path": "vendor/aukora-seed-app/src/apps/seed/test/r47.governed-crossing.test.ts",
+      "sha256": "ad04dbd50a63fcd2908778db82cc43d97593d8f3c130aa57be8b1f03e08d17f7",
+      "rules": [
+        "token:openrouter-key"
+      ],
+      "why": "A synthetic sk-or- key (an alphabet run) that the governed crossing must refuse."
+    },
+    {
+      "path": "vendor/aukora-seed-app/src/packages/evidence/src/catalogue.ts",
+      "sha256": "718f02edeeed1405c17182be8d1d5ddc9915b9fdfa5e513bf96d0bb57595f872",
+      "rules": [
+        "private-marker",
+        "token:url-userinfo-v1"
+      ],
+      "why": "The secret catalogue itself: its pattern text spells the shapes it detects."
+    }
+  ]
+}

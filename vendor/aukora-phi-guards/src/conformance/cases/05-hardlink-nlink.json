@@ -1,0 +1,21 @@
+{
+  "id": "hardlink-nlink",
+  "why": "A hard link IS the file under a second name. It has no target to resolve to, so BOTH the lexical and the realpath form return the innocent name. Only fstat(st_nlink) on an open descriptor can see it.",
+  "incident": "AURA, 2026-07-27 in aukora-one (closed). Re-measured OPEN in aukora-seed 2026-07-28: 'ln law/protected.txt notes/innocent.txt' then writing the innocent name overwrote the protected inode. aukora-seed#1.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "law.js": "ORIGINAL-LAW\n"
+    },
+    "hardlinks": {
+      "world/mind.md": "law.js"
+    }
+  },
+  "attempt": {
+    "path": "world/mind.md",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

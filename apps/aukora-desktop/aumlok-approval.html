@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  THE ONE-BIT APPROVAL WINDOW.
+
+  WHAT THIS PAGE IS: a native modal that puts ONE operation in front of a person, over the digest that
+  the key will actually sign, and returns ONE BIT — approve or refuse. It opens for an approval and
+  for nothing else.
+
+  WHAT IT IS NOT, AND THIS IS THE WHOLE REASON IT SURVIVED WHEN THE CEREMONY WINDOW DID NOT: it draws
+  no words, asks for none, derives nothing, keeps nothing and writes nothing. There is no phrase on
+  this path, so there is no phrase here to leak, log, screenshot or recover. The seven words that bind
+  a machine are generated and typed on the Aumlok screen inside the face, which is where binding
+  happens in v3.
+
+  IT NAMES ONLY TOKENS AND CARRIES NO HEX. The shell reads the face's own token values out of the
+  release and sets them on the root element; every colour below is one of those tokens, so this window
+  follows the face when the face changes and cannot drift from the palette a person is used to.
+
+  IT REFUSES TO GUESS. Nothing is rendered until the question's facts have arrived, the Approve button
+  is disabled until they have, and a refusal from the shell is shown verbatim as the shell's own name
+  rather than replaced with a sentence this page invented.
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>AUKORA — approval</title>
+<style>
+  /*
+   * THE SITE'S TOKENS, WITH FALLBACKS THAT ARE ONLY FALLBACKS.
+   *
+   * The shell injects the site's own values into this document (the same `--dsw-…` set the release's layout
+   * bundle carries), so what is painted here changes when the site changes. The literals below are what a
+   * MISSING token degrades to — never the source of truth — and `scripts/face/approval-probe.mjs` measures
+   * the computed result against the injected values, so a literal that took over is a finding.
+   */
+  :root {
+    --approval-surface: var(--dsw-alias-bg-layer-1, #1b1b1c);
+    --approval-raised: var(--dsw-alias-bg-layer-2, #232324);
+    --approval-border: var(--dsw-alias-border-l2, #3a3a3c);
+    --approval-label: var(--dsw-alias-label-primary, #f2f2f2);
+    --approval-muted: var(--dsw-alias-label-secondary, #a8a8a8);
+    --approval-font: var(--dsw-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif);
+    --approval-glass: var(--dsw-static-spatial-night-900, #16171a);
+    --approval-gap: var(--dsh-spatial-gap, 6px);
+    --approval-radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    /* THE PAGE IS A SHEET OVER THE CONVERSATION, SO THE PAGE ITSELF IS NOTHING: the scrim below is what a
+       person sees between the card and the words they were reading. */
+    background: transparent;
+    color: var(--approval-label);
+    font: 13px/1.5 var(--approval-font);
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  /* DARK GLASS, FROM THE SITE'S OWN NIGHT COLOUR. The blur is what makes this read as docked OVER the pane
+     rather than as a page that replaced it. */
+  /* A CARD OVER THE APP, AND THE APP STAYS VISIBLE BEHIND IT (2026-09-27). The scrim is light and barely blurred, so the
+     person keeps their place; the card scrolls inside itself, and the Approve/Refuse row is pinned to its bottom edge,
+     so a long operation can never push the answer off screen (a main-advance request once did). */
+  .scrim {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: calc(var(--approval-gap) * 5);
+    background: color-mix(in srgb, var(--approval-glass) 30%, transparent);
+    backdrop-filter: blur(2px);
+  }
+  /* `main.card`, NOT `.card`: the bare class also matched the record's field list (`<dl id="f-card">`), which then took
+     this flex column, max-height and scroll, and was squeezed into a 26px scroll box (measured at 900x600). */
+  main.card {
+    display: flex; flex-direction: column; min-height: 0; width: 100%; max-width: 600px; max-height: 100%;
+    overflow-y: auto; overscroll-behavior: contain;
+    padding: 24px 26px 0; gap: 16px;
+    background: color-mix(in srgb, var(--approval-surface) 96%, transparent);
+    border: 1px solid color-mix(in srgb, var(--approval-label) 18%, var(--approval-border));
+    border-radius: var(--approval-radius);
+    box-shadow: 0 24px 64px color-mix(in srgb, var(--approval-glass) 55%, transparent),
+                0 0 0 1px color-mix(in srgb, var(--approval-label) 6%, transparent);
+  }
+  h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: 0.01em; }
+  p.lede { margin: 0; color: var(--approval-muted); }
+  dl {
+    margin: 0; padding: 14px 16px; gap: 10px;
+    background: var(--approval-raised);
+    border: 1px solid var(--approval-border);
+    border-radius: calc(var(--approval-radius) - 6px);
+    display: grid; grid-template-columns: 128px 1fr;
+  }
+  /* THE SEVEN LABELS KEEP THE GRID ABOVE AT THEIR FULL HEIGHT: the outer card is what scrolls, never this list. */
+  dl.card-fields { flex: none; }
+  dt { color: var(--approval-muted); }
+  dd { margin: 0; overflow-wrap: anywhere; font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 12px; }
+  .filler { flex: 1; }
+  .actions {
+    display: flex; justify-content: flex-end; gap: 10px;
+    position: sticky; bottom: 0; margin: 0 -26px; padding: 14px 26px 18px;
+    background: var(--approval-surface); border-top: 1px solid var(--approval-border);
+  }
+  .actions button { padding: 10px 24px; font-size: 14px; }
+  button {
+    font: inherit; font-weight: 600; padding: 8px 18px;
+    border-radius: calc(var(--approval-radius) - 7px); cursor: pointer;
+    border: 1px solid var(--approval-border); background: var(--approval-raised); color: var(--approval-label);
+  }
+  button.primary { background: var(--approval-label); color: var(--approval-surface); }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #state { min-height: 20px; color: var(--approval-muted); }
+  #state.bad { color: var(--approval-label); font-weight: 600; }
+  /*
+   * THE ROUTED STATE: WHAT THE WINDOW SHOWS WHEN THE DECISION IS NOT ITS OWN TO MAKE.
+   *
+   * When the owner daemon is installed, a settle-class approval is answered in the owner console or on a phone, so
+   * this window holds no one-bit sheet at all — it waits, and it says what it is waiting for. The colours are the
+   * site's, through the same `--approval-*` aliases as everything else, so a missing token degrades rather than
+   * painting a literal.
+   */
+  #routed {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 16px;
+    background: var(--approval-raised);
+    border: 1px solid var(--approval-border);
+    border-radius: calc(var(--approval-radius) - 6px);
+  }
+  #routed-line { margin: 0; color: var(--approval-label); font-weight: 600; }
+  #routed[data-approval-routed="pending"] #routed-line::before {
+    /* A WAIT THAT LOOKS LIKE A WAIT, drawn from the label colour rather than a new one. */
+    content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px;
+    border-radius: 50%; background: var(--approval-label); opacity: 0.55;
+  }
+  .routedFacts { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .routedFacts span {
+    font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 12px; overflow-wrap: anywhere;
+  }
+  #routed-digest { color: var(--approval-muted); }
+  #routed-summary { color: var(--approval-label); }
+  #routed-ceiling { margin: 0; color: var(--approval-muted); }
+  /* THE HONEST LINE ABOUT WHAT THIS APPROVAL IS, shown only where it is true. */
+  .shellAssertion { margin: 0; color: var(--approval-muted); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="scrim">
+<main class="card">
+  <h1>AUKORA — approve this operation?</h1>
+  <p class="lede">This is the exact operation digest your key would sign. Nothing is signed until you
+    approve, and refusing signs nothing.</p>
+  <dl id="facts" hidden>
+    <dt>What is being approved</dt><dd id="f-words">—</dd>
+    <dt>Identity</dt><dd id="f-subject">—</dd>
+    <dt>Operation digest</dt><dd id="f-digest">—</dd>
+    <dt>Challenge</dt><dd id="f-challenge">—</dd>
+    <dt>Valid until</dt><dd id="f-expires">—</dd>
+  </dl>
+  <p id="f-words-note" hidden></p>
+
+  <!-- ══ THE CARD: SEVEN LABELS, EACH READ FROM THE RECORD THE DIGEST COVERS ═══════════════════════════════════
+       What / Where / Who / Limit / Cost / Until / Irreversible. The values are DERIVED, never summarised: five come
+       from the operation's own bytes (through the signer's derivation) and two — WHO and UNTIL — from the request's
+       subject and its window. A label the record does not answer says exactly that, because an empty cell reads as
+       "nothing to report" and that would be a claim nobody made. The page renders this list and decides nothing. -->
+  <dl id="f-card" class="card-fields" data-approval-card hidden></dl>
+  <p id="state">Reading the pending questions…</p>
+  <!--
+    THE QUEUE, AND WHY EVERY ENTRY IS ITS OWN DECISION.
+
+    More than one request may be waiting. Each entry shows THREE THINGS AND NOTHING ELSE — the derived line, its
+    digest prefix and the time — because a diff or the operation's own text is not something a person can act on
+    and is not something this window was ever given. **EACH ENTRY CARRIES ITS OWN APPROVE BUTTON, AND THERE IS NO
+    CONTROL THAT SIGNS SEVERAL**: a click means one named operation, which is the property `ASK_BUSY` used to
+    protect by refusing the second request and this queue protects by naming it. An entry whose line fails the
+    page's own check shows `cannot display` and NO button at all — a disabled button would still say the request
+    is approvable.
+  -->
+  <section id="queue" hidden>
+    <h2 id="queue-heading">Waiting for you</h2>
+    <ul id="queue-list"></ul>
+  </section>
+  <!--
+    THE ROUTED PANEL. `data-approval-routed` is `pending` while the owner daemon has the question and `resolved`
+    once it has answered, and the in-app approve/refuse pair is HIDDEN in both — a one-bit sheet beside a routed
+    question would invite a person to answer here something that is being answered elsewhere.
+  -->
+  <section id="routed" hidden data-approval-routed="pending">
+    <p id="routed-line">—</p>
+    <div class="routedFacts">
+      <span id="routed-digest">—</span>
+      <span id="routed-summary">—</span>
+    </div>
+    <p id="routed-ceiling" hidden></p>
+  </section>
+  <!-- AND WHEN NO DAEMON IS PRESENT, WHAT THIS APPROVAL ACTUALLY IS. -->
+  <p id="shell-assertion" class="shellAssertion" hidden>—</p>
+  <div class="filler"></div>
+  <div class="actions" id="actions">
+    <!-- **NEITHER BUTTON IS THE DEFAULT (AUMLOK-113).** `approve` carried `class="primary"`, which styled it
+         as the affirmative choice — so a person declining an operation they could not describe was taking the
+         visually lesser path. **Saying no is not the lesser answer**: on an operation nobody could derive it is
+         the ONLY answer the window leaves available, and a filled button beside an outlined one argues against
+         it. Both carry the same weight, and the pair is still disabled until the question is answerable. -->
+    <button id="refuse" disabled>Refuse</button>
+    <button id="approve" disabled>Approve</button>
+  </div>
+</main>
+</div>
+<script>
+  (function () {
+    var theme = new URLSearchParams(window.location.search).get('theme')
+    if (theme === 'dark') document.documentElement.setAttribute('data-ds-dark-theme', '')
+
+    var bridge = window.aukoraApproval
+    var state = document.getElementById('state')
+    var facts = document.getElementById('facts')
+    var approve = document.getElementById('approve')
+    var refuse = document.getElementById('refuse')
+    var queueSection = document.getElementById('queue')
+    var queueList = document.getElementById('queue-list')
+    var queueHeading = document.getElementById('queue-heading')
+    var challenge = null
+    var settled = false
+    // WHAT THIS WINDOW WAS ALREADY SHOWING. When a submit comes back routed by a daemon, the refusal from the
+    // ANSWER handler carries no digest and no operation — that handler froze no proposal — so the only digest and
+    // the only description this window can honestly put beside the waiting line are the ones it was already
+    // answering. Kept, rather than re-derived: re-deriving them would be composing a description for itself.
+    var askedDigest = null
+    var askedWords = null
+    // ── **ONE ELIGIBILITY RECORD, AND ONE FUNCTION THAT APPLIES IT (AUMLOK-115, CODEX r1)** ────────────────
+    //
+    // MEASURED, AND THE REVIEW IS RIGHT: the words check lived INLINE in the question path (:619) and NOWHERE
+    // else, so the `aukora-owner:submit-unreachable` retry reset `settled` and did `approve.disabled = false`
+    // UNCONDITIONALLY. **A person whose submit never reached the shell got a live Approve back on a description
+    // the window had already said it could not derive** — the same defect the inline check was added to remove,
+    // one branch over. `send()` checked only settlement and challenge, so even the retry's own gate was blind
+    // to it.
+    //
+    // **SO ELIGIBILITY IS STATE, NOT A LINE.** Every path that can enable or disable the pair now goes through
+    // `applyEligibility()`, and `send()` asks the same question before it submits. There is no second place for
+    // the rule to be forgotten in.
+    //
+    // **IT FAILS CLOSED, WHICH THE INLINE FORM DID NOT.** The old test was `reply.wordsTruncated !== true`, so
+    // **a MISSING or malformed flag passed** — an absent field read as "not truncated". Here a witness is
+    // eligible only when `ok === true` AND `truncated === false` STRICTLY: anything else, including a flag that
+    // never arrived, withholds the signing answer.
+    var witness = null
+    // **WHEN THE QUESTION APPEARED, SO A DECISION CARRIES ITS OWN DWELL (AUMLOK, LIVE-TEST PREP).**
+    // The event log records `dwellMs` = shown -> decided, which is the only place "a decision with no time
+    // to read it" can be seen. The clock starts when the FACTS and the words are on screen, not when the
+    // window opened — a person cannot read a question that has not been drawn yet.
+    var shownAt = null
+    function approveEligible() {
+      return settled !== true && challenge !== null && witness !== null
+        && witness.ok === true && witness.truncated === false
+    }
+    /** Refuse answers the QUESTION, so it needs a question and nothing about the description. */
+    function refuseEligible() {
+      return settled !== true && challenge !== null
+    }
+    /** **THE ONLY PLACE THAT WRITES `disabled`.** Every other path calls this. */
+    function applyEligibility() {
+      approve.disabled = approveEligible() !== true
+      refuse.disabled = refuseEligible() !== true
+    }
+    /**
+     * Take the pair off screen **without settling anything**. A question rendered into the waiting or routed
+     * panel is still open; this window is simply not the one holding it right now.
+     *
+     * **MEASURED, AND IT WAS MY OWN BUG:** both rendering paths used to disable the two buttons directly, and I
+     * routed them through `stop()` — which SETS the `settled` latch, and that latch never comes back. `send()`
+     * then returned early for the rest of the window's life, so a click that was meant to answer the question
+     * did nothing at all. *Disabling a button and settling a window are different acts, and one function that
+     * does both will be used for the wrong one.*
+     */
+    function hidePair() {
+      approve.disabled = true
+      refuse.disabled = true
+    }
+
+    function say(text, bad) {
+      state.textContent = text
+      if (bad === true) state.classList.add('bad')
+    }
+
+    function show(id, value) {
+      document.getElementById(id).textContent =
+        typeof value === 'string' && value.length > 0 ? value : '—'
+    }
+
+    /**
+     * Render one expiry as a real time a person can act on.
+     *
+     * THE WIRE CARRIES AN INTEGER AND THE PAGE USED TO DEMAND A STRING, so the window rendered "—" for
+     * every well-formed request ever made — MEASURED on Peter's first real approval, 2026-09-23 21:29,
+     * where the window he had just trusted said "Valid until —". `owner-approval.mjs` parses
+     * `expiresAt` with `readNonNegativeInteger`, so `typeof reply.expiresAt === 'string'` was false by
+     * construction: a type guard that can never be satisfied is the same defect as a court arm that can
+     * never fail.
+     *
+     * UTC AND LABELLED, because the alternative is a time the reader has to convert in their head. The
+     * raw seconds are kept beside it: the SIGNED field is the integer, and a person comparing this
+     * screen to a log line needs the number that was signed, not only the rendering of it.
+     * @param {unknown} value - the request's own `expiresAt`.
+     * @returns {string} a labelled instant, or a named refusal to render one.
+     */
+    function expiryText(value) {
+      if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+        return 'refused: this approval carries no usable expiry, so there is no window to show'
+      }
+      var rendered = new Date(value * 1000).toISOString().replace('.000Z', 'Z').replace('T', ' ')
+      return rendered + ' UTC  (' + String(value) + ' unix seconds, the signed value)'
+    }
+
+    /**
+     * The words line, DISPLAYED ONLY WHEN THE PAGE CAN CHECK IT AGAINST THE BYTES IT IS SHOWN.
+     *
+     * The line is derived from the operation's own bytes — the same bytes the digest above covers —
+     * and never from a summary the requesting side chose. The check that makes that true is here: the
+     * shell hands over the line AND `sha256("aukora:approval-words:v1" NUL line)`, and a line whose
+     * digest does not recompute is NOT SHOWN AT ALL. A caller-supplied summary that differs from the
+     * bound bytes is refused by this check rather than displayed and hoped about.
+     *
+     * THE DIGEST STAYS THE ONLY THING SIGNED. This line is a rendering for a reader; it is not part of
+     * the preimage and no verifier compares it.
+     * @param {unknown} words - the shell's derived line.
+     * @param {unknown} wordsDigest - the shell's digest over that exact line.
+     * @returns {Promise<{ok: true, text: string} | {ok: false, reason: string}>} the line, or a named refusal.
+     */
+    function witnessText(words, wordsDigest) {
+      if (typeof words !== 'string' || words.length === 0) {
+        return Promise.resolve({
+          ok: false,
+          reason: 'the shell sent no readable description of the operation, and this window will not '
+            + 'show a summary it cannot derive',
+        })
+      }
+      if (typeof wordsDigest !== 'string' || wordsDigest.length === 0 || crypto === undefined
+        || crypto.subtle === undefined) {
+        return Promise.resolve({
+          ok: false,
+          reason: 'the shell sent no way to check that these words describe the bytes being signed, so '
+            + 'they are not shown',
+        })
+      }
+      return crypto.subtle.digest('SHA-256', new TextEncoder().encode('aukora:approval-words:v1\0' + words))
+        .then(function (buffer) {
+          var hex = ''
+          var view = new Uint8Array(buffer)
+          for (var index = 0; index < view.length; index += 1) {
+            hex += view[index].toString(16).padStart(2, '0')
+          }
+          if (hex !== wordsDigest) {
+            return {
+              ok: false,
+              reason: 'the words offered for this operation are not the shell\'s own description of the '
+                + 'bytes being signed, so they are refused and not shown',
+            }
+          }
+          return { ok: true, text: words }
+        }, function () {
+          return { ok: false, reason: 'this window could not check the words it was offered, so it shows none' }
+        })
+    }
+
+    /**
+     * THE COPY, IN BOTH LANGUAGES.
+     *
+     * This window carries no dictionary system — it is one document whose words are in it — so it holds its own two
+     * tables and takes `?lang=`, exactly the way it already takes `?theme=`. English is the default; an unknown
+     * language is English rather than nothing, because a missing string must never be a blank line.
+     */
+    var COPY = {
+      en: {
+        digestPrefix: 'digest ',
+        approve: 'Approve',
+        decline: 'Decline',
+        reading: 'Checking the description against the bytes being signed…',
+        cannotDisplay: 'cannot display',
+        queueHeading: 'Waiting for you',
+        summaryPrefix: 'operation: ',
+        routedPending: 'Waiting for the owner: approve in the owner console or on your phone.',
+        routedConsole: 'Approved in the owner console.',
+        routedPhone: 'Approved on your phone.',
+        routedConsoleRefused: 'Refused in the owner console.',
+        routedPhoneRefused: 'Refused on your phone.',
+        routedNoChannel: 'the owner daemon answered, but named no channel, so this window will not guess where it went',
+        routedNoSummary: 'this window could not check a description of the operation, so it shows none',
+        routedCeiling: 'ceiling: ',
+        shellAssertion: 'This approval is a shell assertion \u2014 storage is not yet isolated.',
+        ownerUnreachable: 'the owner daemon could not be reached, so nothing was submitted and nothing is waiting',
+      },
+      zh: {
+        digestPrefix: '摘要 ',
+        approve: '同意',
+        decline: '拒绝',
+        reading: '正在对照将要签署的字节检查描述…',
+        cannotDisplay: '无法显示',
+        queueHeading: '等待您的处理',
+        summaryPrefix: '操作：',
+        routedPending: '等待主人：请在主人控制台或手机上批准。',
+        routedConsole: '已在主人控制台批准。',
+        routedPhone: '已在手机上批准。',
+        routedConsoleRefused: '已在主人控制台拒绝。',
+        routedPhoneRefused: '已在手机上拒绝。',
+        routedNoChannel: '主人守护进程已作答，但没有说明渠道，本窗口不会猜测它去了哪里',
+        routedNoSummary: '本窗口无法核对这次操作的描述，因此不显示任何描述',
+        routedCeiling: '上限：',
+        shellAssertion: '这是一次外壳断言 \u2014 存储尚未隔离。',
+        ownerUnreachable: '无法联系主人守护进程，因此没有提交任何内容，也没有任何等待中的请求',
+      },
+    }
+    var lang = new URLSearchParams(window.location.search).get('lang')
+    var words = COPY[lang] === undefined ? COPY.en : COPY[lang]
+    function t(key) { return words[key] === undefined ? COPY.en[key] : words[key] }
+
+    var panel = document.getElementById('routed')
+    var panelLine = document.getElementById('routed-line')
+    var panelDigest = document.getElementById('routed-digest')
+    var panelSummary = document.getElementById('routed-summary')
+    var panelCeiling = document.getElementById('routed-ceiling')
+    var assertion = document.getElementById('shell-assertion')
+    // THE PAIR, BY ID. A DOM SELECTOR is a capability three courts that drive THIS script in a minimal sandbox do
+    // not implement — they provide `getElementById` and nothing else — and reaching for one here in the routed
+    // state turned them red with "not a function". A two-button sheet does not need a selector, and the shipped
+    // window has to stay drivable by the harness that measures it.
+    var actions = document.getElementById('actions')
+
+    /** The one-bit pair, by NAME rather than by a selector — the sheet has exactly two buttons and no others. */
+    function pair() { return [refuse, approve] }
+
+    /** The proposal's digest, as a prefix a person can compare against another screen. */
+    function digestPrefix(value) {
+      return typeof value === 'string' && value.length > 0 ? value.slice(0, 16) : '\u2014'
+    }
+
+    /** The short summary: the CHECKED description's first clause, never a caller's summary. */
+    function shortSummary(text, limit) {
+      var flat = String(text).replace(/\s+/gu, ' ').trim()
+      var stop = flat.search(/[.\u3002;\uff1b]/u)
+      var clause = stop > 0 ? flat.slice(0, stop + 1) : flat
+      var room = limit === undefined ? 90 : limit
+      return clause.length > room ? clause.slice(0, room - 1) + '\u2026' : clause
+    }
+
+    /**
+     * Render where this question is being answered.
+     *
+     * ROUTED MEANS THE ONE-BIT SHEET IS NOT OFFERED AT ALL: when the owner daemon holds a settle-class approval and
+     * it is answered in the console or on a phone, an approve/refuse pair here would invite a person to answer
+     * something that is already being answered elsewhere, and two answers to one question is the defect this panel
+     * exists to avoid. While it waits, the panel carries the digest prefix and a short summary so the reader can
+     * tell WHICH operation is out there; when the daemon answers, the same panel says which channel answered and
+     * prints the ceilings that qualify it.
+     * @param {object} reply - the shell's question, or an update from the daemon.
+     * @param {{ok: boolean, text?: string}} checked - the digest-checked description.
+     * @returns {boolean} whether the question is routed away from this window.
+     */
+    /**
+     * Render the routed panel FROM A PENDING OBJECT.
+     *
+     * The waiting state is reachable two ways — the question arrives already routed, or the SUBMIT comes back
+     * `aukora:settle-requires-owner-daemon` with a `pending` object — and both must show the same panel from the
+     * same fields. This is the one place that turns a pending object into what a reader sees, so the two paths
+     * cannot drift into two different sentences.
+     * @param {object} pending - `{phase, digest, operation, scope, ledgerId, expiresAt, ceiling, reason}`.
+     * @param {{digest?: string, operation?: string}} [asked] - what the answered question already put on screen.
+     */
+    function renderRouted(pending, asked) {
+      actions.hidden = true
+      hidePair()
+      panel.hidden = false
+      // THE SHELL-ASSERTION LINE GOES WITH THE PAIR. It describes an approval taken IN THIS WINDOW, and there is
+      // no longer one — a daemon holds the question. The question path never shows it in this state, so leaving
+      // it up here would make one state read two ways depending on which route reached it.
+      assertion.hidden = true
+      panel.setAttribute('data-approval-routed', pending.phase === 'awaiting-owner' ? 'pending' : String(pending.phase))
+      // AND THE WINDOW'S OWN LINE STOPS CLAIMING AN ACTION. `send()` writes "Approving…" BEFORE the reply arrives,
+      // and on this path the reply says a daemon holds the question — so leaving it there told a reader something
+      // was being approved here while the panel below said the decision is waiting elsewhere. The stale line was
+      // MEASURED, not guessed: `--route answer-pending` reads it back after the submit. The error styling goes with
+      // it, because waiting for the owner is not this window's failure.
+      state.classList.remove('bad')
+      say(t('routedPending'))
+      panelFacts(pending, asked)
+      panelLine.textContent = t('routedPending')
+      if (Array.isArray(pending.ceiling) && pending.ceiling.length > 0) {
+        panelCeiling.hidden = false
+        panelCeiling.textContent = t('routedCeiling') + pending.ceiling.join(' \u00b7 ')
+      }
+    }
+
+    /**
+     * THE DIGEST PREFIX AND THE OPERATION SUMMARY BESIDE THE LINE.
+     *
+     * THE PENDING OBJECT IS ASKED FIRST AND WHAT THIS WINDOW ALREADY SHOWED IS THE FALLBACK, in that order,
+     * because the shell sends TWO shapes: the SUBMIT ceremony path freezes a proposal and sends `digest` and
+     * `operation`, while the ANSWER handler refuses the one bit without freezing anything and sends neither. On
+     * that second shape the digest a reader can compare against another screen is the one already on this one.
+     *
+     * ONE PLACE, because both routed states carry these two facts: while they were written twice, the resolved
+     * state lost them the moment the waiting state's copy moved into `renderRouted`.
+     * @param {{digest?: string, operation?: string, scope?: string}} source - the reply's own fields.
+     * @param {{digest?: string, operation?: string}} [asked] - what the answered question already put on screen.
+     */
+    function panelFacts(source, asked) {
+      var digest = typeof source.digest === 'string' && source.digest.length > 0 ? source.digest
+        : (asked === undefined ? null : asked.digest)
+      panelDigest.textContent = t('digestPrefix') + digestPrefix(digest)
+      // THE SUMMARY COMES FROM THE SHELL — the operation it submitted, named by it, never a description this
+      // window composed for itself. Failing that, from the description this window CHECKED for the question it
+      // answered: the same rule applied to the same bytes.
+      var operation = typeof source.operation === 'string' && source.operation.length > 0 ? source.operation
+        : (asked === undefined ? null : asked.operation)
+      if (typeof operation !== 'string' || operation.length === 0) operation = null
+      var scope = typeof source.scope === 'string' && source.scope.length > 0 ? source.scope : null
+      panelSummary.textContent = operation === null
+        ? t('routedNoSummary')
+        : t('summaryPrefix') + shortSummary(scope === null ? operation : operation + ' \u2014 ' + scope)
+    }
+
+    function renderRoute(reply, checked) {
+      var route = typeof reply.route === 'string' ? reply.route : ''
+      var routed = route === 'owner-daemon' || route === 'owner'
+      if (routed !== true) {
+        // NO DAEMON: the sheet stays exactly as it was, with one honest line about what it is.
+        assertion.hidden = false
+        assertion.textContent = t('shellAssertion')
+        return false
+      }
+      var resolution = reply.resolution
+      if (resolution === null || typeof resolution !== 'object') {
+        // THE WAITING STATE, THROUGH THE ONE RENDERER. These lines used to be written here a second time, which
+        // is two places that can disagree about one state — and the submit path is the other one.
+        renderRouted({
+          phase: 'awaiting-owner',
+          digest: reply.operationDigest,
+          operation: checked !== null && checked.ok === true ? checked.text : null,
+          ceiling: reply.ceilings,
+        })
+        return true
+      }
+      actions.hidden = true
+      hidePair()
+      panel.hidden = false
+      assertion.hidden = true
+      panel.setAttribute('data-approval-routed', 'resolved')
+      panelFacts({
+        digest: reply.operationDigest,
+        operation: checked !== null && checked.ok === true ? checked.text : null,
+      })
+      var via = resolution.via === 'phone' ? 'Phone' : (resolution.via === 'console' ? 'Console' : null)
+      if (via === null) {
+        panelLine.textContent = t('routedNoChannel')
+      } else if (resolution.decision === 'refused') {
+        panelLine.textContent = t(via === 'Phone' ? 'routedPhoneRefused' : 'routedConsoleRefused')
+      } else {
+        panelLine.textContent = t(via === 'Phone' ? 'routedPhone' : 'routedConsole')
+      }
+      var ceilings = Array.isArray(resolution.ceilings) ? resolution.ceilings
+        : (Array.isArray(reply.ceilings) ? reply.ceilings : [])
+      if (ceilings.length > 0) {
+        panelCeiling.hidden = false
+        panelCeiling.textContent = t('routedCeiling') + ceilings.join(' \u00b7 ')
+      }
+      return true
+    }
+
+    function stop() {
+      settled = true
+      applyEligibility()
+    }
+
+    /** Send ONE BIT, and never claim more than the shell's own reply said. */
+    /**
+     * THE PER-ENTRY LATCH, WHICH IS WHAT MAKES A QUEUE A BINDING RATHER THAN A LIST.
+     *
+     * `send()` holds ONE `settled` flag and ONE module-level `challenge`, because it answers the one question this
+     * window showed. A queue cannot use it: pressing entry 3's button would answer whichever challenge the module
+     * happens to hold, and `stop()` would disable the shared pair rather than that entry — which is exactly the
+     * ambiguity that makes "the person said yes" mean nothing in particular. So each entry keeps its own settled
+     * flag and its own shown-at time, and `sendFor` names the challenge it answers.
+     */
+    var queueSettled = Object.create(null)
+
+    /**
+     * Answer ONE named entry. The challenge comes from the caller, never from module state.
+     * @param {string} entryChallenge - the challenge this click answers, taken from the entry that was pressed.
+     * @param {boolean} decision - true approves; anything else refuses.
+     * @param {{ok: boolean, reason?: string}} check - that entry's own words check, for `wordsOk`.
+     * @param {number|null} shown - when that entry's line first appeared, for `dwellMs`.
+     */
+    function sendFor(entryChallenge, decision, check, shown) {
+      if (typeof entryChallenge !== 'string' || entryChallenge.length === 0) return
+      if (queueSettled[entryChallenge] === true) return
+      // A DESCRIPTION THIS PAGE COULD NOT VERIFY IS NOT ONE IT WILL ASK ANYONE TO APPROVE.
+      if (decision === true && (check === null || check.ok !== true)) return
+      queueSettled[entryChallenge] = true
+      bridge.answer({
+        challenge: entryChallenge,
+        approve: decision,
+        wordsOk: check === null ? null : check.ok === true,
+        dwellMs: shown === null ? null : Math.max(0, Date.now() - shown),
+      }).then(function () {
+        // THE ENTRY IS ANSWERED, SO IT LEAVES THE LIST rather than staying with a button that would do nothing.
+        var row = queueList.querySelector('[data-approval-queue-entry="' + entryChallenge + '"]')
+        if (row !== null && row.parentNode !== null) row.parentNode.removeChild(row)
+        if (queueList.children.length === 0) queueSection.hidden = true
+      })
+    }
+
+    /**
+     * RENDER THE QUEUE, ONE ENTRY AT A TIME, EACH CHECKABLE ON ITS OWN.
+     *
+     * Every line goes through `witnessText` — the same check the single question uses — so a description the page
+     * cannot verify against the bytes is not shown and the entry carries no button. The marker is what a person
+     * recognises and what the court looks for; the reason is kept beside it because the code already states which
+     * of the four refusals this is, and collapsing them would discard the distinction a person acts on.
+     * @param {unknown} entries - the bridge's pending entries, newest first.
+     */
+    /**
+     * THE CARD, DRAWN FROM THE FACTS AND FROM NOTHING ELSE.
+     *
+     * **EVERY VALUE IS ALREADY A STRING BY THE TIME IT ARRIVES** — the bridge kept only non-empty strings and
+     * replaced everything else with the record's own absence sentence — so this function has no judgement to make
+     * and makes none. It refuses a facts object that is not a list rather than inventing a card, because a window
+     * that shows seven blank labels would look like an operation with nothing to declare.
+     */
+    function renderCard(fields) {
+      var card = document.getElementById('f-card')
+      if (card === null) return
+      card.textContent = ''
+      if (!Array.isArray(fields) || fields.length === 0) { card.hidden = true; return }
+      fields.forEach(function (entry) {
+        if (entry === null || typeof entry !== 'object') return
+        var label = typeof entry.label === 'string' ? entry.label : ''
+        var value = typeof entry.value === 'string' ? entry.value : ''
+        if (label === '' || value === '') return
+        var dt = document.createElement('dt')
+        dt.setAttribute('data-approval-card-label', label)
+        dt.textContent = label
+        var dd = document.createElement('dd')
+        dd.setAttribute('data-approval-card-value', label)
+        dd.textContent = value
+        card.appendChild(dt)
+        card.appendChild(dd)
+      })
+      card.hidden = card.childNodes.length === 0
+    }
+
+    function renderQueue(entries) {
+      var list = Array.isArray(entries) ? entries : []
+      queueList.textContent = ''
+      queueSection.hidden = list.length === 0
+      list.forEach(function (entry) {
+        if (entry === null || typeof entry !== 'object') return
+        var entryChallenge = typeof entry.challenge === 'string' ? entry.challenge : ''
+        if (entryChallenge === '') return
+        var row = document.createElement('li')
+        row.setAttribute('data-approval-queue-entry', entryChallenge)
+        var line = document.createElement('p')
+        line.setAttribute('data-approval-queue-line', 'checking')
+        line.textContent = t('reading')
+        // THE PENDING ITEM NAMES ITSELF FROM ITS OWN RECORD: "Move main from a to b: 3 commits", and the gates it
+        // moved. A queue of digests tells a person that something is waiting; this tells them what.
+        if (Array.isArray(entry.fields)) {
+          var what = ''
+          var limit = ''
+          entry.fields.forEach(function (each) {
+            if (each === null || typeof each !== 'object') return
+            if (each.label === 'WHAT' && typeof each.value === 'string') what = each.value
+            if (each.label === 'LIMIT' && typeof each.value === 'string') limit = each.value
+          })
+          if (what !== '') {
+            var headline = document.createElement('p')
+            headline.setAttribute('data-approval-queue-what', '')
+            headline.textContent = limit === '' ? what : what + '; ' + limit
+            row.appendChild(headline)
+          }
+        }
+        var facts = document.createElement('p')
+        facts.className = 'queue-facts'
+        facts.textContent = t('digestPrefix') + digestPrefix(entry.wordsDigest)
+        var when = document.createElement('p')
+        when.className = 'queue-facts'
+        when.textContent = String(entry.expiresAt === undefined || entry.expiresAt === null
+          ? '—' : entry.expiresAt)
+        row.appendChild(line); row.appendChild(facts); row.appendChild(when)
+        queueList.appendChild(row)
+        var shown = Date.now()
+        witnessText(entry.words, entry.wordsDigest).then(function (check) {
+          if (check.ok !== true) {
+            line.setAttribute('data-approval-queue-line', 'cannot-display')
+            line.textContent = t('cannotDisplay') + ' — ' + check.reason
+            return
+          }
+          line.setAttribute('data-approval-queue-line', 'shown')
+          line.textContent = check.text
+          var press = document.createElement('button')
+          press.setAttribute('data-approval-queue-approve', entryChallenge)
+          press.textContent = t('approve')
+          press.addEventListener('click', function () { sendFor(entryChallenge, true, check, shown) })
+          row.appendChild(press)
+          // **REFUSING SIGNS NOTHING, AND A QUEUE THAT CAN ONLY SAY YES IS NOT A CHOICE.** The pair belongs on every
+          // row that can be read, for the same reason it belongs on the routed question: the person decides, and
+          // the challenge this click answers is the row's own.
+          var decline = document.createElement('button')
+          decline.setAttribute('data-approval-queue-decline', entryChallenge)
+          decline.textContent = t('decline')
+          decline.addEventListener('click', function () { sendFor(entryChallenge, false, check, shown) })
+          row.appendChild(decline)
+        })
+      })
+    }
+
+    function send(decision) {
+      if (settled || challenge === null) return
+      // **AND IT ASKS THE ELIGIBILITY QUESTION, NOT JUST WHETHER THE WINDOW IS STILL OPEN.** MEASURED: this
+      // checked only `settled` and `challenge`, so a retry that had re-enabled the pair by hand could submit an
+      // APPROVE the page would never have offered. A gate on the button is not a gate on the answer.
+      if (decision === true && approveEligible() !== true) {
+        say(t('ownerUnreachable') === undefined ? 'This window cannot approve: the description was not verified '
+          + 'in full.' : 'This window cannot approve: the description was not verified in full.', true)
+        applyEligibility()
+        return
+      }
+      stop()
+      say(decision ? 'Approving…' : 'Refusing…')
+      // **THE WINDOW'S OWN FACTS TRAVEL WITH ITS ANSWER.** The signer writes the event, but only this page
+      // knows how long the question was on screen and whether the description passed the words check.
+      bridge.answer({
+        challenge: challenge,
+        approve: decision,
+        wordsOk: witness === null ? null : witness.ok === true,
+        dwellMs: shownAt === null ? null : Math.max(0, Date.now() - shownAt),
+      }).then(function (reply) {
+        if (reply && reply.ok === true) {
+          say(decision ? 'Approved. The signature is being produced.' : 'Refused. Nothing was signed.')
+          return
+        }
+        // ── THE OWNER CUT: A ROUTED SUBMIT IS NOT A FAILURE ────────────────────────────────────────────────
+        //
+        // `aukora:settle-requires-owner-daemon` is a refusal in the shell's vocabulary and the RIGHT outcome
+        // when an owner daemon is installed: the decision was not this window's to make after all. Treating it
+        // as an error would tell a person their approval failed at the exact moment it was handed to the
+        // authority they installed. The `pending` object carries the digest, the operation and the ceilings, so
+        // the same panel the waiting state uses is rendered from THOSE fields rather than from the question.
+        if (reply && reply.reason === 'aukora:settle-requires-owner-daemon'
+          && reply.pending !== null && typeof reply.pending === 'object') {
+          stop()
+          renderRouted(reply.pending, { digest: askedDigest, operation: askedWords })
+          return
+        }
+        // AND IF THE DAEMON CANNOT BE REACHED, THE NAMED REFUSAL IS SHOWN PLAINLY rather than paraphrased.
+        if (reply && reply.reason === 'aukora-owner:submit-unreachable') {
+          // NOTHING WAS SUBMITTED, SO THE DECISION IS STILL THIS WINDOW'S — and that means the latch is released
+          // with the buttons. Leaving `settled` set while re-enabling the pair gave a person a live-looking
+          // Approve that did nothing at all, silently: MEASURED by `--route answer-unreachable`, where the retry
+          // press never reached the shell.
+          settled = false
+          say('aukora-owner:submit-unreachable \u2014 ' + t('ownerUnreachable'), true)
+          // **THE LATCH IS RELEASED AND THE ELIGIBILITY IS RE-ASKED, NOT ASSUMED.** MEASURED: this was
+          // `approve.disabled = false` unconditionally, which handed back a live Approve on a description the
+          // window had already reported it could not derive. `witness` still holds that verdict, so the pair
+          // comes back in exactly the state the question left it in — which for an undisplayable or truncated
+          // description means Refuse alone.
+          applyEligibility()
+          return
+        }
+        say(shellReason(reply), true)
+      }, function (cause) {
+        say('the shell did not answer: ' + String(cause && cause.message ? cause.message : cause), true)
+      })
+    }
+
+    /** The shell's own refusal name, quoted rather than described. */
+    function shellReason(reply) {
+      return reply && typeof reply.reason === 'string' && reply.reason.length > 0
+        ? reply.reason
+        : 'the shell refused without naming a reason'
+    }
+
+    if (bridge === undefined || bridge === null || bridge.available !== true
+      || typeof bridge.question !== 'function' || typeof bridge.answer !== 'function') {
+      say('this window has no approval bridge, so it cannot ask or answer anything', true)
+      return
+    }
+
+    bridge.question().then(function (reply) {
+      // THE QUEUE, RENDERED BEFORE ANYTHING ELSE IS DECIDED ABOUT THE SINGLE QUESTION. A reply that carries no
+      // queue renders nothing and leaves the section hidden, so a bridge that predates the queue still works.
+      if (reply !== null && typeof reply === 'object') renderQueue(reply.queue)
+      if (reply === null || typeof reply !== 'object' || reply.ok !== true) {
+        say(shellReason(reply), true)
+        return
+      }
+      // NO CHALLENGE, NO ANSWER. An answer that could not name its question could not be told apart
+      // from an answer to any other, so this window refuses to offer one.
+      if (typeof reply.challenge !== 'string' || reply.challenge.length === 0) {
+        say('the shell sent a question with no challenge, so no answer can be bound to it', true)
+        return
+      }
+      // NO EXPIRY, NO QUESTION. The shell refuses these before the window opens — this is the second
+      // half of the same rule, in the place that draws it: a window that opened with nothing to show
+      // would already be too late.
+      if (typeof reply.expiresAt !== 'number' || !Number.isSafeInteger(reply.expiresAt) || reply.expiresAt <= 0) {
+        say('this question carries no expiry, so there is no window to show and nothing to answer', true)
+        return
+      }
+      challenge = reply.challenge
+      askedDigest = reply.operationDigest
+      show('f-subject', reply.subject)
+      show('f-digest', reply.operationDigest)
+      show('f-challenge', reply.challenge)
+      show('f-expires', expiryText(reply.expiresAt))
+      // THE CARD GOES UP WITH THE FACTS, BEFORE THE WORDS ARE VERIFIED, for the same reason the identity and the
+      // window do: a person should see WHAT this is, WHERE it lands and WHO it is bound to even if the long
+      // description fails its digest check. What must never appear unverified is the description itself.
+      renderCard(reply.fields)
+      facts.hidden = false
+      // THE FACTS ARE ON SCREEN BEFORE THE WORDS ARE CHECKED, so a reader sees the identity, the digest
+      // and the window even if the description cannot be verified. What must NOT appear is a
+      // description nobody checked.
+      witnessText(reply.words, reply.wordsDigest).then(function (checked) {
+        if (checked.ok === true) {
+          show('f-words', checked.text)
+          if (reply.wordsTruncated === true) {
+            var note = document.getElementById('f-words-note')
+            note.textContent = 'The description above is SHORTENED for this screen: '
+              + String(reply.wordsOmittedChars || 0) + ' character(s) of the staged text are not shown. '
+              + 'The digest above covers every one of them, and it is the digest that is signed.'
+            note.hidden = false
+          }
+          say('Approve signs exactly the digest above. Refuse signs nothing.')
+        } else {
+          // NO DESCRIPTION IS SHOWN, AND THE QUESTION IS STILL THE PERSON'S TO ANSWER.
+          //
+          // The failure this screen must not commit is DISPLAYING something unchecked; it is not
+          // withholding the decision. The identity, the digest and the window are the request's own
+          // fields and they are on screen above, so a person can still refuse — which is what someone
+          // shown an operation nobody can describe should do. Disabling both buttons here would turn
+          // "this description could not be verified" into a window that hangs until the request expires
+          // and reports the OWNER as having declined, which is a different and untrue sentence.
+          say(checked.reason, true)
+        }
+        // WHAT THE QUESTION PUT ON SCREEN, KEPT FOR THE SUBMIT PATH: a routed refusal may carry no digest and no
+        // operation of its own, and these are the two facts this window checked and showed for the same bytes.
+        askedWords = checked.ok === true ? checked.text : null
+        // WHERE THIS QUESTION IS ANSWERED COMES BEFORE THE BUTTONS ARE ARMED: a routed question must not offer the
+        // in-app pair, and it must not be armed by the code below either.
+        var routed = renderRoute(reply, checked)
+        if (routed === true) {
+          // AND IT RESOLVES WHEN THE DAEMON ANSWERS. The shell re-asks, or pushes through `watch` when it has one;
+          // this window renders whichever arrives and never invents a resolution of its own.
+          if (typeof bridge.watch === 'function') {
+            bridge.watch(function (update) {
+              if (update !== null && typeof update === 'object') renderRoute(update, checked)
+            })
+          }
+          return
+        }
+        // ── **APPROVE IS ARMED BY A VERIFIED, COMPLETE DESCRIPTION AND BY NOTHING ELSE (AUMLOK-113)** ─────
+        //
+        // MEASURED: this was `approve.disabled = false; refuse.disabled = false` — UNCONDITIONAL. So a person
+        // shown *"this description could not be derived"* was then offered an Approve button on it: **the
+        // window said it did not know what was being signed and invited the person to sign it.** The line
+        // above the buttons says *"Approve signs exactly the digest above"*, and on that path the digest
+        // covers text the window could not describe.
+        //
+        // **AND A TRUNCATED DESCRIPTION IS NOT A VERIFIED ONE.** Past `WITNESS_DISPLAY_LIMIT` the words line
+        // is shortened — it says so, and the digest still covers every omitted character — **but the person
+        // is approving a text they have not been shown.** The mark is honest and the button is not: what a
+        // reader compares against is the visible prefix, and the signature covers the whole. **So Approve
+        // waits for a description that is BOTH verified AND whole**, which is the only state in which the
+        // sentence above it is true.
+        //
+        // **REFUSE IS ALWAYS ENABLED, AND IT IS NOT A WEAKER BUTTON.** A window that refuses to display a
+        // line and then offers no way to answer hangs until the request expires — which the signer reports as
+        // the OWNER DECLINING, a different and untrue sentence. **The question stays the person's to answer;
+        // it is only the answer that signs something unknown that is withheld.** Both buttons carry the same
+        // weight in the markup — neither is styled as the safe default — because saying "no" to an operation
+        // nobody could describe must not look like the lesser choice.
+        // **THE VERDICT IS RECORDED, NOT JUST APPLIED.** `truncated === false` STRICTLY: the old `!== true`
+        // let a missing or malformed flag read as "not truncated".
+        // **THE FLAG IS THE FLAG, NOT A PREDICATE ABOUT IT — AND MY OWN CONTROL ARM IS WHAT CAUGHT THIS.**
+        //
+        // MEASURED: the first version read `truncated: reply.wordsTruncated === false` — **INVERTED**. A
+        // description that was whole was recorded as TRUNCATED, and one that had been shortened was recorded as
+        // whole, so the gate refused the good case and admitted the bad one. *It failed closed and open at the
+        // same time, which is why it looked like it worked:* the arm below — "an underivable description does not
+        // get Approve" — passed for a reason that had nothing to do with the description.
+        //
+        // **THE STRICTNESS BELONGS IN `approveEligible()`**, which requires `truncated === false` so that a
+        // MISSING or malformed flag withholds the signing answer — the old inline `!== true` let an absent field
+        // read as "not truncated".
+        witness = { ok: checked.ok === true, truncated: reply.wordsTruncated === true }
+        shownAt = Date.now()
+        applyEligibility()
+      })
+    }, function (cause) {
+      say('the shell did not answer: ' + String(cause && cause.message ? cause.message : cause), true)
+    })
+
+    // **A READ-ONLY PROBE FOR THE COURT.** The latches decide whether a click does anything, and a shim that
+    // can only see the DOM reports one sentence for every cause.
+    window.__probe = { get settled() { return settled }, get challenge() { return challenge },
+      get approveEligible() { return approveEligible() }, get witness() { return witness } }
+    approve.addEventListener('click', function () { send(true) })
+    refuse.addEventListener('click', function () { send(false) })
+  })()
+</script>
+</body>
+</html>

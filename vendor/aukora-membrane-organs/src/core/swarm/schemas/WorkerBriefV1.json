@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.aukora.xyz/swarm/WorkerBriefV1.json",
+  "title": "WorkerBriefV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "briefId", "campaignId", "issueNumber", "role", "baseCommit", "baseTreeDigest", "briefDigest", "allowPaths", "denyPaths", "budget", "doneWhen", "claimKind", "state", "createdAt"],
+  "properties": {
+    "schema": { "const": "aukora-swarm-worker-brief-v1" },
+    "briefId": { "type": "string", "minLength": 1 },
+    "campaignId": { "type": "string", "minLength": 1 },
+    "issueNumber": { "type": "integer" },
+    "role": { "enum": ["conductor", "scout", "speccer", "implementer", "adversary", "auditor", "zipper"] },
+    "baseCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "baseTreeDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "briefDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "allowPaths": { "type": "array", "items": { "type": "string" } },
+    "denyPaths": { "type": "array", "items": { "type": "string" } },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxTokens", "maxWallClockMin"],
+      "properties": {
+        "maxTokens": { "type": "integer" },
+        "maxWallClockMin": { "type": "integer" }
+      }
+    },
+    "doneWhen": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "claimKind": { "enum": ["built", "spec", "research", "blocked", "docs"] },
+    "state": { "enum": ["open", "leased", "proposed", "refused", "merged", "abandoned"] },
+    "createdAt": { "type": "string", "minLength": 1 }
+  }
+}

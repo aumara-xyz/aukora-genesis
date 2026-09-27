@@ -1,0 +1,35 @@
+{
+  "schema": "aukora-kernel-compatibility-v1",
+  "package": {
+    "name": "@aukora/kernel",
+    "version": "0.1.0"
+  },
+  "sourceBase": "2dd96f26d34c9e07649c2210ba1cbf64f6c026af",
+  "releaseCommit": null,
+  "tarballIntegrity": null,
+  "requirements": {
+    "ecmaTarget": "ES2022",
+    "node": ">=20.19.0",
+    "adapterAtomicity": "persist-next-state-and-final-receipt-or-neither",
+    "effectOrder": "execute-only-after-durable-allowed-consumption"
+  },
+  "digests": {
+    "schemas": "e8d6a0c6fa19aebff6e02ec8b9c0fb91009ac4e7362beff4463f6b520244dd4f",
+    "policyContract": "f5e23542eb36cebbdfaed8363bfd7ee7e8e2f549ce7a2aa23df0faba4ca07392",
+    "domainRegistry": "52f70e73baa9189169bf163e4a8b92b25756f839557a1be6ef3e980a1d0ef4ba",
+    "authorityProfiles": "f260ffebeb274c64ee65aeb7c0cd6b2aa0765554c1d9329b5f514999cbfc2d43",
+    "registries": "574b3a68f382d0025c873ff5418edeec66c02e5530937e5736fcb9267b892da3",
+    "exports": "b5f72c48f9bbd3037e4ad60336f85f50a078be48f144b4779e19bf6b3ea004f4",
+    "vectorSet": "69d05e7b8badbed29733a73524ac5c6b2a7909699376a5e9293355e82d34b026"
+  },
+  "vectors": [
+    {
+      "path": "conformance/hybrid-v1.json",
+      "sha256": "273c26d82f946a111a9fd15c99b5f8256edfdbbe5b15439abf3a40282f3e2f55"
+    },
+    {
+      "path": "conformance/v1.json",
+      "sha256": "9dbfe4ef6ddf8fff957d48692f2827c63e59e074af251b0ee3bfed91141720fa"
+    }
+  ]
+}

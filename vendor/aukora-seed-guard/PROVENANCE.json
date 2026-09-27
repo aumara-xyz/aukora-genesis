@@ -1,0 +1,222 @@
+{
+  "domain": "aukora:vendor-provenance:v1",
+  "repository": "github.com/aumara-xyz/aukora-seed",
+  "commit": "9fca7a039d0f8218e6735949e00dad940bc44f9f",
+  "license": "MIT",
+  "licenseFile": "LICENSE",
+  "vendoredAt": "2026-09-27",
+  "rule": "BYTE FOR BYTE: every file below is the upstream file at this commit, unchanged. The old repository may be deleted; these bytes and this record are what remain. Do not edit a vendored file: re-vendor from upstream and regenerate this record.",
+  "selection": "src/guard.mjs, src/law.mjs and src/paths.mjs, plus their whole import closure (src/chain.mjs, src/authority.mjs, src/aumlok.mjs, src/phrase.mjs); the upstream tests whose imports that closure satisfies (test/paths.test.mjs, test/scope.test.mjs, test/helpers/fixture.mjs); the shared conformance suite and its twelve vectors (conformance/); and LICENSE. Not vendored: test/self-protection.test.mjs (copies upstream bin/, which pulls engine/serve/view), and the tests of modules outside this closure (verify, log, engine, memory).",
+  "verification": "Each sha256 and git blob id was computed from the vendored file; each file was compared byte for byte with the clone at ~/aukora-great-merge/clones/aukora-seed (HEAD refs/heads/main = the commit above), and each git blob id was matched against the blob id that clone's own .git/index records for the same path.",
+  "consumer": "plugins/aukora-action-gate/lib/policy.mjs calls analyse (src/paths.mjs), compileAll and judge (src/law.mjs), and decide (src/guard.mjs).",
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "bytes": 1063,
+      "sha256": "60a9f7f41b9d85a3b0e110ada597c82292f0950d350d76b751c9a7a089766d24",
+      "gitBlob": "28505ed8b2d27251f054abc4e044fbadd0c53d88",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/README.md",
+      "upstreamPath": "conformance/README.md",
+      "bytes": 4033,
+      "sha256": "85a2c28f322edba372de6c760c2c09df6d1979507545800492a90e85ebf521d4",
+      "gitBlob": "362bbf38fef5d5caf484feb025a35798aa7c5490",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/adapter.aukora-seed.mjs",
+      "upstreamPath": "conformance/adapter.aukora-seed.mjs",
+      "bytes": 4473,
+      "sha256": "a6f99ea98e6b7cb51c1f0c62c61fd7cadcd4418bd67d4b1cd07bda2f5ec00406",
+      "gitBlob": "e0f34f8392b2fe995802c1c37d0854b0644d57d9",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/00-lawful-write.json",
+      "upstreamPath": "conformance/cases/00-lawful-write.json",
+      "bytes": 448,
+      "sha256": "6dffca42424be97b0bfccedaf38ba81fd77e538055a0a1c638f6a193869f314f",
+      "gitBlob": "74d0d486d99a8b9c207076f56be7dc5b3a9491a5",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/01-dotdot-traversal.json",
+      "upstreamPath": "conformance/cases/01-dotdot-traversal.json",
+      "bytes": 414,
+      "sha256": "0e6c93385d5acdab84372606805e8cb404b06b3837d5425b66c54c7398d4a967",
+      "gitBlob": "defc23f02b241d91909e47f5943769a2c173dc66",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/02-undeclared-path.json",
+      "upstreamPath": "conformance/cases/02-undeclared-path.json",
+      "bytes": 378,
+      "sha256": "6bc64a891c20da156ab64bce267d345447551911af60af91746707fc1d3a186b",
+      "gitBlob": "dc83e8b9b60044bc51b4eb9d3f4b11fd84754624",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/03-dangling-symlink.json",
+      "upstreamPath": "conformance/cases/03-dangling-symlink.json",
+      "bytes": 610,
+      "sha256": "1541f5677b8fba080394c44f9a67265314d4474e1fda47629a37d977dbd9701e",
+      "gitBlob": "38af87c2ffcc8fee7117e976db3ee54e127ec1d9",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/04-symlink-to-protected.json",
+      "upstreamPath": "conformance/cases/04-symlink-to-protected.json",
+      "bytes": 549,
+      "sha256": "24aea68f4bd85ec338d8b80effebafd61601ff9aa60d6f22189b93e61066bb6f",
+      "gitBlob": "c995a0a81054c951d959ab2ab52cf6694108940d",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/05-hardlink-nlink.json",
+      "upstreamPath": "conformance/cases/05-hardlink-nlink.json",
+      "bytes": 718,
+      "sha256": "d288a5cefae6567d68b6c57e0cb655109678256551a624d7fd5896a9a449cdd1",
+      "gitBlob": "794e6bfe2a3bce468b142db69e7b4410630f28cb",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/06-symlinked-parent.json",
+      "upstreamPath": "conformance/cases/06-symlinked-parent.json",
+      "bytes": 517,
+      "sha256": "8330c8ceb4c7495ff7212b0dde8996ba2444966d3e26c2985b0d55c61fa962d3",
+      "gitBlob": "a15357f660322b22451add59ec810327b311de3b",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/07-case-fold.json",
+      "upstreamPath": "conformance/cases/07-case-fold.json",
+      "bytes": 524,
+      "sha256": "65d11554cb0f0abb7eeb32f2b7e921176e66b68afaf5b86e235a173a9dacc10c",
+      "gitBlob": "87866bfdfc3e37b090893eae00274907fea09eb5",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/08-nfd-decompose.json",
+      "upstreamPath": "conformance/cases/08-nfd-decompose.json",
+      "bytes": 508,
+      "sha256": "08da945924e4f4de88c0bc2a7e8502c89424dded66d7245fa3ff87529ce17601",
+      "gitBlob": "9ddd975432c594f420bc05cf2d4359b544bc0991",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/09-trailing-dot.json",
+      "upstreamPath": "conformance/cases/09-trailing-dot.json",
+      "bytes": 482,
+      "sha256": "e7e8e7956c1c28430c8667fcb1c73c48c7ef4c10c4277666cd7df2990624cf2e",
+      "gitBlob": "35b0b05393a3b4cc3940435980eba11fd9c31dca",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/10-repo-root.json",
+      "upstreamPath": "conformance/cases/10-repo-root.json",
+      "bytes": 384,
+      "sha256": "deba1a180d3282b7a7f3419bba28598949b9cf2ff509f7c3ada79c4c4f329629",
+      "gitBlob": "dd4e18f1bb077a151c2cbf3bc0c5e48e9bbf652b",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/cases/11-empty-segment-glob.json",
+      "upstreamPath": "conformance/cases/11-empty-segment-glob.json",
+      "bytes": 583,
+      "sha256": "8cfb750574e6dff49e94ad1fc663f985375305440cd9010b34a7e27e7b6da5a9",
+      "gitBlob": "321e34c7271a2bae121e02fa5a62d8e71636f8a5",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "conformance/run.mjs",
+      "upstreamPath": "conformance/run.mjs",
+      "bytes": 7690,
+      "sha256": "de0ebb9424709feca0b2b1dde2a8ec88f8bcf533d20cebc1cd3e068a49ad7555",
+      "gitBlob": "eae62b21819291c1731238b25ecf7baaeaf6bda2",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/aumlok.mjs",
+      "upstreamPath": "src/aumlok.mjs",
+      "bytes": 12536,
+      "sha256": "5cc0276f01034af8f7456cf93c788236e4b1bd13dfe53c4293a465a9ffcb0883",
+      "gitBlob": "fd0e2c56ee18a1cf2f8d0f0b5087284ddcacbb5e",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/authority.mjs",
+      "upstreamPath": "src/authority.mjs",
+      "bytes": 28629,
+      "sha256": "a12e9709b4e5615cf0c4d7e0a14f495ea01e123ba6f8610a549dd24340e2cbc6",
+      "gitBlob": "5b80063131c0d76521f8a14f9e19e25a9c68581c",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/chain.mjs",
+      "upstreamPath": "src/chain.mjs",
+      "bytes": 8700,
+      "sha256": "b8491eb5a44a80b8e81cbca366aac1b097b7ffb74e8f79a1eee9aad11e4ea3e4",
+      "gitBlob": "7ba99d1bdc66e10c239d925c6a189c292ce8fca8",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/guard.mjs",
+      "upstreamPath": "src/guard.mjs",
+      "bytes": 30489,
+      "sha256": "118bcd3b01787b541a49e792f3b1e809b1dfb5502dd2d5f2c75e49dd9633ae01",
+      "gitBlob": "62b4f1be4be36e035548bda51b9e1cb30a542959",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/law.mjs",
+      "upstreamPath": "src/law.mjs",
+      "bytes": 7650,
+      "sha256": "12c94106b7659fbc3019b371cff6ae74217af6fd4716886471d495ab134f5439",
+      "gitBlob": "0a4916a4b847952c831e0f654bd633cce17c8117",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/paths.mjs",
+      "upstreamPath": "src/paths.mjs",
+      "bytes": 16029,
+      "sha256": "382ed48f7310048aeae2d640f8959ff65043e4490b5e45984dbfe9d29f430a5e",
+      "gitBlob": "01c26a67196f01e709ae20721ab54a2936b4a534",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "src/phrase.mjs",
+      "upstreamPath": "src/phrase.mjs",
+      "bytes": 7003,
+      "sha256": "2bfe98862825e74f3eba448337f7b2156d353e6877ae4ffe22a400748537c035",
+      "gitBlob": "ac95ad113a6e33803709f0d069f0adb0a7c050c1",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "test/helpers/fixture.mjs",
+      "upstreamPath": "test/helpers/fixture.mjs",
+      "bytes": 2807,
+      "sha256": "a40baee83334b8bbbc7368c6d8e9955f3633f57739f5e88434c5136ca0ec66a2",
+      "gitBlob": "9beed002cc6b9bfde38077ea10241a1d227868d9",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "test/paths.test.mjs",
+      "upstreamPath": "test/paths.test.mjs",
+      "bytes": 18628,
+      "sha256": "f13d7d9f5193326bec210fa7db582baeaa2a1273e1eac07cbdb99c5391e22d48",
+      "gitBlob": "bfb0ad6de6c3f5bc14d8fe4cf2c4bc99f84386e3",
+      "matchesUpstreamIndex": true
+    },
+    {
+      "path": "test/scope.test.mjs",
+      "upstreamPath": "test/scope.test.mjs",
+      "bytes": 12544,
+      "sha256": "6322591ccda60172d1e35b9f041607f30e12b30614153652799101d5f580a655",
+      "gitBlob": "e06b521cca80bb8b28ffcafc360130b57653c8c2",
+      "matchesUpstreamIndex": true
+    }
+  ]
+}

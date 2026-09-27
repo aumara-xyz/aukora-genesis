@@ -1,0 +1,330 @@
+{
+  "schemaVersion": 3,
+  "title": "Known-breach enrollment for the Court Gate",
+  "ownership": {
+    "owner": "oracle",
+    "theRule": "BUILDER/ORACLE SEPARATION IS ABSOLUTE. The builder may edit implementations, implementation tests, and docs describing implementations. The builder may NOT edit the independent courts, their expected rows, this enrollment, the frozen baseline evidence, scripts/run-gate.mjs, or any transitive module the runner imports to interpret or tally court evidence. If a court or runner looks wrong, the build stops and the oracle owner investigates — nobody 'fixes the test' inside the implementation swarm.",
+    "theAmendmentRule": "The agent may propose a new composition, but nothing inside its current authority closure may activate, widen, or reinterpret the one governing this run.",
+    "movingACourtOut": "Only the oracle owner removes a court from knownBreaches, and only after re-running that court from a CLEAN CHECKOUT at the guest's own euid. The implementation author never edits this file. When an enrolled court exits 0 the gate prints RESOLVED — PENDING INDEPENDENT ORACLE REVIEW and stays green so the repair can merge; it does NOT count as a pass and it does NOT deregister itself.",
+    "whyThisFileIsData": "The composition courts in this tree grade whether governed configuration is data rather than code. An enrollment manifest that were itself executable would carry the defect it exists to police, so this file is JSON with no evaluation site. Prose lives in string fields."
+  },
+  "whyThisLaneExists": "Five courts are enrolled with measured breach rows. Leaving them unregistered would let the gate advertise a green headline while a five-minute escalation exists. Registering them as ordinary failures would paint the required Court Gate permanently red, so THE REPAIR COULD NOT MERGE. This lane is the third state: the breach is executed and classified against its enrolled row declaration, counted in its own bucket, and never counted as a pass.",
+  "runPrecondition": "THE COURT GATE REQUIRES A SINGLE WRITER ON THE CHECKOUT. Around every enrolled court, the runner's scoped active-tree witness records each listed entry's path, file type and POSIX mode, uid/gid, and either symlink target or regular-file bytes. Its list is every tracked and nonignored untracked entry plus selected ignored entries under .aukora/, profiles/, apps/**/lib/**, vendor/**/lib/**, and packages/**/lib/**. It does not observe other ignored paths, including node_modules outside profiles and .env; ACLs, xattrs, BSD flags, directory metadata and empty directories; .git metadata; hard-link identity; or bytes reached only through a symlink or outside the repository. The witness detects change only within that declared scope and cannot attribute a write: if another process edits the checkout during a court, the lane turns red. Re-run from a quiescent tree.",
+  "enrollmentHistory": "Six oracle courts were enrolled. launch-ceremony was enrolled 2026-08-25 by the oracle owner after an independent measured run (exit 1, 0 bytes stderr, sentinel as terminal stdout line, 8 breach / 5 held over 13 rows). launch-ceremony-topology was enrolled the same day from a 7 breach / 2 held run whose four-counterfeit mutation arm passed and whose runner challenge was answered. It was remeasured 2026-08-26 after receipt-key binding: 6 breach / 3 held, five of five counterfeits detected. Under the owner's explicit #77 migration authorization, amendment-channel targets both current parent-controlled guest entrypoints instead of the retired public --governed flag. Its ten rows and all four positive/sabotage pairs remain mandatory ordinary Court Gate runs; deregistration does not remove either scheduled run. Historical enrollment remains in Git. Enrollment changes require the oracle owner's authorization.",
+  "theAllowedProgression": [
+    "BREACH REPRODUCED",
+    "LIVE AMENDMENT CLOSED",
+    "CLOSURE CUSTODY ESTABLISHED",
+    "REAL GUEST DENIED",
+    "HELD"
+  ],
+  "theDoneCondition": "The whole thing is ONE done-condition and it is called the BOOTSTRAP BOUNDARY: governed loader behaviour, literal configuration, composition custody, and second-uid launch. It is finished when composition-closure row D1 holds in a run whose euid is the GUEST'S — not when a file mode changes. A mode change performed by the same uid is not custody. A temporary copied profile is not the active profile. A mocked guest uid is not peer separation. A function returning writableByGuest:false is not kernel evidence.",
+  "restorationFailureMarkers": [
+    "*** RESTORE FAILED ***",
+    "REPOSITORY MODIFIED BY THIS COURT",
+    "RESTORE FAILURES"
+  ],
+  "crashMarkers": [
+    "the court itself failed"
+  ],
+  "keptBreachRows": [
+    {
+      "court": "aura-record",
+      "row": "R8"
+    }
+  ],
+  "knownBreaches": [
+    {
+      "court": "escalation",
+      "path": "courts/harness/escalation/run.mjs",
+      "enrolledOn": "2026-08-25",
+      "measuredAt": "0d4fd2e, darwin 25.1.0, Node v22.23.0, euid 501",
+      "expectedExit": 1,
+      "expectedSentinel": "observationClass: SELF-REPORTED",
+      "expectedBreachRows": [
+        "B1",
+        "B2",
+        "B3",
+        "D1",
+        "E1"
+      ],
+      "expectedHeldRows": [
+        "A1",
+        "A2",
+        "C1",
+        "D2",
+        "E2",
+        "F1",
+        "L1"
+      ],
+      "restorationRow": "F1",
+      "timeoutMs": 600000,
+      "expectedStderrBytes": 0,
+      "mutation": {
+        "args": ["--mutate"],
+        "expectedExit": 0,
+        "expectedSentinel": "MUTATION ordinary-row oracle",
+        "expectedVerdicts": [
+          { "marker": "manifest closed, patch open", "verdict": "DETECTED" },
+          { "marker": "guest chmods the lock away", "verdict": "DETECTED" },
+          { "marker": "profile closed, home open", "verdict": "DETECTED" }
+        ]
+      },
+      "breach": "The guest widens the composition governing its own run through three separate files at euid 501 — the profile package.json (4 -> 82 plugin rows), cordis.patch.yml (+1 row), and the home patch layer (+1 row). Closing one closes one third of the hole.",
+      "heldRowsThatMustKeepHolding": {
+        "C1": "denial MECHANISM only — a POSIX mode lock at the same uid, which mutation M2 lifts. It grades that the kernel denied an open(2); it does NOT grade that a boundary existed.",
+        "D2": "same mechanism-only reading as C1.",
+        "E2": "same mechanism-only reading as C1.",
+        "F1": "the real profile is byte-identical after the run; every mutation lived in the temp copy."
+      },
+      "noChallengeBecause": "UNCHALLENGED, THEREFORE STILL FORGEABLE BY ITS OWN AUTHOR. This court's subject is three named files it mutates inside a temp copy of the profile; it enumerates no directory whose contents the gate could plant into, and its printed output names only paths the enrollment already knows. There is no location where a random name planted by the runner would have to surface. Closing this needs a change to the court — an oracle act, not a gate act."
+    },
+    {
+      "court": "executable-configuration",
+      "path": "courts/harness/executable-configuration/run.mjs",
+      "enrolledOn": "2026-08-25",
+      "measuredAt": "0d4fd2e, darwin 25.1.0, Node v22.23.0, euid 501",
+      "expectedExit": 1,
+      "expectedSentinel": "observationClass: SELF-REPORTED",
+      "expectedBreachRows": [
+        "X1",
+        "X5",
+        "X6",
+        "X7"
+      ],
+      "expectedHeldRows": [
+        "X2",
+        "X3",
+        "X4",
+        "X8",
+        "X9",
+        "X10"
+      ],
+      "restorationRow": "X9",
+      "timeoutMs": 900000,
+      "expectedStderrBytes": 0,
+      "mutation": {
+        "args": ["--mutate"],
+        "expectedExit": 0,
+        "expectedSentinel": "MUTATION ordinary-row oracle",
+        "expectedVerdicts": [
+          { "marker": "second governed config field", "verdict": "DETECTED" },
+          { "marker": "home layer, profile verbatim", "verdict": "DETECTED" },
+          { "marker": "the disabled: slot", "verdict": "DETECTED" }
+        ]
+      },
+      "breach": "Governed configuration is code. X3: profiles/8088-inside-out/cordis.patch.yml carries executable fields brokerSocket and issuerSocket. X5: a !!js scalar in a governed config field executes during boot. X6 makes the ordering falsifiable by throwing after the side effect — the row never mounts, the tree never settles, and the marker is still on disk, so the code ran before there was a composition for it to belong to, which is before every confinement, broker, grant and receipt in this system. X7: the launch is not refused and nothing is named.",
+      "heldRowsThatMustKeepHolding": {
+        "X4": "the literal control boots and writes nothing, so X7's verdict reads as a refusal rather than as a staging accident. Without X4 held, X5/X6/X7 measure nothing.",
+        "X8": "a NON-governed profile still evaluates !!js and is not refused. cordis.yml documents !!js as a supported loader feature. The property is not 'expressions are forbidden'; it is 'a GOVERNED composition carries no execution site'.",
+        "X9": "the repository is byte-identical to how this court found it."
+      },
+      "enrollmentNote": "X3 is enrolled as a breach on measured evidence. The handoff prose named only X5/X6/X7; the court reports X3 BREACH as well at the measured baseline, and this manifest records what the court actually emits, not what the prose recalled.",
+      "note": "X3 removed 2026-08-25: !!js expressions replaced with literals in cordis.patch.yml. X1 added: new Function + eval remain in loader/utils.ts by design for non-governed compositions.",
+      "noChallengeBecause": "UNCHALLENGED, THEREFORE STILL FORGEABLE BY ITS OWN AUTHOR. It grades whether specific governed config fields carry execution sites, reading named files rather than enumerating a directory. No planted name would have to appear in its output."
+    },
+    {
+      "court": "composition-closure",
+      "path": "courts/harness/composition-closure/run.mjs",
+      "enrolledOn": "2026-08-25",
+      "measuredAt": "0d4fd2e, darwin 25.1.0, Node v22.23.0, euid 501",
+      "expectedExit": 1,
+      "expectedSentinel": "observationClass: SELF-REPORTED",
+      "expectedBreachRows": [
+        "W1",
+        "W2",
+        "W3",
+        "W4",
+        "W5",
+        "W6",
+        "W7",
+        "W8",
+        "W9",
+        "W10",
+        "W11",
+        "W12",
+        "W13",
+        "W14",
+        "L1",
+        "E1",
+        "E2",
+        "E3",
+        "A1",
+        "V1",
+        "V2",
+        "D1"
+      ],
+      "expectedHeldRows": [
+        "K1",
+        "S1",
+        "N1"
+      ],
+      "restorationRow": "S1",
+      "timeoutMs": 900000,
+      "expectedStderrBytes": 0,
+      "mutation": {
+        "args": ["--mutate"],
+        "expectedExit": 0,
+        "expectedSentinel": "MUTATION ordinary-row oracle",
+        "expectedVerdicts": [
+          { "marker": "control: hardened closure", "verdict": "HELD" },
+          { "marker": "one member re-widened", "verdict": "DETECTED" },
+          { "marker": "files 0444, directory 0755", "verdict": "DETECTED" },
+          { "marker": "absent member, writable parent", "verdict": "DETECTED" }
+        ]
+      },
+      "breach": "726 enumerated closure members are writable at the guest euid (D1). The whole composition input surface — profile manifest, patch layers, flat module fallback, 233 package directories, 232 package.json files in the resolution BFS closure, the lockfile, the pnpm store, the composed lib/ bytes, and the vendored loader that parses and evals the patch — answers the guest yes. (A challenged gate run measures one member more than an unchallenged one — the gate's own planted symlink. It moves no row verdict.)",
+      "heldRowsThatMustKeepHolding": {
+        "K1": "the closure is enumerated from real resolution, not from a hand-written list. Without K1 held, the 726 is a number about a list rather than about the system.",
+        "S1": "every probe this court made inside the repository was restored.",
+        "N1": "THE LIMITATION, RECORDED. This court runs at euid 501, the uid the harness runs as today, so 'writable' IS the guest's own answer. The boundary is finished when D1 holds in a run whose euid is the GUEST'S."
+      },
+      "runnerChallenge": {
+        "plantIn": "profiles/node_modules",
+        "plantAs": "dangling-symlink",
+        "mustAppearInOutput": true,
+        "why": "This court's flat-fallback walk (walkLinks over $DSH_HOME/profiles/node_modules) reads that directory with readdirSync and records every symlink it finds as a member of the resolution-surface class, then prints the head of that class member by member. A dangling symlink planted at the top of that directory by the gate must therefore appear, by name, in the court's stdout. A court that fabricated its table without walking the directory cannot print a random name it never read.",
+        "theCouplingThisAccepts": "The court prints the FIRST SIX members of resolution-surface and elides the middle, so the plant must land inside that printed window. The plant name begins with '.' and readdir on this checkout's filesystem returns entries in byte order, so it lands first. Measured 2026-08-25 against the court AT 57f65cd on darwin 25.1.0, Node v22.23.0, euid 501: the row verdicts were byte-identical with and without the plant, and the only difference anywhere in the table was D1's writableMembers count, 726 -> 727, which no row grades. On a filesystem whose readdir order is hashed, or if the court's printed window changes, the challenge goes UNANSWERED and the gate reports an unexpected failure. That is failing closed — loud and investigable — and it is a real coupling between this enrollment and the court's output format, recorded here rather than discovered later.",
+        "thePlantInTheWitness": "profiles/node_modules is gitignored but belongs to the selected profiles/ ignored scope. The runner creates the plant before both snapshots and hashes its path, file type and POSIX mode, uid/gid, and symlink target in each, so the entry compares equal between snapshots. This says nothing about ignored paths outside the declared scope.",
+        "thePreparation": "runnerPreparation:profile-module-fallback first requires the launcher-owned root config and fallback to be absent, then invokes the built dsh profile dump with DSH_HOME fixed to the repository root. It records the prepared witness, plants this nonce, requires the post-court tree to equal that witness after nonce removal, and deletes only the two verified runner-created paths. A detected pre-existing or replacement path is an unexpected failure. The final fingerprint check and pathname removal do not eliminate a same-UID rename after that check; this runner therefore requires a fresh, single-writer checkout and reports that limit instead of claiming custody."
+      },
+      "runnerPreparation": "profile-module-fallback"
+    },
+    {
+      "court": "launch-ceremony",
+      "path": "courts/harness/launch-ceremony/run.mjs",
+      "enrolledOn": "2026-08-25",
+      "measuredAt": "985f33d + oracle row realignment working tree, darwin 25.1.0, Node v24.11.1, euid 501",
+      "expectedExit": 1,
+      "expectedSentinel": "observationClass: SELF-REPORTED",
+      "expectedBreachRows": [
+        "P2",
+        "U1",
+        "A1",
+        "G1",
+        "K1"
+      ],
+      "expectedHeldRows": [
+        "P1",
+        "P3",
+        "C1",
+        "D1",
+        "G2",
+        "K2",
+        "S1",
+        "L1"
+      ],
+      "restorationRow": "S1",
+      "timeoutMs": 600000,
+      "expectedStderrBytes": 0,
+      "mutation": {
+        "args": ["--mutate"],
+        "expectedExit": 0,
+        "expectedSentinel": "MUTATION ordinary-row oracle",
+        "expectedVerdicts": [
+          { "marker": "mocked guest uid", "verdict": "DETECTED" },
+          { "marker": "writableByGuest:false shim", "verdict": "DETECTED" },
+          { "marker": "evidence classifier removed", "verdict": "DETECTED" }
+        ]
+      },
+      "additionalRuns": [
+        {
+          "label": "prove-second-uid",
+          "args": ["--prove-second-uid"],
+          "outcomes": {
+            "linux": {
+              "expectedExit": 1,
+              "expectedSentinel": "observationClass: SELF-REPORTED",
+              "classification": "known-breach"
+            },
+            "other": {
+              "expectedExit": 77,
+              "expectedSentinel": "observationClass: SKIP (platform-gated)",
+              "classification": "skip"
+            }
+          }
+        }
+      ],
+      "breach": "The source-development parent starts the issuer, broker, and guest, but it does not establish deployment custody. The broker and guest share euid 501, no distinct principal supplies the peer token, the active artifact is not verified as an immutable executable closure before launch, and G1 has no court-owned live product-ceremony handle to grade.",
+      "heldRowsThatMustKeepHolding": {
+        "P1": "the tracked source-development parent calls spawnBroker from above the broker and guest; evidence-only callers cannot satisfy this row.",
+        "P3": "the tracked product parent reaches the broker through spawnBroker, while the keyless transcript remains classified as evidence and absent from production caller sets.",
+        "D1": "the macOS target uses pre-provisioned launchd principals and explicitly requires no in-process privilege drop. This row keeps the oracle aligned with that mechanism and claims no runtime separation; G1 remains red until the live jobs exist.",
+        "G2": "what this host can stage UNATTENDED, measured: setpriv absent, sudo -n refused. Per courts/harness/uid-confinement/run.mjs its own header, that is this court MECHANISM being Linux-only, NOT the uid split as such. It does not grade that macOS cannot hold a split.",
+        "K2": "the peer raise reachable here is a token the SAME uid planted. It grades the raise mechanism, not that a second uid exists.",
+        "S1": "every write lived in one temp tree and the real profile is byte-identical after the run.",
+        "L1": "what this court does not prove, recorded rather than implied."
+      },
+      "note": "P1 and P3 grade the source-development parent as a product caller without promoting the keyless transcript from evidence. P2, U1, A1, G1, and K1 remain breached because the source launch does not establish distinct principals, immutable activation, or a court-owned live deployment subject. C1 records literal configuration, while D1 records the launchd target without claiming runtime separation.",
+      "noChallengeBecause": "UNCHALLENGED, THEREFORE STILL FORGEABLE BY ITS OWN AUTHOR. It grades process and privilege facts — spawnBroker callers, euid, setpriv/sudo availability — and stages its writes in a temp tree. It sweeps no repository directory whose contents reach its printed output."
+    },
+    {
+      "court": "launch-ceremony-topology",
+      "path": "courts/harness/launch-ceremony-topology/run.mjs",
+      "enrolledOn": "2026-08-25",
+      "measuredAt": "e619002 + grant-v3 working tree, darwin 25.1.0, Node v24.11.1, euid 501",
+      "expectedExit": 1,
+      "expectedSentinel": "observationClass: SELF-REPORTED",
+      "expectedBreachRows": [
+        "N1",
+        "K1",
+        "R1",
+        "R2",
+        "D1",
+        "J1"
+      ],
+      "expectedHeldRows": [
+        "D2",
+        "S1",
+        "L1"
+      ],
+      "restorationRow": "S1",
+      "timeoutMs": 600000,
+      "expectedStderrBytes": 0,
+      "mutation": {
+        "args": ["--mutate"],
+        "expectedExit": 0,
+        "expectedSentinel": "MUTATION ordinary-row oracle",
+        "expectedVerdicts": [
+          { "marker": "mode read as a denial", "verdict": "DETECTED" },
+          { "marker": "mocked four-principal table", "verdict": "DETECTED" },
+          { "marker": "asserted digest-only hop", "verdict": "DETECTED" },
+          { "marker": "substring sweep read as a job", "verdict": "DETECTED" },
+          { "marker": "distinct receipt key accepted", "verdict": "DETECTED" }
+        ],
+        "platformSkips": {
+          "linux": {
+            "expectedExit": 1,
+            "expectedVerdicts": [
+              { "marker": "mode read as a denial", "verdict": "DETECTED" },
+              { "marker": "mocked four-principal table", "verdict": "DETECTED" },
+              { "marker": "asserted digest-only hop", "verdict": "DETECTED" },
+              { "marker": "substring sweep read as a job", "verdict": "NOT DETECTED" },
+              { "marker": "distinct receipt key accepted", "verdict": "DETECTED" }
+            ]
+          }
+        }
+      },
+      "breach": "THE FOUR-PRINCIPAL TOPOLOGY DOES NOT EXIST. Four real processes were stood up — this court, aukora/issuer/issuer.mjs, aukora/broker/broker.mjs, and a separate guest client — and the kernel reports uid 501 for every one of them and for every artifact they own: ONE principal wearing four hats (N1). The issuer's root key is mode 0600 and a process at the broker principal's uid opened it and read 64 bytes of private key material, because the reader IS the owner; the mode denies nobody and this row refuses to read a mode as a denial (K1). The guest reaches the issuer directly: packages/governed/memory-put/src/bridge.ts dials config.issuerSocket, the same dial is in the shipped lib/index.js, and a live connect(2) from a separate guest process got the issuer's own reply with zero intermediaries (R1). Reachability is not kernel-enforced by per-peer sockets: one socket, mode 0600, in the owner's own primary group, with no approvals socket and no dedicated group (R2). The live approval path has no broker digest hop: the bridge's frame to the issuer carries `arguments` and no digest field, the issuer refuses a digest-only frame `issuer:malformed-arguments`, and the broker refuses the issuer's concrete digest issue frame as `broker:unknown-op` (D1). No launchd job exists for any principal: ops/launchd ships no plist and contains only README.md, README.zh.md, and README.i18n.yaml; the live launchctl sweep likewise found no loaded job naming a principal of this system (J1).",
+      "heldRowsThatMustKeepHolding": {
+        "D2": "the live issuer shows and signs receiptKeyId, derived from the named broker's receipt-signing public key. That broker settles the grant; a real broker with a distinct receipt key refuses it as grant:receipt-key-mismatch; rewriting the signed field refuses as grant:signature-invalid. This names key bytes, not a broker process: a second real broker carrying the copied identical receipt key and a separate nonce book also settles the exact same grant. D2 proves distinct-key binding and simultaneously proves that copied-key global one-use remains open.",
+        "S1": "every write lived in one mkdtemp tree and the repository subjects this court reads — aukora/issuer, aukora/broker, aukora/host-dsh/src, packages/governed/memory-put/src, ops/launchd — are byte-identical after the run. BRICK-0-CONTRACT.ts is deliberately NOT sealed: row expectations are read from it, but it is a live document under another owner, and sealing a file this court only reads would report an author's edit as this court dirtying the tree.",
+        "L1": "THE LIMITATION, RECORDED, in the style of courts/harness/uid-confinement L9 and courts/harness/composition-closure N1. Every open(2) and connect(2) above succeeded because there is exactly one principal on this host to ask. That is evidence of CO-LOCATION and is NOT evidence that a real four-uid deployment would deny the same calls. The court also records that it measures the ABSENCE of launchd jobs and never the incapacity of launchd, that it creates no account and installs no job, and that the hop recording drives the real bridge through the source plane because the shipped entry does not export registerIssuerBridge."
+      },
+      "whyTheseRowsHold": "S1 and L1 are the safety and limitation rows; they grade no topology and prove no principal exists. D2 grades only a cryptographic binding to distinct receipt-signing keys. The other six rows remain topology breaches.",
+      "enrollmentNote": "Enrolled 2026-08-25 by the oracle owner from an independent measured run: exit 1, 0 bytes stderr, sentinel as terminal stdout line, 7 breach / 2 held over 9 rows, and the --mutate arm exiting 0 with all four counterfeits DETECTED. Remeasured 2026-08-26 against e619002 plus the grant-v3 working tree: exit 1, 0 bytes stderr, terminal sentinel, 6 breach / 3 held, and all five counterfeits DETECTED. D2 moved only after the live issuer showed and signed the named receipt key, the named broker settled the grant, a distinct-key broker refused it, a signed-field rewrite refused, and a second real broker carrying the copied identical key and its own nonce book also settled the exact same grant. THE COURT DELIBERATELY GRADES NO CONTRACT PROSE. BRICK-0-CONTRACT.ts supplies the expected topology; the running system supplies the observation.",
+      "runnerChallenge": {
+        "plantIn": "ops/launchd",
+        "plantAs": "empty-file",
+        "mustAppearInOutput": true,
+        "why": "Row J1 sweeps ops/launchd ON DISK with readdirSync — not merely git's index, because an installed job definition nobody committed is still an installed job definition — and prints EVERY entry it found, one per line, by name, in the unsliced prose block under 'J1 SWEPT ops/launchd ON DISK'. That directory is the only place in this tree where a launchd job definition for a principal could live, so the sweep is the row's real measurement rather than a hook added for the gate. An empty file planted at the top of it by the gate must therefore appear, by name, in the court's stdout. A court that fabricated its J1 table without reading the directory cannot print a random name it never read.",
+        "theCouplingThisAccepts": "The plant lands in a prose block that is printed in full and is never truncated, so unlike a challenge that must fall inside a sliced row window this one carries no ordering or width dependency: readdir order and directory size are both irrelevant. Measured 2026-08-26 against the grant-v3 worktree: the challenged run reproduced the unchallenged row verdicts, exited 1 with zero stderr bytes and the terminal sentinel, printed the planted name exactly once, and changed only descriptive inputs to J1 and S1. S1's sealed file count moved from 29 to 30 while its byte-identity verdict held. If J1 stops printing the sweep by name, the challenge goes unanswered and the gate reports an unexpected failure.",
+        "thePlantInTheWitness": "The README files under ops/launchd are tracked, but the planted empty file is nonignored and untracked. The plant is visible in porcelain in both bracket snapshots, and its path, file type and POSIX mode, uid/gid, and regular-file bytes are hashed by the tracked-and-nonignored witness. It is outside the selected ignored scope because it is not ignored. The plant is also inside S1's own seal in both snapshots, so S1 keeps holding under challenge."
+      }
+    }
+  ],
+  "sentinelContract": "The expected sentinel must TERMINATE stdout, not merely appear in it, and an enrolled court must write expectedStderrBytes to stderr. Both are measured completion witnesses. An uncaught throw exits 1 — the SAME status the enrolled breach exits with — and writes its stack to stderr, so the exit code alone can never separate a crash from a breach. A known-breach lane that swallows a crashed court is a green light wired to nothing.",
+  "theRunnerChallenge": "THE FABRICATION HOLE, AND HOW FAR THIS CLOSES IT. Every other check the gate makes reads the court's OWN stdout, stderr, and exit status. Proven with a fixture on 2026-08-25: a court that never performs its attack, catches the setup failure, prints a fabricated verdict table and exits 1 satisfied the sentinel, the zero-byte stderr budget, the git witness (nothing was ever mutated, so restoration held vacuously), and the must-keep-holding rows (they ran before the failed attack) all at once. The gate reported it as a reproduced known breach and exited 0. The SHAPE was authenticated; the MEASUREMENT was not. A runner-issued challenge is the one check the court cannot answer from imagination: BEFORE spawning the court the gate creates a file with a random name inside a directory that court's enumeration must sweep, never tells the court the name, and then requires the name in the court's stdout. The nonce travels through the FILESYSTEM and never through the environment or argv, because a court handed the nonce in a variable could echo it while measuring nothing — which is the forgery this exists to catch. A named runnerPreparation is the sole exception to an absent subject: it first requires its two generated paths absent, materializes the enrolled subject through a closed shipped command, and restores only that fresh state after the nonce is verified. Without that declaration, an absent subject directory permits only a complete exit-78 table, which keeps the gate non-green; exit 77 is forbidden. Every other planting failure is an unexpected gate failure. The gate fingerprints its plant before removal, so disappearance or a detected replacement is an unexpected gate failure. A same-UID rename after the final pathname check remains outside this runner's authority; run it from a fresh single-writer checkout rather than call that local race custody.",
+  "theRunnerChallengeLimit": "STATE THE LIMIT PLAINLY: A CHALLENGE IS NOT A SOLUTION. A passed challenge proves the court REACHED the filesystem it claims to sweep. It does NOT prove the court REPORTED that sweep faithfully. A court that really enumerates, prints the planted name, and then prints an invented verdict table passes every check in this gate. The only real guarantee remains LANE SEPARATION — the builder cannot edit courts/ — and a court author can still lie. Read a challenged court as 'this court touched the disk', never as 'this court told the truth'.",
+  "theUnchallengedCourts": "TWO OF FIVE ENROLLED COURTS CARRY A CHALLENGE: composition-closure and launch-ceremony-topology. The other three — escalation, executable-configuration, launch-ceremony — are UNCHALLENGED, and are therefore graded entirely on their own output and STILL FORGEABLE BY THEIR OWN AUTHOR in exactly the way the _liar fixture demonstrated. Each records its own reason under 'noChallengeBecause'. The gate refuses to load an enrollment that has neither a challenge nor a written reason, so this gap stays visible instead of implied. The ordinary amendment-channel runs also remain self-reported, not runner-challenged evidence. Read the challenged pair under 'theRunnerChallengeLimit': a passed challenge proves the court touched the disk, never that it told the truth about what it found."
+}

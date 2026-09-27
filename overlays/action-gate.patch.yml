@@ -1,0 +1,46 @@
+# THE ACTION GATE: every tool call by every agent session judged, receipted in the Aura chain, and escalated to the
+# owner's approval route when it is an authority action. plugins/aukora-action-gate/lib/index.mjs says what it
+# governs and what it does not.
+#
+# A RELEASE'S DEFAULT COMPOSITION NOW CARRIES THESE ROWS: scripts/materialize-aukora-release.py (`action_gate_rows`)
+# copies them into aukora-composition.patch.yml, so a fresh install is gated without listing anything. A deployment
+# that still lists `<release>/action-gate.patch.yml` applies them twice, which is harmless (same values; the loader
+# keys rows by id, so the second insert replaces the first).
+#
+# IT REPLACES held-read-deny.patch.yml. It carries the same two rows, for the same reason:
+#   - `aukora-core-read-deny` is the `fs` SWAP that crashed boot ("service fs has been registered"); it stays disabled,
+#     and its CORE rows now live in the action gate's policy (CORE_ROWS), applied to tool calls;
+#   - `fs-sandbox` provides `fs` again, as the stock composition does.
+# The gate itself provides NO service (it registers a guard with `ctx.tools.guard()`), so it cannot collide with
+# `fs-sandbox` or with itself.
+#
+# THE ROW NAME IS RELEASE-RELATIVE, and the loader anchors an inserted row's relative `name` BESIDE THIS FILE. So the
+# materializer carries plugins/aukora-action-gate (LANE_PLUGINS) AND copies this file to `<release>/action-gate.patch.yml`;
+# list THAT copy in the deployment. Applied from anywhere else, `name` must be made absolute into the release.
+#
+# `repoRoots` is the checkout lanes and Auma work in; its governing paths (plugins/**, apps/**, scripts/aukora/**,
+# docs/owner-pin.json, AGENTS.md, ...) are refused as self-modification, with scripts/aukora/self-change.mjs named as
+# the route. The running release is a governing root without being named: the gate adds the tree it was loaded from.
+- id: fs-sandbox
+  disabled: false
+
+- id: aukora-core-read-deny
+  disabled: true
+
+- insert:
+    - id: aukora-action-gate
+      name: ./plugins/aukora-action-gate/lib/index.mjs
+      config:
+        auraDir: !!js dshHomePath('aura-actions')
+        dshHome: !!js dshHomePath()
+        repoRoots:
+          - !!js process.env.HOME + '/aukora-genesis'
+        # Where agents may also write: lane worktrees (proposals go there, then self-change), temp, and the owner's
+        # everyday folders. Key material stays refused inside every one of them.
+        extraWritableRoots:
+          - !!js process.env.HOME + '/aukora-worktrees'
+          - !!js process.env.TMPDIR || '/private/tmp'
+          - /private/tmp
+          - !!js process.env.HOME + '/Desktop'
+          - !!js process.env.HOME + '/Documents'
+          - !!js process.env.HOME + '/Downloads'

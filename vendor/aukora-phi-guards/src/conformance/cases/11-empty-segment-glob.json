@@ -1,0 +1,18 @@
+{
+  "id": "empty-segment-glob",
+  "why": "Filtering empty path segments BEFORE folding turns src/.../a.pem into src//a.pem, and ** compiles to (?:[^/]+/)* which cannot match an empty segment - so the rule silently stops matching and the write is allowed.",
+  "incident": "aukora-seed, found by an external reviewer, fixed with a regression test. The order fold-then-filter is load-bearing.",
+  "fixture": {
+    "dirs": [
+      "src"
+    ],
+    "files": {
+      "src/a.pem": "KEY\n"
+    }
+  },
+  "attempt": {
+    "path": "src/.../a.pem",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

@@ -1,0 +1,279 @@
+#!/usr/bin/env node
+/**
+ * Ask a signer for one approval over one exact operation, and write the ARTIFACT.
+ *
+ *   scripts/aumlok/approve-operation \
+ *     --controller <private dir> --expect-subject <aukora:1:…> --expect-control-digest <64 hex> \
+ *     --operation <content file> --operation-digest <64 hex> \
+ *     [--signer-socket <path>] --artifact-out <path> --expires-at <unix seconds> \
+ *     [--approval-class scripted|delegated|unattributed] [--key-class B] \
+ *     [--now <unix seconds> (TEST-ONLY)] [--timeout-ms <ms>]
+ *
+ * `--signer-socket` DEFAULTS TO `AUKORA_SIGNER_SOCKET`, WHICH IS WHERE THE SHELL PUTS IT. The app
+ * resolves the socket once under its own state root, hands that exact string to its backend child,
+ * and this command reads the same variable — so the two agree BY CONSTRUCTION rather than because an
+ * operator typed the same path in two places. MEASURED 2026-09-22: nothing in this repository set
+ * that variable, so in the app the shell served nothing and this command dialled a path an operator
+ * had passed by hand; a person who ran it without the flag got a usage error, and one who passed a
+ * path of their own got `aumlok:channel-unavailable` — "nothing is listening" — about a shell that
+ * WAS listening, somewhere else. Passing the flag is still allowed and still wins.
+ *
+ * THE INTERFACE, IN ONE SENTENCE. Given an exact operation digest and the exact content it covers,
+ * this produces a signed approval artifact: one `aukora:approval-receipt:v1` record, written to
+ * `--artifact-out`. The digest convention is
+ *
+ *     operationDigest = sha256( utf8("aukora:operation-content:v1") ‖ 0x00 ‖ contentBytes )
+ *
+ * and this command REFUSES when the digest you hand it is not the digest of the content you hand
+ * it, because an approval over a digest no content produces covers nothing anyone can check.
+ *
+ * IT HOLDS NO KEY. The private half stays in the signer process, which is D2's whole point: this
+ * command builds the request, sends it down a local Unix socket, and verifies what comes back. A
+ * caller that wants the artifact must therefore have a signer running, and if there is none the
+ * refusal is `aumlok:channel-unavailable` — never a fallback signature, never a stub.
+ *
+ * NO BOOLEAN IS AN APPROVAL. There is no `--confirm` on this interface, and passing one (or
+ * `--yes`/`--force`) does not merely fail to help: it is refused BY NAME
+ * (`aumlok:approval-boolean-is-not-consent`), whether or not a signer is listening, and no artifact
+ * is written. A boolean is a value a program can set. An approval is a signature a key must
+ * produce. The two are not interchangeable at any point on this path.
+ *
+ * WHAT THE ARTIFACT DOES AND DOES NOT SAY. It says: at `issuedAt`, inside the window, the key
+ * registered in that identity's active control head signed the exact bytes naming this operation
+ * digest, for that subject and that control digest. It does NOT say a person attended — the
+ * approver is the signer's own named, labelled procedure, and the artifact records
+ * `ATTENDANCE: reported-not-proven` — and it does NOT bind an identity: `IDENTITY_BOUND` is printed
+ * false and stays false. `APPROVAL_CLASS` defaults to the weakest honest class (`delegated`);
+ * `human-ceremony` is refused by name because this lane holds no binding register that could earn
+ * it.
+ *
+ * Exit 0 when the artifact is written, 1 on a named refusal, 2 on usage.
+ */
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { dirname } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const adapter = await import(pathToFileURL(`${ROOT}/plugins/aukora-aumlok/lib/index.mjs`).href)
+
+/** Flags that would let a boolean stand in for an approval. None of them is a decision. */
+const BOOLEAN_FLAGS = Object.freeze(['--confirm', '--yes', '--force', '-y'])
+
+/**
+ * The variable the shell writes its resolved socket path into, for the backend child this runs inside.
+ * The name is duplicated from `apps/aukora-desktop/aumlok-signer.mjs` rather than imported, because
+ * this command is deliberately usable from an empty directory with nothing but the checkout — but the
+ * court asserts the two spellings are the same one, so a rename cannot silently separate them.
+ */
+const SIGNER_SOCKET_ENV = 'AUKORA_SIGNER_SOCKET'
+
+/** Read one `--flag value` argument, or undefined. */
+function option(flag) {
+  const index = process.argv.indexOf(flag)
+  return index === -1 ? undefined : process.argv[index + 1]
+}
+
+/** Print the ceilings this lane prints on every path, including the refusing ones. */
+function closeWithCeilings(code) {
+  adapter.printCeilings()
+  process.exit(code)
+}
+
+/** Refuse with a named code and the ceilings beside it. */
+function refuse(reason, detail) {
+  process.stdout.write(`APPROVAL: REFUSED\n`)
+  process.stdout.write(`REFUSED: ${reason}\n`)
+  process.stdout.write(`DETAIL: ${detail}\n`)
+  process.stdout.write('ARTIFACT_WRITTEN: no — a refusal writes nothing\n')
+  closeWithCeilings(1)
+}
+
+/** Usage failure: 2, so a caller can tell "you called it wrong" from "it said no". */
+function usage(message) {
+  process.stderr.write(`approve-operation: ${message}\n`)
+  process.stderr.write('usage: scripts/aumlok/approve-operation --controller <dir> --expect-subject <id> '
+    + '--expect-control-digest <hex> --operation <file> --operation-digest <hex> '
+    + `[--signer-socket <path> | ${SIGNER_SOCKET_ENV}] `
+    + '--artifact-out <path> --expires-at <unix seconds>\n')
+  process.exit(2)
+}
+
+const controller = option('--controller')
+const expectSubject = option('--expect-subject')
+const expectControlDigest = option('--expect-control-digest')
+const operationPath = option('--operation')
+const operationDigest = option('--operation-digest')
+const socketPath = option('--signer-socket') ?? process.env[SIGNER_SOCKET_ENV]
+const artifactOut = option('--artifact-out')
+const expiresAtRaw = option('--expires-at')
+
+if (controller === undefined) usage('--controller is required')
+if (expectSubject === undefined || expectControlDigest === undefined) {
+  usage('--expect-subject and --expect-control-digest are required: an approval that is not pinned to '
+    + 'one identity and one control head cannot be told apart from one for a rotated identity')
+}
+if (operationPath === undefined) usage('--operation is required (the exact content the digest covers)')
+if (operationDigest === undefined) usage('--operation-digest is required')
+if (socketPath === undefined || socketPath.trim().length === 0) {
+  usage(`no signer socket: pass --signer-socket <path>, or export ${SIGNER_SOCKET_ENV} — the shell that `
+    + 'serves this socket puts its resolved path there, so an operator who has not exported it is told '
+    + 'the name rather than only that a flag is missing')
+}
+if (artifactOut === undefined) usage('--artifact-out is required; this command has no default destination')
+if (expiresAtRaw === undefined) usage('--expires-at is required; there is no default window')
+if (!/^[0-9]+$/u.test(expiresAtRaw)) usage('--expires-at must be unix seconds')
+if (!/^[0-9a-f]{64}$/u.test(operationDigest)) usage('--operation-digest must be 64 lowercase hex characters')
+
+/**
+ * The boolean check happens BEFORE the content is even read, so its refusal cannot be confused with
+ * a missing-file error: the fact being refused is the boolean, not the fixture.
+ */
+const offeredBoolean = BOOLEAN_FLAGS.some(flag => process.argv.includes(flag)
+  || process.argv.some(argument => argument.startsWith(`${flag}=`)))
+if (offeredBoolean) {
+  refuse(
+    adapter.APPROVAL_PATH_REFUSE.BOOLEAN_NOT_CONSENT,
+    `one of ${BOOLEAN_FLAGS.join(', ')} was supplied as the approval. A program can set a boolean; only `
+    + 'a key can produce a signature. This interface has no boolean that yields an artifact, and it '
+    + 'names the attempt rather than ignoring it',
+  )
+}
+
+const nowInjected = option('--now')
+if (nowInjected !== undefined && !/^[0-9]+$/u.test(nowInjected)) usage('--now must be unix seconds')
+const timeoutRaw = option('--timeout-ms')
+const now = nowInjected === undefined
+  ? () => Math.floor(Date.now() / 1000)
+  : () => Number(nowInjected)
+
+/**
+ * HOW LONG THIS COMMAND WAITS FOR THE SIGNER WHEN NOBODY SAYS OTHERWISE.
+ *
+ * MEASURED DEFECT, 2026-09-21, on the attended path itself. The broker's default is
+ * `DEFAULT_SIGNER_TIMEOUT_MS` = 5_000 ms (`signer-channel.mjs`). The signer's `popup` approver
+ * raises a native dialog and waits up to 300_000 ms for a person to read the exact bytes and
+ * answer it. Five seconds is therefore SHORTER THAN THE PRESENTATION IT IS WAITING ON, and the
+ * first attended run failed with
+ *
+ *     REFUSED: aumlok:channel-timeout / DETAIL: no reply within 5000ms
+ *
+ * **while the dialog was still on screen** — the person could answer and nothing was listening.
+ * A default that makes the documented attended path unable to succeed is not a conservative
+ * default, and it is worse than a loud failure because the refusal code blames the channel.
+ *
+ * So this command — whose whole job is to ask a separate signer, and whose `popup` approver is the
+ * only human-facing mode — waits longer than that dialog can. `--timeout-ms` still overrides it.
+ * The refusal codes stay distinct: a dialog that cannot be raised is `unavailable`, a person
+ * declining is `refused`, and a broker that gave up is neither.
+ */
+const OPERATOR_SIGNER_TIMEOUT_MS = 310_000
+
+let content
+try {
+  content = readFileSync(resolve(operationPath))
+} catch (cause) {
+  refuse(adapter.APPROVAL_PATH_REFUSE.MALFORMED,
+    `cannot read --operation ${resolve(operationPath)}: ${cause?.code ?? String(cause)}`)
+}
+
+process.stdout.write('AUMLOK operation approval — one artifact, over one exact operation digest\n')
+process.stdout.write(`repository: ${ROOT}\n`)
+process.stdout.write(`OPERATION_FILE: ${resolve(operationPath)}\n`)
+process.stdout.write(`OPERATION_CONTENT_BYTES: ${String(content.length)}\n`)
+process.stdout.write(`OPERATION_CONTENT_DOMAIN: ${adapter.OPERATION_CONTENT_DOMAIN}\n`)
+process.stdout.write(`OPERATION_DIGEST_ALGORITHM: sha256(utf8(domain) ‖ 0x00 ‖ content bytes)\n`)
+if (nowInjected !== undefined) {
+  process.stdout.write(`CLOCK_INJECTED: ${String(nowInjected)} (TEST-ONLY — the wall clock was not consulted)\n`)
+}
+process.stdout.write('\n')
+
+// ══ THE WITNESS ═════════════════════════════════════════════════════════════════════════════════════
+// WHAT WAS WRONG BEFORE THIS BLOCK. The command read the content at `:152` and passed BOTH it and a
+// caller-supplied `--expect-digest` to `approveOperation` without ever comparing them, and it printed the
+// content's byte COUNT and the digest ALGORITHM instead of the content. So the person answering the
+// dialog was shown `OPERATION_CONTENT_BYTES: 1297` and a hash — never the bytes. The 2026-09-21 08:39
+// settlement was authorized that way: an approval over a digest its owner could not read. The binding was
+// real; the witness was absent.
+//
+// The recomputation lives in the adapter (`witnessOperationContent`), beside `operationDigestOf`, because
+// the module that owns the digest convention is the only place a second implementation of it belongs.
+// This prints what it returns and refuses by name when it refuses.
+const witnessed = adapter.witnessOperationContent(content, operationDigest)
+if (witnessed.ok !== true) refuse(witnessed.reason, witnessed.detail)
+process.stdout.write('── WHAT YOU ARE APPROVING ' + '─'.repeat(52) + '\n')
+process.stdout.write(witnessed.displayed)
+if (!witnessed.displayed.endsWith('\n')) process.stdout.write('\n')
+if (witnessed.escaped > 0 || witnessed.invisible > 0 || witnessed.backslashes > 0) {
+  const alsoBackslash = witnessed.backslashes > 0
+    ? ` and ${String(witnessed.backslashes)} backslash(es)`
+    : ''
+  process.stdout.write(
+    `RENDERING_NOTE: ${String(witnessed.escaped)} control byte(s), ${String(witnessed.invisible)} invisible `
+    + `formatting character(s)${alsoBackslash} are shown as \\u{...} escapes. They are in the bytes the digest `
+    + "covers — this is the body's own content, not the terminal's interpretation of it.\n")
+}
+// NAMED SEPARATELY, because these are shown VERBATIM and a reader cannot see them. A joiner or a direction
+// mark is ordinary orthography in Persian, Hindi, Malayalam, Arabic and Hebrew, so escaping it would make the
+// witness unreadable exactly where it is needed — but it is also invisible, so a body containing one renders
+// IDENTICALLY to the same body without it. Without this line a reader comparing two screens has nothing to go
+// on. MEASURED 2026-09-21.
+//
+// THIS BLOCK WAS NESTED INSIDE THE GUARD ABOVE when it was first written, so a body whose ONLY invisible
+// characters were joiners printed nothing at all — the note was absent in precisely the case it exists for.
+// MEASURED by running it: `{"key":"al<ZWJ>ice"}` rendered with no note. Two conditions that mean different
+// things must not share a guard.
+if (witnessed.readableInvisible > 0) {
+  process.stdout.write(
+    `RENDERING_NOTE: ${String(witnessed.readableInvisible)} invisible character(s) are shown AS-IS above `
+    + '(zero-width joiner/non-joiner or a direction mark — ordinary orthography in several scripts). They are '
+    + 'IN the bytes the digest covers, and they are not visible on screen, so do not compare this body to '
+    + 'another by eye alone.\n')
+}
+process.stdout.write('── ' + '─'.repeat(74) + '\n')
+process.stdout.write(`EXPECTED_DIGEST  : ${String(operationDigest)}\n`)
+process.stdout.write(`RECOMPUTED_DIGEST: ${witnessed.digest}\n`)
+process.stdout.write('DIGEST_CONFIRMED: the bytes above are the bytes the digest covers\n\n')
+
+const verdict = await adapter.approveOperation({
+  directory: resolve(controller),
+  expectation: { subject: expectSubject, activeControlDigest: expectControlDigest },
+  content,
+  operationDigest,
+  socketPath: resolve(socketPath),
+  keyClass: option('--key-class') ?? adapter.APPROVAL_KEY_CLASS,
+  ...(option('--approval-class') === undefined ? {} : { approvalClass: option('--approval-class') }),
+  expiresAt: Number(expiresAtRaw),
+  now,
+  timeoutMs: timeoutRaw === undefined ? OPERATOR_SIGNER_TIMEOUT_MS : Number(timeoutRaw),
+})
+if (verdict.ok !== true) refuse(verdict.reason, verdict.detail)
+
+const artifactPath = resolve(artifactOut)
+try {
+  // `wx`: an approval artifact is never silently overwritten. Re-minting over a path that already
+  // holds an approval would destroy the only record of an approval somebody may already rely on.
+  writeFileSync(artifactPath, `${JSON.stringify(verdict.receipt, null, 2)}\n`, { flag: 'wx', mode: 0o600 })
+} catch (cause) {
+  refuse(adapter.APPROVAL_PATH_REFUSE.MALFORMED,
+    `cannot write --artifact-out ${artifactPath}: ${cause?.code ?? String(cause)}`)
+}
+
+process.stdout.write('APPROVAL: MINTED\n')
+process.stdout.write(`ARTIFACT: ${artifactPath}\n`)
+process.stdout.write(`ARTIFACT_DOMAIN: ${verdict.receipt.domain}\n`)
+process.stdout.write(`CONTROLLER: ${verdict.controllerPath}\n`)
+process.stdout.write(`APPROVER: the signer on ${resolve(socketPath)} — a separate process holding the key.\n`)
+process.stdout.write('          Whatever decision procedure it runs is ITS statement, not this command\'s:\n')
+process.stdout.write('          this command holds no key, made no decision, and saw no operation content.\n')
+process.stdout.write('SCRIPTED_APPROVAL_IS_NOT_A_HUMAN_YES: if that signer is running its labelled test mode it\n')
+process.stdout.write('          approves every request it is shown. The artifact below records an approval CLASS\n')
+process.stdout.write('          and an attendance FIELD; neither is a person, and this run is SCRIPTED.\n')
+for (const line of adapter.approvalReceiptLines(verdict.receipt)) process.stdout.write(`${line}\n`)
+process.stdout.write('WHAT_THIS_IS_NOT: a boolean, a human yes, attendance, custody, identity binding, or a\n')
+process.stdout.write('          permission to act on anything other than the one operation digest above.\n')
+process.stdout.write('TO_CONSUME_IT: scripts/aumlok/settle-operation with the same --operation content, the\n')
+process.stdout.write('          pinned identity and a disposable --state directory. It will refuse a replay.\n')
+process.stdout.write('TO_CHECK_IT_WITHOUT_THIS_LANE: scripts/aumlok/verify-approval <artifact> --pub <registered key>,\n')
+process.stdout.write('          run from an empty directory; the artifact is exactly the receipt it verifies.\n')
+closeWithCeilings(0)

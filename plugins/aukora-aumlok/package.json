@@ -1,0 +1,23 @@
+{
+  "name": "@aukora/dsh-plugin-aumlok",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AUKORA AUMLOK: the public identity/control adapter. Exposes a stable subject derived from immutable genesis, the active control digest/epoch and revocation status, the did:key of the registered Ed25519 approval key, and named verdicts for check-at-use — never private control state and never authority.",
+  "type": "module",
+  "main": "lib/index.mjs",
+  "exports": {
+    ".": {
+      "default": "./lib/index.mjs"
+    },
+    "./service": {
+      "default": "./lib/service.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

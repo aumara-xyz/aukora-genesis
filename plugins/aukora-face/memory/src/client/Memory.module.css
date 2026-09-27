@@ -1,0 +1,180 @@
+/* ── THE MEMORY VIEW, AS PORTALS (Peter, 2026-09-27) ─────────────────────────────────────────────────
+   The same primitive as the session rows and the app launchers: an outlined card, 14px radius, a 1px border in the
+   spatial colour at 30%, a 3px slide on hover and a soft glow when open. Each kind of memory has its own colour, a
+   portal telescopes open to a centred search, and every memory inside it is a smaller portal that extends. */
+
+.memoryView[hidden] { display: none !important; }
+
+.memoryView {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  min-height: 100%;
+  background: var(--dsw-specific-spatial-canvas, #111520);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 22px 20px 48px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.memoryHead { display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
+.memoryTitle { margin: 0; font-size: 20px; line-height: 28px; font-weight: 600; }
+.memorySubtitle { margin: 0; color: var(--dsw-alias-label-tertiary); font-size: 13px; line-height: 20px; }
+.memoryNotice { margin: 6px 0 0; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+
+.portals { display: flex; flex-direction: column; gap: 10px; }
+
+.portal {
+  --tone: var(--dsw-static-spatial-mint);
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, transparent);
+  border-radius: 14px;
+  background: transparent;
+  transition:
+    border-color 250ms var(--ds-ease-in-out),
+    box-shadow 250ms var(--ds-ease-in-out),
+    background 250ms var(--ds-ease-in-out);
+}
+.portal[data-tone='gold'] { --tone: var(--dsw-static-spatial-gold); }
+.portal[data-tone='violet'] { --tone: var(--dsw-static-spatial-violet); }
+.portal[data-tone='blue'] { --tone: var(--dsw-static-spatial-blue, rgb(120, 170, 255)); }
+
+.portal[data-open='yes'] {
+  border-color: color-mix(in srgb, var(--tone) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tone) 14%, transparent);
+  background: color-mix(in srgb, var(--tone) 4%, transparent);
+}
+
+.portalHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 18px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 200ms var(--ds-ease-in-out);
+}
+.portal[data-open='no'] .portalHead:hover { transform: translateX(3px); }
+
+.portalDot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 55%, transparent);
+}
+
+.portalCopy { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+.portalCopy strong { font-size: 14px; line-height: 20px; font-weight: 570; }
+.portalCopy span {
+  overflow: hidden;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portalChevron { flex: none; color: color-mix(in srgb, var(--tone) 80%, transparent); font-size: 18px; line-height: 1; }
+
+.portalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 14px 16px;
+  transform-origin: top center;
+  animation: telescope 260ms var(--ds-ease-in-out);
+}
+@keyframes telescope {
+  from { opacity: 0; transform: scaleY(0.94); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
+.portalSearch {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: 38px;
+  margin: 2px auto 8px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, transparent);
+  border-radius: 12px;
+  padding: 0 16px;
+  background: color-mix(in srgb, var(--tone) 3%, transparent);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+  transition: border-color 200ms var(--ds-ease-in-out), box-shadow 200ms var(--ds-ease-in-out);
+}
+.portalSearch::placeholder { color: var(--dsw-alias-label-tertiary); }
+.portalSearch:focus {
+  border-color: color-mix(in srgb, var(--tone) 58%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 14%, transparent);
+}
+
+.portalQuiet { margin: 4px 0; color: var(--dsw-alias-label-tertiary); font-size: 12px; text-align: center; }
+
+.memoryList { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+
+.memoryItem {
+  border: 1px solid color-mix(in srgb, var(--tone) 22%, transparent);
+  border-radius: 12px;
+  transition: border-color 250ms var(--ds-ease-in-out), box-shadow 250ms var(--ds-ease-in-out);
+}
+.memoryItem[data-open='yes'] {
+  border-color: color-mix(in srgb, var(--tone) 50%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 12%, transparent);
+}
+
+.memoryPortal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 200ms var(--ds-ease-in-out);
+}
+.memoryItem[data-open='no'] .memoryPortal:hover { transform: translateX(3px); }
+
+.memoryWords { flex: 1; min-width: 0; font-size: 14px; line-height: 20px; }
+.memoryItem[data-open='no'] .memoryWords { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.memoryWhen { flex: none; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
+
+.memoryDetail { display: flex; flex-direction: column; gap: 6px; padding: 0 14px 12px; }
+.memoryMeta { margin: 0; color: var(--dsw-alias-label-tertiary); font-size: 12px; line-height: 18px; }
+.memoryActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.memoryAsk { color: var(--dsw-alias-label-secondary); font-size: 12px; }
+
+.pill {
+  border: 1px solid color-mix(in srgb, var(--tone) 34%, transparent);
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 200ms var(--ds-ease-in-out), background 200ms var(--ds-ease-in-out);
+}
+.pill:hover {
+  border-color: color-mix(in srgb, var(--tone) 60%, transparent);
+  background: color-mix(in srgb, var(--tone) 8%, transparent);
+}

@@ -1,0 +1,6 @@
+{
+  "note": "PUBLIC TEST KEY. The seed below is a fixed constant, written here on purpose, and derives the public key that signs every receipt in this bundle. It is worthless: it exists so the evidence is reproducible and so a consumer can re-sign negative controls beside the key it derives. It is NOT an approval, NOT a secret, and NOT evidence that any person was present.",
+  "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAVSb3QpQXEbO8UwukT/b22rDwq3Gvgy9Bp/47n9rtnGA=\n-----END PUBLIC KEY-----\n",
+  "publicKeyRawHex": "5526f742941711b3bc530ba44ff6f6dab0f0ab71af832f41a7fe3b9fdaed9c60",
+  "seedHex": "3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c"
+}

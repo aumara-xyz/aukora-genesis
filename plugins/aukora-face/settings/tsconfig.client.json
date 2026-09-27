@@ -1,0 +1,54 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+  },
+  "files": [
+
+
+
+
+
+
+
+
+    "src/aura/activity.ts",
+    "src/aura/aggregate.ts",
+    "src/aura/deformation.ts",
+    "src/aura/figure.ts",
+    "src/aura/motion.ts",
+    "src/aura/rotor.ts",
+    "src/aura/ternary.ts",
+    "src/aura/types.ts",
+    "src/aura/walsh.ts",
+    "src/client/AuraCoherenceMenu.tsx",
+    "src/client/AuraCoherenceSurface.tsx",
+    "src/client/GeneralSection.tsx",
+    "src/client/SettingsDocumentAction.tsx",
+    "src/client/SettingsMenu.tsx",
+    "src/client/SettingsOnboarding.tsx",
+    "src/client/SettingsRoot.tsx",
+    "src/client/chrome.tsx",
+    "src/client/escape.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/settings-document-store.ts",
+    "src/client/shell-contract.ts",
+    "src/css-modules.d.ts"
+  ],
+  "references": [
+    { "path": "./tsconfig.host.json" },
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../api/remotes/tsconfig.client.json" },
+    { "path": "../../runtime-diagnostics/invariants" },
+    { "path": "../../settings/settings" },
+    { "path": "../locale" },
+    { "path": "../store" },
+    { "path": "../aukora-face-layout" },
+    { "path": "../ui-primitives" },
+    { "path": "../ui-settings" },
+    { "path": "../ui-slots" }
+  ]
+}

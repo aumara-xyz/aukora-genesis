@@ -1,0 +1,110 @@
+{
+  "kind": "aukora-composition-grant-rule/v1-genesis",
+  "note": "Normative grant-rule contract for the Python issuer/verifier and the live Node verifier. Both languages must accept every ACCEPT vector and refuse every REJECT vector with the published code. Vectors are unsigned field overrides; each court signs them at run time so a signature that would pass if the type or envelope check were skipped is actually present.",
+  "normative": {
+    "grantKind": "aukora-composition-grant/v1-genesis",
+    "closedFields": [
+      "coeffectEnvelopeDigest",
+      "expiry",
+      "governorPk",
+      "issuedAt",
+      "kind",
+      "nonce",
+      "operation",
+      "pluginDigest",
+      "sig"
+    ],
+    "signedFields": [
+      "coeffectEnvelopeDigest",
+      "expiry",
+      "governorPk",
+      "issuedAt",
+      "kind",
+      "nonce",
+      "operation",
+      "pluginDigest"
+    ],
+    "integerFields": ["expiry", "issuedAt"],
+    "integerRule": "JSON numbers that are safe integers. Booleans are excluded and refuse GRANT_MALFORMED naming the field. Strings, null, and non-integers refuse the same way. A well-signed grant whose issuedAt is a string or boolean is still malformed.",
+    "coeffectEnvelope": {
+      "recordKind": "same-uid-envelope",
+      "record": {
+        "kind": "same-uid-envelope",
+        "uid": "integer process uid of the verifier"
+      },
+      "digestAlg": "sha256",
+      "canonicalForm": "RFC 8785 integer-only JCS, object keys sorted",
+      "liveVerifier": "must compare grant.coeffectEnvelopeDigest to sha256(jcs({kind, uid})) derived from THIS process's uid. Checking that the field is 64 lowercase hex characters is not sufficient."
+    },
+    "refusal": {
+      "badIntegerField": "GRANT_MALFORMED",
+      "coeffectMismatch": "GRANT_MALFORMED"
+    }
+  },
+  "fixture": {
+    "uid": 1000,
+    "now": 1700000000,
+    "issuedAt": 1700000000,
+    "expiry": 1700003600,
+    "pluginDigest": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd",
+    "nonce": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+    "otherCoeffectEnvelopeDigest": "1111111111111111111111111111111111111111111111111111111111111111",
+    "expectedCoeffectJcs": "{\"kind\":\"same-uid-envelope\",\"uid\":1000}",
+    "expectedCoeffectEnvelopeDigest": "a06deee2583a68a809ae0d424ea15787e9345d3546089434021c0e52c0300798"
+  },
+  "vectors": [
+    {
+      "id": "accept-honest-integers-matching-coeffect",
+      "verdict": "ACCEPT",
+      "overrides": {}
+    },
+    {
+      "id": "reject-issuedAt-string",
+      "verdict": "GRANT_MALFORMED",
+      "mustName": "issuedAt",
+      "overrides": {
+        "issuedAt": "1700000000"
+      }
+    },
+    {
+      "id": "reject-issuedAt-boolean-true",
+      "verdict": "GRANT_MALFORMED",
+      "mustName": "issuedAt",
+      "overrides": {
+        "issuedAt": true
+      }
+    },
+    {
+      "id": "reject-issuedAt-boolean-false",
+      "verdict": "GRANT_MALFORMED",
+      "mustName": "issuedAt",
+      "overrides": {
+        "issuedAt": false
+      }
+    },
+    {
+      "id": "reject-issuedAt-null",
+      "verdict": "GRANT_MALFORMED",
+      "mustName": "issuedAt",
+      "overrides": {
+        "issuedAt": null
+      }
+    },
+    {
+      "id": "reject-expiry-boolean-true",
+      "verdict": "GRANT_MALFORMED",
+      "mustName": "expiry",
+      "overrides": {
+        "expiry": true
+      }
+    },
+    {
+      "id": "reject-coeffect-mismatch",
+      "verdict": "GRANT_MALFORMED",
+      "mustName": "coeffect",
+      "overrides": {
+        "coeffectEnvelopeDigest": "1111111111111111111111111111111111111111111111111111111111111111"
+      }
+    }
+  ]
+}

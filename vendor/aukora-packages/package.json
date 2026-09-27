@@ -1,0 +1,8 @@
+{
+  "name": "@aukora/vendored-packages",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vendored aumara-xyz/aukora packages at def297f. Genesis-authored manifest: marks the generated lib/ as ES modules. src/ is upstream's, byte for byte. See PROVENANCE.json.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module"
+}

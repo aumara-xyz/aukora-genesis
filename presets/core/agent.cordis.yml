@@ -1,0 +1,326 @@
+# The `core` agent preset: a CORE session that does NOT hold Peter's authority.
+#
+# DERIVED FROM THE SHIPPED STANDARD COMPOSITION, and deliberately so: the tools CORE keeps are
+# Standard's tools, so the diff between the two files IS the statement of what CORE gives up. A
+# hand-written preset would drift from upstream silently. The court that compared it against Standard
+# row by row was archived on 2026-09-27 (ARCHIVE.md), so today a reader makes that comparison by hand.
+#
+# WHAT CORE GIVES UP: the shell (`tool-bash`, `tool-pwsh`) and the network tool (`tool-web`).
+#
+# ── AND WHAT IT KEEPS, WHICH THIS HEADER USED TO GET BACKWARDS. ──────────────────────────────────────
+# **PETER DECIDED THAT CORE'S CODE-RUNNING SUBAGENTS STAY ON**, so BOTH subagent providers are ENABLED
+# here — `tool-subagent-codex` and `tool-subagent-claude-code` carry NO `disabled:` key, and
+# the archived court `tests/aura-core-preset.test.mjs` asserted exactly that (ARCHIVE.md).
+#
+# *This paragraph said the opposite until aura-82*: "Both subagent providers stay disabled, as upstream
+# ships them — Codex sends no sandbox by default and Claude Code defaults to `dontAsk`, so neither may
+# be enabled until a court pins it read-only." **The FILE never carried those disables**, so the header
+# and the artifact disagreed, and *a reader who trusted the header would have described CORE wrongly* —
+# the same failure as a comment that describes a loop the code does not run.
+#
+# **THE HONEST STATEMENT OF THE TRADE**: *a CORE session can spawn a code-running subagent*, and what
+# bounds that is **the child's inherited preset** — a child composes the PARENT's preset, which is why
+# the archived court `tests/aura-core-preset.test.mjs` asserted `composedPreset(parent.ctx)` against the child-agent source.
+# *So the decision is not "no code runs under CORE"; it is "code runs under CORE only through children
+# that inherit CORE's own restrictions."*
+#
+# WHICH MODEL CORE RUNS ON, AND WHY IT IS NOT THE POWERFUL ONE. The pinned catalog carries
+# `anthropic/claude-opus-5`, NOT `anthropic/claude-opus-5.5` — and **nothing AUKORA owns routes 5.5 for a
+# DSH session**: the only 5.5 in the tree is the FACE's own mind entry
+# (`plugins/aukora-face/apps/src/auma-live/presence.ts`), which is a different plane, talking to
+# OpenRouter directly for Auma's voice rather than routing a DSH agent. So CORE uses **claude-opus-5**
+# until an upstream pin brings 5.5 to the catalog. **This is a statement about the pin, not a preference**
+# — recorded here so nobody reads CORE's model as a choice somebody made against the powerful one.
+# No vendored file and no fixture was edited to say this: the catalog is upstream's and gitignored, and
+# editing a captured listing would falsify what a provider actually returned.
+#
+# WHAT THE PRESET CANNOT DO, STATED PLAINLY SO NOBODY ASSUMES IT DOES: **it cannot scope paths.**
+# The Standard composition says so itself — "The `fs` service and its policy stay in the host" — so
+# "writes only under state/core/" and the read-deny on `state/launch.json`, `state/lane-door/`,
+# `state/eye/`, `gate-state/` and every `*.sock` are HOST-plane, not preset-plane. **Until AUMLOK's
+# deny-default profile lands, CORE has no shell and no network, but its READS ARE NOT YET DENIED.**
+
+# The `standard` agent preset: the full coding agent, mounted once per process.
+#
+# This file is an AGENT-PLANE composition. The roster mounts it ONCE under a
+# standing scope; every session naming it joins by scope parentage, so the
+# tools and prompt sections registered here cover each joined agent while a
+# session's own state stays keyed per Session/Agent inside the plugins. The
+# host composition (`base.cordis.yml` + `web.cordis.yml`) keeps everything a
+# preset must not own: the registries themselves, the sandbox and approval
+# stack, persistence, and the model route.
+#
+# A service row here MUST sit inside a group carrying an `isolate` realm.
+# Without one it publishes into the root realm, where it is process-global —
+# another preset publishing the same name collides, and a host reader would
+# resolve one preset's instance for every session; `dsh-agent-presets` rejects
+# that at mount. `true` means an entry-local realm: this standing mount's own
+# private instance, apart from every other preset's. (A shared label does NOT
+# pool instances — `provide()` throws on the second registration under the
+# same realm symbol; labels join REALMS, and are not what this file needs.)
+
+# ── identity ────────────────────────────────────────────────────────────────
+
+# The preset's own persona, shadowing the deployment default for this agent.
+# `{{model}}` and `{{cwd}}` resolve from the agent's own route and workspace.
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    suffix: Your working directory is {{cwd}}.
+    prefix: >-
+      You are a coding agent powered by the {{model}} model.
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+# ── shell ───────────────────────────────────────────────────────────────────
+
+# `shell-env` stays in the HOST composition: `apps/cli/src/web.ts` injects it to
+# publish `DSH_WEB_URL`/`DSH_WEB_MODE`, and a host row that injects a service is
+# the criterion for host-plane ownership — injection resolves before any session
+# exists, so there is no agent to key by. Behind a preset realm those variables
+# never reached the model's shell at all. Both shell tools consume the host
+# registry from here; their executors (`bash-sandbox`/`pwsh-sandbox`) are
+# host-plane too.
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  # CORE: unconditionally disabled — the upstream row disabled this only on win32,
+  # which leaves the shell ENABLED on every machine CORE actually runs on.
+  disabled: true
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  # CORE: unconditionally disabled — the upstream row disabled this only on win32,
+  # which leaves the shell ENABLED on every machine CORE actually runs on.
+  disabled: true
+
+# ── filesystem ──────────────────────────────────────────────────────────────
+
+# Both register into the host `tools` registry and provide nothing, so
+# they need no realm. The `fs` service and its policy stay in the host.
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+# ── background jobs ────────────────────────────────────────────────────────
+
+# Only the model-facing controls. The task REGISTRY stays on the host plane:
+# its producers sit outside any realm this file could put it in — `tool-bash`
+# above resolves it with `ctx.get`, and an entry-local realm here is invisible
+# to every sibling row, so `run_in_background` would answer "background jobs
+# unavailable" while these controls sat in the catalog. The registry is keyed by
+# owning agent anyway, so one host instance serves every session. What a preset
+# chooses is whether its agent can collect and stop background work at all.
+- id: tool-jobs
+  name: '@deepseek-ai/dsh-tool-jobs'
+
+# ── skills ──────────────────────────────────────────────────────────────────
+
+# The skill REGISTRY lives in the host composition and is layered per scope:
+# these rows register into THIS preset's layer of it, so they need no realm.
+# `skill-filesystem` contributes local-root discovery for agents on this preset, and
+# `tool-skill` gives them the catalog and loader; the merged catalog also
+# carries whatever the deployment registered globally (repository plugins).
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'
+
+# ── goals ───────────────────────────────────────────────────────────────────
+
+# The goal service and session driver stay on the host plane, where the Gateway
+# can resolve them. The human command and model-facing tool register into this
+# preset's scoped layers.
+- id: command-goal
+  name: '@deepseek-ai/dsh-command-goal'
+
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+
+# ── plan mode ───────────────────────────────────────────────────────────────
+
+# Plan state is per-agent by nature, so an entry-local realm is not a
+# workaround here — it is the correct lifetime.
+- id: planning
+  name: cordis:group
+  group: true
+  isolate:
+    planMode: true
+  config:
+    - id: plan-mode
+      name: '@deepseek-ai/dsh-plan-mode'
+      config:
+        section: |
+              You are in plan mode. Stay in plan mode until exit_plan_mode succeeds or the user switches the session mode. Imperative language to implement changes means plan the implementation, not execute it. A user's conversational agreement — including an answer confirming something you asked — approves nothing and does not end plan mode; fold the confirmed decision into the plan and submit it through exit_plan_mode.
+
+              Explore first. Use non-mutating reads, searches, static analysis, and checks to ground the plan in the actual repository. Do not edit or write files, change configuration, run formatters or code generation that rewrites tracked files, commit, or otherwise carry out the plan. Prefer existing functions and patterns over new machinery.
+
+              The tool catalog stays the same across modes for request-cache stability. These plan-mode rules override any later tool description or guidance that suggests using mutation tools; those tools remain listed to keep the tool catalog unchanged. Do not use todo_write to track this planning phase: it tracks implementation after an approved plan, while the plan itself belongs in exit_plan_mode.
+
+              Resolve discoverable facts by inspection. Use ask_user_question only for user-owned choices or material ambiguity that inspection cannot answer. Do not ask the user where code lives or how current behavior works when you can find out.
+
+              Make the plan decision-complete: state the goal and success criteria; group implementation changes by subsystem; identify public API, schema, and data-flow changes; cover edge cases, failure modes, tests, acceptance criteria, and explicit assumptions. Keep it concise enough to review but detailed enough that another engineer can implement it without making design decisions.
+
+              When ready, call exit_plan_mode with the complete plan markdown, starting with a # title. Make exit_plan_mode the only and final tool call in that assistant response: it presents the plan for approval, and implementation begins only in a later step after approval. Do not paste the final plan as a plain reply or ask "should I proceed?" through prose or ask_user_question. If review rejects it, incorporate the feedback and present again. If the review channel is unavailable or aborted, stay in plan mode and ask the user to switch modes manually; do not proceed with implementation.
+
+# ── compaction ──────────────────────────────────────────────────────────────
+
+# `compaction-basic` reads `toolResultPrune` through `ctx.get`, so the pruner must
+# share this realm rather than sit outside it.
+#
+# `tokenMeter` is deliberately NOT in this realm: the meter stays on the HOST
+# plane, and the rows here resolve that one instance. It takes no configuration,
+# keys every fold by Session, and owns the context-meter projection units the
+# browser reads for every session — behind a realm those units would come and go
+# with whichever presets happen to be mounted. What a preset chooses is whether
+# its agent compacts at all, which is `compaction-basic` below.
+- id: compaction
+  name: cordis:group
+  group: true
+  isolate:
+    compaction: true
+    toolResultPruner: true
+  config:
+    - id: compaction-basic
+      name: '@deepseek-ai/dsh-compaction-basic'
+
+    - id: command-compact
+      name: '@deepseek-ai/dsh-command-compact'
+
+    - id: tool-result-pruner
+      name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+      config:
+        thresholdChars: 8192
+        headChars: 4096
+        tailChars: 1024
+
+# ── delegation and workflows ────────────────────────────────────────────────
+
+# The `subagents` registry and its spawn/fork backends live in the HOST
+# composition: the registry is a process singleton whose cross-session queries
+# the api-proxy serves to the browser, and a provider name may only be
+# registered once. This preset contributes the delegation TOOLS, which resolve
+# that host registry.
+#
+# `workflows` is different — nothing outside an agent reads it — so every row
+# that reaches it shares one entry-local realm here, and a consumer left
+# outside would resolve a host registry this preset does not populate.
+- id: delegation
+  name: cordis:group
+  group: true
+  isolate:
+    workflowEngine: true
+  config:
+    - id: tool-subagent-control
+      name: '@deepseek-ai/dsh-tool-subagent-control'
+
+    - id: tool-subagent-list-agents
+      name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+
+    - id: tool-subagent
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: spawn
+        toolName: subagent
+        modelSelectionSettings: true
+        backgroundMode: continuable
+
+    # Fork omits model selection so provider/model stay equal to the parent and
+    # the inherited history remains eligible for KV Cache reuse. This preset
+    # keeps fork continuable; parent and child inherit the same messaging tool,
+    # while the parent id and return guidance follow the inherited history.
+    - id: tool-subagent-fork
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: fork
+        toolName: subagent_fork
+        backgroundMode: continuable
+
+    # ── THE SUBSCRIPTION HANDS, ENABLED HERE AND NOWHERE ELSE ────────────────────────────────────────────
+    #
+    # The orchestrator runs on DeepSeek V4.1 Flash, which is cheap. For real coding it calls Claude Code and
+    # Codex, which run on Peter's SUBSCRIPTIONS rather than OpenRouter — Opus over OpenRouter cost about a
+    # dollar a minute, and a subscription hand is the difference between delegating work and buying it by the
+    # minute. Later, with funding, a stronger model moves in.
+    #
+    # **UPSTREAM SHIPS BOTH OFF, AND UPSTREAM IS RIGHT TO.** Measured in the vendored source:
+    # `subagent-codex/src/wire.ts:32-46` — the `never` permission mode sends `{approvalPolicy:'never'}` and NO
+    # SANDBOX, so a run inherits whatever `~/.codex/config.toml` trusts; `subagent-claude-code/src/run.ts:56`
+    # — the default mode is `dontAsk`. Enabling them as shipped would hand a model Peter's machine.
+    #
+    # **THE PINS ARE NOT IN THIS FILE, AND THAT IS DELIBERATE.** The adapters take the child's cwd from the
+    # PARENT SESSION and expose no tool allowlist, no added directory, no lock and no wall-clock timeout, so the
+    # pins cannot be expressed as preset config: they live in `plugins/aukora-subscription-hands/lib/pins.mjs`
+    # and `lib/run.mjs`, which BUILD the argv and the environment. **A model supplies a task string and nothing
+    # else**, which is what makes these pins unoverridable rather than merely defaulted.
+    #
+    # The provider rows themselves belong in the HOST composition — a provider name may only be registered once
+    # — and the exact rows, with their `permissionMode` and `env`, are in
+    # `plugins/aukora-subscription-hands/CONFIG.md`. A host that has not mounted them will resolve these tools
+    # against no provider and refuse at spawn, which is the correct failure: no provider, no hand.
+    - id: tool-subagent-codex
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: codex
+        toolName: subagent_codex
+        backgroundMode: one-shot
+        maxDepth: provider-managed
+
+    - id: tool-subagent-claude-code
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: claude-code
+        toolName: subagent_claude_code
+        backgroundMode: one-shot
+        maxDepth: provider-managed
+
+    - id: workflow-ptc
+      name: '@deepseek-ai/dsh-workflow-ptc'
+      config:
+        provider: spawn
+
+    - id: tool-workflow
+      name: '@deepseek-ai/dsh-tool-workflow'
+
+    # Off by default with the base row it mirrors: the tool description
+    # restricts `ralph` to runs the human explicitly asked for, and completion
+    # is a worker self-report, not an independent evaluation. Preset files take
+    # no patches, so a session that wants it duplicates this preset under a new
+    # id and drops `disabled`; the shipped root shadows a copy that reuses this
+    # id.
+    - id: tool-ralph
+      name: '@deepseek-ai/dsh-tool-ralph'
+      disabled: true
+      config:
+        subagentProvider: spawn
+        maxRounds: 64
+
+# ── remaining model-facing rows ─────────────────────────────────────────────
+
+- id: tool-ask-user
+  name: '@deepseek-ai/dsh-tool-ask-user'
+
+- id: tool-todo
+  name: '@deepseek-ai/dsh-tool-todo'
+  config:
+    allowParallelInProgress: true
+
+# The `web` service and its search provider stay in the host composition; only
+# the model-facing tool is per-session.
+- id: tool-web
+  # CORE holds no network or fetch tool.
+  disabled: true
+  name: '@deepseek-ai/dsh-tool-web'
+  config:
+    fetch: true
+    searchTimeoutMs: 60000
+
+- id: present
+  name: '@deepseek-ai/dsh-tool-present'

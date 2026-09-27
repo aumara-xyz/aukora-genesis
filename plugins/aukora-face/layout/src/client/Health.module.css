@@ -1,0 +1,15 @@
+/* THE HEALTH PANEL: one calm column. A warning is a sentence, not a red wall. */
+.health { max-width: 42rem; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; gap: 14px; font-size: 15px; line-height: 1.5; }
+.healthTitle { font-size: 19px; font-weight: 600; margin: 0; }
+.healthLead { margin: 0; opacity: 0.85; }
+.healthFacts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.healthFact { border: 1px solid currentColor; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+.healthFactHead { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
+.healthFactName { font-weight: 600; }
+.healthFactValue { font-variant-numeric: tabular-nums; }
+.healthFactFrom { font-size: 12px; opacity: 0.6; }
+.healthFactTrend { font-size: 13px; opacity: 0.85; }
+.healthWarn { margin: 0; padding: 8px 10px; border: 1px solid currentColor; border-radius: 6px; font-size: 14px; }
+.healthTrouble { margin: 0; font-size: 13px; }
+.healthMenuItem { font: inherit; padding: 4px 8px; text-align: start; background: none; border: 0; cursor: pointer; }
+.healthMenuItemActive { font-weight: 600; }

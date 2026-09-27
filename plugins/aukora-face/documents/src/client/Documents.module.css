@@ -1,0 +1,625 @@
+/* Documents lane. Geometry values are copied from the Messages lane so the two
+   apps seat their brand rows and fills identically; the accent is the spatial
+   gold where Messages uses blue, so a reader can tell the lanes apart at a
+   glance without a second visual language. */
+
+.surface {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: 6px var(--dsh-documents-inline-padding);
+  box-sizing: border-box;
+  overflow: hidden;
+  /* Lane width answers the hot-corner clearance query below. */
+  container-type: inline-size;
+  /* No paint of its own: the lane already carries the surface wash, and an
+     opaque fill here would draw edges down both sides of a full-bleed pane. */
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+}
+
+.surface[hidden] {
+  display: none;
+}
+
+.lane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.brandRow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 60px;
+  padding: 8px 0 8px 4px;
+  padding-right: calc(
+    var(--dsh-hot-corner-size, 74px)
+    + var(--dsh-hot-corner-gutter, 10px)
+    - var(--dsh-documents-inline-padding)
+  );
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.brandName {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The honesty surface: one slim gold line naming what this lane actually
+   reads. Same posture as the Messages lane's runtime line. */
+.posture {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 4px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--dsw-static-spatial-gold);
+}
+
+.posture::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dsw-static-spatial-gold);
+}
+
+/* The root path and the count on the second honesty line: monospace so a path reads as
+   a path, wrapping under the dot rather than pushing the line off the lane. */
+.postureCode {
+  font-family: var(--dsw-font-family-mono, var(--ds-font-family-code, ui-monospace, SFMono-Regular, Menlo, monospace));
+  font-size: 11px;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+/* A quiet text action in the brand row (the deliberate re-read). */
+.textButton {
+  flex: none;
+  height: 26px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 26px;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 999px;
+}
+
+.textButton:hover:not(:disabled) {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.textButton:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 1px;
+}
+
+.textButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.searchRow {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 0 4px;
+}
+
+.searchMark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  font: inherit;
+  font-size: 13px;
+  color: var(--dsw-alias-label-primary);
+  background: transparent;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 9px;
+  outline: none;
+}
+
+.searchInput:focus-visible {
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-gold) 58%, transparent);
+}
+
+.categoryRow {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+
+.categoryChip {
+  height: 26px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 26px;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 999px;
+}
+
+.categoryChip:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.categoryChip:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 1px;
+}
+
+.categoryChip[aria-pressed='true'] {
+  color: var(--dsw-alias-label-primary);
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-gold) 52%, transparent);
+  background: color-mix(in srgb, var(--dsw-static-spatial-gold) 13%, transparent);
+}
+
+/* The scrollport. The portal grid is the only scrolling region, so the brand
+   row and category chips stay put while documents move. */
+.grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 4px 12px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.groupHeading {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 17px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.groupCount {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* Portals: the categorized grid of buttons. A 2-up measure above the container
+   breakpoint, one column below it, so the grid answers the pane rather than a
+   fixed viewport. */
+.portals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@container (width<=868px) {
+  .portals {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.portal {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 68px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+  text-align: left;
+  color: var(--dsw-alias-label-primary);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 28%, transparent);
+  border-radius: 14px;
+  transition:
+    transform 0.2s var(--ds-ease-in-out),
+    border-color 0.25s var(--ds-ease-in-out),
+    box-shadow 0.25s var(--ds-ease-in-out);
+}
+
+.portal:hover {
+  transform: translate(3px);
+}
+
+.portal:focus-visible {
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-gold) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--dsw-static-spatial-gold) 14%, transparent);
+  outline: none;
+}
+
+.portalMark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: var(--dsw-static-spatial-gold);
+  background: color-mix(in srgb, var(--dsw-static-spatial-gold) 16%, transparent);
+  border-radius: 10px;
+}
+
+.portalCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.portalTitle {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 570;
+}
+
+/* The path under the title: monospace and muted, because it is an address, not prose. */
+.portalPath {
+  font-family: var(--dsw-font-family-mono, var(--ds-font-family-code, ui-monospace, SFMono-Regular, Menlo, monospace));
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+.portalMeta {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.listEmpty {
+  margin: 0;
+  padding: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* ── the full-page reader ─────────────────────────────────────────────────── */
+
+/* One document, opened full-page over the lane. Same column measure as the
+   thread view so a document and a conversation occupy the same seat. */
+.reader {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding-top: calc(var(--dsh-hot-corner-size, 74px) * 0.4);
+  box-sizing: border-box;
+  gap: 10px;
+}
+
+.readerHeader {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 8px 12px;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 16px;
+}
+
+@container (width<=868px) {
+  .readerHeader {
+    padding-inline: 74px;
+  }
+}
+
+.readerTitle {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iconButton {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+}
+
+.iconButton:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 1px;
+}
+
+.readerMeta {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.readerBody {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 4px 12px 16px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+/* ── rendered markdown ────────────────────────────────────────────────────── */
+
+/* The document's own type scale, one step down from the chrome so the chrome stays
+   legible as chrome. Every element here comes from the block tree in `markdown.ts`;
+   nothing on this surface interprets raw HTML. */
+.markdownHeading {
+  margin: 12px 0 0;
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.markdownParagraph {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+.markdownList {
+  margin: 0;
+  padding-left: 22px;
+  max-width: 68ch;
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.markdownQuote {
+  margin: 0;
+  padding: 2px 0 2px 12px;
+  max-width: 68ch;
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--dsw-alias-label-secondary);
+  border-left: 2px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);
+}
+
+.markdownFigure {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.markdownCaption {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.markdownPre {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: var(--dsw-font-family-mono, var(--ds-font-family-code, ui-monospace, SFMono-Regular, Menlo, monospace));
+  font-size: 12px;
+  line-height: 19px;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+}
+
+.markdownInlineCode {
+  padding: 1px 5px;
+  font-family: var(--dsw-font-family-mono, var(--ds-font-family-code, ui-monospace, SFMono-Regular, Menlo, monospace));
+  font-size: 12px;
+  background: var(--dsw-alias-interactive-bg-hover);
+  border-radius: 6px;
+}
+
+.markdownLink {
+  color: var(--dsw-static-spatial-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdownTable {
+  border-collapse: collapse;
+  max-width: 68ch;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.markdownTable th,
+.markdownTable td {
+  padding: 4px 10px;
+  text-align: left;
+  border: 1px solid var(--dsw-alias-border-l2);
+}
+
+.markdownRule {
+  width: 100%;
+  margin: 4px 0;
+  border: none;
+  border-top: 1px solid var(--dsw-alias-border-l2);
+}
+
+/* ── the failure state ────────────────────────────────────────────────────── */
+
+/* A failed read is shown, never rounded to an empty list: the reason the host gave is
+   the visible text, so a refusal and an empty root cannot be confused. */
+.failure {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);
+  border-radius: 14px;
+}
+
+.failureTitle {
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 600;
+  color: var(--dsw-alias-label-primary);
+}
+
+.failureReason {
+  font-family: var(--dsw-font-family-mono, var(--ds-font-family-code, ui-monospace, SFMono-Regular, Menlo, monospace));
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-secondary);
+  overflow-wrap: anywhere;
+}
+
+.failureHint {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+/* ── the Apps-menu launcher ───────────────────────────────────────────────── */
+
+.menuItem,
+.menuItemActive {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.menuMark {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dsw-static-spatial-gold);
+}
+
+.menuCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.menuCopy strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 570;
+  line-height: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuCopy span {
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--dsw-alias-label-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -1,0 +1,36 @@
+{
+  "name": "@aukora/dsh-plugin-eye",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AUKORA Eye: the model's own look at the running app — a photograph of the shell's window through a token-fenced loopback door, returned as an image with a pixel diff against the previous capture.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./capture": {
+      "default": "./lib/capture.mjs"
+    },
+    "./diff": {
+      "default": "./lib/diff.mjs"
+    },
+    "./png": {
+      "default": "./lib/png.mjs"
+    },
+    "./store": {
+      "default": "./lib/store.mjs"
+    },
+    "./tools": {
+      "default": "./lib/tools.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "license": "AGPL-3.0-or-later"
+}

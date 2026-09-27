@@ -1,0 +1,31 @@
+{
+  "name": "aukora-phi",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A witness over AI coding agents, from outside the vendor: one signed law, one hash-linked receipt chain, and a surface where nothing reaches disk without the owner's click.",
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aumara-xyz/aukora-phi.git"
+  },
+  "bin": {
+    "aukora": "bin/witness.mjs"
+  },
+  "scripts": {
+    "start": "bun run scripts/start.ts",
+    "gate": "bun run scripts/gate.ts",
+    "test": "bun run scripts/gate.ts",
+    "conformance": "bun run scripts/conformance-gate.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start:hosted": "bash scripts/serve-hosted.sh",
+    "ceremony": "bun run ceremony/door.ts",
+    "build:core": "asc seed/core.ts --outFile seed/dist/core.wasm --optimize --exportRuntime"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "assemblyscript": "^0.28.20",
+    "bun-types": "^1.3.14",
+    "typescript": "^7.0.2"
+  }
+}

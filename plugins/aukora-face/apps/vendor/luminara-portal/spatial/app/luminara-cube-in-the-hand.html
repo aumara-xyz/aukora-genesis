@@ -1,0 +1,1119 @@
+<!doctype html>
+<!-- AUMA LUMINARA — THE CUBE, TURNED IN THE HAND (named from the bench toy's
+     own title at the architect's word, 10 August 2026). A workshop surface,
+     unlinked from the nav until the architect graduates it.
+
+     The twenty-seven are not twenty-seven things inside a cube; they are the
+     twenty-seven PARTS of one cube. A trit pins its axis to one side or
+     leaves it free: pin all three and you have named a corner (eight), pin
+     two and you have an edge (twelve), pin one and you have a face (six),
+     pin none and you have the body itself, which is the Seed. Restlessness
+     is how many axes are pinned; the seats are the barycentres of the parts;
+     the bones are the cube's own incidence, every line one clock stepping
+     between still and moving. The Rubik census is this reading made toy:
+     core, centres, edges, corners, and the sticker count is the restlessness.
+
+     The cube turns slowly on its own; the hand takes it and it yields; laid
+     down, it resumes. Under prefers-reduced-motion it never turns itself.
+     THE SHADOW flattens depth at the current bearing, and the count of seats
+     tells the honesty of every view: a face leaves nine, an edge fifteen,
+     the corner nineteen, and the corner's blind spot is the Scar and the
+     Return, the triple eclipse the astrolabe's plate unstacks.
+
+     THE ROSETTE is a world pose, not a screen trick: the plate's seats are
+     lifted into space on the plane of the long diagonal, the bloom slides
+     each glyph along its own shell sphere, and the flat pose turns in the
+     hand exactly as the solid does. The glyphs are in the round: each card's
+     (p, q) strand on its own golden torus, the shared renderer's winding law
+     kept whole, drawn on a canvas beneath the pointer layer so every
+     crossing sorts honestly in depth.
+
+     THE WATER is the fourth mode and the knots' native sea: every strand on
+     a flat torus in the three-sphere, the shells nested around the Seed's
+     core circle, brought to the glass by a stereographic eye. Its ambient is
+     the sphere's own double rotation, tuned by a touch to a card's winding
+     so the strand pours along itself. And every reading tumbles in the
+     round: one slow two-axis turn that brings the sides around, the flat
+     poses included, since a plate seen edge-on and back is what makes it a
+     plate; a named bearing holds one breath first, long enough to read its
+     count. The water alone streams instead of tumbling.
+
+     The laws hold: the null is never lit (the Seed is the one dark part);
+     a touch NAMES a glyph and stops there, the Guide holds the meanings;
+     composed, never cast; silent, entirely: this page has no voice at all. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the cube, turned in the hand</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34); --line:rgba(255,255,255,0.08); }
+  html,body { margin:0; background:#0a0b0e; color:var(--text); font:14px/1.6 system-ui, sans-serif; }
+  .wrap { max-width:760px; margin:0 auto; padding:26px 18px 80px; }
+  header { text-align:center; margin-bottom:4px; }
+  h1 { font-size:15px; letter-spacing:0.34em; margin:0 0 3px;
+    background:linear-gradient(100deg,#C9D3E2,#EFE7CF 55%,#F0C25E);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:10px; letter-spacing:0.2em; color:var(--faint); }
+  .note { text-align:center; font-size:11px; color:var(--dim); max-width:600px; margin:12px auto 14px; }
+  .note a { color:#EFE7CF; text-decoration:none; border-bottom:1px solid rgba(240,194,94,0.35); }
+  .stage { position:relative; width:min(92vw, 560px); margin:0 auto; }
+  /* the ink is the canvas beneath; the svg above carries only the pointers */
+  .stage canvas { position:absolute; inset:0; width:100%; height:100%; }
+  .stage svg { position:relative; z-index:1; width:100%; height:auto; display:block; overflow:visible; cursor:grab; touch-action:none; }
+  .stage svg:active { cursor:grabbing; }
+  .ccard { cursor:pointer; }
+  .btns { display:flex; gap:8px; justify-content:center; margin:12px 0 4px; flex-wrap:wrap; }
+  button { font:inherit; font-size:11px; letter-spacing:0.08em; color:var(--dim); background:none;
+    border:1px solid var(--line); border-radius:10px; padding:6px 14px; cursor:pointer; }
+  button:hover { color:#EFE7CF; border-color:rgba(240,194,94,0.35); }
+  button.on { color:#EFE7CF; border-color:rgba(240,194,94,0.5); }
+  .seats { text-align:center; font-size:9.5px; letter-spacing:0.22em; color:var(--faint); margin-top:6px; }
+  .nameline { text-align:center; font-size:10.5px; letter-spacing:0.08em; color:var(--dim);
+    margin:8px auto 0; min-height:20px; line-height:1.55; }
+  .nameline a { color:var(--faint); }
+  .sect { max-width:640px; margin:28px auto 0; }
+  .sect h2 { font-size:10px; letter-spacing:0.26em; color:var(--faint); font-weight:400;
+    margin:0 0 10px; text-align:center; }
+  .legend { display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:10px 18px; }
+  .leg { border:1px solid var(--line); border-radius:12px; padding:11px 14px; }
+  .leg b { display:block; font-size:10px; letter-spacing:0.2em; font-weight:400; color:#EFE7CF; margin-bottom:3px; }
+  .leg span { font-size:11.5px; color:var(--dim); }
+  .laws { text-align:center; font-size:9.5px; letter-spacing:0.16em; color:var(--faint); margin-top:30px; line-height:2; }
+  .register { text-align:center; font-size:10px; letter-spacing:0.14em; color:var(--faint); margin-top:12px; }
+  .navrow { display:flex; justify-content:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .navrow a { font:11px system-ui; letter-spacing:0.08em; color:var(--dim); text-decoration:none;
+    border:1px solid var(--line); border-radius:10px; padding:6px 14px; }
+  .navrow a:hover { color:#EFE7CF; border-color:rgba(240,194,94,0.35); }
+</style>
+<link rel="stylesheet" href="/app/luminara-nav.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE CUBE, TURNED IN THE HAND</h1>
+    <div class="sub">THE TWENTY-SEVEN AS THE PARTS OF ONE CUBE · DRAG TO TURN · LAID DOWN, IT TURNS ITSELF</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+  <div class="note">A trit pins its axis or leaves it free. Pin all three and you have named a
+    corner; pin two, an edge; pin one, a face; pin none and you hold the body itself, the Seed,
+    the one part no turning can ever show. Every glyph sits at the barycentre of its part, and
+    every line is one clock stepping between still and moving.</div>
+
+  <div class="stage"><canvas id="ink" aria-hidden="true"></canvas><svg id="v" viewBox="-112 -112 224 224" aria-label="the cube, turned in the hand"></svg></div>
+
+  <div class="btns">
+    <button id="bFace" type="button">THE FACE</button>
+    <button id="bEdge" type="button">THE EDGE</button>
+    <button id="bCorner" type="button">THE CORNER</button>
+    <button id="bAnat" type="button">THE ANATOMY</button>
+    <button id="bShadow" type="button">THE SHADOW</button>
+    <button id="bRosette" type="button">THE ROSETTE</button>
+    <button id="bPlate" type="button">THE PLATE</button>
+    <button id="bWater" type="button">THE WATER</button>
+  </div>
+  <div class="seats" id="seats"></div>
+  <div class="nameline" id="nameLine">touch a glyph to name it</div>
+
+  <div class="sect">
+    <h2>THE OBJECT, READ</h2>
+    <div class="legend">
+      <div class="leg"><b>THE ANATOMY</b><span>One body, six faces, twelve edges, eight
+        corners: twenty-seven parts, and the census is the turning toy's own, core, centres,
+        edges, corners, the sticker count the restlessness. The Seed is the core: the one
+        part that cannot be shown, the null never lit. The button performs the reading:
+        each face cell raises its pane of the cube's skin, each edge cell becomes the strut
+        its name says it is, the corners are the corners, and every glyph stands at the
+        exact barycentre of the part that grows around it.</span></div>
+      <div class="leg"><b>THE BONES</b><span>Fifty-four lines, the cube's own incidence:
+        each edge lies in two faces, each corner closes three edges, each face rests on the
+        body. A one-step move of the standing cell walks exactly one bone.</span></div>
+      <div class="leg"><b>THE TURN</b><span>Every mode turns about its own axis. A named
+        bearing rolls about its line of sight, and the corner's roll is the cube's own
+        threefold turn, the three clocks cycling seat to seat; the shadow spins in its
+        plane; the rosette spins about its own normal, a plate turning at any tilt; the
+        water streams. The hand takes any of them and they yield; laid down, they resume.
+        Under a reduced-motion request nothing turns itself: the stillness is the reader's
+        own law, honoured.</span></div>
+      <div class="leg"><b>THE SHADOW</b><span>Flattens depth at the current bearing: the
+        cast shadow of the moment. The count above tells each view's honesty: a face leaves
+        nine seats, an edge fifteen, the corner nineteen, and the corner's blind spot is the
+        Scar and the Return behind the Seed, the triple eclipse.</span></div>
+      <div class="leg"><b>THE ROSETTE</b><span>The object itself, in the round. Sort the
+        parts by restlessness and each shell is already a perfect figure on its own sphere,
+        nothing moved to make it so: the six faces an octahedron, the twelve edges a
+        cuboctahedron, the eight corners the cube itself. The dress trades the lattice's
+        bones for each shell's own frame, nearest neighbours on each sphere, wakes the
+        three spheres as cages of great circles, and lays every dyad through the still
+        centre. The flat rosette was only ever this object's shadow.</span></div>
+      <div class="leg"><b>THE PLATE</b><span>The flat pose, anchored in space and not on
+        the glass. The bloom slides every glyph along its own sphere to the seat the
+        astrolabe's plate holds for it, longitude kept, latitude poured out, no distance to
+        the centre ever changing, and the plate furnishes itself as it opens: the rings the
+        equators of the spheres on the diagonal's plane, the diameters chords through the
+        still centre. Turn it and see the whole plate close edge-on to a line of glyphs,
+        tilt it back to full face. All twenty-seven seats return.</span></div>
+      <div class="leg"><b>THE GLYPHS IN THE ROUND</b><span>Each card's knot is the true
+        strand it always was: wound p against q on its own golden torus exactly as the flat
+        faces wind it, in its own metal, links weaving their counter's. A card and its
+        answer are mirror windings facing each other across the centre, and every crossing
+        is sorted honestly in depth, this page's ink and no other's.</span></div>
+      <div class="leg"><b>THE WATER</b><span>The knots' native sea, one dimension up. Every
+        torus knot lies without distortion on a flat torus in the three-sphere, and the
+        shells become three nested tori around the Seed's core circle, the unknot at the
+        heart of the weave: in the water nothing hides behind anything, and the exiles need
+        no fiat. The stream is the sphere's double rotation, the Hopf's own one-and-one
+        until a touch tunes it to a card's winding, and then that strand pours along its
+        own body, a knot flowing through itself. What swells has neared the eye's far pole:
+        the swelling is the fourth dimension, honestly projected.</span></div>
+      <div class="leg"><b>THE MEETING</b><span>Touch a strand and the stream tunes to it;
+        touch a second and the two are laid on the one shared torus, the middle water, the
+        rest of the sea dimming to a ghost. Their windings cross exactly the determinant of
+        their two laws, and every crossing is marked where it truly falls, riding the same
+        stream. The deck holds no parallel pair, so no meeting is ever empty; the widest is
+        the Scar against the Return, one hundred and eighty-two crossings. A touch of open
+        water releases.</span></div>
+    </div>
+  </div>
+
+  <div class="laws">THE NULL IS NEVER LIT · NAMES, NEVER MEANINGS · COMPOSED, NEVER CAST<br>
+    DERIVED, NEVER DRAWN · SILENT, ENTIRELY</div>
+  <div class="register">A WORKSHOP SURFACE · THE INSTRUMENT SHOWS · THE CANON DECIDES</div>
+  <div class="navrow">
+    <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+    <a href="/app/luminara-cube.html">THE LIVING CUBE</a>
+    <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+    <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+  </div>
+</div>
+
+<script type="module">
+import { cardOf, codeOf, codeMarks, isSilent, knotOf, counterOf } from '/app/luminara-canon.js';
+import { metalOf, rampOf } from '/app/luminara-knots.js';
+import { rosetteLayout } from '/app/map-room-figures.js';
+import { meetingDet, meetingPoints, MEETING_SEP } from '/app/luminara-meetings.js';
+
+const WHITEGOLD = '#EFE7CF';
+const PHI = (1 + Math.sqrt(5)) / 2;
+const S = 52, VIEW = 112, F = (v) => Number(v).toFixed(2);
+
+// the parts: each card's signed vector, digit two being the turned side
+const cells = [];
+for (let n = 1; n <= 27; n++) {
+  const v = codeOf(n).map((d) => (d === 2 ? -1 : d));
+  cells.push({ n, v, shell: v.filter((x) => x !== 0).length });
+}
+const byKey = new Map(cells.map((c) => [c.v.join(','), c]));
+const byN = new Map(cells.map((c) => [c.n, c]));
+// the bones: zero one moving trit — the incidence of the parts, 54 in all
+const bones = [];
+for (const c of cells) c.v.forEach((t, i) => {
+  if (t === 0) return;
+  const p = c.v.slice(); p[i] = 0;
+  bones.push([c, byKey.get(p.join(','))]);
+});
+// THE ROSETTE IN THE ROUND: the seats were never uneven in three dimensions.
+// Sort the parts by restlessness and each shell is already a perfect solid
+// on its own sphere: the six faces an octahedron, the twelve edges a
+// cuboctahedron, the eight corners the cube itself, nothing moved to make
+// it so. The dress trades the lattice's bones for each shell's own frame:
+// nearest neighbours on each sphere, derived from distance alone, twelve
+// and twenty-four and twelve edges, with the dyads as true diameters.
+const shellEdges = [];
+for (const k of [1, 2, 3]) {
+  const ring = cells.filter((c) => c.shell === k);
+  const distOf = (a, b) => Math.hypot(a.v[0] - b.v[0], a.v[1] - b.v[1], a.v[2] - b.v[2]);
+  let min = Infinity;
+  for (const a of ring) for (const b of ring) {
+    if (a.n < b.n) min = Math.min(min, distOf(a, b));
+  }
+  for (const a of ring) for (const b of ring) {
+    if (a.n < b.n && distOf(a, b) < min + 1e-9) shellEdges.push([a, b]);
+  }
+}
+
+// orientation: rows e1 (screen x), e2 (screen y, downward), e3 (depth, toward
+// the eye). The corner bearing matches the astrolabe's plate exactly, so THE
+// SHADOW at that bearing is the rosette before its unstacking.
+const CORNER = [[-1 / Math.sqrt(6), -1 / Math.sqrt(6), 2 / Math.sqrt(6)],
+                [-1 / Math.SQRT2, 1 / Math.SQRT2, 0],
+                [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)]];
+const FACE = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+const EDGE = [[1 / Math.SQRT2, -1 / Math.SQRT2, 0], [0, 0, 1], [1 / Math.SQRT2, 1 / Math.SQRT2, 0]];
+let M = CORNER.map((r) => r.slice());
+let targetM = null;
+let flat = 0, targetFlat = 0;   // THE SHADOW: depth flattened at this bearing
+let ros = 0, targetRos = 0;     // THE PLATE: the bloom toward the flat pose
+let dress = 0, targetDress = 0; // THE ROSETTE: the object dressed as its shells
+let anat = 0, targetAnat = 0;   // THE ANATOMY: the parts drawn as the parts they are
+let water = false;              // THE WATER: the knots' native sea, one dimension up
+let W1 = 0, W2 = 0;             // the double rotation's two accumulated angles
+let stream = [0.10, 0.10];      // the sea's flow: the Hopf's own one-and-one until tuned
+let streamN = null;             // the card the water is tuned to, if any
+let seatMode = 'corner';        // the named bearing in force, until the hand takes it
+let meet = null;                // THE MEETING: two cards on one torus, their crossings counted
+
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+function orthonorm(m) {
+  const nrm = (v) => { const h = Math.hypot(...v); return v.map((x) => x / h); };
+  m[0] = nrm(m[0]);
+  m[1] = nrm(m[1].map((x, i) => x - dot(m[1], m[0]) * m[0][i]));
+  m[2] = nrm(m[2].map((x, i) => x - dot(m[2], m[0]) * m[0][i] - dot(m[2], m[1]) * m[1][i]));
+  return m;
+}
+function turn(row, th) {  // rotate a screen row against depth
+  const c = Math.cos(th), s = Math.sin(th);
+  const a = M[row].slice(), b = M[2].slice();
+  M[row] = a.map((x, i) => c * x - s * b[i]);
+  M[2] = b.map((x, i) => s * a[i] + c * x);
+}
+// the per-axis turns (a roll about the line of sight, a spin about a world
+// axis) stood here until the architect heard them for what they were: a
+// picture rotating in two dimensions. The tumble below replaced them.
+
+// THE POSE, ANCHORED IN THE WORLD. The shells' radii are true in three
+// dimensions: a cell with k moving layers stands at exactly root-k from the
+// centre, so the cube's parts already live on three concentric spheres, and
+// the rosette is the same object in its flat pose. The pose is a WORLD
+// configuration, not a trick of the glass: the plate's seats, quoted from
+// rosetteLayout(S), are lifted back into space on the plane whose normal is
+// the long diagonal, and the bloom slides each glyph along the great circle
+// of its own sphere from cube seat to plate seat. In world coordinates every
+// seat's azimuth IS its shadow azimuth, so longitude is kept by nature and
+// only latitude pours; no distance to the centre ever changes; and the flat
+// pose turns in the hand exactly as the solid does, edge-on, tilted, or full
+// face, at any stage of the bloom.
+const PLATE = new Map(rosetteLayout(S).map((c) => [c.n, c]));
+const DIAG = [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)];
+for (const c of cells) {
+  if (c.shell === 0) continue;
+  const seat = PLATE.get(c.n);
+  const w = [0, 1, 2].map((i) => seat.x * CORNER[0][i] + seat.y * CORNER[1][i]);
+  const Rw = Math.hypot(...w);
+  c.u0 = c.v.map((x) => x / Math.sqrt(c.shell));   // the cube seat's direction
+  c.u1 = w.map((x) => x / Rw);                     // the plate seat's, in space
+  c.om = Math.acos(Math.max(-1, Math.min(1, dot(c.u0, c.u1))));
+}
+function poseOf(c) {
+  if (c.shell === 0) return [0, 0, 0];
+  const R3 = S * Math.sqrt(c.shell);
+  if (ros <= 0 || c.om < 1e-6) return c.u0.map((x) => x * R3);
+  const so = Math.sin(c.om);
+  const A = Math.sin((1 - ros) * c.om) / so, B = Math.sin(ros * c.om) / so;
+  return c.u0.map((x, i) => (x * A + c.u1[i] * B) * R3);
+}
+
+// THE GLYPHS IN THE ROUND, BUILT ONCE: each card's knot as the true strand it
+// always was, wound (p, q) on the golden torus exactly as the shared renderer
+// winds it (R = phi, r = 1, the tube q against the longitude p), in the card's
+// own metal with links weaving their counter's. Nothing invented, only
+// un-flattened: the same curve the flat faces project, kept in the round.
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+for (const c of cells) {
+  if (c.n === 1) continue;
+  const k = knotOf(c.n);
+  const colors = k.kind === 'link' ? [metalOf(c.n), metalOf(counterOf(c.n))] : [metalOf(c.n)];
+  const g = k.q === 0 ? 1 : gcd(k.p, Math.abs(k.q));
+  const pf = k.p / g, qf = k.q / g;
+  const N = Math.round(0.5 * Math.min(520, Math.max(150, 30 * pf + 13 * Math.abs(qf))));
+  c.strands = [];
+  for (let f = 0; f < g; f++) {
+    const phase = 2 * Math.PI * f / g, pts = new Float64Array(3 * (N + 1));
+    for (let j = 0; j <= N; j++) {
+      const t = j / N * 2 * Math.PI;
+      const tube = qf * t + phase, lon = pf * t;
+      pts[3 * j] = (PHI + Math.cos(tube)) * Math.cos(lon);
+      pts[3 * j + 1] = (PHI + Math.cos(tube)) * Math.sin(lon);
+      pts[3 * j + 2] = Math.sin(tube);
+    }
+    c.strands.push({ pts, N, ramp: rampOf(colors[f % colors.length]) });
+  }
+}
+
+// THE PAINTER'S POOL AND BATCH. The same few thousand primitives are
+// re-dressed every frame rather than born and abandoned, so the collector
+// never stalls a turn; and the sorted segments are stroked in runs of one
+// shared style rather than one by one, with the width and the breath
+// quantised below the eye's threshold so the runs grow long. The honesty of
+// the painter is untouched: the order is still the depth order, every
+// crossing still sorts, only the bookkeeping got out of the way.
+const POOL = [], FRAME = [];
+let PN = 0;
+function primOf() {
+  let p = POOL[PN];
+  if (!p) p = POOL[PN] = { z: 0, kind: 'line', x1: 0, y1: 0, x2: 0, y2: 0,
+    xs: null, ys: null, x: 0, y: 0, r: 0, s: 1, col: '', w: 0.5, op: 1,
+    dash: false, ring: false, ramp: null, n: 0, zk: 0, wq: 0, aq: 0 };
+  PN++;
+  p.kind = 'line'; p.dash = false; p.ring = false; p.xs = null; p.ramp = null;
+  FRAME.push(p);
+  return p;
+}
+function paintLines(u2p, px, py) {
+  // the depth is cut into slices a hundredth of the span deep, thinner than
+  // any crossing the eye can read; within one slice the strokes gather by
+  // style, so a frame's thousands of segments land in a few hundred strokes.
+  // The order is still the depth order at the eye's own resolution: the
+  // painter got faster, never less honest.
+  let lo = Infinity, hi = -Infinity;
+  for (const p of FRAME) { if (p.z < lo) lo = p.z; if (p.z > hi) hi = p.z; }
+  const span = Math.max(1e-6, hi - lo);
+  // one packed number carries the whole order: slice first, then style, so
+  // the sort is a single numeric compare and the runs still gather
+  for (const p of FRAME) {
+    const zk = Math.round((p.z - lo) / span * 64);
+    let ci = COL_ID.get(p.col);
+    if (ci === undefined) { ci = COL_ID.size; COL_ID.set(p.col, ci); }
+    p.wq = Math.max(0.4, Math.round(Math.min(31, p.w * u2p) * 4) / 4);
+    p.aq = Math.round(Math.min(1, Math.max(0, p.op)) * 24) / 24;
+    p.zk = (((((zk * 2 + (p.dash ? 1 : 0)) * 2 + (p.kind === 'arc' ? 1 : 0)) * 512 + ci) * 128
+      + Math.round(p.wq * 4)) * 32) + Math.round(p.aq * 24);
+  }
+  FRAME.sort((a, b) => a.zk - b.zk);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  // consecutive segments of one strand are CHAINED into a single subpath:
+  // two half-opacity round caps stamped on the same joint paint it twice and
+  // bead the whole strand, while a chained joint is painted once and rounds
+  // itself. The chain breaks wherever the style steps, and that is fine
+  let curCol = null, curW = -1, curA = -1, dashOn = false, open = false, openKind = '';
+  let chainX = NaN, chainY = NaN;
+  const flush = () => { if (open) { ctx.stroke(); open = false; chainX = NaN; chainY = NaN; } };
+  for (const p of FRAME) {
+    if (p.kind === 'quad') {
+      flush(); curCol = null;
+      ctx.globalAlpha = curA = p.op; ctx.fillStyle = p.col;
+      ctx.beginPath();
+      ctx.moveTo(px(p.xs[0]), py(p.ys[0]));
+      for (let i = 1; i < 4; i++) ctx.lineTo(px(p.xs[i]), py(p.ys[i]));
+      ctx.closePath(); ctx.fill();
+      continue;
+    }
+    if (p.kind === 'seed') {
+      flush();
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(px(p.x), py(p.y), p.r * u2p, 0, 2 * Math.PI);
+      ctx.fillStyle = '#0a0b0e'; ctx.fill();
+      ctx.lineWidth = curW = p.w * u2p; ctx.strokeStyle = curCol = WHITEGOLD;
+      ctx.globalAlpha = curA = 0.9; ctx.stroke();
+      continue;
+    }
+    if (p.dash !== dashOn) {
+      flush();
+      ctx.setLineDash(p.dash ? [2 * u2p, 3 * u2p] : []);
+      dashOn = p.dash;
+    }
+    if (p.col !== curCol || p.wq !== curW || p.aq !== curA || openKind !== p.kind) {
+      flush();
+      ctx.strokeStyle = curCol = p.col;
+      ctx.lineWidth = curW = p.wq;
+      ctx.globalAlpha = curA = p.aq;
+      openKind = p.kind;
+    }
+    if (!open) { ctx.beginPath(); open = true; }
+    if (p.kind === 'arc') {
+      ctx.moveTo(px(p.x) + p.r * u2p, py(p.y));
+      ctx.arc(px(p.x), py(p.y), p.r * u2p, 0, 2 * Math.PI);
+    } else {
+      if (p.x1 !== chainX || p.y1 !== chainY) ctx.moveTo(px(p.x1), py(p.y1));
+      ctx.lineTo(px(p.x2), py(p.y2));
+      chainX = p.x2; chainY = p.y2;
+    }
+  }
+  flush();
+  if (dashOn) ctx.setLineDash([]);
+  ctx.globalAlpha = 1;
+}
+const SCRATCH = new Float64Array(3 * 1024);
+const COL_ID = new Map();   // the inks interned once, so the sort stays numeric
+const WPT_A = new Float64Array(4), WPT_B = new Float64Array(4);
+let seaLo = NaN, seaHi = NaN;   // the sea's breath, eased in time
+
+// THE WATER, BUILT ONCE: the knots' native sea is one dimension up. Every
+// torus knot lies WITHOUT DISTORTION on a flat torus in the three-sphere,
+// |z1| = cos(alpha) against |z2| = sin(alpha), and the shells become three
+// nested tori around the Seed's own seat, alpha = 0: the core circle, the
+// unknot at the heart of the whole weave. A stereographic eye brings the sea
+// home to the glass, swelling what nears its far pole, and nothing needs a
+// fiat here: in the water no part of the deck hides behind any other.
+const ALPHAS = [0, Math.PI / 6, Math.PI / 4, Math.PI / 3];
+const bySea = [[], [], [], []];
+for (const c of cells) bySea[c.shell].push(c.n);
+for (const c of cells) {
+  let pf = 1, qf = 0, g = 1, ramps = [rampOf(WHITEGOLD)];
+  if (c.n !== 1) {
+    const k = knotOf(c.n);
+    g = k.q === 0 ? 1 : gcd(k.p, Math.abs(k.q));
+    pf = k.p / g; qf = k.q / g;
+    ramps = k.kind === 'link'
+      ? [rampOf(metalOf(c.n)), rampOf(metalOf(counterOf(c.n)))]
+      : [rampOf(metalOf(c.n))];
+  }
+  // each shell's strands spread a hair's breadth about their true torus, the
+  // log's own device: separation for the eye, never a re-measurement
+  const fam = bySea[c.shell];
+  const alpha = ALPHAS[c.shell]
+    + (fam.length > 1 ? (fam.indexOf(c.n) - (fam.length - 1) / 2) * 0.011 : 0);
+  // the base sampling breathes easier now the swell is split where it
+  // swells: fewer chords where the sea is calm, honest density where the
+  // eye magnifies
+  const N = Math.round(Math.min(360, Math.max(100, 18 * (Math.abs(pf) + Math.abs(qf)) + 50)));
+  // the winding sampled once: per frame the stream only ROTATES these
+  // tables, two products a coordinate, and the trigonometry never returns
+  const tabs = [];
+  for (let f = 0; f < g; f++) {
+    const off = 2 * Math.PI * f / g, tab = new Float64Array(4 * (N + 1));
+    for (let j = 0; j <= N; j++) {
+      const t = j / N * 2 * Math.PI;
+      tab[4 * j] = Math.cos(pf * t); tab[4 * j + 1] = Math.sin(pf * t);
+      tab[4 * j + 2] = Math.cos(qf * t + off); tab[4 * j + 3] = Math.sin(qf * t + off);
+    }
+    tabs.push(tab);
+  }
+  c.water = { pf, qf, g, ramps, tabs,
+    cosA: Math.cos(alpha), sinA: Math.sin(alpha), N,
+    // the half-step rotations: a segment the eye's swell has stretched is
+    // split at its true midpoint, not its chord's, for the price of a turn
+    cH1: Math.cos(pf * Math.PI / N), sH1: Math.sin(pf * Math.PI / N),
+    cH2: Math.cos(qf * Math.PI / N), sH2: Math.sin(qf * Math.PI / N) };
+}
+// the tuning of the stream: matched to a card's own winding, the double
+// rotation slides that strand along its own body, a knot pouring through
+// itself; untuned, the sea keeps the Hopf's own one-and-one
+function streamOf(n) {
+  if (!n || n === 1) { stream = [0.10, 0.10]; streamN = null; return; }
+  const K = byN.get(n).water;
+  const m = Math.max(Math.abs(K.pf), Math.abs(K.qf)) || 1;
+  stream = [0.16 * K.pf / m, 0.16 * K.qf / m];
+  streamN = n;
+}
+
+// the svg above the ink carries only the pointers: an invisible ring per
+// card, the frame touched and never the form, the astrolabe's own law
+const svg = document.getElementById('v');
+{
+  let s = '';
+  for (const c of cells) {
+    s += '<g class="ccard" data-n="' + c.n + '"><circle r="9" fill="transparent"/>'
+      + '<title>' + (c.n === 1 ? 'The Seed · the body itself' : cardOf(c.n).name) + '</title></g>';
+  }
+  svg.innerHTML = s;
+}
+const groups = new Map([...svg.querySelectorAll('.ccard')].map((g) => [Number(g.dataset.n), g]));
+
+// the ink: a canvas, because three thousand honestly-sorted crossings a
+// frame is a painter's job, not a document's
+const canvas = document.getElementById('ink');
+const ctx = canvas.getContext('2d');
+// measured at every render rather than once: a page born in a background
+// tab measures zero, and a canvas sized then would stay blind forever. The
+// fit is a cheap comparison and heals itself the first watched frame.
+function fitCanvas() {
+  // the ink is faint thin lines by design: past one and a half device pixels
+  // per unit the eye gains nothing and the painter pays fourfold, so the
+  // density is capped and the smoothness kept
+  const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+  const box = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.round(box.width * dpr));
+  if (canvas.width !== w) { canvas.width = w; canvas.height = Math.max(1, Math.round(box.height * dpr)); }
+}
+window.addEventListener('resize', () => { fitCanvas(); render(); });
+
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm3 = (v) => { const h = Math.hypot(...v) || 1; return v.map((x) => x / h); };
+
+let selN = null;
+function render() { if (water) renderWater(); else renderSolid(); }
+
+// THE SEA, RENDERED: the twenty-seven strands on their nested tori, turned
+// by the accumulated double rotation, then brought down by the stereographic
+// eye. Width and swell carry the fourth dimension: what nears the eye's far
+// pole grows, which is not a flourish but what projection from a sphere does.
+const SC = 26;
+const COS45 = Math.cos(Math.PI / 4), SIN45 = Math.sin(Math.PI / 4);
+function renderWater() {
+  fitCanvas();
+  const u2p = canvas.width / (2 * VIEW);
+  const px = (x) => (x + VIEW) * u2p, py = (y) => (y + VIEW) * u2p;
+  FRAME.length = 0; PN = 0;
+  const cents = new Map();
+  for (const c of cells) {
+    const K = c.water;
+    // THE MEETING lifts its pair onto the one shared torus, the middle
+    // water, the second winding parted by the golden separation; the rest of
+    // the sea stays on its shells and dims to a ghost, context and not noise
+    const inMeet = meet !== null && (c.n === meet.a || c.n === meet.b);
+    const cosA = inMeet ? COS45 : K.cosA, sinA = inMeet ? SIN45 : K.sinA;
+    const part = meet !== null && c.n === meet.b ? MEETING_SEP : 0;
+    let cx = 0, cy = 0, cn = 0;
+    const cW1 = Math.cos(W1), sW1 = Math.sin(W1);
+    const cW2 = Math.cos(W2 + part), sW2 = Math.sin(W2 + part);
+    const cW1h = cW1 * K.cH1 - sW1 * K.sH1, sW1h = sW1 * K.cH1 + cW1 * K.sH1;
+    const cW2h = cW2 * K.cH2 - sW2 * K.sH2, sW2h = sW2 * K.cH2 + cW2 * K.sH2;
+    const M00 = M[0][0], M01 = M[0][1], M02 = M[0][2];
+    const M10 = M[1][0], M11 = M[1][1], M12 = M[1][2];
+    const M20 = M[2][0], M21 = M[2][1], M22 = M[2][2];
+    const PT = (cpt, spt, cqt, sqt, cA1, sA1, cA2, sA2, out) => {
+      const x1 = cosA * (cpt * cA1 - spt * sA1), y1 = cosA * (spt * cA1 + cpt * sA1);
+      const x2 = sinA * (cqt * cA2 - sqt * sA2), y2 = sinA * (sqt * cA2 + cqt * sA2);
+      const d4 = 1 - y2;
+      const wx = SC * x1 / d4, wy = SC * y1 / d4, wz = SC * x2 / d4;
+      out[0] = M00 * wx + M01 * wy + M02 * wz;
+      out[1] = M10 * wx + M11 * wy + M12 * wz;
+      out[2] = M20 * wx + M21 * wy + M22 * wz;
+      out[3] = 1 / d4;
+    };
+    const emitSeg = (ax, ay, az, as, bx, by, bz, bs, ramp) => {
+      const p = primOf();
+      p.z = (az + bz) / 2; p.x1 = ax; p.y1 = ay; p.x2 = bx; p.y2 = by;
+      p.s = (as + bs) / 2; p.ramp = ramp; p.n = c.n;
+    };
+    for (let f = 0; f < K.g; f++) {
+      const tab = K.tabs[f];
+      const ramp = K.ramps[f % K.ramps.length];
+      let hx = 0, hy = 0, hz = 0, hs = 0, has = false;
+      let hcpt = 0, hspt = 0, hcqt = 0, hsqt = 0;
+      for (let j = 0; j <= K.N; j++) {
+        const cpt = tab[4 * j], spt = tab[4 * j + 1];
+        const cqt = tab[4 * j + 2], sqt = tab[4 * j + 3];
+        PT(cpt, spt, cqt, sqt, cW1, sW1, cW2, sW2, WPT_A);
+        const sx = WPT_A[0], sy = WPT_A[1], sz = WPT_A[2], ss = WPT_A[3];
+        cx += sx; cy += sy; cn++;
+        if (has) {
+          // where the eye's swell has stretched a segment past reading, it
+          // is split at the winding's own half-step: the sea is smoothed
+          // exactly where it is magnified, and pays nowhere else
+          const ddx = sx - hx, ddy = sy - hy;
+          if (ddx * ddx + ddy * ddy > 64) {
+            PT(hcpt, hspt, hcqt, hsqt, cW1h, sW1h, cW2h, sW2h, WPT_B);
+            emitSeg(hx, hy, hz, hs, WPT_B[0], WPT_B[1], WPT_B[2], WPT_B[3], ramp);
+            emitSeg(WPT_B[0], WPT_B[1], WPT_B[2], WPT_B[3], sx, sy, sz, ss, ramp);
+          } else {
+            emitSeg(hx, hy, hz, hs, sx, sy, sz, ss, ramp);
+          }
+        }
+        hx = sx; hy = sy; hz = sz; hs = ss;
+        hcpt = cpt; hspt = spt; hcqt = cqt; hsqt = sqt;
+        has = true;
+      }
+    }
+    cents.set(c.n, [cx / cn, cy / cn]);
+  }
+  // THE CROSSINGS, MARKED: the meeting points ride the same stream as the
+  // strands they lie on, and their number is the determinant, pinned
+  if (meet !== null) {
+    for (const mp of meet.pts) {
+      const th = mp.th + W1, ph = mp.ph + W2;
+      const x1 = COS45 * Math.cos(th), y1 = COS45 * Math.sin(th);
+      const x2 = SIN45 * Math.cos(ph), y2 = SIN45 * Math.sin(ph);
+      const d4 = 1 - y2;
+      const wx = SC * x1 / d4, wy = SC * y1 / d4, wz = SC * x2 / d4;
+      const p = primOf();
+      p.ring = true;
+      p.z = M[2][0] * wx + M[2][1] * wy + M[2][2] * wz + 0.01;
+      p.x = M[0][0] * wx + M[0][1] * wy + M[0][2] * wz;
+      p.y = M[1][0] * wx + M[1][1] * wy + M[1][2] * wz;
+      p.s = 1 / d4;
+    }
+  }
+  // the styles are cut before the painter runs, so the paint loop is pure.
+  // The depth normalisation is eased in time: bounds that jump with the
+  // object's swinging extent restyle every strand at once, a whole-sea
+  // flicker with no motion behind it
+  let lo = Infinity, hi = -Infinity;
+  for (const p of FRAME) { if (p.z < lo) lo = p.z; if (p.z > hi) hi = p.z; }
+  if (!Number.isFinite(seaLo)) { seaLo = lo; seaHi = hi; }
+  seaLo += (lo - seaLo) * 0.12; seaHi += (hi - seaHi) * 0.12;
+  const span = Math.max(1e-6, seaHi - seaLo);
+  for (const p of FRAME) {
+    const zn = Math.min(1, Math.max(0, (p.z - seaLo) / span));
+    if (p.ring) {
+      p.kind = 'arc'; p.col = WHITEGOLD;
+      p.op = 0.4 + 0.45 * zn;
+      p.w = 0.35;
+      p.r = Math.max(1.2, (0.8 + 0.3 * p.s));
+      continue;
+    }
+    // the tuned strand is told by its breath alone, a shade fuller, never a
+    // change of body: width jumps read as glitches on a streaming line
+    const lit = (streamN !== null && p.n === streamN)
+      || (meet !== null && (p.n === meet.a || p.n === meet.b));
+    const ghost = meet !== null && p.n !== meet.a && p.n !== meet.b ? 0.16 : 1;
+    if (p.n === 1) {
+      // the null is never lit: the core circle streams unlit at the heart
+      p.col = WHITEGOLD;
+      p.op = 0.25 * ghost;
+      p.w = 0.5;
+    } else {
+      // the ramp read at twelve of its twenty-four steps: on strands this
+      // thin and this faint the eye cannot tell, and the runs grow long
+      p.col = p.ramp[Math.min(23, Math.round(zn * 11) * 2 + 1)];
+      p.op = Math.min(1, (0.14 + 0.62 * zn) * (lit ? 1.3 : 1) * ghost);
+      p.w = Math.min(3.4, 0.45 + 0.35 * p.s) * (ghost < 1 ? 0.75 : 1);
+    }
+  }
+  paintLines(u2p, px, py);
+  // the pointers ride their strands' centres of gravity on the glass
+  for (const c of cells) {
+    const ce = cents.get(c.n);
+    groups.get(c.n).setAttribute('transform', 'translate(' + F(ce[0]) + ' ' + F(ce[1]) + ')');
+  }
+  document.getElementById('seats').textContent = meet !== null
+    ? 'THE MEETING · TWO LAWS ON ONE TORUS · ' + Math.abs(meet.D) + ' CROSSINGS, THE DETERMINANT'
+    : 'THE WATER · TWENTY-SEVEN STRANDS ON THREE NESTED TORI · THE SEED THE CORE CIRCLE OF THE WEAVE';
+}
+
+function renderSolid() {
+  fitCanvas();
+  const zMax = S * Math.sqrt(3);
+  const pos = new Map();
+  for (const c of cells) {
+    const w = poseOf(c);
+    pos.set(c.n, { w, x: dot(M[0], w), y: dot(M[1], w), z: dot(M[2], w) * (1 - flat) });
+  }
+  const u2p = canvas.width / (2 * VIEW);
+  const px = (x) => (x + VIEW) * u2p, py = (y) => (y + VIEW) * u2p;
+  FRAME.length = 0; PN = 0;
+  const seg2 = (z, x1, y1, x2, y2, col, w, op) => {
+    const p = primOf();
+    p.z = z; p.x1 = x1; p.y1 = y1; p.x2 = x2; p.y2 = y2;
+    p.col = col; p.w = w; p.op = op;
+  };
+  // the bones, sorted into the same air as the strands; the dress trades
+  // them for the shells' own frames, so they fade as the rosette wakes
+  for (const [a, b] of bones) {
+    const p = pos.get(a.n), q = pos.get(b.n);
+    const d = ((p.z + q.z) / 2 / zMax + 1) / 2;
+    seg2((p.z + q.z) / 2, p.x, p.y, q.x, q.y,
+      WHITEGOLD, 0.5, (0.07 + 0.15 * d) * (1 - Math.max(dress, anat)));
+  }
+  // THE ROSETTE IN THE ROUND: the object dressed as its shells. Each ring of
+  // the flat rosette was always the equator of a sphere, and each shell of
+  // the solid was always a perfect figure on that sphere: the octahedron of
+  // faces, the cuboctahedron of edges, the cube of corners. The dress wakes
+  // the spheres as cages of great circles about the diagonal frame, joins
+  // each shell's nearest neighbours on its own sphere, and lays the dyads
+  // through the still centre: the rosette as its own object in the world,
+  // and not a plate at all.
+  if (dress > 0.01) {
+    const E1 = CORNER[0], E2 = CORNER[1], E3 = CORNER[2];
+    const seg3 = (a, b, op) => {
+      const ax = dot(M[0], a), ay = dot(M[1], a), az = dot(M[2], a) * (1 - flat);
+      const bx = dot(M[0], b), by = dot(M[1], b), bz = dot(M[2], b) * (1 - flat);
+      seg2((az + bz) / 2 - 0.02, ax, ay, bx, by, WHITEGOLD, 0.5, op);
+    };
+    for (const [a, b] of shellEdges) {
+      const p = pos.get(a.n), q = pos.get(b.n);
+      const d = ((p.z + q.z) / 2 / zMax + 1) / 2;
+      seg2((p.z + q.z) / 2 - 0.01, p.x, p.y, q.x, q.y,
+        WHITEGOLD, 0.55, (0.10 + 0.16 * d) * dress);
+    }
+    for (const k of [1, 2, 3]) {
+      const R = S * Math.sqrt(k);
+      for (const [A, B] of [[E1, E2], [E2, E3], [E3, E1]]) {
+        for (let j = 0; j < 48; j++) {
+          const t0 = j / 24 * Math.PI, t1 = (j + 1) / 24 * Math.PI;
+          const a = [0, 1, 2].map((i) => R * (Math.cos(t0) * A[i] + Math.sin(t0) * B[i]));
+          const b = [0, 1, 2].map((i) => R * (Math.cos(t1) * A[i] + Math.sin(t1) * B[i]));
+          seg3(a, b, (A === E1 ? 0.07 : 0.045) * dress);
+        }
+      }
+    }
+    for (const c of cells) {
+      if (c.shell === 0 || PLATE.get(c.n).q <= 0) continue;
+      const p = pos.get(c.n), q = pos.get(byN.get(counterOf(c.n)).n);
+      for (let j = 0; j < 14; j++) {
+        const a = [0, 1, 2].map((i) => p.w[i] + (q.w[i] - p.w[i]) * j / 14);
+        const b = [0, 1, 2].map((i) => p.w[i] + (q.w[i] - p.w[i]) * (j + 1) / 14);
+        seg3(a, b, 0.08 * dress);
+      }
+    }
+  }
+  // THE ANATOMY, PERFORMED: the parts drawn as the parts they are, not as
+  // marks. Each face cell raises its own pane of the cube's skin in its own
+  // metal; each edge cell becomes the strut its name says it is, joining its
+  // two corners; the corners are the corners; and every glyph is left
+  // standing at the exact barycentre of the part that grew around it. The
+  // cube assembles itself out of nothing but its twenty-seven parts, which
+  // is the whole claim of the reading, drawn instead of asserted.
+  if (anat > 0.01) {
+    for (const c of cells) {
+      if (c.shell === 1) {
+        const i = c.v.findIndex((x) => x !== 0);
+        const [j, k] = [0, 1, 2].filter((a) => a !== i);
+        const xs = [], ys = []; let zsum = 0;
+        for (const [o0, o1] of [[1, 1], [1, -1], [-1, -1], [-1, 1]]) {
+          const w = [0, 0, 0]; w[i] = c.v[i] * S; w[j] = o0 * S; w[k] = o1 * S;
+          xs.push(dot(M[0], w)); ys.push(dot(M[1], w));
+          zsum += dot(M[2], w) * (1 - flat);
+        }
+        Object.assign(primOf(), { kind: 'quad', z: zsum / 4 - 0.03, xs, ys,
+          col: metalOf(c.n), op: 0.05 * anat });
+      } else if (c.shell === 2) {
+        const j = c.v.findIndex((x) => x === 0);
+        const ends = [1, -1].map((s) => {
+          const w = c.v.map((x) => x * S); w[j] = s * S;
+          return { x: dot(M[0], w), y: dot(M[1], w), z: dot(M[2], w) * (1 - flat) };
+        });
+        const d = ((ends[0].z + ends[1].z) / 2 / zMax + 1) / 2;
+        seg2((ends[0].z + ends[1].z) / 2 - 0.01, ends[0].x, ends[0].y, ends[1].x, ends[1].y,
+          metalOf(c.n), 0.9, (0.16 + 0.2 * d) * anat);
+      }
+    }
+  }
+  // the chosen part and its answer: the dyad is a true diameter of the solid
+  if (selN && selN !== 1) {
+    const p = pos.get(selN), q = pos.get(counterOf(selN));
+    const d = primOf();
+    d.z = (p.z + q.z) / 2 + 0.01; d.dash = true;
+    d.x1 = p.x; d.y1 = p.y; d.x2 = q.x; d.y2 = q.y;
+    d.col = WHITEGOLD; d.w = 0.7; d.op = 0.35;
+  }
+  // THE PLATE'S OWN BODY: the rosette is not bare glyphs in the air. As the
+  // bloom opens the plate furnishes itself, in the world and not on the
+  // glass: the three shell rings are true circles on the diagonal's plane,
+  // the equators of the three spheres the parts live on, and the dyad
+  // diameters are chords through the still centre. Sampled and sorted into
+  // the same air as the strands, they close to a single line edge-on,
+  // exactly as a held plate would.
+  if (ros > 0.01) {
+    const E1 = CORNER[0], E2 = CORNER[1];
+    const at = (R, th) => [0, 1, 2].map((i) => R * (Math.cos(th) * E1[i] + Math.sin(th) * E2[i]));
+    const seg = (a, b, op) => {
+      const ax = dot(M[0], a), ay = dot(M[1], a), az = dot(M[2], a) * (1 - flat);
+      const bx = dot(M[0], b), by = dot(M[1], b), bz = dot(M[2], b) * (1 - flat);
+      seg2((az + bz) / 2 - 0.02, ax, ay, bx, by, WHITEGOLD, 0.5, op);
+    };
+    for (const k of [1, 2, 3]) {
+      const R = S * Math.sqrt(k);
+      for (let j = 0; j < 72; j++) {
+        seg(at(R, j / 36 * Math.PI), at(R, (j + 1) / 36 * Math.PI), 0.10 * ros);
+      }
+    }
+    for (const c of cells) {
+      if (c.shell === 0 || PLATE.get(c.n).q <= 0) continue;
+      const R3 = S * Math.sqrt(c.shell);
+      for (let j = 0; j < 14; j++) {
+        const a = c.u1.map((x) => x * R3 * (j / 7 - 1));
+        const b = c.u1.map((x) => x * R3 * ((j + 1) / 7 - 1));
+        seg(a, b, 0.12 * ros);
+      }
+    }
+  }
+  // the strands: each knot in its own frame, facing outward on the solid and
+  // easing to face the plate's normal as the bloom opens; the one instant a
+  // blend can vanish is guarded by falling back to the diagonal itself
+  for (const c of cells) {
+    const o = pos.get(c.n);
+    const d = (o.z / zMax + 1) / 2, gs = 2.2 + 1.2 * d;
+    if (c.n === 1) {
+      const p = primOf();
+      p.kind = 'seed'; p.z = o.z; p.x = o.x; p.y = o.y; p.r = 2.2 * gs; p.w = 0.4 * gs;
+      continue;
+    }
+    const radial = norm3(o.w);
+    let ax = [0, 1, 2].map((i) => (1 - ros) * radial[i] + ros * DIAG[i]);
+    ax = Math.hypot(...ax) < 0.05 ? DIAG.slice() : norm3(ax);
+    const ref = Math.abs(ax[2]) > 0.9 ? [1, 0, 0] : [0, 0, 1];
+    const t1 = norm3(cross(ax, ref)), t2 = cross(ax, t1);
+    // the frame carried to the glass once, then every point is three mults,
+    // written into one scratch buffer the collector never sees
+    const T1 = [dot(M[0], t1), dot(M[1], t1), dot(M[2], t1)];
+    const T2 = [dot(M[0], t2), dot(M[1], t2), dot(M[2], t2)];
+    const T3 = [dot(M[0], ax), dot(M[1], ax), dot(M[2], ax)];
+    for (const st of c.strands) {
+      const pts = st.pts, count = st.N + 1;
+      let lo = Infinity, hi = -Infinity;
+      for (let j = 0; j < count; j++) {
+        const a = pts[3 * j], b = pts[3 * j + 1], e = pts[3 * j + 2];
+        SCRATCH[3 * j] = o.x + gs * (a * T1[0] + b * T2[0] + e * T3[0]);
+        SCRATCH[3 * j + 1] = o.y + gs * (a * T1[1] + b * T2[1] + e * T3[1]);
+        const z = gs * (a * T1[2] + b * T2[2] + e * T3[2]);
+        SCRATCH[3 * j + 2] = z;
+        if (z < lo) lo = z; if (z > hi) hi = z;
+      }
+      const span = Math.max(1e-6, hi - lo);
+      for (let j = 0; j < count - 1; j++) {
+        const zm = (SCRATCH[3 * j + 2] + SCRATCH[3 * j + 5]) / 2, zn = (zm - lo) / span;
+        seg2(o.z + zm, SCRATCH[3 * j], SCRATCH[3 * j + 1], SCRATCH[3 * j + 3], SCRATCH[3 * j + 4],
+          st.ramp[Math.round(zn * 23)], gs * (0.055 + 0.135 * zn),
+          (0.20 + 0.78 * zn) * (0.35 + 0.65 * d));
+      }
+    }
+  }
+  // the painter: far first, every crossing honest, the strokes in runs
+  paintLines(u2p, px, py);
+  // the pointers ride their glyphs
+  for (const c of cells) {
+    const o = pos.get(c.n);
+    groups.get(c.n).setAttribute('transform', 'translate(' + F(o.x) + ' ' + F(o.y) + ')');
+  }
+  // the honest count: how many seats this bearing leaves of the twenty-seven
+  const key = (p) => Math.round(p.x * 2) / 2 + '|' + Math.round(p.y * 2) / 2;
+  const seats = new Set([...pos.values()].map(key)).size;
+  document.getElementById('seats').textContent = anat > 0.5
+    ? 'THE ANATOMY · THE CUBE ASSEMBLED FROM ITS TWENTY-SEVEN PARTS · EVERY GLYPH AT THE BARYCENTRE OF ITS PART'
+    : dress > 0.5
+    ? 'THE ROSETTE IN THE ROUND · THE OCTAHEDRON OF FACES, THE CUBOCTAHEDRON OF EDGES, THE CUBE OF CORNERS, EACH ON ITS OWN SPHERE'
+    : 'THIS BEARING LEAVES ' + seats + ' SEATS OF 27';
+}
+
+// THE MEETING: a second touch lays two cards on one torus and counts their
+// crossings, the determinant of their two laws. The relation is drawn, never
+// listed; the count is the module's, pinned across every pair the deck makes
+function makeMeeting(a, b) {
+  const A = knotOf(a), B = knotOf(b);
+  const D = meetingDet(A.p, A.q, B.p, B.q);
+  meet = { a, b, D, pts: meetingPoints(A.p, A.q, B.p, B.q) };
+  streamOf(b);
+  document.getElementById('nameLine').innerHTML =
+    '<span style="color:#EFE7CF">' + cardOf(a).name.toUpperCase() + '</span> meets '
+    + '<span style="color:#EFE7CF">' + cardOf(b).name.toUpperCase() + '</span>'
+    + ' · one torus, two laws · p·q&prime; &minus; q·p&prime; = ' + D
+    + ' · <span style="color:#EFE7CF">' + Math.abs(D) + ' crossings</span>'
+    + ' · touch the water to release';
+}
+
+// A TOUCH NAMES, IT NEVER MEANS: the astrolabe's own law, kept whole here
+svg.addEventListener('click', (e) => {
+  const g = e.target.closest('.ccard');
+  if (!g) {
+    // the open water releases: a touch beside the strands clears the meeting
+    if (water && (meet !== null || selN !== null)) {
+      meet = null; selN = null; streamOf(null);
+      document.getElementById('nameLine').textContent =
+        'touch a strand to tune the water; touch a second to make a meeting';
+      render();
+    }
+    return;
+  }
+  const n = Number(g.dataset.n);
+  if (water && selN !== null && n !== selN && meet === null) {
+    makeMeeting(selN, n); selN = n; render(); return;
+  }
+  if (meet !== null) meet = null;   // a third touch begins again
+  selN = n;
+  const qs = (v) => (v > 0 ? '+' + v : String(v));
+  if (n === 1) {
+    document.getElementById('nameLine').innerHTML =
+      '<span style="color:#EFE7CF">THE SEED</span> · the body itself, the one part no turning shows';
+    render(); return;
+  }
+  const k = knotOf(n), house = n <= 9 ? 'AUM' : n <= 18 ? 'MA' : 'RA';
+  const PART = ['', 'a face', 'an edge', 'a corner'];
+  document.getElementById('nameLine').innerHTML =
+    '<span style="color:#EFE7CF">' + cardOf(n).name.toUpperCase() + '</span>'
+    + ' &nbsp;' + codeMarks(n) + '&nbsp; · ' + qs(k.q) + ' · ' + house
+    + (isSilent(n) ? ' <span style="color:#EFE7CF">· A SILENCE</span>' : '')
+    + ' · ' + k.interval + ' · ' + PART[byN.get(n).shell]
+    + (water ? ' · the water tuned to its winding' : '')
+    + ' &nbsp;<a href="/app/luminara-read.html#guide">its meanings, in the Guide</a>';
+  if (water) streamOf(n);
+  render();
+});
+
+// THE TURN. Idle it turns itself, slowly, one bearing pouring into the next;
+// the hand takes it and it yields at once; laid down, it resumes. Under
+// prefers-reduced-motion the idle turn never starts: motion is the reader's
+// own law, and the page keeps it. Driven by two clocks sharing one step, the
+// timer for the unwatched tab and the frame clock for the watched one; the
+// bargain is written out where the clocks are wound, at the foot of the page.
+const stillLaw = matchMedia('(prefers-reduced-motion: reduce)');
+let drag = null, lastHand = -1e9;
+svg.addEventListener('pointerdown', (e) => {
+  drag = [e.clientX, e.clientY];
+  svg.setPointerCapture(e.pointerId);
+});
+svg.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const dx = e.clientX - drag[0], dy = e.clientY - drag[1];
+  drag = [e.clientX, e.clientY];
+  targetM = null;
+  setSeat(null);   // the hand has taken it: no named bearing is in force
+  // the pose survives the hand: a bloomed rosette is turned, not undone
+  turn(0, dx * 0.008); turn(1, dy * 0.008); orthonorm(M);
+  lastHand = performance.now();
+  render();
+});
+svg.addEventListener('pointerup', () => { drag = null; });
+// there is no hover effect in the sea, by refusal: the touch-rings ride the
+// strands' moving centres, so a lift on hover flickers under a pointer that
+// has not moved at all. The sea is read by touch, not by pointing.
+
+// the named bearings light their buttons, so the native ambient knows whose
+// axis to turn about; the hand clears them, since a dragged bearing is free
+function setSeat(mode) {
+  seatMode = mode;
+  for (const [id, name] of [['bFace', 'face'], ['bEdge', 'edge'], ['bCorner', 'corner']]) {
+    document.getElementById(id).classList.toggle('on', mode === name);
+  }
+}
+
+// THE WATER IS A PLACE, NOT A LOCK: every reading of the solid steps out of
+// the sea before it acts, so no button can strand the hand in one mode
+const leaveWater = () => {
+  if (!water) return;
+  water = false; meet = null;
+  document.getElementById('bWater').classList.remove('on');
+};
+// a button hands the object straight to its mode's own ambient. There was
+// once a quarter minute of stillness here, from the days when the idle turn
+// destroyed the bearing it was meant to show; the native ambients preserve
+// exactly what each mode names (a bearing rolls about its line of sight, the
+// shadow spins in its plane, the plate about its normal), so the stillness
+// served nothing and was withdrawn at the architect's word. A bearing is
+// only a view: it never undoes the pose, so THE FACE with the bloom open
+// shows the flat rosette edge-on, a line of glyphs in the air
+const wake = () => { lastHand = Math.min(lastHand, performance.now() - 6000); };
+const LINES = { bFace: ['face', FACE], bEdge: ['edge', EDGE], bCorner: ['corner', CORNER] };
+for (const id of Object.keys(LINES)) {
+  document.getElementById(id).addEventListener('click', () => {
+    leaveWater();
+    targetM = LINES[id][1].map((r) => r.slice());
+    setSeat(LINES[id][0]);
+    // a named bearing keeps one breath of stillness, long enough to read
+    // its count, and then the tumble carries it into the round
+    lastHand = performance.now();
+  });
+}
+setSeat('corner');   // the object opens at the corner, and says so
+// THE SHADOW, THE ROSETTE and THE PLATE are three teachings of one object,
+// never stacked: the shadow flattens honestly and shows the stacks; the
+// dress reads the solid as its shells; the bloom unstacks it flat
+const dressOff = () => { targetDress = 0; document.getElementById('bRosette').classList.remove('on'); };
+const anatOff = () => { targetAnat = 0; document.getElementById('bAnat').classList.remove('on'); };
+const plateOff = () => { targetRos = 0; document.getElementById('bPlate').classList.remove('on'); };
+const shadowOff = () => { targetFlat = 0; document.getElementById('bShadow').classList.remove('on'); };
+document.getElementById('bShadow').addEventListener('click', () => {
+  leaveWater();
+  targetFlat = targetFlat ? 0 : 1;
+  if (targetFlat) { plateOff(); dressOff(); anatOff(); }
+  wake();
+  document.getElementById('bShadow').classList.toggle('on', targetFlat === 1);
+});
+document.getElementById('bAnat').addEventListener('click', () => {
+  leaveWater();
+  targetAnat = targetAnat ? 0 : 1;
+  if (targetAnat) { plateOff(); dressOff(); shadowOff(); }
+  wake();
+  document.getElementById('bAnat').classList.toggle('on', targetAnat === 1);
+});
+document.getElementById('bRosette').addEventListener('click', () => {
+  leaveWater();
+  targetDress = targetDress ? 0 : 1;
+  if (targetDress) { plateOff(); shadowOff(); anatOff(); }
+  wake();
+  document.getElementById('bRosette').classList.toggle('on', targetDress === 1);
+});
+document.getElementById('bPlate').addEventListener('click', () => {
+  leaveWater();
+  targetRos = targetRos ? 0 : 1;
+  if (targetRos) {
+    targetM = CORNER.map((r) => r.slice());   // the bloom opens from the corner bearing
+    setSeat('corner');
+    targetFlat = 0; document.getElementById('bShadow').classList.remove('on');
+    dressOff(); anatOff();
+  }
+  wake();
+  document.getElementById('bPlate').classList.toggle('on', targetRos === 1);
+});
+// THE WATER: the fourth mode, and not a pose at all but the other embedding.
+// Entering lifts every pose and lets the sea stream at once: this mode reads
+// through its motion, so it earns no quarter minute of stillness
+document.getElementById('bWater').addEventListener('click', () => {
+  water = !water;
+  if (water) {
+    targetRos = 0; ros = 0; document.getElementById('bPlate').classList.remove('on');
+    targetDress = 0; dress = 0; document.getElementById('bRosette').classList.remove('on');
+    targetAnat = 0; anat = 0; document.getElementById('bAnat').classList.remove('on');
+    targetFlat = 0; flat = 0; document.getElementById('bShadow').classList.remove('on');
+    streamOf(selN);
+    lastHand = Math.min(lastHand, performance.now() - 6000);
+  } else {
+    meet = null;   // a meeting lives in the water and stays there
+  }
+  document.getElementById('bWater').classList.toggle('on', water);
+  render();
+});
+
+// TWO CLOCKS, ONE STEP. The timer is the astrolabe's lesson kept: it cannot
+// be stalled by an unwatched tab, so the turn and the stream advance however
+// coarsely the ticks land. But a watched page deserves the display's own
+// cadence, so a frame clock rides alongside: when it is running, the timer
+// stands aside; when the tab is hidden and the frame clock stops dead, the
+// timer carries the object at its own coarse beat. The step is elapsed real
+// time either way, so the speed of the world never depends on who is driving.
+let lastReal = performance.now(), lastStep = -1e9;
+function step(now) {
+  const dt = Math.min(0.25, (now - lastReal) / 1000);
+  lastReal = now;
+  const ease = 1 - Math.exp(-7 * dt);   // the tween's approach, per elapsed time
+  let moved = false;
+  if (targetM) {
+    let done = true;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+      const d = targetM[i][j] - M[i][j];
+      if (Math.abs(d) > 1e-3) { M[i][j] += d * ease; done = false; }
+      else M[i][j] = targetM[i][j];
+    }
+    orthonorm(M);
+    if (done) targetM = null;
+    moved = true;
+  }
+  if (Math.abs(targetFlat - flat) > 1e-3) { flat += (targetFlat - flat) * ease; moved = true; }
+  else if (flat !== targetFlat) { flat = targetFlat; moved = true; }
+  // the bloom waits for the bearing: the object swings to the corner first,
+  // then the latitudes pour out
+  if (targetM === null) {
+    if (Math.abs(targetRos - ros) > 1e-3) { ros += (targetRos - ros) * ease; moved = true; }
+    else if (ros !== targetRos) { ros = targetRos; moved = true; }
+  }
+  // the dress needs no bearing: the shells wake at any tilt
+  if (Math.abs(targetDress - dress) > 1e-3) { dress += (targetDress - dress) * ease; moved = true; }
+  else if (dress !== targetDress) { dress = targetDress; moved = true; }
+  // and neither does the anatomy: the parts grow around their glyphs anywhere
+  if (Math.abs(targetAnat - anat) > 1e-3) { anat += (targetAnat - anat) * ease; moved = true; }
+  else if (anat !== targetAnat) { anat = targetAnat; moved = true; }
+  // THE AMBIENT IS A TUMBLE IN THE ROUND (the architect's word, 11 August
+  // 2026). Each mode once turned about its own axis, bearings rolling about
+  // the line of sight, the shadow spinning in its plane, the plate about its
+  // normal; every one of those reads as a picture rotating on the glass, not
+  // an object turning in the world. So every reading now tumbles: a slow
+  // two-axis turn that brings the sides around, the flat poses included,
+  // since a plate seen edge-on and back is exactly what makes it a plate.
+  // The water alone streams instead, its motion being the sphere's own
+  // double rotation. Not under the still law, not in the hand, not mid-tween.
+  if (!stillLaw.matches && !drag && !targetM && now - lastHand > 5000) {
+    if (water) { W1 += stream[0] * dt; W2 += stream[1] * dt; }
+    else { turn(0, 0.11 * dt); turn(1, 0.034 * dt); }   // one round in about a minute, nodding as it goes
+    orthonorm(M);
+    moved = true;
+  }
+  if (moved) render();
+  lastStep = now;
+}
+setInterval(() => {
+  const now = performance.now();
+  if (now - lastStep < 50) return;   // the frame clock is carrying it
+  step(now);
+}, 40);
+(function frameClock(now) {
+  step(now || performance.now());
+  requestAnimationFrame(frameClock);
+})();
+render();
+</script>
+</body>
+</html>

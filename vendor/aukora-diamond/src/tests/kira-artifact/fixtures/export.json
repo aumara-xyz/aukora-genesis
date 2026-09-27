@@ -1,0 +1,36 @@
+{
+  "exportDomain": "aukora-approval-transaction-export/v1",
+  "class": "committed-fixture",
+  "classMeaning": "bytes committed beside the acceptance suite, minted by the pinned producer command",
+  "genesis": {
+    "commit": "20af274abd6fd70f7d44067a72965e9672dd0fdd",
+    "describe": "20af274",
+    "release": null,
+    "releaseRecordDigest": null
+  },
+  "producedAt": "2026-09-20T06:06:02.005Z",
+  "seed": "a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7 (TEST-ONLY, disposable; the private half is deleted with the temporary tree)",
+  "signer": "scripts/aumlok/signer.mjs --socket /tmp/kafx-1SUFgB/signer-approves/signer.sock --key-file /tmp/kafx-1SUFgB/identity-a/test-key.pem --registered-key-hex c9571eeb4aa9de1159858bc6a3d4a626c4f4845e8eebd5f554b2ec0f50c68860 --approve test-all",
+  "subject": "aukora:1:3c48a2d3031422ff7c88cb4e0f50629aebbf42dcc8a7b03b9f043e620b0bfd3e",
+  "files": {
+    "record": "record.json",
+    "content": "content-1.txt",
+    "receipt": "receipt-1.json",
+    "log": "aura.jsonl",
+    "artifact": "artifact-1.json",
+    "artifactAlt": "artifact-1b.json",
+    "object": "objects/83689c20bb6211f0bdaf3c46391e5c09a8ef9f1377f5ff4ba4e4293e8dbb4fd0.json"
+  },
+  "transaction": {
+    "recordId": "kira:00936cbeffe741e462897fa9621fceeab46fe952f40a00e8991523751e6e97af",
+    "operationDigest": "0d00865d5b044dbcfad1b4086113fec1e34f21e5ee469f08d1842aaefa54c61b",
+    "approvalId": "0f04153f9d99d2a2e3f6e61e2b598ebb13a48564982cff5f14ce89335724326c",
+    "receiptSequence": 1,
+    "entriesAfterReceipt": 1
+  },
+  "claims": {
+    "attendance": "reported-not-proven",
+    "liveProduced": false,
+    "note": "a candidate-release run is not proof that a running service produced these bytes"
+  }
+}

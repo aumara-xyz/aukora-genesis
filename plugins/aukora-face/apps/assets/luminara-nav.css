@@ -1,0 +1,61 @@
+:root {
+  --luminara-nav-gold: #d6ad5b;
+  --luminara-nav-gold-bright: #ffd77a;
+  --luminara-nav-gold-pressed: #fff0bd;
+}
+
+.lnav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin: 9px 0 2px;
+}
+
+.lnav a:link,
+.lnav a:visited {
+  padding: 3px 2px;
+  border-bottom: 1px solid rgb(214 173 91 / 28%);
+  color: var(--luminara-nav-gold);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-decoration: none;
+  text-underline-offset: 0.28em;
+  transition:
+    border-color 140ms ease,
+    color 140ms ease,
+    text-shadow 140ms ease;
+}
+
+.lnav a:hover,
+.lnav a:focus-visible {
+  border-bottom-color: rgb(255 215 122 / 78%);
+  color: var(--luminara-nav-gold-bright);
+  text-shadow: 0 0 12px rgb(255 201 91 / 34%);
+}
+
+.lnav a.on,
+.lnav a[aria-current='page'] {
+  border-bottom-color: var(--luminara-nav-gold-bright);
+  color: var(--luminara-nav-gold-bright);
+  text-shadow: 0 0 10px rgb(255 201 91 / 28%);
+}
+
+.lnav a:active {
+  border-bottom-color: var(--luminara-nav-gold-pressed);
+  color: var(--luminara-nav-gold-pressed);
+  text-shadow: 0 0 16px rgb(255 224 145 / 48%);
+}
+
+.lnav a:focus-visible {
+  border-radius: 3px;
+  outline: 1px solid rgb(255 215 122 / 70%);
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lnav a:link,
+  .lnav a:visited {
+    transition: none;
+  }
+}

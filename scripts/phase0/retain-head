@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""retain-head — keep an observation of the Aura record stream at its current size.
+
+    python3 scripts/phase0/retain-head --state <stateRoot> --out <file> [--chain-key K]
+                                       [--retainer <dir-or-git-url>]
+
+Writes the observation a stranger would need to keep: the tree size and the Merkle tree
+head over the first N records of `<stateRoot>/aura/records.jsonl`. Also writes a copy
+under `<stateRoot>/retained-heads/<chainKey>.json` (mode 0600) so a later `present-head`
+finds it without being told where it is.
+
+With `--retainer`, the same observation is also written into a retainer: a directory, a
+git working copy, or a git remote URL. That is the operation that moves the observation
+across a custody boundary, and it is the difference between "we kept a head" and "a copy
+of that head is somewhere this host does not control". A retainer that already holds a
+different root for the same size is never overwritten.
+
+Retaining is the whole act. The local copy proves nothing about custody; the retainer
+copy moves the observation to another device and is labelled RETAINER_SAME_OWNER until a
+second principal holds a copy.
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+import tempfile
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import phase0log  # noqa: E402
+import retainer as retainer_mod  # noqa: E402
+
+DEFAULT_CHAIN_KEY = "genesis-phase0:aura-chain"
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="retain an Aura head observation")
+    parser.add_argument("--state", required=True, help="state root holding aura/records.jsonl")
+    parser.add_argument("--out", required=True, help="where to write the retained observation")
+    parser.add_argument("--chain-key", default=DEFAULT_CHAIN_KEY)
+    parser.add_argument("--retainer", help="directory, git working copy, or git remote URL to retain into")
+    args = parser.parse_args(argv[1:])
+
+    try:
+        hashes, records = phase0log.leaf_hashes(args.state)
+        document = phase0log.observation(len(hashes), hashes, 1, args.chain_key)
+    except phase0log.Phase0Error as exc:
+        print(f"RETAINED: REFUSED\nREASON  : {exc}", file=sys.stderr)
+        return 1
+
+    document["retainedAt"] = phase0log.now_ms()
+    document["retainedBy"] = "genesis:retain-head"
+    digest = phase0log.write_document(args.out, document)
+    internal = phase0log.retained_path(args.state, args.chain_key)
+    os.makedirs(os.path.dirname(internal), exist_ok=True)
+    phase0log.write_document(internal, document)
+    try:
+        os.chmod(internal, 0o600)
+    except OSError:
+        pass
+
+    print(f"RETAINED      : {args.out}")
+    print(f"KEPT COPY     : {internal}")
+    print(f"DOCUMENT_SHA256: {digest}")
+    print(f"treeSize      : {document['treeSize']}")
+    print(f"root          : {document['root']}")
+    print(f"chainKey      : {document['chainKey']}")
+
+    if args.retainer:
+        described = retainer_mod.describe(args.retainer)
+        try:
+            if described["kind"] == "directory":
+                root = retainer_mod.ensure_directory_retainer(described["spec"])
+                target = retainer_mod.retain_to_directory(
+                    root, args.chain_key, document["treeSize"], document, document["retainedBy"])
+                print(f"RETAINER      : {target}")
+                published = retainer_mod.publish_directory(
+                    root, f"retain {args.chain_key} size {document['treeSize']} {document['root'][:16]}")
+                if published:
+                    print(f"RETAINER COMMIT: {published['committed']}")
+                else:
+                    print("RETAINER NOTE  : plain directory, not a git working copy — a second store on this host, "
+                          "not a second device")
+            else:
+                with tempfile.TemporaryDirectory(prefix="retainer-write-") as tmp:
+                    root = os.path.join(tmp, "retainer")
+                    retainer_mod.clone_retainer(described["spec"], root)
+                    retainer_mod.retain_to_directory(
+                        root, args.chain_key, document["treeSize"], document, document["retainedBy"])
+                    published = retainer_mod.publish_directory(
+                        root, f"retain {args.chain_key} size {document['treeSize']} {document['root'][:16]}")
+                    print(f"RETAINER      : {described['spec']} :: {retainer_mod.head_relpath(args.chain_key, document['treeSize'])}")
+                    print(f"RETAINER COMMIT: {published['committed']}")
+            print(f"CUSTODY       : {retainer_mod.SAME_OWNER_NOTE} — held by the same principal as this host")
+        except retainer_mod.RetainerError as exc:
+            print(f"RETAINER: REFUSED\nREASON  : {exc}", file=sys.stderr)
+            return 1
+
+    print()
+    print("This file is the observation. Keep it where the party being checked cannot rewrite it:")
+    if args.retainer:
+        print(f"  python3 scripts/phase0/verify --retainer {args.retainer} <presented.json>")
+    else:
+        print(f"  python3 scripts/phase0/verify {args.out} <presented.json>")
+    print("Retaining it proves nothing yet. It is one side of the only question the court asks.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

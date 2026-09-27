@@ -1,0 +1,102 @@
+/*
+ * The spatial palette, owned by the face.
+ *
+ * WHY THIS FILE EXISTS. `AppFrame.module.css` paints the three lanes, the canvas and
+ * the hot corners entirely through custom properties. It carries its own METRICS
+ * (gap, thirds, corner size) but not its COLOURS: those were defined in the harness's
+ * theme package in the tree this frame grew up in. The harness Genesis pins has the
+ * same token namespace and the same `body[data-ds-dark-theme]` switch, but not these
+ * particular tokens, so every lane surface, border and accent resolved to nothing and
+ * the frame rendered as one flat sheet with no panels at all.
+ *
+ * Defining them here keeps the face self-contained: it does not replace or patch the
+ * harness theme, it only adds the tokens its own stylesheet reads. Values are the ones
+ * the frame was designed against, carried verbatim. The night ramp is included because
+ * the dark canvas gradient is expressed in terms of it.
+ */
+
+body {
+  /* Light. The frame is normally used dark, but a token that resolves to nothing in
+     light mode is an invisible lane, so both halves of the switch are defined. */
+  /* The four spatial accents. The frame, the messages surface and the identity
+     surface all reach for these by name, so they belong with the rest of the palette
+     rather than in whichever face happened to need one first. */
+  --dsw-static-spatial-blue: rgb(150, 180, 255);
+  --dsw-static-spatial-gold: rgb(224, 183, 106);
+  --dsw-static-spatial-mint: rgb(129, 212, 180);
+  --dsw-static-spatial-violet: rgb(196, 170, 255);
+
+  --dsw-static-spatial-night-800: rgb(17, 21, 32);
+  --dsw-static-spatial-night-850: rgb(11, 13, 24);
+  --dsw-static-spatial-night-900: rgb(9, 10, 18);
+  --dsw-static-spatial-night-950: rgb(8, 9, 16);
+
+  --dsw-specific-spatial-accent-center: rgba(86, 134, 254, 0.28);
+  --dsw-specific-spatial-accent-left: rgba(34, 197, 94, 0.24);
+  --dsw-specific-spatial-accent-right: rgba(65, 118, 230, 0.24);
+  --dsw-specific-spatial-border: rgba(38, 49, 72, 0.12);
+  --dsw-specific-spatial-canvas:
+    radial-gradient(1100px 760px at 82% 110%, rgba(196, 170, 255, 0.12), transparent 60%),
+    radial-gradient(1200px 800px at 18% -10%, rgba(129, 212, 180, 0.1), transparent 60%),
+    linear-gradient(160deg, rgb(244, 247, 252) 0%, rgb(237, 242, 250) 55%, rgb(247, 244, 252) 100%);
+  --dsw-specific-spatial-lane: rgba(255, 255, 255, 0.68);
+  --dsw-specific-spatial-lane-bright: rgba(255, 255, 255, 0.82);
+  --dsw-specific-spatial-selection: rgba(65, 118, 230, 0.12);
+}
+
+body[data-ds-dark-theme] {
+  --dsw-specific-spatial-accent-center: rgba(150, 180, 255, 0.4);
+  --dsw-specific-spatial-accent-left: rgba(129, 212, 180, 0.4);
+  --dsw-specific-spatial-accent-right: rgba(196, 170, 255, 0.4);
+  --dsw-specific-spatial-border: rgba(255, 255, 255, 0.1);
+  --dsw-specific-spatial-canvas:
+    radial-gradient(1200px 800px at 18% -10%, rgba(129, 212, 180, 0.1), transparent 60%),
+    radial-gradient(1100px 760px at 82% 110%, rgba(196, 170, 255, 0.12), transparent 60%),
+    radial-gradient(900px 700px at 50% 50%, rgba(150, 180, 255, 0.07), transparent 65%),
+    linear-gradient(
+      160deg,
+      var(--dsw-static-spatial-night-900) 0%,
+      var(--dsw-static-spatial-night-850) 55%,
+      var(--dsw-static-spatial-night-950) 100%
+    );
+  --dsw-specific-spatial-lane: rgba(255, 255, 255, 0.043);
+  --dsw-specific-spatial-lane-bright: rgba(255, 255, 255, 0.06);
+  --dsw-specific-spatial-selection: rgba(196, 170, 255, 0.12);
+}
+
+/*
+ * THE TWO TOKENS THE FACES REFERENCED AND NOTHING DEFINED.
+ *
+ * `--dsw-font-family-mono` was referenced by the aumlok, documents, messages and settings faces while the
+ * harness theme declares only `--dsw-font-family` — so every one of those declarations painted its own
+ * fallback stack, which is how a hardcoded font survives a review that checks the token is USED. Declared
+ * here, once, in the face that owns the spatial vocabulary, so the references resolve from the site.
+ *
+ * `--dsw-alias-label-error` was referenced by the aumlok face WITH NO FALLBACK AT ALL: an unresolvable
+ * declaration is dropped, so the refusal text inherited whatever colour it sat in. It follows the theme's own
+ * state colour when that exists and falls back to a readable red when it does not.
+ */
+:root {
+  --dsw-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --dsw-alias-label-error: var(--dsw-alias-state-error-primary, #f2555a);
+}
+
+/*
+ * THE SHARED VOCABULARY, MOVED HERE FROM THE FACES THAT HAD BEEN DECLARING IT FOR THEMSELVES.
+ *
+ * Each of these was declared inside a face's own stylesheet — some of them by ONE face and
+ * referenced by ANOTHER (`--dsh-sidebar-inline-padding` was declared by the sidebar and used by the
+ * threads browser), so the faces were quietly sharing a vocabulary through a namespace that belongs to
+ * the site. They are declared here, once, by the face that owns the spatial scale, which is the only
+ * place a `--dsh-` token may come from.
+ */
+:root {
+  --dsh-documents-inline-padding: 12px; /* from documents/src/client/Documents.module.css */
+  --dsh-messages-inline-padding: 12px; /* from messages/src/client/Messages.module.css */
+  --dsh-scrollbar-thumb: var(--dsw-alias-scrollbar-bg-l2); /* from aumlok/src/client/Aumlok.module.css */
+  --dsh-scrollbar-thumb-hover: var(--dsw-alias-scrollbar-hover-l2); /* from aumlok/src/client/Aumlok.module.css */
+  --dsh-session-list-edge-inset: var(--dsh-sidebar-inline-padding); /* from threads/src/client/WorkspaceBrowser.module.css */
+  --dsh-session-list-scrollbar-offset: 2px; /* from threads/src/client/WorkspaceBrowser.module.css */
+  --dsh-session-list-scrollbar-width: 8px; /* from threads/src/client/WorkspaceBrowser.module.css */
+  --dsh-sidebar-inline-padding: 12px; /* from sidebar/src/client/SidebarRoot.module.css */
+}

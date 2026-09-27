@@ -1,0 +1,549 @@
+{
+  "domain": "aukora:kernel-pin:v1",
+  "package": {
+    "name": "@aukora/kernel",
+    "version": "0.1.0",
+    "license": "AGPL-3.0-or-later",
+    "licenseFile": "LICENSE"
+  },
+  "source": {
+    "repository": "github.com/aumara-xyz/aukora",
+    "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+    "path": "packages/kernel",
+    "taken": "git archive def297f packages/kernel from the local read-only clone ~/aukora; no network",
+    "alsoAt": {
+      "repository": "github.com/aumara-xyz/aukora-kernel",
+      "commit": "b441edc4d17de778d30ae955f46408edae39bffe",
+      "sameBytes": false,
+      "difference": "b441edc is OLDER: it lacks src/staleness.ts, test/authorityEncoding.test.ts, test/staleness.test.ts and test/stalenessBarrelExport.test.ts, and its src/canonical.ts, src/index.ts, package.json and conformance/manifest.json differ. The 37-case suite is the def297f one."
+    }
+  },
+  "upstream": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "packages/kernel/LICENSE",
+      "gitBlob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "path": "NOTICE",
+      "upstreamPath": "packages/kernel/NOTICE",
+      "gitBlob": "a2834fc78548b73e2e989058c7a436754c3a420a",
+      "sha256": "1452a9200b6d9e53c3b8a8ffdc68345976493d151a671213431d7409528a4561",
+      "bytes": 1483
+    },
+    {
+      "path": "conformance/hybrid-v1.json",
+      "upstreamPath": "packages/kernel/conformance/hybrid-v1.json",
+      "gitBlob": "e883329af2c3310448eaf4177477c4963287fe49",
+      "sha256": "273c26d82f946a111a9fd15c99b5f8256edfdbbe5b15439abf3a40282f3e2f55",
+      "bytes": 19689
+    },
+    {
+      "path": "conformance/manifest.json",
+      "upstreamPath": "packages/kernel/conformance/manifest.json",
+      "gitBlob": "0fd9ddc9e0c91ae1cbbb0c8c3f5429142cfca3a6",
+      "sha256": "4ff18b07c2ae73a47bc7739e228ad37f62a861d93522a3f74329e18bf05c5520",
+      "bytes": 1377
+    },
+    {
+      "path": "conformance/v1.json",
+      "upstreamPath": "packages/kernel/conformance/v1.json",
+      "gitBlob": "2d3db317a82a71b1bfc6e531e50ebe5e75c36667",
+      "sha256": "9dbfe4ef6ddf8fff957d48692f2827c63e59e074af251b0ee3bfed91141720fa",
+      "bytes": 3693
+    },
+    {
+      "path": "src/authority.ts",
+      "upstreamPath": "packages/kernel/src/authority.ts",
+      "gitBlob": "eaee87f391b92a5a326f8ab9daa364f72a6963dc",
+      "sha256": "382fadd85fa9821db6b8a8df13d9aa7fa8297883eb3caa1484c605913444a4ec",
+      "bytes": 8904
+    },
+    {
+      "path": "src/canonical.ts",
+      "upstreamPath": "packages/kernel/src/canonical.ts",
+      "gitBlob": "f879bd5a753388ed9a59b5ff61edfe47b677532a",
+      "sha256": "825c60d4c300d75cf0eca8e90094dc72e9f839aaac8b5f233f52f294acdea2b7",
+      "bytes": 4624
+    },
+    {
+      "path": "src/errors.ts",
+      "upstreamPath": "packages/kernel/src/errors.ts",
+      "gitBlob": "4331c3cf8218734a458451b1a587026d75dbcb0a",
+      "sha256": "f5b21d8a44596b28b96b5cade11f1de2fccb371fc0e11a4c2eaf8f499b50375a",
+      "bytes": 356
+    },
+    {
+      "path": "src/evidence.ts",
+      "upstreamPath": "packages/kernel/src/evidence.ts",
+      "gitBlob": "a52b46a2ac42c7609f89b9e3f794c789e79e3163",
+      "sha256": "b4d04255bfb8ad81ecdebe0d7d12deb6828190a80a8478c023ff795c9c1f0bbc",
+      "bytes": 7872
+    },
+    {
+      "path": "src/index.ts",
+      "upstreamPath": "packages/kernel/src/index.ts",
+      "gitBlob": "7ff121968a33e206bc677e06714454b96c0ddb98",
+      "sha256": "7f24bdac166963150acca8424b6e03c8f9aba5ac8650fd0a5aac9e9849f5b3bf",
+      "bytes": 509
+    },
+    {
+      "path": "src/merkle.ts",
+      "upstreamPath": "packages/kernel/src/merkle.ts",
+      "gitBlob": "537eda73525b607e93031aed3608cc869f83c77c",
+      "sha256": "191c129dcd8f973e47b9d59793c517109c43d7a19dce1ebee3a4c4555526c69f",
+      "bytes": 6980
+    },
+    {
+      "path": "src/reducer.ts",
+      "upstreamPath": "packages/kernel/src/reducer.ts",
+      "gitBlob": "782333d86158426c725b734325b9a47c3876dd2b",
+      "sha256": "d3adf34c4c6cd2e6f9a7a83f03a1e5b3c6db66bde3018804f1c0885d08b1a3b6",
+      "bytes": 5667
+    },
+    {
+      "path": "src/registry.ts",
+      "upstreamPath": "packages/kernel/src/registry.ts",
+      "gitBlob": "d091b88d4f8484b3e29b3f55b7289b733ae7c090",
+      "sha256": "562c43e84c24efb45ffdc52b60854cbea40f42e26bd16e14a3b4a94aff2fff57",
+      "bytes": 1195
+    },
+    {
+      "path": "src/schema.ts",
+      "upstreamPath": "packages/kernel/src/schema.ts",
+      "gitBlob": "35335acfcf26d5eed589c6fc563bbd2f12602a30",
+      "sha256": "229f49c8d740fc40fcda63cc25d831267a605d9a99c9d598c2360689bd43a84c",
+      "bytes": 12964
+    },
+    {
+      "path": "src/staleness.ts",
+      "upstreamPath": "packages/kernel/src/staleness.ts",
+      "gitBlob": "165e41895edbd13a28f400da8a8e2e998d6d2540",
+      "sha256": "d57468a95efc21eea936af001b97206ee33670fe8f07ff8d38b3335be50e9924",
+      "bytes": 6706
+    },
+    {
+      "path": "test/authorityEncoding.test.ts",
+      "upstreamPath": "packages/kernel/test/authorityEncoding.test.ts",
+      "gitBlob": "4eac1fd3d9ff1590469d7b80bb25c65311f127d6",
+      "sha256": "ff660f20cb372a502502dcca03ac4855593d17b1b2559cd9599e2541df298831",
+      "bytes": 11381
+    },
+    {
+      "path": "test/conformance.test.js",
+      "upstreamPath": "packages/kernel/test/conformance.test.js",
+      "gitBlob": "29ceb957607d54464811af5ac97d823a0bab9dd2",
+      "sha256": "0ac01510be57e01f1a7ada4af27201ff82ff0e63a5d704835c9195d357a254f8",
+      "bytes": 2408
+    },
+    {
+      "path": "test/evidence.test.ts",
+      "upstreamPath": "packages/kernel/test/evidence.test.ts",
+      "gitBlob": "1b2ccc3ffdeabced921755462a06220b1a1cf4cb",
+      "sha256": "b1fbeb5ecdf75e65df0c3f1e97df239aed6e0f80e2048ed46ef11b1ccc1c2006",
+      "bytes": 5320
+    },
+    {
+      "path": "test/reducer.test.ts",
+      "upstreamPath": "packages/kernel/test/reducer.test.ts",
+      "gitBlob": "b355b3bd07cac0e8e0ca887a7a94adc7e920c11a",
+      "sha256": "e7c680339cdac9e2f4932d071459fc1376f40634a2e022cf2e628d3699ec50c0",
+      "bytes": 7080
+    },
+    {
+      "path": "test/staleness.test.ts",
+      "upstreamPath": "packages/kernel/test/staleness.test.ts",
+      "gitBlob": "914a79e5e4dd3c8c3ab3fed72dcf2434426ac16c",
+      "sha256": "4152add4f60dd31ff1d4b7678597efcd4fabb56d6ecbe3c2732130dd236a33e9",
+      "bytes": 2752
+    },
+    {
+      "path": "test/stalenessBarrelExport.test.ts",
+      "upstreamPath": "packages/kernel/test/stalenessBarrelExport.test.ts",
+      "gitBlob": "3cb7299abda02e210811f43a14203ed3de3aa57b",
+      "sha256": "a09620eecc8e6851997c46af832f285ec880fdc82b76930eb539c267d9209360",
+      "bytes": 1322
+    }
+  ],
+  "transpile": {
+    "command": "node vendor/aukora-kernel/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js",
+    "compiler": "typescript 6.0.3 (ts.transpileModule; type stripping only)",
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "ESNext",
+      "verbatimModuleSyntax": true
+    },
+    "rule": "emitted bytes are exactly the compiler output except import specifiers, each listed under specifierRewrites",
+    "crossCheck": "MEASURED 2026-09-27: with the @noble specifier rewrites undone, all ten lib/*.js equal byte-for-byte the dist/*.js that upstream's own `tsc -p tsconfig.build.json` left in ~/aukora/packages/kernel (sourceMappingURL line removed)."
+  },
+  "generated": [
+    {
+      "path": "lib/authority.js",
+      "from": "src/authority.ts",
+      "transpiled": true,
+      "sha256": "ddda96d205796d84a0bf78f23c499a87ab5da9472b401adb39231c76c5de23de",
+      "bytes": 8739,
+      "specifierRewrites": [
+        {
+          "from": "\"@noble/curves/ed25519.js\"",
+          "to": "\"../deps/@noble/curves@2.2.0/ed25519.js\""
+        },
+        {
+          "from": "\"@noble/hashes/sha2.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/sha2.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        },
+        {
+          "from": "\"@noble/post-quantum/ml-dsa.js\"",
+          "to": "\"../deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib/canonical.js",
+      "from": "src/canonical.ts",
+      "transpiled": true,
+      "sha256": "b213762567fc959e419372e75454eaf320fd123f62aabb7538a080da11a5abf3",
+      "bytes": 4682,
+      "specifierRewrites": [
+        {
+          "from": "\"@noble/hashes/sha2.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/sha2.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib/errors.js",
+      "from": "src/errors.ts",
+      "transpiled": true,
+      "sha256": "66a2aafddaf95a6473061849a6333d8670d100fd9f01eff83459915ed02bed08",
+      "bytes": 333,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/evidence.js",
+      "from": "src/evidence.ts",
+      "transpiled": true,
+      "sha256": "c9d01b7604edac0dc26b1bf8fb5d462c1770a3e536f4390ce83f4186727da96f",
+      "bytes": 6703,
+      "specifierRewrites": [
+        {
+          "from": "\"@noble/hashes/sha2.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/sha2.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib/index.js",
+      "from": "src/index.ts",
+      "transpiled": true,
+      "sha256": "5fde41595703e3464d89882a39a4e6193ed709032e8040a09005ab7c7f941f4c",
+      "bytes": 498,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/merkle.js",
+      "from": "src/merkle.ts",
+      "transpiled": true,
+      "sha256": "dad1426ebe55846017622de71d1ca49a41f17772c8b3b2e9a781a0f7f084f957",
+      "bytes": 6714,
+      "specifierRewrites": [
+        {
+          "from": "\"@noble/hashes/sha2.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/sha2.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib/reducer.js",
+      "from": "src/reducer.ts",
+      "transpiled": true,
+      "sha256": "48c5593a0891f30dce73f2ead0b4b9f433056744ead5fe3d1d0184b521016240",
+      "bytes": 5388,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/registry.js",
+      "from": "src/registry.ts",
+      "transpiled": true,
+      "sha256": "4f6d9ff9752485d39614a32e7a4044e017a82428420d0e65546e587b02058ee3",
+      "bytes": 1095,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/schema.js",
+      "from": "src/schema.ts",
+      "transpiled": true,
+      "sha256": "a1c1c0e37e743f7066058c97c14dcf60682a015b8e0cb1b4e193c8aac0d2ac68",
+      "bytes": 9721,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/staleness.js",
+      "from": "src/staleness.ts",
+      "transpiled": true,
+      "sha256": "aff97a35431e18b8bb634a8d27bad3ff199da21c0b4a56ba356ec8ceb10efd37",
+      "bytes": 5951,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib-test/authorityEncoding.test.js",
+      "from": "test/authorityEncoding.test.ts",
+      "transpiled": true,
+      "sha256": "419b8a214e4d76d17c58d6c0a5dfe5fc5c139b395dc3f258dfb31559c422424d",
+      "bytes": 11288,
+      "specifierRewrites": [
+        {
+          "from": "\"vitest\"",
+          "to": "\"../vitest-shim.mjs\""
+        },
+        {
+          "from": "\"@noble/curves/ed25519.js\"",
+          "to": "\"../deps/@noble/curves@2.2.0/ed25519.js\""
+        },
+        {
+          "from": "\"@noble/post-quantum/ml-dsa.js\"",
+          "to": "\"../deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
+        },
+        {
+          "from": "\"@noble/hashes/sha2.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/sha2.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        },
+        {
+          "from": "\"../src/index.js\"",
+          "to": "\"../lib/index.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib-test/conformance.test.js",
+      "from": "test/conformance.test.js",
+      "transpiled": false,
+      "sha256": "7433b9e7f89f9225d3780064208ae3c8d463f0c8d9cf36e589a7f43b7f0b8d36",
+      "bytes": 2434,
+      "specifierRewrites": [
+        {
+          "from": "\"vitest\"",
+          "to": "\"../vitest-shim.mjs\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        },
+        {
+          "from": "\"../src/index.js\"",
+          "to": "\"../lib/index.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib-test/evidence.test.js",
+      "from": "test/evidence.test.ts",
+      "transpiled": true,
+      "sha256": "fa779ee37f34d70c3643afc4002965cd10086ccea62a8bc6736048d1c2d84714",
+      "bytes": 5645,
+      "specifierRewrites": [
+        {
+          "from": "\"vitest\"",
+          "to": "\"../vitest-shim.mjs\""
+        },
+        {
+          "from": "\"@noble/post-quantum/ml-dsa.js\"",
+          "to": "\"../deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        },
+        {
+          "from": "\"../src/index.js\"",
+          "to": "\"../lib/index.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib-test/reducer.test.js",
+      "from": "test/reducer.test.ts",
+      "transpiled": true,
+      "sha256": "4ac294d11f2776bcfae80755384e48d525c6bef49338b23a730b4c6deae5c5bd",
+      "bytes": 7074,
+      "specifierRewrites": [
+        {
+          "from": "\"vitest\"",
+          "to": "\"../vitest-shim.mjs\""
+        },
+        {
+          "from": "\"@noble/curves/ed25519.js\"",
+          "to": "\"../deps/@noble/curves@2.2.0/ed25519.js\""
+        },
+        {
+          "from": "\"@noble/post-quantum/ml-dsa.js\"",
+          "to": "\"../deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
+        },
+        {
+          "from": "\"@noble/hashes/utils.js\"",
+          "to": "\"../deps/@noble/hashes@2.2.0/utils.js\""
+        },
+        {
+          "from": "\"../src/index.js\"",
+          "to": "\"../lib/index.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib-test/staleness.test.js",
+      "from": "test/staleness.test.ts",
+      "transpiled": true,
+      "sha256": "2e83bc772cbf713a1c24c665feac259ef6fadbc9de5ef8a5444823a12b183d59",
+      "bytes": 2866,
+      "specifierRewrites": [
+        {
+          "from": "\"vitest\"",
+          "to": "\"../vitest-shim.mjs\""
+        },
+        {
+          "from": "\"../src/staleness.js\"",
+          "to": "\"../lib/staleness.js\""
+        }
+      ]
+    },
+    {
+      "path": "lib-test/stalenessBarrelExport.test.js",
+      "from": "test/stalenessBarrelExport.test.ts",
+      "transpiled": true,
+      "sha256": "28ebf7ae30f20cab5818b49ad7a7f4a646cf5d54983f51286502b20408dbe46a",
+      "bytes": 1305,
+      "specifierRewrites": [
+        {
+          "from": "'vitest'",
+          "to": "'../vitest-shim.mjs'"
+        },
+        {
+          "from": "'../src/index.js'",
+          "to": "'../lib/index.js'"
+        },
+        {
+          "from": "'../src/staleness.js'",
+          "to": "'../lib/staleness.js'"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "specifier": "@noble/hashes/sha2.js",
+      "resolvesTo": "vendor/aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js",
+      "sha256": "0fb8e3c3f2c73a890be2524ac5d2542aaed4decff69e561231a86131203b3973",
+      "upstreamPin": "@noble/hashes@2.2.0",
+      "vendored": "@noble/hashes@2.2.0"
+    },
+    {
+      "specifier": "@noble/hashes/utils.js",
+      "resolvesTo": "vendor/aukora-kernel/deps/@noble/hashes@2.2.0/utils.js",
+      "sha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f",
+      "upstreamPin": "@noble/hashes@2.2.0",
+      "vendored": "@noble/hashes@2.2.0"
+    },
+    {
+      "specifier": "@noble/curves/ed25519.js",
+      "resolvesTo": "vendor/aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js",
+      "sha256": "28c6fd6157fe2d1c69ea4751844c3d8fe3ee1a496b4f10fb7b48a51c48857a21",
+      "upstreamPin": "@noble/curves@2.2.0",
+      "vendored": "@noble/curves@2.2.0"
+    },
+    {
+      "specifier": "@noble/post-quantum/ml-dsa.js",
+      "resolvesTo": "vendor/aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js",
+      "sha256": "210a020b4933275edf89201e2a5168ee404190f2d5cfa676d0cb13b7a1072276",
+      "upstreamPin": "@noble/post-quantum@0.6.1",
+      "vendored": "@noble/post-quantum@0.6.1"
+    }
+  ],
+  "dependencyClosure": {
+    "provenance": "deps/PROVENANCE.json",
+    "packages": [
+      {
+        "name": "@noble/curves",
+        "version": "2.2.0",
+        "dir": "deps/@noble/curves@2.2.0",
+        "integrity": "sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ=="
+      },
+      {
+        "name": "@noble/hashes",
+        "version": "2.2.0",
+        "dir": "deps/@noble/hashes@2.2.0",
+        "integrity": "sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg=="
+      },
+      {
+        "name": "@noble/post-quantum",
+        "version": "0.6.1",
+        "dir": "deps/@noble/post-quantum@0.6.1",
+        "integrity": "sha512-+pormrDZwjRw05U8ADK4JpHejo87+gBd+muRBB/ozztH5yhDLMDF4jHQWN3NQQAsu1zBNPWTG0ZwVI0CR29H0A=="
+      },
+      {
+        "name": "@noble/ciphers",
+        "version": "2.2.0",
+        "dir": "deps/@noble/ciphers@2.2.0",
+        "integrity": "sha512-Z6pjIZ/8IJcCGzb2S/0Px5J81yij85xASuk1teLNeg75bfT07MV3a/O2Mtn1I2se43k3lkVEcFaR10N4cgQcZA=="
+      }
+    ],
+    "files": 307,
+    "bytes": 4323199
+  },
+  "dependencyNote": "The kernel pins @noble/curves 2.2.0, @noble/hashes 2.2.0 and @noble/post-quantum 0.6.1 (packages/kernel/package.json and package-lock.json at def297f). Those exact packages, plus @noble/ciphers 2.2.0 that post-quantum 0.6.1 declares, are carried whole and unmodified in deps/<name>@<version>/ from tarballs whose sha512 equals the lockfile integrity; lib/ and lib-test/ import them there, and deps/node_modules/@noble/* are links so the packages' own bare @noble imports resolve to the same pinned copies. conformance.mjs pins every file and every link. The plugins/aukora-aumlok noble copies (curves/hashes 2.4.0) are no longer on the kernel's path.",
+  "genesisAuthored": [
+    "package.json",
+    "transpile.mjs",
+    "vitest-shim.mjs",
+    "conformance.mjs",
+    "PROVENANCE.json",
+    "deps/PROVENANCE.json",
+    "deps/README.md",
+    "deps/.gitignore",
+    "deps/node_modules/@noble/{ciphers,curves,hashes,post-quantum} (links)"
+  ],
+  "notVendored": [
+    "README.md",
+    "PROVENANCE.md",
+    "SBOM.cdx.json",
+    "package.json (upstream)",
+    "tsconfig.json",
+    "tsconfig.build.json",
+    "vitest.config.ts",
+    "examples/observe.mjs"
+  ],
+  "conformance": {
+    "command": "node vendor/aukora-kernel/conformance.mjs",
+    "expectedCases": 37,
+    "upstreamMeasurement": "bun test ./test in a scratch copy of packages/kernel at def297f: 37 pass / 0 fail, 115 expects (~/aukora-great-merge/OLD-TECH-INVENTORY-20260927.md row 3)",
+    "testFiles": [
+      "lib-test/authorityEncoding.test.js",
+      "lib-test/conformance.test.js",
+      "lib-test/evidence.test.js",
+      "lib-test/reducer.test.js",
+      "lib-test/staleness.test.js",
+      "lib-test/stalenessBarrelExport.test.js"
+    ]
+  }
+}

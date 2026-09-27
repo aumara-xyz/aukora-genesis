@@ -1,0 +1,19 @@
+{
+  "schema": "aukora-law-v0",
+  "note": "What no intelligence may write here — not Claude Code, not Codex, not Auma, not a human in a hurry. The guard refuses these BEFORE the tool runs and receipts the refusal.",
+  "protected": [
+    ".aukora/**",
+    "aukora.law.json",
+    "core/authority/**",
+    "core/witness/**",
+    "LAW.md",
+    ".env",
+    "**/*.key",
+    "**/*.pem",
+    ".ssh/**"
+  ],
+  "writesOutsideRepo": "refuse",
+  "unguardedTools": "receipt",
+  "aumlokGrantsAuthority": false,
+  "auraIsTraceOnly": true
+}

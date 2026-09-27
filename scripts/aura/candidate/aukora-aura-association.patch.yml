@@ -1,0 +1,17 @@
+# CANDIDATE ROW — proposed by the Aura lane for the next release candidate. This lane has NOT
+# applied it anywhere: the live patch, the launcher and the installed composition are untouched.
+#
+# STAGING (one file, copied verbatim):
+#   scripts/aura/composition/association-plugin.js
+#     -> <release>/plugins/aukora-aura-association/lib/index.js
+#   sha256(d3ab060304b955e92d85b045bc0f13284c948926e4f777a8df8746ea4d96fa3a)
+#
+# WHY THE ROW IS THIS SHORT. Row names are release-relative — the loader anchors them beside the
+# file that carries them — so `./plugins/...` resolves inside the release this row ships in. The
+# plugin then resolves its own release root from its location and takes the log's state directory
+# from AUKORA_GATE_CONFIG, the config the launcher already writes for the gate, falling back to
+# <release>/gate-state. Nothing here needs an absolute path, and no path is duplicated: a second
+# copy of "where the log lives" is a second thing that can disagree with the first.
+- insert:
+    - id: aukora-aura-association
+      name: ./plugins/aukora-aura-association/lib/index.js

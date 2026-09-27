@@ -1,0 +1,36 @@
+{
+  "name": "@aukora/mind",
+  "version": "0.1.0",
+  "description": "The pure reasoning-loop organ for Aukora: a model-in-the-loop observe → hypothesize → act → verify cycle with tolerant reply parsing, plan-step verification, a bounded parity-safe turn window, and deterministic plan rollout over an injected simulator. Pure and portable; advisory only; never grants authority.",
+  "author": "Aumara",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aumara-xyz/aukora.git",
+    "directory": "packages/mind"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "types": "./index.ts",
+  "module": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "files": [
+    "index.ts",
+    "src",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts"
+  }
+}

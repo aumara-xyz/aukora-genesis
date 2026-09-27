@@ -1,0 +1,213 @@
+{
+  "domain": "aukora:noble-curves-pin:v1",
+  "formatVersion": 1,
+  "entry": "curves/secp256k1.js",
+  "packages": [
+    {
+      "name": "@noble/curves",
+      "version": "2.4.0",
+      "license": "MIT",
+      "licenseFile": "licenses/noble-curves.LICENSE",
+      "tarball": "noble-curves-2.4.0.tgz",
+      "tarballSha256": "55279c71b0201d6c0e58d0206d15825359e02a3932f326ba7b7909ac2d334aa9"
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "2.4.0",
+      "license": "MIT",
+      "licenseFile": "licenses/noble-hashes.LICENSE",
+      "tarball": "noble-hashes-2.4.0.tgz",
+      "tarballSha256": "e1946149b780017b2564fcc092cb01c04e1d7f20627d0296c17da8868f4436dc"
+    }
+  ],
+  "closure": {
+    "modules": 25,
+    "bytes": 537716,
+    "digest": "fe6cad61fc9733c909d81115c2ba531cfeed4fe8a7783fc90185a26829692217"
+  },
+  "files": [
+    {
+      "path": "curves/abstract/curve.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/curve.js",
+      "bytes": 35465,
+      "sha256": "153bf617c6b1d266b6591ba42e46460ca4276010a788adff203976698fe6dbbf"
+    },
+    {
+      "path": "curves/abstract/der.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/der.js",
+      "bytes": 7401,
+      "sha256": "7f80d698611b131368ecf732b8740bb97f72cd42fef77c4b0bb923e2e2d44159"
+    },
+    {
+      "path": "curves/abstract/edwards.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/edwards.js",
+      "bytes": 32247,
+      "sha256": "0e40ef7e09c6b4a9e8ee82b75b9ea4d7f0b7e4bc61007de053d8f2c870466229"
+    },
+    {
+      "path": "curves/abstract/fft.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/fft.js",
+      "bytes": 25898,
+      "sha256": "40d2659f2e630ea1d499cde2e4a166a572a35d2191c6a589c672ac92f463ea06"
+    },
+    {
+      "path": "curves/abstract/frost.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/frost.js",
+      "bytes": 45365,
+      "sha256": "378691b2197a6e4968246f655a752894be20b1642b3bfe78d1082c3916d74b73"
+    },
+    {
+      "path": "curves/abstract/hash-to-curve.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/hash-to-curve.js",
+      "bytes": 26048,
+      "sha256": "c4794a593c0e6b448593c293c91afa40c4a5d9d9a9b50a27df0e5ff7acdf486a"
+    },
+    {
+      "path": "curves/abstract/modular.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/modular.js",
+      "bytes": 39655,
+      "sha256": "3fd76af533a3c544a4f39f51e39a48e2d118ce5a28accdaf2aecc2b5f838fd71"
+    },
+    {
+      "path": "curves/abstract/montgomery.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/montgomery.js",
+      "bytes": 14700,
+      "sha256": "987df16e8d8bb9fb584b5b1d603162d820141a3101634463137b91c4293530b3"
+    },
+    {
+      "path": "curves/abstract/oprf.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/oprf.js",
+      "bytes": 18303,
+      "sha256": "58835db56426849c3e4b8af70eb7c55b2b6cd1afdfdefb8d8ade9655901d95f0"
+    },
+    {
+      "path": "curves/abstract/weierstrass.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/abstract/weierstrass.js",
+      "bytes": 53587,
+      "sha256": "9b83dfcd4cd529ac2e896dcf903a9b0442a32df42bd3f41d3993ff079251510c"
+    },
+    {
+      "path": "curves/ed25519.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/ed25519.js",
+      "bytes": 30014,
+      "sha256": "f48bb4f67497d6d276e2a4cc8e07c20338557cabaf7ce3ce5e97901ef4379336"
+    },
+    {
+      "path": "curves/misc.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/misc.js",
+      "bytes": 10712,
+      "sha256": "4721fa2d9713f6533e13eed3b7cd01c5033e2f9c22f56ad269cad8204af11443"
+    },
+    {
+      "path": "curves/nist.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/nist.js",
+      "bytes": 11514,
+      "sha256": "04f2f3fd4f4fe68265446acd7142a98cc72db575560c7543115e508c96c086a9"
+    },
+    {
+      "path": "curves/secp256k1.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/secp256k1.js",
+      "bytes": 20668,
+      "sha256": "d484fee92603850b5c9f81470c41a30f4ea5b0ca4a8e6348568aa7bba1c84b8e"
+    },
+    {
+      "path": "curves/utils.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/@noble/curves/utils.js",
+      "bytes": 23197,
+      "sha256": "8693d78c178b5c43abe2b5889a7710f920697089c0556f4b5035e5c250229828"
+    },
+    {
+      "path": "hashes/_blake.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/_blake.js",
+      "bytes": 2841,
+      "sha256": "cabbff61d1f373bac45594ad758df7c42e176464ddbb94b44f5533fa977a4f56"
+    },
+    {
+      "path": "hashes/_md.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/_md.js",
+      "bytes": 9163,
+      "sha256": "ba1517585e56ad61924a4842239d894c7812facded6482ec55cdb828567dc422"
+    },
+    {
+      "path": "hashes/_u64.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/_u64.js",
+      "bytes": 4794,
+      "sha256": "b09da8c07fe8187c07649494cdb7cd0bcf13df90b506a9473d19e4d5f8c2e102"
+    },
+    {
+      "path": "hashes/blake1.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/blake1.js",
+      "bytes": 25201,
+      "sha256": "da1d08b4d0702ad4f185a796df8fce3fec2855de53b02190eba3bd8555677b5c"
+    },
+    {
+      "path": "hashes/blake2.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/blake2.js",
+      "bytes": 22807,
+      "sha256": "ffc4b84cb0ebb1b84cfcaba9c39ae03b07338e459733e96df129b278f7adc48b"
+    },
+    {
+      "path": "hashes/hmac.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/hmac.js",
+      "bytes": 3118,
+      "sha256": "fec9f8f3aeda785ea2de91cc4c059d54ef98196261c026c43f48341007ae52c9"
+    },
+    {
+      "path": "hashes/legacy.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/legacy.js",
+      "bytes": 12613,
+      "sha256": "690553a41af2fdd1e32ff6b534ba8508e95f1861c09c2d62fe762b6b501e09be"
+    },
+    {
+      "path": "hashes/sha2.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/sha2.js",
+      "bytes": 18997,
+      "sha256": "471746bba6ec4c6238ca41358d1d3b40b6ff31cf3363f0b4d550c649c1a8e83b"
+    },
+    {
+      "path": "hashes/sha3.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/sha3.js",
+      "bytes": 17469,
+      "sha256": "9a81e1edb24eae27b335533220167609cfb58008c5690e140ce478acdc669f32"
+    },
+    {
+      "path": "hashes/utils.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/@noble/hashes/utils.js",
+      "bytes": 25939,
+      "sha256": "1ba3b1fe434318418c256236798e5afff5b4cc41773d3e3d320e4e7484beb6cb"
+    }
+  ],
+  "rewrite": {
+    "why": "The vendored tree has no node_modules, so bare `@noble/*` specifiers cannot resolve. Each was rewritten to a relative path pointing inside this tree; the drift court asserts zero bare specifiers remain.",
+    "verified": "the vendored tree reproduces the published BIP-340 test vector 0 byte-for-byte (see tests/aukora-nostr-vendor-pin.test.mjs)"
+  },
+  "checks": {
+    "pin": "tests/aukora-nostr-vendor-pin.test.mjs re-hashes every file against this manifest and fails on any drift"
+  },
+  "note": "The static-import closure of curves/secp256k1.js, which is BROADER than schnorr strictly needs (it also carries ed25519, nist, misc, blake and sha3). Vendored whole rather than hand-trimmed: a trim that missed one dynamic import would fail at a relay, not at build time."
+}

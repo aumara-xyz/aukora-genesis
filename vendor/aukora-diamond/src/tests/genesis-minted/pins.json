@@ -1,0 +1,46 @@
+{
+  "domain": "aukora:genesis-minted-fixture:v1",
+  "whatThisIs": "One receipt, minted by GENESIS's own producer \u2014 not by this repository \u2014 and verified here as a consumer. It is the fixture half of Stage 0 consumer readiness: the cross-repo half needs a Genesis checkout, this half needs nothing but the bytes below, so it can run in CI on every commit.",
+  "provenance": {
+    "repository": "github.com/aumara-xyz/aukora-genesis",
+    "commit": "704ae19",
+    "producer": "scripts/composition/receipt.py (issue()), module in that checkout",
+    "licence": "AGPL-3.0",
+    "how": "PYTHONPATH=<checkout>/scripts/composition; receipt.issue(seed=0x5a*32, kind=aukora-receipt/v3-genesis, aura=7 fields with priorHead, composition=the five-field v1 set). Re-runnable: scripts/stage0-genesis-acceptance.py --genesis <checkout>",
+    "note": "The issuer secret is the fixed public constant 0x5a repeated 32 times \u2014 written here, worthless, and used only so the fixture carries a real Ed25519 signature that anyone can reproduce. No production key exists in this tree or in that one."
+  },
+  "shape": {
+    "kind": "aukora-receipt/v3-genesis",
+    "topLevelFields": [
+      "aura",
+      "composition",
+      "issuedAt",
+      "issuerPk",
+      "kind",
+      "nonce",
+      "sig"
+    ],
+    "compositionBaseDeclared": null,
+    "compositionFields": 5,
+    "auraFields": 7,
+    "note": "Genesis does not emit compositionBase today. That absence is the whole subject of Stage 0: this repository accepts the document anyway, as the named base v1, by the closed legacy rule \u2014 and the acceptance is measured by the check beside this file, not asserted."
+  },
+  "files": [
+    {
+      "path": "receipt.json",
+      "bytes": 1117,
+      "sha256": "0eb90122867cb71ba59a0481e880e74fc6e7181d6391f3b90cc5d6c5d0eb6958",
+      "note": "Minted by Genesis. Never edited here: every arm that needs a different shape re-signs a copy at run time with the public seed."
+    },
+    {
+      "path": "issuer.pk",
+      "bytes": 65,
+      "sha256": "69051d85b67e287854b4f684f2a9e721f8697ac7b3881f4cbb9dc3440c9c392b",
+      "note": "PUBLIC key only, derived from the public seed above."
+    }
+  ],
+  "notDone": [
+    "Genesis is not modified, imported into this tree, or repinned by this fixture.",
+    "The fixture is not a schema this repository owns: it is bytes from another tree, and the check beside it may only say what this repository does with them."
+  ]
+}

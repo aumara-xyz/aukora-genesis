@@ -1,0 +1,28 @@
+{
+  "schema": "aukora-swarm-decomposition-proposal-v1",
+  "decompositionId": "decomp-26f-01",
+  "parentBriefId": "brief-26-implementer-1420863a",
+  "campaignId": "camp-0026-fg",
+  "parentChainAnchor": "aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899",
+  "depth": 1,
+  "children": [
+    {
+      "childBriefId": "brief-26f-child-receipt-schema",
+      "childBriefDigest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "idempotencyKey": "019201a4-7c3e-7f00-8000-000000000001",
+      "allowPaths": ["core/receipt-v2.ts"],
+      "budget": { "maxTokens": 80000, "maxWallClockMin": 20 }
+    },
+    {
+      "childBriefId": "brief-26f-child-compat-vectors",
+      "childBriefDigest": "2222222222222222222222222222222222222222222222222222222222222222",
+      "idempotencyKey": "019201a4-7c3e-7f00-8000-000000000002",
+      "allowPaths": ["core/chain-v2-vectors/"],
+      "budget": { "maxTokens": 60000, "maxWallClockMin": 15 }
+    }
+  ],
+  "leaseInheritance": true,
+  "budgetConservationDeclared": 200000,
+  "state": "proposed",
+  "createdAt": "2026-08-06T00:00:00Z"
+}

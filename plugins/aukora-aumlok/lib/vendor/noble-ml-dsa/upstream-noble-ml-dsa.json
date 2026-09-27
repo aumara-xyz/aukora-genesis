@@ -1,0 +1,202 @@
+{
+  "domain": "aukora:noble-ml-dsa-pin:v1",
+  "formatVersion": 1,
+  "entry": "index.mjs",
+  "source": {
+    "repository": "aukora-deep",
+    "commit": "7be3a614aab0580ec2d60cdcf77920217695ef2b",
+    "commitShort": "7be3a614",
+    "commitSubject": "Merge branch 'main' into membrane/lab-import",
+    "lockfile": "pnpm-lock.yaml",
+    "lockfileSha256": "d675b6ec519a93d2bccf79cc99d21037241cce1c44984b5bf6e7b410d5e03d5b",
+    "resolvedFrom": "the Deep checkout's own node_modules (pnpm store), not a network fetch: these are the exact bytes Deep resolves and runs at this commit",
+    "networkUsed": false
+  },
+  "closure": {
+    "modules": 8,
+    "bytes": 133138,
+    "digest": "efcbeff032130cbdb37b6250339ceb6ec464efd7c296c7bc6d39e6f745acbcce",
+    "digestRecipe": "sha256 of the utf8 join, with \\n between entries, of \"<path>\\0<sha256>\" over `files` in the order listed"
+  },
+  "packages": [
+    {
+      "name": "@noble/post-quantum",
+      "version": "0.6.1",
+      "license": "MIT",
+      "licenseFile": "noble-post-quantum.LICENSE",
+      "lockfileIntegrity": "sha512-+pormrDZwjRw05U8ADK4JpHejo87+gBd+muRBB/ozztH5yhDLMDF4jHQWN3NQQAsu1zBNPWTG0ZwVI0CR29H0A==",
+      "role": "the ML-DSA-65 implementation"
+    },
+    {
+      "name": "@noble/curves",
+      "version": "2.2.0",
+      "license": "MIT",
+      "licenseFile": "noble-curves.LICENSE",
+      "lockfileIntegrity": "sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ==",
+      "role": "`abool` and `FFTCore`/`reverseBits` only"
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "2.2.0",
+      "license": "MIT",
+      "licenseFile": "noble-hashes.LICENSE",
+      "lockfileIntegrity": "sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==",
+      "role": "`shake128`/`shake256`, byte helpers, `_u64` rotl/split only"
+    }
+  ],
+  "files": [
+    {
+      "path": "post-quantum/ml-dsa.js",
+      "upstreamPackage": "@noble/post-quantum",
+      "upstreamPath": "node_modules/@noble/post-quantum/ml-dsa.js",
+      "upstreamSha256": "210a020b4933275edf89201e2a5168ee404190f2d5cfa676d0cb13b7a1072276",
+      "upstreamBytes": 29265,
+      "sha256": "6d59c438035c6e05b764442a0a3db7d2f598a150ba1fea1ee459c91e66101585",
+      "bytes": 29257,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/curves/utils.js'",
+          "to": "'../curves/utils.js'"
+        },
+        {
+          "from": "'@noble/hashes/sha3.js'",
+          "to": "'../hashes/sha3.js'"
+        }
+      ]
+    },
+    {
+      "path": "post-quantum/_crystals.js",
+      "upstreamPackage": "@noble/post-quantum",
+      "upstreamPath": "node_modules/@noble/post-quantum/_crystals.js",
+      "upstreamSha256": "7ff49f3f09213990027d5f307df5c84b36c9a47313a7d1069acd581b3e30eada",
+      "upstreamBytes": 7752,
+      "sha256": "c52aa6e3514e345a7873adc05f4ebdc3bcf9fba92f3555f7ed10854a488dff32",
+      "bytes": 7744,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/curves/abstract/fft.js'",
+          "to": "'../curves/abstract/fft.js'"
+        },
+        {
+          "from": "'@noble/hashes/sha3.js'",
+          "to": "'../hashes/sha3.js'"
+        }
+      ]
+    },
+    {
+      "path": "post-quantum/utils.js",
+      "upstreamPackage": "@noble/post-quantum",
+      "upstreamPath": "node_modules/@noble/post-quantum/utils.js",
+      "upstreamSha256": "b3d97248f0a16ea60119de0585def637a8aa3f27c4124d8825e1709588de53f8",
+      "upstreamBytes": 15333,
+      "sha256": "d4bf73f56c164e88957bb298d48b49f5979daf73af211f243e4b396efcda9c50",
+      "bytes": 15329,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../hashes/utils.js'"
+        }
+      ]
+    },
+    {
+      "path": "curves/utils.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/.pnpm/@noble+curves@2.2.0/node_modules/@noble/curves/utils.js",
+      "upstreamSha256": "b4847e39fbb4a93e2a3e9f3945e41eabf6d58da5898cddaf45f7ed768f0e3758",
+      "upstreamBytes": 19271,
+      "sha256": "7478a07d4afee3c906d03dc706f680d18ae2e9c32fbd57abddfefbbf753120b9",
+      "bytes": 19267,
+      "specifierRewrites": [
+        {
+          "from": "'@noble/hashes/utils.js'",
+          "to": "'../hashes/utils.js'"
+        }
+      ]
+    },
+    {
+      "path": "curves/abstract/fft.js",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/.pnpm/@noble+curves@2.2.0/node_modules/@noble/curves/abstract/fft.js",
+      "upstreamSha256": "b3ad080004e7d6db3839fef60de78ec12847ff508bd6a44c7e58c4658e5202b3",
+      "upstreamBytes": 21482,
+      "sha256": "b3ad080004e7d6db3839fef60de78ec12847ff508bd6a44c7e58c4658e5202b3",
+      "bytes": 21482,
+      "specifierRewrites": []
+    },
+    {
+      "path": "hashes/sha3.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/.pnpm/@noble+hashes@2.2.0/node_modules/@noble/hashes/sha3.js",
+      "upstreamSha256": "55b453d0a65c657aa408ec86d4ea8dd8f96740cd68963ea9ef180db4004f878f",
+      "upstreamBytes": 14905,
+      "sha256": "55b453d0a65c657aa408ec86d4ea8dd8f96740cd68963ea9ef180db4004f878f",
+      "bytes": 14905,
+      "specifierRewrites": []
+    },
+    {
+      "path": "hashes/utils.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/.pnpm/@noble+hashes@2.2.0/node_modules/@noble/hashes/utils.js",
+      "upstreamSha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f",
+      "upstreamBytes": 20182,
+      "sha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f",
+      "bytes": 20182,
+      "specifierRewrites": []
+    },
+    {
+      "path": "hashes/_u64.js",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/.pnpm/@noble+hashes@2.2.0/node_modules/@noble/hashes/_u64.js",
+      "upstreamSha256": "766b91a693a798f9d3cde97b25db4a6d0cef66b2ca21153d3d42424d37878870",
+      "upstreamBytes": 4972,
+      "sha256": "766b91a693a798f9d3cde97b25db4a6d0cef66b2ca21153d3d42424d37878870",
+      "bytes": 4972,
+      "specifierRewrites": []
+    }
+  ],
+  "licenses": [
+    {
+      "path": "licenses/noble-post-quantum.LICENSE",
+      "upstreamPackage": "@noble/post-quantum",
+      "upstreamPath": "node_modules/@noble/post-quantum/LICENSE",
+      "sha256": "0dea4b70b40ca57e3cfe30186e3dbd245147fe4d83ac566e92e70203aac59034",
+      "bytes": 1109
+    },
+    {
+      "path": "licenses/noble-curves.LICENSE",
+      "upstreamPackage": "@noble/curves",
+      "upstreamPath": "node_modules/.pnpm/@noble+curves@2.2.0/node_modules/@noble/curves/LICENSE",
+      "sha256": "4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec",
+      "bytes": 1109
+    },
+    {
+      "path": "licenses/noble-hashes.LICENSE",
+      "upstreamPackage": "@noble/hashes",
+      "upstreamPath": "node_modules/.pnpm/@noble+hashes@2.2.0/node_modules/@noble/hashes/LICENSE",
+      "sha256": "4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec",
+      "bytes": 1109
+    }
+  ],
+  "notVendored": [
+    "@noble/post-quantum/{ml-kem,slh-dsa,falcon,hybrid,_crystals,index}.js — other primitives, not reachable from ml_dsa65",
+    "@noble/post-quantum/{ml-dsa,_crystals,utils}.d.ts and *.js.map — types and maps, not runtime bytes",
+    "@noble/curves/{ed25519,abstract/modular,abstract/weierstrass,...}.js — this lane uses node:crypto for Ed25519, and `modular.js` is named only inside a JSDoc example in fft.js, never in an import statement",
+    "@noble/hashes/{sha2,hmac,sha256,...}.js — `sha2.js` appears only in JSDoc examples and in lazily-constructed prehash hooks this lane never calls"
+  ],
+  "rewrite": {
+    "why": "The vendored tree has no node_modules, so bare `@noble/*` specifiers cannot resolve. Each occurrence is replaced by the relative path to the same file, one occurrence at a time, refusing if the expected count is not exactly one.",
+    "count": 6,
+    "scope": "import-statement specifier strings only; no other byte is altered",
+    "filesWithoutRewrites": [
+      "curves/abstract/fft.js",
+      "hashes/sha3.js",
+      "hashes/utils.js",
+      "hashes/_u64.js"
+    ]
+  },
+  "checks": {
+    "selfContained": "section 1 of tests/aukora-aumlok-pq-keypair.test.mjs loads index.mjs under a resolve hook and asserts every resolved module URL is inside this directory (neither this nor check-vendor-closure.mjs runs in CI yet)",
+    "reproducible": "scripts/aumlok/check-vendor-closure.mjs --deep <path> re-derives every vendored file from the upstream bytes at the pinned Deep commit and asserts byte equality"
+  },
+  "note": "Only the transitive static-import closure of `ml_dsa65` is vendored, measured by running a real keygen/sign/verify round trip under a Node resolve hook rather than by reading the source. `ML_DSA_65_UNMEASURED` is NOT retired by this file: what is vendored is a working ML-DSA-65 implementation, and this lane holds no FIPS 204 known-answer vector and no second implementation on this host to prove it is the standard's ML-DSA-65."
+}

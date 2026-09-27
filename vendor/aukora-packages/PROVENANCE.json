@@ -1,0 +1,378 @@
+{
+  "repo": "aumara-xyz/aukora",
+  "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+  "paths": [
+    "packages/memory",
+    "packages/council",
+    "apps/brain/src/convexWorkflowStore.ts",
+    "apps/brain/test/convexWorkflowStore.test.ts",
+    "apps/brain/package.json",
+    "apps/brain/vitest.config.ts",
+    "apps/brain/tsconfig.json",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "layout": "src/<upstream path>; LICENSE and NOTICE at this directory's root",
+  "method": "git archive <commit> <paths> | tar -x; every gitBlob re-derived with git hash-object and compared with git ls-tree -r <commit>",
+  "fileCount": 36,
+  "totalBytes": 232614,
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "LICENSE",
+      "gitBlob": "be3f7b28e564e7dd05eaf59d64adba1a4065ac0e",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523
+    },
+    {
+      "path": "NOTICE",
+      "upstreamPath": "NOTICE",
+      "gitBlob": "a9e7ee67e68d7554023a0ce49cc607ceae5ffd9b",
+      "sha256": "6c737c8ce6b5a651f36ead98f0107084e8a65d74dce0c8ee16fa9cc122c20228",
+      "bytes": 1783
+    },
+    {
+      "path": "src/apps/brain/package.json",
+      "upstreamPath": "apps/brain/package.json",
+      "gitBlob": "e05ed6de6e54163fa8f9f7e596636396f2335d30",
+      "sha256": "bd876f124fdfd1df45332c86d0aab075bbca11c6be8ec8efda5e042da73d7e05",
+      "bytes": 1556
+    },
+    {
+      "path": "src/apps/brain/src/convexWorkflowStore.ts",
+      "upstreamPath": "apps/brain/src/convexWorkflowStore.ts",
+      "gitBlob": "03738dd8b5b284ffffbffd4d033ae894399d126a",
+      "sha256": "863fa8da3507e1ffd81dc230529eaabe6b0bbe968acd6709f75ea48dddb5eec8",
+      "bytes": 6482
+    },
+    {
+      "path": "src/apps/brain/test/convexWorkflowStore.test.ts",
+      "upstreamPath": "apps/brain/test/convexWorkflowStore.test.ts",
+      "gitBlob": "e9308d530b8463e164d6c79119c150ba5792e568",
+      "sha256": "f630843c3af556e43f9c4930ff9dbfa1b433084940e795aa09e887a43dcb2cdf",
+      "bytes": 10524
+    },
+    {
+      "path": "src/apps/brain/tsconfig.json",
+      "upstreamPath": "apps/brain/tsconfig.json",
+      "gitBlob": "3a0cf625cde20dfd04f2157d6c8eea625f147664",
+      "sha256": "0687248cd81c8f7f566139e9a31ac5057ad24815ccd3d3bcdb2f739e07331288",
+      "bytes": 379
+    },
+    {
+      "path": "src/apps/brain/vitest.config.ts",
+      "upstreamPath": "apps/brain/vitest.config.ts",
+      "gitBlob": "7fbd247e3dc207a651f73fb3e50dd38feddf52e3",
+      "sha256": "d9cc33fb2812672b650d223e7f7eee6d3db9691707140cc62f49cafc8e86b796",
+      "bytes": 178
+    },
+    {
+      "path": "src/packages/council/fuDisagreement.ts",
+      "upstreamPath": "packages/council/fuDisagreement.ts",
+      "gitBlob": "e5b9267d64e4fc6dea870d884d556c40b606608e",
+      "sha256": "dcea08a7bdc5cb44461caaaf254b5fae2e3068eea885bca22a20774232d3a45e",
+      "bytes": 8873
+    },
+    {
+      "path": "src/packages/council/index.ts",
+      "upstreamPath": "packages/council/index.ts",
+      "gitBlob": "be0d3d8bd184559a85eac22003f60bbb10b14153",
+      "sha256": "143b6166063f3ab3d17ad166f178c41c7bcfbc900a2ee9172232eacf561d22fc",
+      "bytes": 782
+    },
+    {
+      "path": "src/packages/council/package.json",
+      "upstreamPath": "packages/council/package.json",
+      "gitBlob": "fbdbbf1d479bee15144926b8a43b1f452c5a17c5",
+      "sha256": "c7960402dfd8870b6f394a3334045beffa1c7057bde6c8620d04b31a49ca62dc",
+      "bytes": 858
+    },
+    {
+      "path": "src/packages/council/src/aukoraFuCouncil.ts",
+      "upstreamPath": "packages/council/src/aukoraFuCouncil.ts",
+      "gitBlob": "93bc046ab866ad022b82e9dc04aac65eb6ae39dc",
+      "sha256": "39e0595a6955ee333c5b3a24fb42c842e854e2a570ae56c4c667dca978d85077",
+      "bytes": 42366
+    },
+    {
+      "path": "src/packages/council/src/aukoraFuGlyph.ts",
+      "upstreamPath": "packages/council/src/aukoraFuGlyph.ts",
+      "gitBlob": "7081ab39890ce654929d326155d77f85bb585a99",
+      "sha256": "53b00e32346204b4a786a54b9b48c474edd11cd4253ecb9a627e7a87bafb37e8",
+      "bytes": 16768
+    },
+    {
+      "path": "src/packages/council/test/aukoraFuCouncil.realfixtures.test.ts",
+      "upstreamPath": "packages/council/test/aukoraFuCouncil.realfixtures.test.ts",
+      "gitBlob": "70a67954797e35186d5879d4e681370e689a5174",
+      "sha256": "237c95344912670f109b81d215b4c73e2c3eec59fa545f8ec2bff884892d1208",
+      "bytes": 8441
+    },
+    {
+      "path": "src/packages/council/test/aukoraFuCouncil.test.ts",
+      "upstreamPath": "packages/council/test/aukoraFuCouncil.test.ts",
+      "gitBlob": "7a8169fd6d3980660c2f65030626c2aaceff2c44",
+      "sha256": "084e602884197ddc4b79a41544e67cf9d01d12c44ee5caa3ad9212eac52e6f5d",
+      "bytes": 22491
+    },
+    {
+      "path": "src/packages/council/test/aukoraFuGlyph.test.ts",
+      "upstreamPath": "packages/council/test/aukoraFuGlyph.test.ts",
+      "gitBlob": "eb11b25728abef70e867caa2ffe63db817d608b9",
+      "sha256": "2c9ccfa6f30b704eba85c943ef51dae531c44fd910c9b32de3d9e5dc0fb06969",
+      "bytes": 18366
+    },
+    {
+      "path": "src/packages/council/test/fixtures/fusion-replies/deepseek-v4-pro-dist-reordered.txt",
+      "upstreamPath": "packages/council/test/fixtures/fusion-replies/deepseek-v4-pro-dist-reordered.txt",
+      "gitBlob": "eb33d0940618f88147d79bfd613794c9fe760b65",
+      "sha256": "5c5069504a56d3649d3d7799eaf52c6a41d3337a4c6ee357cf0d43462d1d2c8e",
+      "bytes": 277
+    },
+    {
+      "path": "src/packages/council/test/fixtures/fusion-replies/glm-5.2-compliant.txt",
+      "upstreamPath": "packages/council/test/fixtures/fusion-replies/glm-5.2-compliant.txt",
+      "gitBlob": "1723ddbdd2cb096cab377ae8aad43d11bf7fd258",
+      "sha256": "87e482ca22fcd6da3e415c8213aff4b25a70daa2325e37591a82a8613109f413",
+      "bytes": 319
+    },
+    {
+      "path": "src/packages/council/test/fixtures/fusion-replies/kimi-k2.7-code-empty.txt",
+      "upstreamPath": "packages/council/test/fixtures/fusion-replies/kimi-k2.7-code-empty.txt",
+      "gitBlob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "src/packages/council/test/fixtures/fusion-replies/llama-4-maverick-prose-noncompliant.txt",
+      "upstreamPath": "packages/council/test/fixtures/fusion-replies/llama-4-maverick-prose-noncompliant.txt",
+      "gitBlob": "1dba7a20a08d789fa126c41cd77448fa56358d76",
+      "sha256": "8ed09fe6e798170d62e05135788fe9e79af355f179e029a8a5c6a56ad136c1be",
+      "bytes": 2039
+    },
+    {
+      "path": "src/packages/council/test/fixtures/fusion-replies/qwen3.7-max-compliant.txt",
+      "upstreamPath": "packages/council/test/fixtures/fusion-replies/qwen3.7-max-compliant.txt",
+      "gitBlob": "bc5f252af288df02763b039990b7e81d11c57ac9",
+      "sha256": "6440ff6356a6f9cd50fdc4b14b75ec62b5702ed3daa9a95552bda0591031fbad",
+      "bytes": 254
+    },
+    {
+      "path": "src/packages/council/test/fuDisagreement.test.ts",
+      "upstreamPath": "packages/council/test/fuDisagreement.test.ts",
+      "gitBlob": "0ec2f5f35387a3262dcebefbe205a99085ea3498",
+      "sha256": "e26ed2fdf36d9a0cd749a404f4b068c1c95d04fa744eef94f7799c2618c1fe04",
+      "bytes": 7264
+    },
+    {
+      "path": "src/packages/council/tsconfig.json",
+      "upstreamPath": "packages/council/tsconfig.json",
+      "gitBlob": "b4c7211c7f87fbf192918593b42d913d17d736cc",
+      "sha256": "8788bf466daa12982f5cbb7d3dee4a774e927bef681338ec0c84d9259397fc22",
+      "bytes": 352
+    },
+    {
+      "path": "src/packages/council/vitest.config.ts",
+      "upstreamPath": "packages/council/vitest.config.ts",
+      "gitBlob": "bf3a28979efbbe0bfdc056039cb313b410a2de9a",
+      "sha256": "637081908eeb89eafd6c6c71e2714e42f497c4d047cabda789190dbd9dc118d8",
+      "bytes": 262
+    },
+    {
+      "path": "src/packages/memory/index.ts",
+      "upstreamPath": "packages/memory/index.ts",
+      "gitBlob": "c234731fa6a5d0acf9a7d5c7c52c33aae5746ff8",
+      "sha256": "be5ea995ff6544b416b307db56686a10318d15186c3ace5ffda97c95db98f2f6",
+      "bytes": 784
+    },
+    {
+      "path": "src/packages/memory/package.json",
+      "upstreamPath": "packages/memory/package.json",
+      "gitBlob": "ec4efe83e75970fd597c2817a9fc0e8fc35480ef",
+      "sha256": "83302796c8c5aa9e6feadf2e4f1ac1fdd0a3a3edf5f5d0f8d6dc3265a737cff3",
+      "bytes": 957
+    },
+    {
+      "path": "src/packages/memory/src/containment.ts",
+      "upstreamPath": "packages/memory/src/containment.ts",
+      "gitBlob": "7f7fe2990682beb58c6c0fd2d0d879ca6b8a7df4",
+      "sha256": "bdd6d3433854fa870c087e9c329616c0cafce85a121639cbca7a65f6cf5ad885",
+      "bytes": 7947
+    },
+    {
+      "path": "src/packages/memory/src/envelope.ts",
+      "upstreamPath": "packages/memory/src/envelope.ts",
+      "gitBlob": "0fb96cfff3c1e5b75e5c6cbe7c2bb558bc3c39fe",
+      "sha256": "107472bf80063af88ad1fc60f8e295899a3053c27d69dd1e6ce19a22a58aa84f",
+      "bytes": 8370
+    },
+    {
+      "path": "src/packages/memory/src/ingestGate.ts",
+      "upstreamPath": "packages/memory/src/ingestGate.ts",
+      "gitBlob": "85f71b71de7715e2470555f12a71ffd106fbb0bf",
+      "sha256": "65bdd6a291f7e7dc7f5eab0694ec9f515a9b138b8dc91fed2d43c9d3a8179213",
+      "bytes": 3381
+    },
+    {
+      "path": "src/packages/memory/src/recall.ts",
+      "upstreamPath": "packages/memory/src/recall.ts",
+      "gitBlob": "a8e2c2e4bfddf7f1ca255e8fb7a80c320d2a1c2b",
+      "sha256": "b8c740d7ef17883e689c49658d208383f576293ad93dbbebc3bd13851d25071e",
+      "bytes": 6794
+    },
+    {
+      "path": "src/packages/memory/src/scope.ts",
+      "upstreamPath": "packages/memory/src/scope.ts",
+      "gitBlob": "979824764e2ffb24c1d7e152b4b4cbd00efd7e79",
+      "sha256": "49f7d2e5444e723e0c2ba21340e27f2e8c566abdb4389dcbbd923db130719eee",
+      "bytes": 4672
+    },
+    {
+      "path": "src/packages/memory/src/staleness.ts",
+      "upstreamPath": "packages/memory/src/staleness.ts",
+      "gitBlob": "d055dd87488c7bbf3c6d6ebe6d6429cb6b5e3f4d",
+      "sha256": "0a8ee886eef9e6f69f566e8b6f1eefca121e1172b5068d46b9eb6f8bb58e71de",
+      "bytes": 820
+    },
+    {
+      "path": "src/packages/memory/test/memory.test.ts",
+      "upstreamPath": "packages/memory/test/memory.test.ts",
+      "gitBlob": "caeab9fadc854bf95d481ac9d8d43f69f25dd4b3",
+      "sha256": "56eb43fd993ca55c4e2fdaeea49ae2e0d628b07622561939de59c3d3edd4c4ec",
+      "bytes": 2530
+    },
+    {
+      "path": "src/packages/memory/test/scopeRecall.test.ts",
+      "upstreamPath": "packages/memory/test/scopeRecall.test.ts",
+      "gitBlob": "0546e964f6d9b7e24a3d973deca4c99440a35f72",
+      "sha256": "b7e68e7a4d618e64b8e4debd12b3cdfcd1ef24eb48d988e3ed2bb5535b5b25de",
+      "bytes": 8092
+    },
+    {
+      "path": "src/packages/memory/test/stalenessOneLaw.test.ts",
+      "upstreamPath": "packages/memory/test/stalenessOneLaw.test.ts",
+      "gitBlob": "4ceae5bafe0e10e3be046eb0cf382e2ee61155b1",
+      "sha256": "9b88e8fc6a897bfacbc2c8fa1c4a6eebe6b4e85dcf773a2d0895b75fa592336b",
+      "bytes": 2516
+    },
+    {
+      "path": "src/packages/memory/tsconfig.json",
+      "upstreamPath": "packages/memory/tsconfig.json",
+      "gitBlob": "b4c7211c7f87fbf192918593b42d913d17d736cc",
+      "sha256": "8788bf466daa12982f5cbb7d3dee4a774e927bef681338ec0c84d9259397fc22",
+      "bytes": 352
+    },
+    {
+      "path": "src/packages/memory/vitest.config.ts",
+      "upstreamPath": "packages/memory/vitest.config.ts",
+      "gitBlob": "bf3a28979efbbe0bfdc056039cb313b410a2de9a",
+      "sha256": "637081908eeb89eafd6c6c71e2714e42f497c4d047cabda789190dbd9dc118d8",
+      "bytes": 262
+    }
+  ],
+  "transpile": {
+    "command": "node vendor/aukora-packages/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js",
+    "compiler": "typescript 6.0.3 (ts.transpileModule; type stripping only)",
+    "compilerOptions": {
+      "target": "ES2022",
+      "module": "ESNext",
+      "esModuleInterop": true
+    },
+    "scope": "src/packages/memory/index.ts and src/packages/memory/src/*.ts only; council, apps/brain and the upstream tests are not generated",
+    "layout": "lib/<upstream path under src/>, .ts changed to .js",
+    "rule": "emitted bytes are exactly the compiler output except import specifiers, each listed under generated[].specifierRewrites; original src bytes are checked against their existing pins before emit",
+    "kernel": "the @aukora/kernel specifiers resolve to vendor/aukora-kernel/lib (aumara-xyz/aukora@def297f packages/kernel, pinned by vendor/aukora-kernel/PROVENANCE.json)"
+  },
+  "generated": [
+    {
+      "path": "lib/packages/memory/index.js",
+      "from": "src/packages/memory/index.ts",
+      "transpiled": true,
+      "sha256": "be5ea995ff6544b416b307db56686a10318d15186c3ace5ffda97c95db98f2f6",
+      "bytes": 784,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/containment.js",
+      "from": "src/packages/memory/src/containment.ts",
+      "transpiled": true,
+      "sha256": "4cd0ba50bd7c254457b96052d23d4811a414c84916013a8d0441da910ed6558e",
+      "bytes": 6066,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/envelope.js",
+      "from": "src/packages/memory/src/envelope.ts",
+      "transpiled": true,
+      "sha256": "c44febe5438a99c61bde66df52c8f290f156f1056c07701ef3565ff192d308d8",
+      "bytes": 5398,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/canonical'",
+          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+        }
+      ]
+    },
+    {
+      "path": "lib/packages/memory/src/ingestGate.js",
+      "from": "src/packages/memory/src/ingestGate.ts",
+      "transpiled": true,
+      "sha256": "6f0de9feea6486ca935b365403c80d09af499e52c2336e827e3e56afb4c6f0db",
+      "bytes": 1392,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/recall.js",
+      "from": "src/packages/memory/src/recall.ts",
+      "transpiled": true,
+      "sha256": "c24f2dddd0dd3c672a733df65f6aa7140e35c92d97d5683613944c06e6bbf9be",
+      "bytes": 4127,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/scope.js",
+      "from": "src/packages/memory/src/scope.ts",
+      "transpiled": true,
+      "sha256": "34f51b966fbd844f47b401a1a17016faa4c5b368fe802c9f837a3ee7a08ab104",
+      "bytes": 3332,
+      "specifierRewrites": []
+    },
+    {
+      "path": "lib/packages/memory/src/staleness.js",
+      "from": "src/packages/memory/src/staleness.ts",
+      "transpiled": true,
+      "sha256": "f5badc25d8d42aa5e7c7c69b17ad2bfb81f35b599e88fb24cf2d9b3cefe2f276",
+      "bytes": 767,
+      "specifierRewrites": [
+        {
+          "from": "'@aukora/kernel/staleness'",
+          "to": "'../../../../../aukora-kernel/lib/staleness.js'"
+        }
+      ]
+    }
+  ],
+  "generatedDependencies": [
+    {
+      "specifier": "@aukora/kernel/canonical",
+      "resolvesTo": "vendor/aukora-kernel/lib/canonical.js",
+      "sha256": "b213762567fc959e419372e75454eaf320fd123f62aabb7538a080da11a5abf3"
+    },
+    {
+      "specifier": "@aukora/kernel/staleness",
+      "resolvesTo": "vendor/aukora-kernel/lib/staleness.js",
+      "sha256": "aff97a35431e18b8bb634a8d27bad3ff199da21c0b4a56ba356ec8ceb10efd37"
+    }
+  ],
+  "genesisAuthored": [
+    {
+      "path": "package.json",
+      "sha256": "eadbcf3d4e09220073a8c385d157242026b89da83313efd02edfef9cdddbd088",
+      "bytes": 328
+    },
+    {
+      "path": "transpile.mjs",
+      "sha256": "ce9f643838f811f267d131ac668031ee19c67428079e99c043d9290f2973e379",
+      "bytes": 8051
+    }
+  ]
+}

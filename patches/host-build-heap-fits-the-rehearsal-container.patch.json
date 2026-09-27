@@ -1,0 +1,20 @@
+{
+  "formatVersion": 1,
+  "name": "host-build-heap-fits-the-rehearsal-container",
+  "reason": "MEASURED (beta-118, beta-119): the upstream host-build heap ceiling is larger than any container this rehearsal may start, so V8 does not collect hard enough and the build is OOM-killed with 137 -- a CODE red no source change could fix. At --memory 3700m with heap 3072 the build COMPLETES, peak 3515 MiB of 3700 (a 95% fit, named in rehearsal-meeting section 16). INERT ON GITHUB'S 7 GB RUNNER: it changes how the compiler runs, never what it emits.",
+  "edits": [
+    {
+      "path": "package.json",
+      "find": "\"build:lib:host\": \"node --max-old-space-size=4096 ./node_modules/typescript/bin/tsc -b tsconfig.host.json",
+      "replace": "\"build:lib:host\": \"node --max-old-space-size=3072 ./node_modules/typescript/bin/tsc -b tsconfig.host.json",
+      "occurrences": 1
+    }
+  ],
+  "expectAfterApply": [
+    {
+      "path": "package.json",
+      "contains": "\"build:lib:host\": \"node --max-old-space-size=3072"
+    }
+  ],
+  "expectAfterBuild": []
+}

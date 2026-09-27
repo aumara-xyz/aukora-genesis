@@ -1,0 +1,497 @@
+<!doctype html>
+<!-- AUMA LUMINARA — THE ROSETTE (given its own room at the architect's word,
+     11 August 2026: "a beautiful new instrument to show the rosette", and
+     graduated the same day at his word again: the tenth door, seated in the
+     shared bar beside the astrolabe on every page of the portal).
+
+     This room holds one object and nothing else: the deck with every choice
+     removed. The seats are the codes; the radii are Pythagoras; the shells
+     are the octahedron of faces, the cuboctahedron of edges and the cube of
+     corners, each a perfect figure on its own sphere with nothing moved to
+     make it so; the frames are nearest neighbours, derived from distance
+     alone; the dyads are true diameters, silver facing gold through the
+     still centre; and the Seed is the one dark point no reflection can
+     move. It is the only representation of the twenty-seven in which every
+     element is forced, and the chart of the same name holds the argument.
+
+     The hand draws near and stands back: a touch on a glyph names it and
+     the room leans in, the eye tracking the knot while the object keeps
+     its slow turn; a double touch stands back to the whole. Nothing else
+     is asked of anyone.
+
+     The laws hold: THE NULL IS NEVER LIT; NAMES, NEVER MEANINGS; composed,
+     never cast; silent, entirely; and under prefers-reduced-motion the
+     object never turns itself. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the rosette</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34); --line:rgba(255,255,255,0.08); }
+  html,body { margin:0; background:#0a0b0e; color:var(--text); font:14px/1.6 system-ui, sans-serif; }
+  .wrap { max-width:760px; margin:0 auto; padding:26px 18px 80px; }
+  header { text-align:center; margin-bottom:4px; }
+  h1 { font-size:15px; letter-spacing:0.34em; margin:0 0 3px;
+    background:linear-gradient(100deg,#C9D3E2,#EFE7CF 55%,#F0C25E);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:10px; letter-spacing:0.2em; color:var(--faint); }
+  .note { text-align:center; font-size:11px; color:var(--dim); max-width:620px; margin:12px auto 14px; }
+  .note a { color:#EFE7CF; text-decoration:none; border-bottom:1px solid rgba(240,194,94,0.35); }
+  .stage { position:relative; width:min(92vw, 560px); margin:0 auto; }
+  .stage canvas { position:absolute; inset:0; width:100%; height:100%; }
+  .stage svg { position:relative; z-index:1; width:100%; height:auto; display:block; overflow:visible; cursor:grab; touch-action:none; }
+  .stage svg:active { cursor:grabbing; }
+  .ccard { cursor:pointer; }
+  .nameline { text-align:center; font-size:10.5px; letter-spacing:0.08em; color:var(--dim);
+    margin:10px auto 0; min-height:20px; line-height:1.55; }
+  .nameline a { color:var(--faint); }
+  .gesture { text-align:center; font-size:9.5px; letter-spacing:0.18em; color:var(--faint); margin-top:6px; }
+  .btns { display:flex; gap:8px; justify-content:center; margin:10px 0 0; flex-wrap:wrap; }
+  button { font:inherit; font-size:11px; letter-spacing:0.08em; color:var(--dim); background:none;
+    border:1px solid var(--line); border-radius:10px; padding:6px 14px; cursor:pointer; }
+  button:hover { color:#EFE7CF; border-color:rgba(240,194,94,0.35); }
+  button.on { color:#EFE7CF; border-color:rgba(240,194,94,0.5); }
+  .sect { max-width:640px; margin:28px auto 0; }
+  .sect h2 { font-size:10px; letter-spacing:0.26em; color:var(--faint); font-weight:400;
+    margin:0 0 10px; text-align:center; }
+  .legend { display:grid; grid-template-columns:repeat(auto-fit, minmax(270px, 1fr)); gap:10px 18px; }
+  .leg { border:1px solid var(--line); border-radius:12px; padding:11px 14px; }
+  .leg b { display:block; font-size:10px; letter-spacing:0.2em; font-weight:400; color:#EFE7CF; margin-bottom:3px; }
+  .leg span { font-size:11.5px; color:var(--dim); }
+  .laws { text-align:center; font-size:9.5px; letter-spacing:0.16em; color:var(--faint); margin-top:30px; line-height:2; }
+  .register { text-align:center; font-size:10px; letter-spacing:0.14em; color:var(--faint); margin-top:12px; }
+  .navrow { display:flex; justify-content:center; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  .navrow a { font:11px system-ui; letter-spacing:0.08em; color:var(--dim); text-decoration:none;
+    border:1px solid var(--line); border-radius:10px; padding:6px 14px; }
+  .navrow a:hover { color:#EFE7CF; border-color:rgba(240,194,94,0.35); }
+</style>
+<link rel="stylesheet" href="/app/luminara-nav.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE ROSETTE</h1>
+    <div class="sub">THE DECK WITH EVERY CHOICE REMOVED · THREE PERFECT SHELLS · ONE STILL CENTRE</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html" class="on">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+  <div class="note">One object, and nothing else on the bench. The seats are the codes; the radii
+    are Pythagoras; the six faces stand as an octahedron, the twelve edges as a cuboctahedron,
+    the eight corners as the cube itself, each on its own sphere, nothing moved to make it so.
+    The full argument stands in the chart:
+    <a href="/app/luminara-map-room.html#/rosette-in-the-round">THE ROSETTE IN THE ROUND</a>.</div>
+
+  <div class="stage"><canvas id="ink" aria-hidden="true"></canvas><svg id="v" viewBox="-112 -112 224 224" aria-label="the rosette"></svg></div>
+
+  <div class="gesture">TOUCH A GLYPH TO DRAW NEAR · TOUCH ITS LIT ANSWER TO FLY THE DIAMETER · TOUCH TWICE TO STAND BACK · DRAG TO TURN</div>
+  <div class="btns">
+    <button id="bSix" type="button">THE SIX</button>
+    <button id="bTwelve" type="button">THE TWELVE</button>
+    <button id="bEight" type="button">THE EIGHT</button>
+    <button id="bBreath" type="button">THE BREATH</button>
+  </div>
+  <div class="nameline" id="nameLine">the object turns on its own; the hand may take it</div>
+
+  <div class="sect">
+    <h2>THE ROSETTE, READ</h2>
+    <div class="legend">
+      <div class="leg"><b>THE SHELLS</b><span>Sort the twenty-seven by how many clocks move
+        and each shell is already a perfect figure on its own sphere: the octahedron of
+        faces at root one, the cuboctahedron of edges at root two, the cube of corners at
+        root three. The frames joining each shell's neighbours are derived from distance
+        alone: twelve, twenty-four and twelve edges, measured before they were drawn.</span></div>
+      <div class="leg"><b>THE EQUILIBRIUM</b><span>The middle shell's radius equals its edge,
+        root two against root two: the defining property of the cuboctahedron and of no
+        other figure, twelve around one in perfect balance about the still centre. The
+        claim is the arithmetic alone, and anyone may recompute it.</span></div>
+      <div class="leg"><b>THE DIAMETERS</b><span>A card's answer is its negation, and
+        negation is the point reflection through the centre: every dyad is a true diameter
+        of the body, silver facing gold on the way through. The Seed is the one point the
+        reflection cannot move: the still centre, dark, the null never lit.</span></div>
+      <div class="leg"><b>THE NEARNESS, AND THE FLIGHT</b><span>A touch names a glyph and the
+        room leans in, the eye tracking the knot while the object keeps its slow turn; its
+        answer lights across the centre, the diameter drawn. Touch the lit answer and the
+        eye flies that diameter, passing the dark Seed on the way, because a straight road
+        between opposites has no other choice: the involution travelled rather than stated.
+        A double touch stands back to the whole. Names, never meanings: the Guide holds the
+        doors.</span></div>
+      <div class="leg"><b>THE ISOLATION, AND THE BREATH</b><span>THE SIX, THE TWELVE and THE
+        EIGHT each bring one solid forward and ghost the others to context, the octahedron
+        or the equilibrium or the cube contemplated alone; the same button releases it, and
+        the still centre is never dimmed. THE BREATH eases the three spheres apart and home
+        again in a slow loop, the nesting felt as depth; under a reduced-motion request the
+        pose holds apart, unmoving.</span></div>
+    </div>
+  </div>
+
+  <div class="laws">THE NULL IS NEVER LIT · NAMES, NEVER MEANINGS · COMPOSED, NEVER CAST<br>
+    NOTHING HERE IS CHOSEN · SILENT, ENTIRELY</div>
+  <div class="register">GRADUATED AT THE ARCHITECT'S WORD · THE INSTRUMENT SHOWS · THE CHARTS RECORD · THE CANON DECIDES</div>
+  <div class="navrow">
+    <a href="/app/luminara-loom.html">THE LOOM</a>
+    <a href="/app/luminara-cube-in-the-hand.html">THE STUDY</a>
+    <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+    <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+  </div>
+</div>
+
+<script type="module">
+import { cardOf, codeOf, codeMarks, isSilent, knotOf, counterOf } from '/app/luminara-canon.js';
+import { metalOf, rampOf } from '/app/luminara-knots.js';
+
+const WHITEGOLD = '#EFE7CF';
+const PHI = (1 + Math.sqrt(5)) / 2;
+const S = 52, VIEW = 112, F = (v) => Number(v).toFixed(2);
+
+// the cells: each card's signed vector, digit two being the turned side
+const cells = [];
+for (let n = 1; n <= 27; n++) {
+  const v = codeOf(n).map((d) => (d === 2 ? -1 : d));
+  cells.push({ n, v, shell: v.filter((x) => x !== 0).length });
+}
+const byN = new Map(cells.map((c) => [c.n, c]));
+// the shells' frames: nearest neighbours on each sphere, from distance alone
+const shellEdges = [];
+for (const k of [1, 2, 3]) {
+  const ring = cells.filter((c) => c.shell === k);
+  const distOf = (a, b) => Math.hypot(a.v[0] - b.v[0], a.v[1] - b.v[1], a.v[2] - b.v[2]);
+  let min = Infinity;
+  for (const a of ring) for (const b of ring) {
+    if (a.n < b.n) min = Math.min(min, distOf(a, b));
+  }
+  for (const a of ring) for (const b of ring) {
+    if (a.n < b.n && distOf(a, b) < min + 1e-9) shellEdges.push([a, b]);
+  }
+}
+
+const CORNER = [[-1 / Math.sqrt(6), -1 / Math.sqrt(6), 2 / Math.sqrt(6)],
+                [-1 / Math.SQRT2, 1 / Math.SQRT2, 0],
+                [1 / Math.sqrt(3), 1 / Math.sqrt(3), 1 / Math.sqrt(3)]];
+let M = CORNER.map((r) => r.slice());
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const norm3 = (v) => { const h = Math.hypot(...v) || 1; return v.map((x) => x / h); };
+function orthonorm(m) {
+  const nrm = (v) => { const h = Math.hypot(...v); return v.map((x) => x / h); };
+  m[0] = nrm(m[0]);
+  m[1] = nrm(m[1].map((x, i) => x - dot(m[1], m[0]) * m[0][i]));
+  m[2] = nrm(m[2].map((x, i) => x - dot(m[2], m[0]) * m[0][i] - dot(m[2], m[1]) * m[1][i]));
+  return m;
+}
+function turn(row, th) {
+  const c = Math.cos(th), s = Math.sin(th);
+  const a = M[row].slice(), b = M[2].slice();
+  M[row] = a.map((x, i) => c * x - s * b[i]);
+  M[2] = b.map((x, i) => s * a[i] + c * x);
+}
+
+// the glyphs in the round: the shared renderer's winding law kept whole
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+for (const c of cells) {
+  if (c.n === 1) continue;
+  const k = knotOf(c.n);
+  const colors = k.kind === 'link' ? [metalOf(c.n), metalOf(counterOf(c.n))] : [metalOf(c.n)];
+  const g = k.q === 0 ? 1 : gcd(k.p, Math.abs(k.q));
+  const pf = k.p / g, qf = k.q / g;
+  const N = Math.round(0.5 * Math.min(520, Math.max(150, 30 * pf + 13 * Math.abs(qf))));
+  c.strands = [];
+  for (let f = 0; f < g; f++) {
+    const phase = 2 * Math.PI * f / g, pts = [];
+    for (let j = 0; j <= N; j++) {
+      const t = j / N * 2 * Math.PI;
+      const tube = qf * t + phase, lon = pf * t;
+      pts.push([(PHI + Math.cos(tube)) * Math.cos(lon),
+                (PHI + Math.cos(tube)) * Math.sin(lon),
+                Math.sin(tube)]);
+    }
+    c.strands.push({ pts, ramp: rampOf(colors[f % colors.length]) });
+  }
+}
+
+const svg = document.getElementById('v');
+{
+  let s = '';
+  for (const c of cells) {
+    s += '<g class="ccard" data-n="' + c.n + '"><circle r="9" fill="transparent"/>'
+      + '<title>' + (c.n === 1 ? 'The Seed · the still centre' : cardOf(c.n).name) + '</title></g>';
+  }
+  svg.innerHTML = s;
+}
+const groups = new Map([...svg.querySelectorAll('.ccard')].map((g) => [Number(g.dataset.n), g]));
+
+const canvas = document.getElementById('ink');
+const ctx = canvas.getContext('2d');
+function fitCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const box = canvas.getBoundingClientRect();
+  const w = Math.max(1, Math.round(box.width * dpr));
+  if (canvas.width !== w) { canvas.width = w; canvas.height = Math.max(1, Math.round(box.height * dpr)); }
+}
+window.addEventListener('resize', () => { fitCanvas(); render(); });
+
+// THE NEARNESS: a touch chooses a glyph and the room leans in, the eye
+// tracking the seat through every turn, so the object never stops being an
+// object; a double touch stands back. One scalar eases the whole approach,
+// and the eye itself is a point in the WORLD, eased toward the chosen seat:
+// refocus from a card to its answer and the eye travels the straight chord
+// between antipodes, which passes exactly through the still centre. THE
+// DYAD FLIGHT is not an animation; it is what a straight road between
+// opposites has no choice but to do.
+let focusN = null, near = 0, targetNear = 0;
+let eyeW = [0, 0, 0];
+const ZOOM = 3.4;
+// THE ISOLATION: one shell brought forward, the others ghosted to context
+let isoShell = 0, iso = 0, targetIso = 0;
+// THE BREATH: the shells easing apart and home again, a slow loop; under
+// the still law they hold apart at half breath, a static exploded pose
+let breathOn = false, br = 0, brPhase = 0;
+
+const breathF = (k) => 1 + br * (0.10 + 0.15 * k);
+const seatPos = (c) => { const f = breathF(c.shell); return [c.v[0] * S * f, c.v[1] * S * f, c.v[2] * S * f]; };
+const project = (w) => ({ x: dot(M[0], w), y: dot(M[1], w), z: dot(M[2], w) });
+const ghostOf = (k) => (isoShell && k !== isoShell && k !== 0 ? 1 - 0.85 * iso : 1);
+
+function render() {
+  fitCanvas();
+  const zMax = S * Math.sqrt(3);
+  const u2p = canvas.width / (2 * VIEW);
+  // the lean: everything on the glass slides toward the chosen seat and
+  // magnifies about it, tracked live so the slow turn orbits the glyph
+  // the eye is a world point, eased elsewhere in the tick; project it live
+  const eye = project(eyeW);
+  const fx = eye.x, fy = eye.y;
+  const mag = 1 + (ZOOM - 1) * near;
+  const px = (x) => ((x - fx * near) * mag + VIEW) * u2p;
+  const py = (y) => ((y - fy * near) * mag + VIEW) * u2p;
+  const lw = (w) => Math.max(0.4, w * mag * u2p);
+  const d01 = (z) => Math.max(0, Math.min(1, (z / zMax + 1) / 2));
+  const prims = [];
+  const pos = new Map(cells.map((c) => [c.n, { w: seatPos(c), ...project(seatPos(c)) }]));
+  // the shells' frames: the octahedron, the cuboctahedron, the cube
+  for (const [a, b] of shellEdges) {
+    const p = pos.get(a.n), q = pos.get(b.n);
+    const d = d01((p.z + q.z) / 2);
+    prims.push({ z: (p.z + q.z) / 2 - 0.01, kind: 'line', x1: p.x, y1: p.y, x2: q.x, y2: q.y,
+      col: WHITEGOLD, w: 0.55, op: (0.10 + 0.16 * d) * ghostOf(a.shell) });
+  }
+  // the spheres, as cages of great circles about the diagonal frame,
+  // breathing apart and home with the shells they carry
+  const E1 = CORNER[0], E2 = CORNER[1], E3 = CORNER[2];
+  for (const k of [1, 2, 3]) {
+    const R = S * Math.sqrt(k) * breathF(k);
+    for (const [A, B] of [[E1, E2], [E2, E3], [E3, E1]]) {
+      for (let j = 0; j < 48; j++) {
+        const t0 = j / 24 * Math.PI, t1 = (j + 1) / 24 * Math.PI;
+        const a = [0, 1, 2].map((i) => R * (Math.cos(t0) * A[i] + Math.sin(t0) * B[i]));
+        const b = [0, 1, 2].map((i) => R * (Math.cos(t1) * A[i] + Math.sin(t1) * B[i]));
+        const p = project(a), q = project(b);
+        prims.push({ z: (p.z + q.z) / 2 - 0.02, kind: 'line', x1: p.x, y1: p.y, x2: q.x, y2: q.y,
+          col: WHITEGOLD, w: 0.5, op: (A === E1 ? 0.07 : 0.045) * ghostOf(k) });
+      }
+    }
+  }
+  // the dyads: every diameter through the still centre, and the chosen
+  // card's diameter lit, its answer ringed across the body
+  for (const c of cells) {
+    if (c.shell === 0 || c.v[0] * 9 + c.v[1] * 3 + c.v[2] <= 0) continue;
+    const p = pos.get(c.n), q = pos.get(counterOf(c.n));
+    const lit = focusN !== null && (c.n === focusN || counterOf(c.n) === focusN);
+    for (let j = 0; j < 14; j++) {
+      const a = [0, 1, 2].map((i) => p.w[i] + (q.w[i] - p.w[i]) * j / 14);
+      const b = [0, 1, 2].map((i) => p.w[i] + (q.w[i] - p.w[i]) * (j + 1) / 14);
+      const pa = project(a), pb = project(b);
+      prims.push({ z: (pa.z + pb.z) / 2 - 0.005, kind: 'line',
+        x1: pa.x, y1: pa.y, x2: pb.x, y2: pb.y, col: WHITEGOLD, w: lit ? 0.7 : 0.5,
+        op: (lit ? 0.10 + 0.25 * near : 0.08) * ghostOf(byN.get(c.n).shell) });
+    }
+  }
+  if (focusN !== null && focusN !== 1) {
+    const a = pos.get(counterOf(focusN));
+    prims.push({ z: a.z + 0.02, kind: 'ring', x: a.x, y: a.y, r: 7.5, w: 0.6, op: 0.5 * near });
+  }
+  // the strands: each knot facing outward on its own sphere
+  for (const c of cells) {
+    const o = pos.get(c.n);
+    const d = d01(o.z), gs = 2.2 + 1.2 * d, gh = ghostOf(c.shell);
+    if (c.n === 1) {
+      prims.push({ z: o.z, kind: 'seed', x: o.x, y: o.y, r: 2.2 * gs, w: 0.4 * gs });
+      continue;
+    }
+    const ax = norm3(o.w);
+    const ref = Math.abs(ax[2]) > 0.9 ? [1, 0, 0] : [0, 0, 1];
+    const t1 = norm3(cross(ax, ref)), t2 = cross(ax, t1);
+    const T1 = [dot(M[0], t1), dot(M[1], t1), dot(M[2], t1)];
+    const T2 = [dot(M[0], t2), dot(M[1], t2), dot(M[2], t2)];
+    const T3 = [dot(M[0], ax), dot(M[1], ax), dot(M[2], ax)];
+    for (const st of c.strands) {
+      const P = st.pts.map((p) => [
+        o.x + gs * (p[0] * T1[0] + p[1] * T2[0] + p[2] * T3[0]),
+        o.y + gs * (p[0] * T1[1] + p[1] * T2[1] + p[2] * T3[1]),
+        gs * (p[0] * T1[2] + p[1] * T2[2] + p[2] * T3[2])]);
+      let lo = Infinity, hi = -Infinity;
+      for (const p of P) { if (p[2] < lo) lo = p[2]; if (p[2] > hi) hi = p[2]; }
+      const span = Math.max(1e-6, hi - lo);
+      for (let j = 0; j < P.length - 1; j++) {
+        const zm = (P[j][2] + P[j + 1][2]) / 2, zn = (zm - lo) / span;
+        prims.push({ z: o.z + zm, kind: 'line',
+          x1: P[j][0], y1: P[j][1], x2: P[j + 1][0], y2: P[j + 1][1],
+          col: st.ramp[Math.round(zn * 23)], w: gs * (0.055 + 0.135 * zn),
+          op: (0.20 + 0.78 * zn) * (0.35 + 0.65 * d) * gh });
+      }
+    }
+  }
+  // the painter: far first, every crossing honest
+  prims.sort((a, b) => a.z - b.z);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.lineCap = 'round';
+  for (const p of prims) {
+    if (p.kind === 'seed') {
+      ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(px(p.x), py(p.y), p.r * mag * u2p, 0, 2 * Math.PI);
+      ctx.fillStyle = '#0a0b0e'; ctx.fill();
+      ctx.lineWidth = lw(p.w); ctx.strokeStyle = WHITEGOLD;
+      ctx.globalAlpha = 0.9; ctx.stroke();
+      continue;
+    }
+    if (p.kind === 'ring') {
+      ctx.globalAlpha = p.op;
+      ctx.beginPath(); ctx.arc(px(p.x), py(p.y), p.r * mag * u2p, 0, 2 * Math.PI);
+      ctx.lineWidth = lw(p.w); ctx.strokeStyle = WHITEGOLD; ctx.stroke();
+      continue;
+    }
+    ctx.globalAlpha = p.op;
+    ctx.strokeStyle = p.col;
+    ctx.lineWidth = lw(p.w);
+    ctx.beginPath(); ctx.moveTo(px(p.x1), py(p.y1)); ctx.lineTo(px(p.x2), py(p.y2)); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  // the pointers ride their glyphs through the lean, far first
+  const order = cells.slice().sort((a, b) => pos.get(a.n).z - pos.get(b.n).z);
+  for (const c of order) {
+    const o = pos.get(c.n);
+    const gx = (o.x - fx * near) * mag, gy = (o.y - fy * near) * mag;
+    groups.get(c.n).setAttribute('transform', 'translate(' + F(gx) + ' ' + F(gy) + ') scale(' + F(mag) + ')');
+    svg.appendChild(groups.get(c.n));
+  }
+}
+
+// A TOUCH NAMES AND DRAWS NEAR, A DOUBLE TOUCH STANDS BACK
+svg.addEventListener('click', (e) => {
+  const g = e.target.closest('.ccard');
+  if (!g) return;
+  const n = Number(g.dataset.n);
+  // a touch on the lit answer flies the diameter: the eased eye has no road
+  // between antipodes but the straight one, and it passes the still centre
+  const flown = focusN !== null && near > 0.5 && n === counterOf(focusN) && n !== focusN;
+  focusN = n; targetNear = 1;
+  const qs = (v) => (v > 0 ? '+' + v : String(v));
+  if (n === 1) {
+    document.getElementById('nameLine').innerHTML =
+      '<span style="color:#EFE7CF">THE SEED</span> · the still centre · the one point the reflection cannot move';
+    return;
+  }
+  const k = knotOf(n), house = n <= 9 ? 'AUM' : n <= 18 ? 'MA' : 'RA';
+  const SHELLS = ['', 'the octahedron of faces', 'the cuboctahedron of edges', 'the cube of corners'];
+  document.getElementById('nameLine').innerHTML =
+    '<span style="color:#EFE7CF">' + cardOf(n).name.toUpperCase() + '</span>'
+    + ' &nbsp;' + codeMarks(n) + '&nbsp; · ' + qs(k.q) + ' · ' + house
+    + (isSilent(n) ? ' <span style="color:#EFE7CF">· A SILENCE</span>' : '')
+    + ' · ' + k.interval + ' · ' + SHELLS[byN.get(n).shell]
+    + ' · answers ' + cardOf(counterOf(n)).name
+    + (flown ? ' <span style="color:#EFE7CF">· flown through the still centre</span>' : '')
+    + ' &nbsp;<a href="/app/luminara-read.html#guide">its meanings, in the Guide</a>';
+});
+svg.addEventListener('dblclick', (e) => {
+  e.preventDefault();
+  targetNear = 0;
+  document.getElementById('nameLine').textContent = 'the object turns on its own; the hand may take it';
+});
+
+// THE ISOLATION: one solid brought forward, the rest ghosted to context;
+// the same button releases it, and the Seed is never dimmed
+const ISO_BTNS = { bSix: 1, bTwelve: 2, bEight: 3 };
+for (const [id, k] of Object.entries(ISO_BTNS)) {
+  document.getElementById(id).addEventListener('click', () => {
+    if (isoShell === k && targetIso === 1) targetIso = 0;
+    else { isoShell = k; targetIso = 1; }
+    for (const [id2, k2] of Object.entries(ISO_BTNS)) {
+      document.getElementById(id2).classList.toggle('on', targetIso === 1 && isoShell === k2);
+    }
+  });
+}
+// THE BREATH: the shells easing apart and home, a slow loop; re-entered
+// where it left off, so the pose never jumps
+document.getElementById('bBreath').addEventListener('click', () => {
+  breathOn = !breathOn;
+  if (breathOn) brPhase = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * br)));
+  document.getElementById('bBreath').classList.toggle('on', breathOn);
+});
+
+// the turn: slow on its own, yielded to the hand, still under the still law
+const stillLaw = matchMedia('(prefers-reduced-motion: reduce)');
+let drag = null, lastHand = -1e9;
+svg.addEventListener('pointerdown', (e) => { drag = [e.clientX, e.clientY]; svg.setPointerCapture(e.pointerId); });
+svg.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  const dx = e.clientX - drag[0], dy = e.clientY - drag[1];
+  drag = [e.clientX, e.clientY];
+  turn(0, dx * 0.008); turn(1, dy * 0.008); orthonorm(M);
+  lastHand = performance.now();
+  render();
+});
+svg.addEventListener('pointerup', () => { drag = null; });
+
+let lastReal = performance.now();
+setInterval(() => {
+  const now = performance.now();
+  const dt = Math.min(0.25, (now - lastReal) / 1000);
+  lastReal = now;
+  const ease = 1 - Math.exp(-7 * dt);
+  let moved = false;
+  if (Math.abs(targetNear - near) > 1e-3) { near += (targetNear - near) * ease; moved = true; }
+  else if (near !== targetNear) {
+    near = targetNear;
+    if (near === 0) focusN = null;   // stood back, the choice released
+    moved = true;
+  }
+  // the eye eases toward its seat in the world; between antipodes the
+  // straight chord is the dyad flight, through the still centre
+  const targetEye = focusN !== null ? seatPos(byN.get(focusN)) : [0, 0, 0];
+  for (let i = 0; i < 3; i++) {
+    const dte = targetEye[i] - eyeW[i];
+    if (Math.abs(dte) > 1e-3) { eyeW[i] += dte * ease; moved = true; }
+    else eyeW[i] = targetEye[i];
+  }
+  if (Math.abs(targetIso - iso) > 1e-3) { iso += (targetIso - iso) * ease; moved = true; }
+  else if (iso !== targetIso) { iso = targetIso; if (iso === 0) isoShell = 0; moved = true; }
+  if (breathOn && !stillLaw.matches) {
+    brPhase += dt * (2 * Math.PI / 14);   // one breath in about fourteen seconds
+    br = 0.5 - 0.5 * Math.cos(brPhase);
+    moved = true;
+  } else {
+    const bT = breathOn ? 0.5 : 0;   // under the still law, held apart, unmoving
+    if (Math.abs(bT - br) > 1e-3) { br += (bT - br) * ease; moved = true; }
+    else if (br !== bT) { br = bT; moved = true; }
+  }
+  if (!stillLaw.matches && !drag && now - lastHand > 5000) {
+    // drawn near, the turn slows to a drift, so the knot can be read
+    turn(0, (0.08 - 0.06 * near) * dt); orthonorm(M);
+    moved = true;
+  }
+  if (moved) render();
+}, 40);
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,1789 @@
+{
+ "identity:1": {
+  "identity": {
+   "n": 1,
+   "name": "The Seed",
+   "code": [
+    0,
+    0,
+    0
+   ],
+   "q": 0,
+   "house": "AUM"
+  }
+ },
+ "counter:1": {
+  "counter": {
+   "n": 1,
+   "counterN": 1,
+   "q": 0,
+   "counterQ": 0
+  }
+ },
+ "knot:1": {
+  "knot": {
+   "n": 1,
+   "p": 1,
+   "q": 0,
+   "kind": "circle",
+   "genus": 0,
+   "components": 1
+  }
+ },
+ "interval:1": {
+  "interval": {
+   "n": 1,
+   "name": "silence",
+   "ratio": [
+    0,
+    1
+   ]
+  }
+ },
+ "becoming:1": {
+  "becoming": {
+   "n": 1,
+   "becomes": null
+  }
+ },
+ "successor:1": {
+  "successor": {
+   "n": 1,
+   "next": 2
+  }
+ },
+ "identity:2": {
+  "identity": {
+   "n": 2,
+   "name": "The Drift",
+   "code": [
+    0,
+    0,
+    1
+   ],
+   "q": 1,
+   "house": "AUM"
+  }
+ },
+ "counter:2": {
+  "counter": {
+   "n": 2,
+   "counterN": 3,
+   "q": 1,
+   "counterQ": -1
+  }
+ },
+ "knot:2": {
+  "knot": {
+   "n": 2,
+   "p": 2,
+   "q": 1,
+   "kind": "coil",
+   "genus": 0,
+   "components": 1
+  }
+ },
+ "interval:2": {
+  "interval": {
+   "n": 2,
+   "name": "the octave",
+   "ratio": [
+    1,
+    2
+   ]
+  }
+ },
+ "becoming:2": {
+  "becoming": {
+   "n": 2,
+   "becomes": null
+  }
+ },
+ "successor:2": {
+  "successor": {
+   "n": 2,
+   "next": 3
+  }
+ },
+ "identity:3": {
+  "identity": {
+   "n": 3,
+   "name": "The Fold",
+   "code": [
+    0,
+    0,
+    2
+   ],
+   "q": -1,
+   "house": "AUM"
+  }
+ },
+ "counter:3": {
+  "counter": {
+   "n": 3,
+   "counterN": 2,
+   "q": -1,
+   "counterQ": 1
+  }
+ },
+ "knot:3": {
+  "knot": {
+   "n": 3,
+   "p": 2,
+   "q": -1,
+   "kind": "coil",
+   "genus": 0,
+   "components": 1
+  }
+ },
+ "interval:3": {
+  "interval": {
+   "n": 3,
+   "name": "the octave",
+   "ratio": [
+    1,
+    2
+   ]
+  }
+ },
+ "becoming:3": {
+  "becoming": {
+   "n": 3,
+   "becomes": 1
+  }
+ },
+ "successor:3": {
+  "successor": {
+   "n": 3,
+   "next": 4
+  }
+ },
+ "identity:4": {
+  "identity": {
+   "n": 4,
+   "name": "The Resonance",
+   "code": [
+    0,
+    1,
+    0
+   ],
+   "q": 3,
+   "house": "AUM"
+  }
+ },
+ "counter:4": {
+  "counter": {
+   "n": 4,
+   "counterN": 7,
+   "q": 3,
+   "counterQ": -3
+  }
+ },
+ "knot:4": {
+  "knot": {
+   "n": 4,
+   "p": 2,
+   "q": 3,
+   "kind": "knot",
+   "genus": 1,
+   "components": 1
+  }
+ },
+ "interval:4": {
+  "interval": {
+   "n": 4,
+   "name": "the perfect fifth",
+   "ratio": [
+    3,
+    2
+   ]
+  }
+ },
+ "becoming:4": {
+  "becoming": {
+   "n": 4,
+   "becomes": null
+  }
+ },
+ "successor:4": {
+  "successor": {
+   "n": 4,
+   "next": 5
+  }
+ },
+ "identity:5": {
+  "identity": {
+   "n": 5,
+   "name": "The Depth",
+   "code": [
+    0,
+    1,
+    1
+   ],
+   "q": 4,
+   "house": "AUM"
+  }
+ },
+ "counter:5": {
+  "counter": {
+   "n": 5,
+   "counterN": 9,
+   "q": 4,
+   "counterQ": -4
+  }
+ },
+ "knot:5": {
+  "knot": {
+   "n": 5,
+   "p": 3,
+   "q": 4,
+   "kind": "knot",
+   "genus": 3,
+   "components": 1
+  }
+ },
+ "interval:5": {
+  "interval": {
+   "n": 5,
+   "name": "the perfect fourth",
+   "ratio": [
+    4,
+    3
+   ]
+  }
+ },
+ "becoming:5": {
+  "becoming": {
+   "n": 5,
+   "becomes": null
+  }
+ },
+ "successor:5": {
+  "successor": {
+   "n": 5,
+   "next": 6
+  }
+ },
+ "identity:6": {
+  "identity": {
+   "n": 6,
+   "name": "The Saturation",
+   "code": [
+    0,
+    1,
+    2
+   ],
+   "q": 2,
+   "house": "AUM"
+  }
+ },
+ "counter:6": {
+  "counter": {
+   "n": 6,
+   "counterN": 8,
+   "q": 2,
+   "counterQ": -2
+  }
+ },
+ "knot:6": {
+  "knot": {
+   "n": 6,
+   "p": 3,
+   "q": 2,
+   "kind": "knot",
+   "genus": 1,
+   "components": 1
+  }
+ },
+ "interval:6": {
+  "interval": {
+   "n": 6,
+   "name": "the perfect fifth",
+   "ratio": [
+    2,
+    3
+   ]
+  }
+ },
+ "becoming:6": {
+  "becoming": {
+   "n": 6,
+   "becomes": 4
+  }
+ },
+ "successor:6": {
+  "successor": {
+   "n": 6,
+   "next": 7
+  }
+ },
+ "identity:7": {
+  "identity": {
+   "n": 7,
+   "name": "The Dreamer",
+   "code": [
+    0,
+    2,
+    0
+   ],
+   "q": -3,
+   "house": "AUM"
+  }
+ },
+ "counter:7": {
+  "counter": {
+   "n": 7,
+   "counterN": 4,
+   "q": -3,
+   "counterQ": 3
+  }
+ },
+ "knot:7": {
+  "knot": {
+   "n": 7,
+   "p": 2,
+   "q": -3,
+   "kind": "knot",
+   "genus": 1,
+   "components": 1
+  }
+ },
+ "interval:7": {
+  "interval": {
+   "n": 7,
+   "name": "the perfect fifth",
+   "ratio": [
+    3,
+    2
+   ]
+  }
+ },
+ "becoming:7": {
+  "becoming": {
+   "n": 7,
+   "becomes": 1
+  }
+ },
+ "successor:7": {
+  "successor": {
+   "n": 7,
+   "next": 8
+  }
+ },
+ "identity:8": {
+  "identity": {
+   "n": 8,
+   "name": "The Knot",
+   "code": [
+    0,
+    2,
+    1
+   ],
+   "q": -2,
+   "house": "AUM"
+  }
+ },
+ "counter:8": {
+  "counter": {
+   "n": 8,
+   "counterN": 6,
+   "q": -2,
+   "counterQ": 2
+  }
+ },
+ "knot:8": {
+  "knot": {
+   "n": 8,
+   "p": 3,
+   "q": -2,
+   "kind": "knot",
+   "genus": 1,
+   "components": 1
+  }
+ },
+ "interval:8": {
+  "interval": {
+   "n": 8,
+   "name": "the perfect fifth",
+   "ratio": [
+    2,
+    3
+   ]
+  }
+ },
+ "becoming:8": {
+  "becoming": {
+   "n": 8,
+   "becomes": 2
+  }
+ },
+ "successor:8": {
+  "successor": {
+   "n": 8,
+   "next": 9
+  }
+ },
+ "identity:9": {
+  "identity": {
+   "n": 9,
+   "name": "The Threshold",
+   "code": [
+    0,
+    2,
+    2
+   ],
+   "q": -4,
+   "house": "AUM"
+  }
+ },
+ "counter:9": {
+  "counter": {
+   "n": 9,
+   "counterN": 5,
+   "q": -4,
+   "counterQ": 4
+  }
+ },
+ "knot:9": {
+  "knot": {
+   "n": 9,
+   "p": 3,
+   "q": -4,
+   "kind": "knot",
+   "genus": 3,
+   "components": 1
+  }
+ },
+ "interval:9": {
+  "interval": {
+   "n": 9,
+   "name": "the perfect fourth",
+   "ratio": [
+    4,
+    3
+   ]
+  }
+ },
+ "becoming:9": {
+  "becoming": {
+   "n": 9,
+   "becomes": 1
+  }
+ },
+ "successor:9": {
+  "successor": {
+   "n": 9,
+   "next": 10
+  }
+ },
+ "identity:10": {
+  "identity": {
+   "n": 10,
+   "name": "The Cut",
+   "code": [
+    1,
+    0,
+    0
+   ],
+   "q": 9,
+   "house": "MA"
+  }
+ },
+ "counter:10": {
+  "counter": {
+   "n": 10,
+   "counterN": 19,
+   "q": 9,
+   "counterQ": -9
+  }
+ },
+ "knot:10": {
+  "knot": {
+   "n": 10,
+   "p": 2,
+   "q": 9,
+   "kind": "knot",
+   "genus": 4,
+   "components": 1
+  }
+ },
+ "interval:10": {
+  "interval": {
+   "n": 10,
+   "name": "the tone, twice raised",
+   "ratio": [
+    9,
+    2
+   ]
+  }
+ },
+ "becoming:10": {
+  "becoming": {
+   "n": 10,
+   "becomes": null
+  }
+ },
+ "successor:10": {
+  "successor": {
+   "n": 10,
+   "next": 11
+  }
+ },
+ "identity:11": {
+  "identity": {
+   "n": 11,
+   "name": "The Mirror",
+   "code": [
+    1,
+    0,
+    1
+   ],
+   "q": 10,
+   "house": "MA"
+  }
+ },
+ "counter:11": {
+  "counter": {
+   "n": 11,
+   "counterN": 21,
+   "q": 10,
+   "counterQ": -10
+  }
+ },
+ "knot:11": {
+  "knot": {
+   "n": 11,
+   "p": 3,
+   "q": 10,
+   "kind": "knot",
+   "genus": 9,
+   "components": 1
+  }
+ },
+ "interval:11": {
+  "interval": {
+   "n": 11,
+   "name": "the sixth beyond the octave",
+   "ratio": [
+    10,
+    3
+   ]
+  }
+ },
+ "becoming:11": {
+  "becoming": {
+   "n": 11,
+   "becomes": null
+  }
+ },
+ "successor:11": {
+  "successor": {
+   "n": 11,
+   "next": 12
+  }
+ },
+ "identity:12": {
+  "identity": {
+   "n": 12,
+   "name": "The Gate",
+   "code": [
+    1,
+    0,
+    2
+   ],
+   "q": 8,
+   "house": "MA"
+  }
+ },
+ "counter:12": {
+  "counter": {
+   "n": 12,
+   "counterN": 20,
+   "q": 8,
+   "counterQ": -8
+  }
+ },
+ "knot:12": {
+  "knot": {
+   "n": 12,
+   "p": 3,
+   "q": 8,
+   "kind": "knot",
+   "genus": 7,
+   "components": 1
+  }
+ },
+ "interval:12": {
+  "interval": {
+   "n": 12,
+   "name": "the eleventh",
+   "ratio": [
+    8,
+    3
+   ]
+  }
+ },
+ "becoming:12": {
+  "becoming": {
+   "n": 12,
+   "becomes": 10
+  }
+ },
+ "successor:12": {
+  "successor": {
+   "n": 12,
+   "next": 13
+  }
+ },
+ "identity:13": {
+  "identity": {
+   "n": 13,
+   "name": "The Surgeon",
+   "code": [
+    1,
+    1,
+    0
+   ],
+   "q": 12,
+   "house": "MA"
+  }
+ },
+ "counter:13": {
+  "counter": {
+   "n": 13,
+   "counterN": 25,
+   "q": 12,
+   "counterQ": -12
+  }
+ },
+ "knot:13": {
+  "knot": {
+   "n": 13,
+   "p": 3,
+   "q": 12,
+   "kind": "link",
+   "genus": 0,
+   "components": 3
+  }
+ },
+ "interval:13": {
+  "interval": {
+   "n": 13,
+   "name": "the double octave, locked",
+   "ratio": [
+    12,
+    3
+   ]
+  }
+ },
+ "becoming:13": {
+  "becoming": {
+   "n": 13,
+   "becomes": null
+  }
+ },
+ "successor:13": {
+  "successor": {
+   "n": 13,
+   "next": 14
+  }
+ },
+ "identity:14": {
+  "identity": {
+   "n": 14,
+   "name": "The Scar",
+   "code": [
+    1,
+    1,
+    1
+   ],
+   "q": 13,
+   "house": "MA"
+  }
+ },
+ "counter:14": {
+  "counter": {
+   "n": 14,
+   "counterN": 27,
+   "q": 13,
+   "counterQ": -13
+  }
+ },
+ "knot:14": {
+  "knot": {
+   "n": 14,
+   "p": 7,
+   "q": 13,
+   "kind": "knot",
+   "genus": 36,
+   "components": 1
+  }
+ },
+ "interval:14": {
+  "interval": {
+   "n": 14,
+   "name": "the far dissonance",
+   "ratio": [
+    13,
+    7
+   ]
+  }
+ },
+ "becoming:14": {
+  "becoming": {
+   "n": 14,
+   "becomes": null
+  }
+ },
+ "successor:14": {
+  "successor": {
+   "n": 14,
+   "next": 15
+  }
+ },
+ "identity:15": {
+  "identity": {
+   "n": 15,
+   "name": "The Twins",
+   "code": [
+    1,
+    1,
+    2
+   ],
+   "q": 11,
+   "house": "MA"
+  }
+ },
+ "counter:15": {
+  "counter": {
+   "n": 15,
+   "counterN": 26,
+   "q": 11,
+   "counterQ": -11
+  }
+ },
+ "knot:15": {
+  "knot": {
+   "n": 15,
+   "p": 7,
+   "q": 11,
+   "kind": "knot",
+   "genus": 30,
+   "components": 1
+  }
+ },
+ "interval:15": {
+  "interval": {
+   "n": 15,
+   "name": "the alien interval",
+   "ratio": [
+    11,
+    7
+   ]
+  }
+ },
+ "becoming:15": {
+  "becoming": {
+   "n": 15,
+   "becomes": 13
+  }
+ },
+ "successor:15": {
+  "successor": {
+   "n": 15,
+   "next": 16
+  }
+ },
+ "identity:16": {
+  "identity": {
+   "n": 16,
+   "name": "The Labyrinth",
+   "code": [
+    1,
+    2,
+    0
+   ],
+   "q": 6,
+   "house": "MA"
+  }
+ },
+ "counter:16": {
+  "counter": {
+   "n": 16,
+   "counterN": 22,
+   "q": 6,
+   "counterQ": -6
+  }
+ },
+ "knot:16": {
+  "knot": {
+   "n": 16,
+   "p": 3,
+   "q": 6,
+   "kind": "link",
+   "genus": 0,
+   "components": 3
+  }
+ },
+ "interval:16": {
+  "interval": {
+   "n": 16,
+   "name": "the octave, locked",
+   "ratio": [
+    6,
+    3
+   ]
+  }
+ },
+ "becoming:16": {
+  "becoming": {
+   "n": 16,
+   "becomes": 10
+  }
+ },
+ "successor:16": {
+  "successor": {
+   "n": 16,
+   "next": 17
+  }
+ },
+ "identity:17": {
+  "identity": {
+   "n": 17,
+   "name": "The Void",
+   "code": [
+    1,
+    2,
+    1
+   ],
+   "q": 7,
+   "house": "MA"
+  }
+ },
+ "counter:17": {
+  "counter": {
+   "n": 17,
+   "counterN": 24,
+   "q": 7,
+   "counterQ": -7
+  }
+ },
+ "knot:17": {
+  "knot": {
+   "n": 17,
+   "p": 7,
+   "q": 7,
+   "kind": "link",
+   "genus": 0,
+   "components": 7
+  }
+ },
+ "interval:17": {
+  "interval": {
+   "n": 17,
+   "name": "the unison, locked",
+   "ratio": [
+    7,
+    7
+   ]
+  }
+ },
+ "becoming:17": {
+  "becoming": {
+   "n": 17,
+   "becomes": 11
+  }
+ },
+ "successor:17": {
+  "successor": {
+   "n": 17,
+   "next": 18
+  }
+ },
+ "identity:18": {
+  "identity": {
+   "n": 18,
+   "name": "The Bridge",
+   "code": [
+    1,
+    2,
+    2
+   ],
+   "q": 5,
+   "house": "MA"
+  }
+ },
+ "counter:18": {
+  "counter": {
+   "n": 18,
+   "counterN": 23,
+   "q": 5,
+   "counterQ": -5
+  }
+ },
+ "knot:18": {
+  "knot": {
+   "n": 18,
+   "p": 7,
+   "q": 5,
+   "kind": "knot",
+   "genus": 12,
+   "components": 1
+  }
+ },
+ "interval:18": {
+  "interval": {
+   "n": 18,
+   "name": "the tritone",
+   "ratio": [
+    5,
+    7
+   ]
+  }
+ },
+ "becoming:18": {
+  "becoming": {
+   "n": 18,
+   "becomes": 10
+  }
+ },
+ "successor:18": {
+  "successor": {
+   "n": 18,
+   "next": 19
+  }
+ },
+ "identity:19": {
+  "identity": {
+   "n": 19,
+   "name": "The Ray",
+   "code": [
+    2,
+    0,
+    0
+   ],
+   "q": -9,
+   "house": "RA"
+  }
+ },
+ "counter:19": {
+  "counter": {
+   "n": 19,
+   "counterN": 10,
+   "q": -9,
+   "counterQ": 9
+  }
+ },
+ "knot:19": {
+  "knot": {
+   "n": 19,
+   "p": 2,
+   "q": -9,
+   "kind": "knot",
+   "genus": 4,
+   "components": 1
+  }
+ },
+ "interval:19": {
+  "interval": {
+   "n": 19,
+   "name": "the tone, twice raised",
+   "ratio": [
+    9,
+    2
+   ]
+  }
+ },
+ "becoming:19": {
+  "becoming": {
+   "n": 19,
+   "becomes": 1
+  }
+ },
+ "successor:19": {
+  "successor": {
+   "n": 19,
+   "next": 20
+  }
+ },
+ "identity:20": {
+  "identity": {
+   "n": 20,
+   "name": "The Face",
+   "code": [
+    2,
+    0,
+    1
+   ],
+   "q": -8,
+   "house": "RA"
+  }
+ },
+ "counter:20": {
+  "counter": {
+   "n": 20,
+   "counterN": 12,
+   "q": -8,
+   "counterQ": 8
+  }
+ },
+ "knot:20": {
+  "knot": {
+   "n": 20,
+   "p": 3,
+   "q": -8,
+   "kind": "knot",
+   "genus": 7,
+   "components": 1
+  }
+ },
+ "interval:20": {
+  "interval": {
+   "n": 20,
+   "name": "the eleventh",
+   "ratio": [
+    8,
+    3
+   ]
+  }
+ },
+ "becoming:20": {
+  "becoming": {
+   "n": 20,
+   "becomes": 2
+  }
+ },
+ "successor:20": {
+  "successor": {
+   "n": 20,
+   "next": 21
+  }
+ },
+ "identity:21": {
+  "identity": {
+   "n": 21,
+   "name": "The Echo",
+   "code": [
+    2,
+    0,
+    2
+   ],
+   "q": -10,
+   "house": "RA"
+  }
+ },
+ "counter:21": {
+  "counter": {
+   "n": 21,
+   "counterN": 11,
+   "q": -10,
+   "counterQ": 10
+  }
+ },
+ "knot:21": {
+  "knot": {
+   "n": 21,
+   "p": 3,
+   "q": -10,
+   "kind": "knot",
+   "genus": 9,
+   "components": 1
+  }
+ },
+ "interval:21": {
+  "interval": {
+   "n": 21,
+   "name": "the sixth beyond the octave",
+   "ratio": [
+    10,
+    3
+   ]
+  }
+ },
+ "becoming:21": {
+  "becoming": {
+   "n": 21,
+   "becomes": 1
+  }
+ },
+ "successor:21": {
+  "successor": {
+   "n": 21,
+   "next": 22
+  }
+ },
+ "identity:22": {
+  "identity": {
+   "n": 22,
+   "name": "The Mask",
+   "code": [
+    2,
+    1,
+    0
+   ],
+   "q": -6,
+   "house": "RA"
+  }
+ },
+ "counter:22": {
+  "counter": {
+   "n": 22,
+   "counterN": 16,
+   "q": -6,
+   "counterQ": 6
+  }
+ },
+ "knot:22": {
+  "knot": {
+   "n": 22,
+   "p": 3,
+   "q": -6,
+   "kind": "link",
+   "genus": 0,
+   "components": 3
+  }
+ },
+ "interval:22": {
+  "interval": {
+   "n": 22,
+   "name": "the octave, locked",
+   "ratio": [
+    6,
+    3
+   ]
+  }
+ },
+ "becoming:22": {
+  "becoming": {
+   "n": 22,
+   "becomes": 4
+  }
+ },
+ "successor:22": {
+  "successor": {
+   "n": 22,
+   "next": 23
+  }
+ },
+ "identity:23": {
+  "identity": {
+   "n": 23,
+   "name": "The Beacon",
+   "code": [
+    2,
+    1,
+    1
+   ],
+   "q": -5,
+   "house": "RA"
+  }
+ },
+ "counter:23": {
+  "counter": {
+   "n": 23,
+   "counterN": 18,
+   "q": -5,
+   "counterQ": 5
+  }
+ },
+ "knot:23": {
+  "knot": {
+   "n": 23,
+   "p": 7,
+   "q": -5,
+   "kind": "knot",
+   "genus": 12,
+   "components": 1
+  }
+ },
+ "interval:23": {
+  "interval": {
+   "n": 23,
+   "name": "the tritone",
+   "ratio": [
+    5,
+    7
+   ]
+  }
+ },
+ "becoming:23": {
+  "becoming": {
+   "n": 23,
+   "becomes": 5
+  }
+ },
+ "successor:23": {
+  "successor": {
+   "n": 23,
+   "next": 24
+  }
+ },
+ "identity:24": {
+  "identity": {
+   "n": 24,
+   "name": "The Spectrum",
+   "code": [
+    2,
+    1,
+    2
+   ],
+   "q": -7,
+   "house": "RA"
+  }
+ },
+ "counter:24": {
+  "counter": {
+   "n": 24,
+   "counterN": 17,
+   "q": -7,
+   "counterQ": 7
+  }
+ },
+ "knot:24": {
+  "knot": {
+   "n": 24,
+   "p": 7,
+   "q": -7,
+   "kind": "link",
+   "genus": 0,
+   "components": 7
+  }
+ },
+ "interval:24": {
+  "interval": {
+   "n": 24,
+   "name": "the unison, locked",
+   "ratio": [
+    7,
+    7
+   ]
+  }
+ },
+ "becoming:24": {
+  "becoming": {
+   "n": 24,
+   "becomes": 4
+  }
+ },
+ "successor:24": {
+  "successor": {
+   "n": 24,
+   "next": 25
+  }
+ },
+ "identity:25": {
+  "identity": {
+   "n": 25,
+   "name": "The Witness",
+   "code": [
+    2,
+    2,
+    0
+   ],
+   "q": -12,
+   "house": "RA"
+  }
+ },
+ "counter:25": {
+  "counter": {
+   "n": 25,
+   "counterN": 13,
+   "q": -12,
+   "counterQ": 12
+  }
+ },
+ "knot:25": {
+  "knot": {
+   "n": 25,
+   "p": 3,
+   "q": -12,
+   "kind": "link",
+   "genus": 0,
+   "components": 3
+  }
+ },
+ "interval:25": {
+  "interval": {
+   "n": 25,
+   "name": "the double octave, locked",
+   "ratio": [
+    12,
+    3
+   ]
+  }
+ },
+ "becoming:25": {
+  "becoming": {
+   "n": 25,
+   "becomes": 1
+  }
+ },
+ "successor:25": {
+  "successor": {
+   "n": 25,
+   "next": 26
+  }
+ },
+ "identity:26": {
+  "identity": {
+   "n": 26,
+   "name": "The Crown",
+   "code": [
+    2,
+    2,
+    1
+   ],
+   "q": -11,
+   "house": "RA"
+  }
+ },
+ "counter:26": {
+  "counter": {
+   "n": 26,
+   "counterN": 15,
+   "q": -11,
+   "counterQ": 11
+  }
+ },
+ "knot:26": {
+  "knot": {
+   "n": 26,
+   "p": 7,
+   "q": -11,
+   "kind": "knot",
+   "genus": 30,
+   "components": 1
+  }
+ },
+ "interval:26": {
+  "interval": {
+   "n": 26,
+   "name": "the alien interval",
+   "ratio": [
+    11,
+    7
+   ]
+  }
+ },
+ "becoming:26": {
+  "becoming": {
+   "n": 26,
+   "becomes": 2
+  }
+ },
+ "successor:26": {
+  "successor": {
+   "n": 26,
+   "next": 27
+  }
+ },
+ "identity:27": {
+  "identity": {
+   "n": 27,
+   "name": "The Return",
+   "code": [
+    2,
+    2,
+    2
+   ],
+   "q": -13,
+   "house": "RA"
+  }
+ },
+ "counter:27": {
+  "counter": {
+   "n": 27,
+   "counterN": 14,
+   "q": -13,
+   "counterQ": 13
+  }
+ },
+ "knot:27": {
+  "knot": {
+   "n": 27,
+   "p": 7,
+   "q": -13,
+   "kind": "knot",
+   "genus": 36,
+   "components": 1
+  }
+ },
+ "interval:27": {
+  "interval": {
+   "n": 27,
+   "name": "the far dissonance",
+   "ratio": [
+    13,
+    7
+   ]
+  }
+ },
+ "becoming:27": {
+  "becoming": {
+   "n": 27,
+   "becomes": 1
+  }
+ },
+ "successor:27": {
+  "successor": {
+   "n": 27,
+   "next": 1,
+   "seam": true
+  }
+ },
+ "house:AUM": {
+  "house": {
+   "key": "AUM",
+   "cards": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ]
+  }
+ },
+ "house:MA": {
+  "house": {
+   "key": "MA",
+   "cards": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ]
+  }
+ },
+ "house:RA": {
+  "house": {
+   "key": "RA",
+   "cards": [
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27
+   ]
+  }
+ },
+ "count:all": {
+  "count": [
+   {
+    "n": 27,
+    "q": -13
+   },
+   {
+    "n": 25,
+    "q": -12
+   },
+   {
+    "n": 26,
+    "q": -11
+   },
+   {
+    "n": 21,
+    "q": -10
+   },
+   {
+    "n": 19,
+    "q": -9
+   },
+   {
+    "n": 20,
+    "q": -8
+   },
+   {
+    "n": 24,
+    "q": -7
+   },
+   {
+    "n": 22,
+    "q": -6
+   },
+   {
+    "n": 23,
+    "q": -5
+   },
+   {
+    "n": 9,
+    "q": -4
+   },
+   {
+    "n": 7,
+    "q": -3
+   },
+   {
+    "n": 8,
+    "q": -2
+   },
+   {
+    "n": 3,
+    "q": -1
+   },
+   {
+    "n": 1,
+    "q": 0
+   },
+   {
+    "n": 2,
+    "q": 1
+   },
+   {
+    "n": 6,
+    "q": 2
+   },
+   {
+    "n": 4,
+    "q": 3
+   },
+   {
+    "n": 5,
+    "q": 4
+   },
+   {
+    "n": 18,
+    "q": 5
+   },
+   {
+    "n": 16,
+    "q": 6
+   },
+   {
+    "n": 17,
+    "q": 7
+   },
+   {
+    "n": 12,
+    "q": 8
+   },
+   {
+    "n": 10,
+    "q": 9
+   },
+   {
+    "n": 11,
+    "q": 10
+   },
+   {
+    "n": 15,
+    "q": 11
+   },
+   {
+    "n": 13,
+    "q": 12
+   },
+   {
+    "n": 14,
+    "q": 13
+   }
+  ]
+ },
+ "count:neg": {
+  "count": [
+   {
+    "n": 27,
+    "q": -13
+   },
+   {
+    "n": 25,
+    "q": -12
+   },
+   {
+    "n": 26,
+    "q": -11
+   },
+   {
+    "n": 21,
+    "q": -10
+   },
+   {
+    "n": 19,
+    "q": -9
+   },
+   {
+    "n": 20,
+    "q": -8
+   },
+   {
+    "n": 24,
+    "q": -7
+   },
+   {
+    "n": 22,
+    "q": -6
+   },
+   {
+    "n": 23,
+    "q": -5
+   },
+   {
+    "n": 9,
+    "q": -4
+   },
+   {
+    "n": 7,
+    "q": -3
+   },
+   {
+    "n": 8,
+    "q": -2
+   },
+   {
+    "n": 3,
+    "q": -1
+   }
+  ]
+ },
+ "count:pos": {
+  "count": [
+   {
+    "n": 2,
+    "q": 1
+   },
+   {
+    "n": 6,
+    "q": 2
+   },
+   {
+    "n": 4,
+    "q": 3
+   },
+   {
+    "n": 5,
+    "q": 4
+   },
+   {
+    "n": 18,
+    "q": 5
+   },
+   {
+    "n": 16,
+    "q": 6
+   },
+   {
+    "n": 17,
+    "q": 7
+   },
+   {
+    "n": 12,
+    "q": 8
+   },
+   {
+    "n": 10,
+    "q": 9
+   },
+   {
+    "n": 11,
+    "q": 10
+   },
+   {
+    "n": 15,
+    "q": 11
+   },
+   {
+    "n": 13,
+    "q": 12
+   },
+   {
+    "n": 14,
+    "q": 13
+   }
+  ]
+ },
+ "dyads": {
+  "dyads": {
+   "pairs": [
+    [
+     2,
+     3
+    ],
+    [
+     4,
+     7
+    ],
+    [
+     5,
+     9
+    ],
+    [
+     6,
+     8
+    ],
+    [
+     10,
+     19
+    ],
+    [
+     11,
+     21
+    ],
+    [
+     12,
+     20
+    ],
+    [
+     13,
+     25
+    ],
+    [
+     14,
+     27
+    ],
+    [
+     15,
+     26
+    ],
+    [
+     16,
+     22
+    ],
+    [
+     17,
+     24
+    ],
+    [
+     18,
+     23
+    ]
+   ],
+   "still": 1
+  }
+ },
+ "silences": {
+  "silences": [
+   {
+    "n": 4,
+    "name": "The Resonance",
+    "silence": "The Depths"
+   },
+   {
+    "n": 16,
+    "name": "The Labyrinth",
+    "silence": "The Expanse"
+   },
+   {
+    "n": 22,
+    "name": "The Mask",
+    "silence": "The Threshold"
+   },
+   {
+    "n": 25,
+    "name": "The Witness",
+    "silence": "The Return"
+   }
+  ]
+ }
+}

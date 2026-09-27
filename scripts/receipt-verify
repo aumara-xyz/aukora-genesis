@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""receipt-verify — run the vendored cold receipt court over a receipt JSON + public key.
+
+    python3 scripts/receipt-verify <receipt.json> --pub <issuer.pk>
+    python3 scripts/receipt-verify <receipt.json> --pub <issuer.pk> --pair <retained.json> <presented.json>
+    python3 scripts/receipt-verify <receipt.json> --pub <issuer.pk> --dry-run
+
+This script computes no verdict. It runs `vendor/receipt-v3/toy/cold_verify.py` as a
+separate process against the exact bytes on disk — with PYTHONPATH and the working
+directory pinned to the vendored tree, so an inherited PYTHONPATH cannot substitute a
+different `toy` package — prints the command it ran, and returns the court's own exit
+status. A reader who trusts this program for nothing can run the printed line themselves
+and get the same answer.
+
+WHAT THIS COURT JUDGES, AND WHAT IT DOES NOT. The cold receipt court judges two things:
+that the signature over the receipt's closed fields verifies under the issuer public key,
+and that the closed-field rules hold (no unknown key, no `alg`, no float, no forged
+`owner` / `identity` / `did`). Class and conformance are DERIVED, never signed: a live
+receipt from this toy is `unattributed` / `NON-CONFORMING` because the toy ships no owner
+keys, and that is a statement about issuer attribution, not about whether the signature
+verified. Evidence never authorizes; identity never crowns; grants authorize composition.
+
+PHASE 0 CONSISTENCY IS A DIFFERENT COURT AND THIS ONE DOES NOT REPLACE IT. Phase 0
+(`scripts/phase0/verify`) checks a retained observation against a presented one and
+decides `APPEND_ONLY` / `OBSERVATION_CONFLICT` / `UNDETERMINED`. The cold court retains
+nothing and presents nothing, so it cannot decide any of those. Named without
+`--pair <retained> <presented>`, this script prints `CONSISTENCY_UNCHECKED`: an export
+that names an Aura head without a pair may not claim stranger-complete verification. With
+`--pair`, the pair is handed to the Phase 0 court as a second separate process; its
+verdict is the Phase 0 court's own, never one computed here.
+
+`--dry-run` prints the command and runs nothing.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
+VENDOR = os.path.join(ROOT, "vendor", "receipt-v3")
+COLD_COURT = os.path.join(VENDOR, "toy", "cold_verify.py")
+PHASE0_COURT = os.path.join(ROOT, "scripts", "phase0", "verify")
+
+
+def child_env() -> dict:
+    """The vendored tree is the only place `toy` may be imported from."""
+    env = dict(os.environ)
+    env["PYTHONPATH"] = VENDOR
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
+    return env
+
+
+def cold_command(receipt: str, pub: str | None) -> list[str]:
+    # -B keeps the vendored tree free of __pycache__, which is not a vendored byte.
+    command = [sys.executable, "-B", "-m", "toy.cold_verify", receipt]
+    if pub:
+        command += ["--pub", pub]
+    return command
+
+
+def show(command: list[str], cwd: str) -> None:
+    prefix = f"cd {cwd} && PYTHONPATH={VENDOR} PYTHONDONTWRITEBYTECODE=1"
+    print(f"$ {prefix} {' '.join(command)}", flush=True)
+
+
+def named_head(receipt_path: str) -> str | None:
+    """The Aura head a receipt names, if it is readable and names one. This decides what
+    this script prints, never what the court decides."""
+    try:
+        with open(receipt_path, "r", encoding="utf-8") as fh:
+            document = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    aura = document.get("aura") if isinstance(document, dict) else None
+    head = aura.get("head") if isinstance(aura, dict) else None
+    return head if isinstance(head, str) and head else None
+
+
+def unchecked(reason: str) -> None:
+    print("CONSISTENCY_UNCHECKED")
+    print(f"REASON: {reason}")
+    print("HINT: run scripts/phase0/verify <retained.json> <presented.json> for "
+          "APPEND_ONLY / OBSERVATION_CONFLICT — Phase 0 is a different court")
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(
+        description="run the vendored cold receipt court over a receipt JSON + public key")
+    parser.add_argument("receipt", help="receipt JSON to verify")
+    parser.add_argument("--pub", help="issuer public key hex file to pin the receipt against")
+    parser.add_argument("--pair", nargs=2, metavar=("RETAINED", "PRESENTED"),
+                        help="also hand a retained/presented pair to the Phase 0 court")
+    parser.add_argument("--dry-run", action="store_true", help="print the commands and run nothing")
+    args = parser.parse_args(argv[1:])
+
+    if args.pair:
+        print(f"PAIR          : {args.pair[0]} vs {args.pair[1]} — Phase 0 court, not this one")
+    else:
+        head = named_head(args.receipt)
+        if head:
+            unchecked(f"no_retained_presented_pair_supplied: {args.receipt} names Aura head "
+                      f"{head}, and a head alone is not a pair")
+        else:
+            unchecked(f"no_retained_presented_pair_supplied: no readable Aura head in {args.receipt}")
+
+    if not args.pub:
+        print("NOTE: no --pub given, so the signature is checked against the key named inside "
+              "the receipt; no expected-key pin is applied")
+
+    # The court runs with its cwd set to the vendored tree, so a relative input path would
+    # be resolved against THAT directory and fail with a FileNotFoundError naming a path the
+    # caller never wrote. Resolve every input against the caller's cwd first: a wrapper that
+    # only works when you happen to invoke it from one place is a wrapper that wastes a
+    # stranger's first ten minutes.
+    args.receipt = os.path.abspath(args.receipt)
+    if args.pub:
+        args.pub = os.path.abspath(args.pub)
+    if args.pair:
+        args.pair = [os.path.abspath(p) for p in args.pair]
+    command = cold_command(args.receipt, args.pub)
+    show(command, VENDOR)
+    if args.dry_run:
+        status = 0
+    else:
+        status = subprocess.run(command, cwd=VENDOR, env=child_env()).returncode
+
+    if args.pair:
+        if not os.path.isfile(PHASE0_COURT):
+            unchecked(f"phase0_court_absent: {PHASE0_COURT} is not present in this checkout")
+            return status or 1
+        pair_command = [sys.executable, PHASE0_COURT, args.pair[0], args.pair[1]]
+        print(f"$ {' '.join(pair_command)}", flush=True)
+        if not args.dry_run:
+            pair_status = subprocess.run(pair_command, cwd=ROOT, env=child_env()).returncode
+            return status or pair_status
+
+    return status
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

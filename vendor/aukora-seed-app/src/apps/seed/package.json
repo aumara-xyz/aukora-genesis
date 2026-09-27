@@ -1,0 +1,30 @@
+{
+  "name": "@aukora/seed",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Governed inward-out recursion for the Aukora organism: propose, ground, sandbox-rehearse, advisory Fu review, stale/secret/authority refusal, AUMLOK owner-gate, sandbox-only apply, receipt. Adapter; never mutates a live repo.",
+  "author": "Aumara",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts"
+  },
+  "dependencies": {
+    "@aukora/brain": "0.1.0",
+    "@aukora/council": "0.1.0",
+    "@aukora/evidence": "0.1.0",
+    "@aukora/kernel": "0.1.0",
+    "@aukora/kernel-node": "0.1.0",
+    "@aukora/memory": "0.1.0",
+    "@noble/curves": "2.2.0",
+    "@noble/hashes": "2.2.0",
+    "@noble/post-quantum": "0.6.1",
+    "convex": "1.42.2"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "demo": "vitest run --config vitest.config.ts demo/"
+  }
+}

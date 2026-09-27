@@ -1,0 +1,18 @@
+{
+  "id": "trailing-dot",
+  "why": "Trailing dots and spaces are preserved on some filesystems and stripped on others, so 'law.js.' can reach 'law.js'.",
+  "incident": "aukora-seed src/paths.mjs - the third macOS path lie. git closed the same class with core.protectHFS/protectNTFS in 2014.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "law.js": "ORIGINAL\n"
+    }
+  },
+  "attempt": {
+    "path": "law.js.",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "undeclared-path",
+  "why": "A path inside the world that no rule declares editable must be refused. An allow-list that only checks for protected names admits everything it forgot to name.",
+  "incident": "baseline",
+  "fixture": {
+    "dirs": [
+      "world"
+    ]
+  },
+  "attempt": {
+    "path": "world/undeclared.txt",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

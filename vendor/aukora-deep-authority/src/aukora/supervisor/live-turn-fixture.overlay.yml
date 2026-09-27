@@ -1,0 +1,14 @@
+# Test-only overlay. Replaces the live-turn model route with a fixture adapter
+# that emits one memory.put. It does not authorize the write; parent stdin still
+# owns yes/no. The product live-turn command does not apply this file.
+
+- insert:
+    - id: live-turn-fixture-llm
+      name: '@aukora/core/supervisor/live-turn-fixture-llm.ts'
+
+- id: agent-loop
+  config:
+    agents:
+      - id: live-turn
+        provider: live-turn-fixture
+        model: live-turn-fixture

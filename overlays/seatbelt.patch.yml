@@ -1,0 +1,27 @@
+# AUKORA SEATBELT: every agent shell command (bash, terminal, run_code, the web terminal) runs under the harness's own
+# Seatbelt profile PLUS AUKORA's denies, so the macOS kernel refuses them. plugins/aukora-seatbelt/lib/index.mjs says
+# what it governs and what it does not; lib/profile.mjs holds the rules.
+#
+# IT REPLACES THE `sandbox` ROW, which the base profile mounts as `@deepseek-ai/dsh-sandbox-local`
+# (packages/bundle/base/cordis.patch.yml, `- id: sandbox`). The stock profile is fixed in code with no config for extra
+# rules, so the plugin mounts that same provider class as a subclass that appends the denies. A later layer cannot
+# rename a row (app-boot skips a `name` mismatch), and `ctx.provide` refuses a second `sandbox`, so the base row is
+# DISABLED and this one is INSERTED: exactly one of the two may be enabled.
+#
+# THE ROW NAME IS RELEASE-RELATIVE: the loader anchors an inserted row's relative `name` beside THIS FILE, so the
+# materializer carries plugins/aukora-seatbelt (LANE_PLUGINS) and copies this file to `<release>/seatbelt.patch.yml`;
+# list THAT copy in the deployment, after the release's aukora-composition.patch.yml.
+#
+# BEFORE LISTING IT, NOTE WHAT IT STOPS: an agent shell can no longer reach the Aumlok controller, the signer socket or
+# the Kira store, so `scripts/aukora/self-change.mjs` and `scripts/aukora/remember.mjs` fail if the in-app agent runs
+# them from its own shell. They keep working from an unconfined terminal.
+- id: sandbox
+  disabled: true
+
+- insert:
+    - id: aukora-seatbelt
+      name: ./plugins/aukora-seatbelt/lib/index.mjs
+      config:
+        home: !!js process.env.HOME
+        supportRoot: !!js process.env.HOME + '/Library/Application Support/AUKORA'
+        dshHome: !!js dshHomePath()

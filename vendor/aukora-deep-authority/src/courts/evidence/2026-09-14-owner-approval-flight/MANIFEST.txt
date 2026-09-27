@@ -1,0 +1,30 @@
+bundle=2026-09-14-owner-approval-flight
+exported_utc=2026-09-14T05:31:46Z
+deployed_commit=5142bd9d74f1d74b887952cbf55d303b618953fe
+main_commit=58aca798af7b36abfb6dcf8578242b71086a7fb8
+receipt_source=live/broker-state/receipts/5c11de52492b2bcabf71b3f9f083a0df4bd603a3e70f29d835f9a7ec6b4c445b.json
+
+[sha256]
+8c35124cfd3f2f2b3191c4e3ddb53442b3ccf4ce6fd658e386e930b38bc48e7c  receipt.json
+9f4b9384dc4326a6d174ca942ecd0255bd71778688782029a05fe425e5e5e5a0  broker-public.pem
+c8313e770bcd37d9ffc69adbfd23606376bfde490f6934f8574598c9a9c770d0  content.txt
+a48e7307f1528bd45c23d4cfb3cf5181fc93263623d0df8a1dc3727ab62ec3f2  operation.json
+bc8bc261364a6742e70e9b48efd731a9531958e93142215e50258a62545313e5  pin.json
+5c854ea32800dde1429b4eb613083f30452fdd868b869b450af2e0d60f95bbf7  verify-offline.mjs
+bc392b6c56ebb57ebf170dc987bf8e90a2cc3a6419bdd5524dfa6384c574bd3c  verify-output.txt
+12a58ac1edde12d6604131ef97067d25eb168d7b85e48a84f3ad7e0a59cbb039  README.md
+17d6c349aeb158193ab7c2367ba72a2b4f3a7fb90d75a826017067c4955fe322  README.zh.md
+0076b4c8d21a6e38946ff1c54a7286c349b203e33fb3c6b67f0f6210fb3c0615  README.i18n.yaml
+
+[bytes]
+737 receipt.json
+113 broker-public.pem
+28 content.txt
+830 operation.json
+1236 pin.json
+6654 verify-offline.mjs
+2216 verify-output.txt
+6237 README.md
+5818 README.zh.md
+458 README.i18n.yaml
+24327 total

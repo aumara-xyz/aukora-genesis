@@ -1,0 +1,11 @@
+{
+  "retained": {
+    "size": 4,
+    "root": "471344adb64e0a1e1506b1a72b2341c58de81d21b15a2f9ec6767ba173b201d8"
+  },
+  "presented": {
+    "size": 4,
+    "root": "471344adb64e0a1e1506b1a72b2341c58de81d21b15a2f9ec6767ba173b201d8",
+    "consistency_path": []
+  }
+}

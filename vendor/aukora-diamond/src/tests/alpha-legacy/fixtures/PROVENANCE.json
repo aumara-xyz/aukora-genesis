@@ -1,0 +1,42 @@
+{
+  "sourceRepo": "aumara-xyz/aukora-spec-alpha",
+  "sourceCommit": "ddb6a9cc9860fce840283b0010e24e7d627fa9db",
+  "scope": "Historical committed Alpha v1; no v2 or rotation producer execution claimed. Receipt absolute paths are signed data and never opened.",
+  "files": [
+    {
+      "path": "receipt-v1.json",
+      "sourcePath": "receipts/f9dcaab4-da62-4e69-b3bb-f3979b96e443.json",
+      "bytes": 1990,
+      "sha256": "ec5627d598a5eff615500d39c5ceeea911cca1bfe9c9979c2f315db46406569b",
+      "gitBlob": "ca701f1dc9a700a3a0775f9df576832a15f82e27"
+    },
+    {
+      "path": "aura.jsonl",
+      "sourcePath": "evidence/aura.log",
+      "bytes": 44647,
+      "sha256": "10d7e0bb5b26d338e0010fd55b885a2dda160f9135bfc2a8ce366284d7abec27",
+      "gitBlob": "d4472b04c0ea7766582e98e71a7e479699662025"
+    },
+    {
+      "path": "issuer-public.jwk",
+      "sourcePath": "secrets/issuer-ed25519.pub",
+      "bytes": 91,
+      "sha256": "ffac8bed663e6882806be82e40af2da04dca1557b51700f7ca6ef222353571c2",
+      "gitBlob": "af69c8efe592795c5ad127f1f8588ced862b1df5"
+    },
+    {
+      "path": "effect-v1.json",
+      "sourcePath": "state/protected/customer-limit.json",
+      "bytes": 43,
+      "sha256": "793b5d2fc970b4cb60de6228be4c181908d61cb8eeb297b4387c97d8f1ea445c",
+      "gitBlob": "91d1a2e6df837d8d5e687bc7e25bdfbe077b70de"
+    },
+    {
+      "path": "unsigned-v1.json",
+      "sourcePath": "receipts/22fd35e5-6a71-4850-aa4d-502497d69260.json",
+      "bytes": 1714,
+      "sha256": "9b4589526da2554937d1d1a0a7554fe7ff0e9415625e90c2b59ff7d3a1e76d37",
+      "gitBlob": "3dda3ccc886a5ece54f72679ab8b2cc0ee76d807"
+    }
+  ]
+}

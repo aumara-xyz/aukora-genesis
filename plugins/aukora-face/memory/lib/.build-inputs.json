@@ -1,0 +1,18 @@
+{
+  "face": "memory",
+  "srcDigest": "0a6042793b987fd65dd3c49f7fd789e3c4750271dba3bc9ecddab1c1dbc01d83",
+  "files": [
+    "package.json",
+    "src/client/Memory.module.css",
+    "src/client/MemoryMenu.tsx",
+    "src/client/MemorySurface.tsx",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/memory-api.ts",
+    "src/client/memory-model.ts",
+    "src/css-modules.d.ts",
+    "src/index.ts",
+    "tsdown.config.ts"
+  ],
+  "builtAt": "2026-09-27T06:10:24Z"
+}

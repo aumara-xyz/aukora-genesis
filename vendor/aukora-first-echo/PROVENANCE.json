@@ -1,0 +1,320 @@
+{
+  "repo": "https://github.com/aumara-xyz/aukora-phi.git",
+  "commit": "a099901ad5a2d623c5343263de6ae5f9994d3159",
+  "tree": "906d1cdc5e725c83a9ac8b731321d15ef1abb12e",
+  "commitDate": "2026-08-04T11:06:21+08:00",
+  "license": "AGPL-3.0-only (declared in upstream package.json; upstream commit carries no LICENSE or NOTICE file)",
+  "copiedWith": "git -C <aukora-phi clone> archive a099901 <paths...> | tar -x -C vendor/aukora-first-echo/src",
+  "layout": "src/<path> is byte-identical to <path> at the commit",
+  "paths": [
+    "bin/echo.mjs",
+    "core/acp/checkpoint.ts",
+    "core/echo/courier.mjs",
+    "core/witness/action.mjs",
+    "core/witness/aumlok.mjs",
+    "core/witness/authority.mjs",
+    "core/witness/chain.mjs",
+    "core/witness/frontier.mjs",
+    "core/witness/guard.mjs",
+    "core/witness/identity.d.mts",
+    "core/witness/identity.mjs",
+    "core/witness/law.mjs",
+    "core/witness/log.mjs",
+    "core/witness/paths.mjs",
+    "core/witness/peer.mjs",
+    "core/witness/phrase.mjs",
+    "core/witness/rootMint.mjs",
+    "core/witness/verify.mjs",
+    "package.json",
+    "test/echo-anchor.test.mjs",
+    "test/echo-field-findings.test.mjs",
+    "test/echo-first.test.mjs",
+    "test/helpers/fixture.mjs",
+    "test/witness-ack-correlation.test.mjs",
+    "test/witness-chain-identity.test.mjs",
+    "test/witness-chain.test.mjs",
+    "test/witness-continuity.test.mjs",
+    "test/witness-exit-code.test.mjs",
+    "test/witness-frontier-redteam.test.mjs",
+    "test/witness-frontier.test.mjs",
+    "test/witness-injection.test.mjs",
+    "test/witness-peer.test.mjs",
+    "test/witness-policy-version.test.mjs"
+  ],
+  "roles": {
+    "named": "the files this import was asked for",
+    "import-closure": "every file the named files import inside aukora-phi, walked recursively (static and dynamic relative imports)",
+    "type-declaration-of-import-closure": "upstream type declaration beside identity.mjs; not imported at runtime",
+    "test-support": "not imported by the named files; imported by the included tests (log.mjs is the one caller of verifyEverything that the continuity test requires)",
+    "test": "upstream tests of courier, echo CLI, peer, frontier and chain",
+    "license-and-module-type": "the only license statement in the upstream commit, and \"type\": \"module\" for the imported tree"
+  },
+  "blobCheck": "PASS: 33/33 files; git hash-object, git hash-object --no-filters and an independent sha1(\"blob <n>\\0\"+bytes) all equal the upstream ls-tree blob; modes equal",
+  "totalBytes": 510622,
+  "files": [
+    {
+      "path": "bin/echo.mjs",
+      "gitBlob": "ad1d849b4e08ff0bae94f99c9aa237a7e5422f03",
+      "sha256": "20220bd92f7cb81326a5079f7f8dc5954316f9771f6aceec1d031958822f0470",
+      "bytes": 8431,
+      "mode": "100644",
+      "role": "named"
+    },
+    {
+      "path": "core/acp/checkpoint.ts",
+      "gitBlob": "3c385ecf38ec28fe9f235aceec7bc534459559b1",
+      "sha256": "22382c3f2501c3942e1bb5e04ae28e00a268fdff6f02093a576383b811fa88c1",
+      "bytes": 9918,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/echo/courier.mjs",
+      "gitBlob": "aebfb098e2e22834bf14656872df38b366327f05",
+      "sha256": "007ce3a4e44f176cb4d4ea87a677fff8c773f265ff808558ba6ae47f024372b3",
+      "bytes": 22296,
+      "mode": "100644",
+      "role": "named"
+    },
+    {
+      "path": "core/witness/action.mjs",
+      "gitBlob": "6607f29875f3a8dff6ede1d93d4a21f1937cf88b",
+      "sha256": "f8bf86e2343d9f0b5dadd02b0802a40dbd750d6f9f310b6c856c6a91ee7ac72f",
+      "bytes": 8660,
+      "mode": "100644",
+      "role": "test-support"
+    },
+    {
+      "path": "core/witness/aumlok.mjs",
+      "gitBlob": "698b69140392ccc2693e6d45b5782a57a061e4cd",
+      "sha256": "c689540641b476e3682907711349e6c58fc557b2ee1004c5a7d30d27c201698f",
+      "bytes": 29971,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/witness/authority.mjs",
+      "gitBlob": "1d9aae0c0cbaf8b3f096bb288dc5312529901d45",
+      "sha256": "0425895958042465d254219148e4f95f2e60f968374fbc88d594023d6f9d608d",
+      "bytes": 32013,
+      "mode": "100644",
+      "role": "test-support"
+    },
+    {
+      "path": "core/witness/chain.mjs",
+      "gitBlob": "2eb844ce5da0aa7ef5ad82c15317e6ab77f69107",
+      "sha256": "403c4ae93d008c734335cc6a3647105dc0db9a6cbb00fbf0115b3dfa1ee9fb1e",
+      "bytes": 16868,
+      "mode": "100644",
+      "role": "named"
+    },
+    {
+      "path": "core/witness/frontier.mjs",
+      "gitBlob": "3ca2d25ce1db472c582fe3621001190d9df2030e",
+      "sha256": "4f607bfc4315e99c7f1a1729d04fcbc27ec7f6234df8c7c391e3ddb033995fcc",
+      "bytes": 19103,
+      "mode": "100644",
+      "role": "named"
+    },
+    {
+      "path": "core/witness/guard.mjs",
+      "gitBlob": "96a339c0677611dff48500e756d830e96cf62f5a",
+      "sha256": "84a828fbf76730a04a17bc1a75586262217185e0f46997cd179c53107c9032fb",
+      "bytes": 38800,
+      "mode": "100644",
+      "role": "test-support"
+    },
+    {
+      "path": "core/witness/identity.d.mts",
+      "gitBlob": "1623d525f7b7e61bc7abede487dbfc17a96660ad",
+      "sha256": "31f7c69a91e8ed3c08aa12985e7f646a9904391069f4b9df3891d799d4bcdf06",
+      "bytes": 1327,
+      "mode": "100644",
+      "role": "type-declaration-of-import-closure"
+    },
+    {
+      "path": "core/witness/identity.mjs",
+      "gitBlob": "60d65fd9847c8fb367c8a8f584587871122e90c3",
+      "sha256": "3543d2c0de4cd575438a4cc2fb289b28f2b0a2743106d1ff4b1085633938a297",
+      "bytes": 8356,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/witness/law.mjs",
+      "gitBlob": "af952143a305e2c756b5b54d0b5892cc1edad5ef",
+      "sha256": "ee7948737f83c0967c171978432fc9c36563b11633d74e8becaa51e371d453c2",
+      "bytes": 15237,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/witness/log.mjs",
+      "gitBlob": "cfc1d22bafcd3fd8fe45717942e2c98da4ed2cb7",
+      "sha256": "2655f95a735e30b1d589bee9c0ceec80e3ed260328515cfaae02d3a7d71dc8f5",
+      "bytes": 18616,
+      "mode": "100644",
+      "role": "test-support"
+    },
+    {
+      "path": "core/witness/paths.mjs",
+      "gitBlob": "8e233f081203390fb89fbc5f41ddbc92d7440ada",
+      "sha256": "cc8ea15e12d75f9b42168eae2cf37e2b69e7d4985a236269082c2d13c3ab77fd",
+      "bytes": 14618,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/witness/peer.mjs",
+      "gitBlob": "882775c7cfae0ac1b6083892922aac4f568a0996",
+      "sha256": "ca251745ae58947e4f4e548a51565b3978db47e887ea5c469f15026e12de2663",
+      "bytes": 33922,
+      "mode": "100644",
+      "role": "named"
+    },
+    {
+      "path": "core/witness/phrase.mjs",
+      "gitBlob": "701891ae8690916668825c20e57e6115c6e3aedf",
+      "sha256": "b3f03a93fd96a3e5ed179bb573160cd2725707811adeb37c34ba21f729d1e720",
+      "bytes": 7362,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/witness/rootMint.mjs",
+      "gitBlob": "b6773b94898ee0bcff71731ce484677935b88e38",
+      "sha256": "6b74b9595aa59309a3c3f8d4c9e0580cbdee462fc5d6fa9c35b5717f564ebf78",
+      "bytes": 8781,
+      "mode": "100644",
+      "role": "import-closure"
+    },
+    {
+      "path": "core/witness/verify.mjs",
+      "gitBlob": "0f69bfa0b52b160e5ee1e1d6092c9adf0207c6a8",
+      "sha256": "a940a4e148fd680241ef68a5d53c20bc379d648157a79429ea7f3a967577f4e3",
+      "bytes": 35863,
+      "mode": "100644",
+      "role": "test-support"
+    },
+    {
+      "path": "package.json",
+      "gitBlob": "9e3252b0c8b8257b4d778a13d045c4510f44efe2",
+      "sha256": "c5c0c1d10230fbed829fbfd20ba8f54a669c80a7e4c2a67406192c9d74f69f6b",
+      "bytes": 1047,
+      "mode": "100644",
+      "role": "license-and-module-type"
+    },
+    {
+      "path": "test/echo-anchor.test.mjs",
+      "gitBlob": "749b0843b7a49fb41d4deea2d8336a15d7e76aa6",
+      "sha256": "491d255e07deef60262e28dfdd01bf7134eceb020a1d04c99de938c0a8023ca2",
+      "bytes": 12231,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/echo-field-findings.test.mjs",
+      "gitBlob": "0a892d54f39fe8a347e5ed37fc9cccfc92f36085",
+      "sha256": "e7deb0360f41e62bfd61e44bd52f69750f2d07d9563cca55eb4ce357bd5c5cf1",
+      "bytes": 12442,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/echo-first.test.mjs",
+      "gitBlob": "78fdf977a43cfe6fbb8b4afa5af3eff3b0d0552e",
+      "sha256": "2dd0ba9600d0561e8033fc1b3481f21275b526d2c93c11598a255f4f46af037b",
+      "bytes": 21818,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/helpers/fixture.mjs",
+      "gitBlob": "9beed002cc6b9bfde38077ea10241a1d227868d9",
+      "sha256": "a40baee83334b8bbbc7368c6d8e9955f3633f57739f5e88434c5136ca0ec66a2",
+      "bytes": 2807,
+      "mode": "100644",
+      "role": "test-support"
+    },
+    {
+      "path": "test/witness-ack-correlation.test.mjs",
+      "gitBlob": "5f2bcdf45c23b982dcb476d263fba83e00e593c0",
+      "sha256": "8bec853288abe38db8feacb1b70e46c88b4be6af8f6b1ec34ad442ebae1c9a8f",
+      "bytes": 10397,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-chain-identity.test.mjs",
+      "gitBlob": "5224185dc6cf14455749475e9ace51fb0782b181",
+      "sha256": "fae5cff0625463c7e44277f264df53cc368e8d64be3b6e2e2f2463a5dd188dfe",
+      "bytes": 6486,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-chain.test.mjs",
+      "gitBlob": "af69d4c16bdf8d02ad3bb9a0c1eb544ee257a9f9",
+      "sha256": "c5d92bc92ba2b494d9a5e26f32d7ffb31d005fa55744812052cc942eb3d2f2b5",
+      "bytes": 10708,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-continuity.test.mjs",
+      "gitBlob": "006adc96d99c69a5af1227d591c3fc306bc5f993",
+      "sha256": "dc2f9d1f01da27773bd04ef6af2ec663723df28d107c7613018c1a3ae0912e4e",
+      "bytes": 14862,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-exit-code.test.mjs",
+      "gitBlob": "a9e434791f02ca5fda4306e584af6ed833d3c2ae",
+      "sha256": "c5659b9adc10035617d083a1f8512cf723a4d793bb152b43a506d36878612cd1",
+      "bytes": 7670,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-frontier-redteam.test.mjs",
+      "gitBlob": "3243ce250f6c667b692497406f59d8a96c89ec53",
+      "sha256": "d755f82f8078020912d1a9c8c73d7bad9caab545b80a8154dfc7f7967798dfe8",
+      "bytes": 18579,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-frontier.test.mjs",
+      "gitBlob": "fca005f3a9b2dd651bf5972ab6814fe732a3438f",
+      "sha256": "60178ba8efdb91dd1d5abbbf879d337c3039bb9683801be1d07b469d7c2384eb",
+      "bytes": 21372,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-injection.test.mjs",
+      "gitBlob": "5a07561f3d8377e6ec60216251e81b291b7bac68",
+      "sha256": "81e3761e625a6c23d9e023803280e0f9003c7822267aeaf6c0abf30e7181d8ca",
+      "bytes": 14708,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-peer.test.mjs",
+      "gitBlob": "755a7574eb1f596857543ddd21ff98a36820b1cb",
+      "sha256": "fec1a470181713be812958582d608d016363ac9bfaeb80a91e914cf907b16af5",
+      "bytes": 19100,
+      "mode": "100644",
+      "role": "test"
+    },
+    {
+      "path": "test/witness-policy-version.test.mjs",
+      "gitBlob": "2842a58cc4094d0d8fa402996f6fba207e911644",
+      "sha256": "62a9ef2e6a579417dfaf664ea72ae951770e38a7cd4a18d33fab24c20d64943f",
+      "bytes": 6253,
+      "mode": "100644",
+      "role": "test"
+    }
+  ]
+}

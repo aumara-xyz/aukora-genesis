@@ -1,0 +1,13 @@
+{
+  "name": "@aukora/composition-gate",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "B3 composition gate: admission policy for governed plugin modules, installed as a node bootstrap",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./install": "./src/install.js",
+    "./policy": "./src/policy.js"
+  }
+}

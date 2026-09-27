@@ -1,0 +1,276 @@
+#!/usr/bin/env node
+/**
+ * Verify one approval receipt from its bytes and the registered public key — as a stranger.
+ *
+ *   scripts/aumlok/verify-approval <receipt.json> --pub <key>
+ *
+ * WHO THIS IS FOR. Someone who was handed a receipt and a public key and has nothing else: no
+ * Genesis checkout, no repository state, no network, no controller, no key of their own. Run it
+ * from an empty directory. Everything it needs is in the two files it is given.
+ *
+ * WHAT IT CHECKS, AND THE ORDER IT CHECKS IT IN. The order is the design, not an implementation
+ * detail: every rule that can be decided WITHOUT touching the signature is decided first, so a
+ * forged identifier is refused for being forged rather than for failing a signature it never should
+ * have been asked to produce.
+ *
+ *   1. the receipt is a CLOSED record — exactly the published fields, no extras, no accessors;
+ *   2. the registered key is decoded and the `did:key` is RE-DERIVED from it, never string-matched.
+ *      A receipt whose `approvalKeyDid` is not the DID of the key you hold is refused by name;
+ *   3. the approval class is checked against the key class. `human-ceremony` is refused outright:
+ *      with key class C because the plan forbids that pairing, and with A or B because a verifier
+ *      holding only a public key has no binding register and therefore cannot establish that any
+ *      ceremony happened. A class nobody can establish is a class that must not be printed;
+ *   4. only then are the exact operation bytes re-derived from the receipt's own request fields and
+ *      hashed, and the hash compared with the receipt's `signedBytesDigest`;
+ *   5. and only then is the Ed25519 signature checked, under the key from step 2.
+ *
+ * WHAT A PASS DOES NOT SAY. `OWNER_KEY_SIGNED` means the key you were handed signed those bytes.
+ * It does not say a person attended, that the device is trusted, that the key is still current, or
+ * that the history behind it was not rewritten — a signature proves a moment and nothing after it.
+ * Those limits are printed, and they are read from the receipt rather than asserted here.
+ *
+ * Exit 0 on a verified receipt, 1 on a named refusal, 2 on usage.
+ */
+import { readJsonStrictBytes } from '../../plugins/aukora-kira/lib/strict-read.mjs'
+import { createHash, createPublicKey, verify as nodeVerify } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const adapter = await import(pathToFileURL(`${ROOT}/plugins/aukora-aumlok/lib/index.mjs`).href)
+
+/** Refusals this court produces by name. */
+const REFUSE = Object.freeze({
+  USAGE: 'aukora:verify-usage',
+  RECEIPT_MALFORMED: 'aukora:verify-receipt-malformed',
+  KEY_MALFORMED: 'aukora:verify-key-malformed',
+  DID_MISMATCH: 'aukora:verify-did-mismatch',
+  HUMAN_CEREMONY_CLASS_C: 'aukora:verify-human-ceremony-with-class-c',
+  HUMAN_CEREMONY_UNESTABLISHABLE: 'aukora:verify-human-ceremony-not-establishable',
+  CLASS_UNKNOWN: 'aukora:verify-class-unknown',
+  PREIMAGE_MISMATCH: 'aukora:verify-preimage-mismatch',
+  SIGNATURE_INVALID: 'aukora:verify-signature-invalid',
+})
+
+/**
+ * T5 — SEPARATE STRUCTURED RESULTS.
+ *
+ * One verdict line is a summary, and a summary lets a reader take the whole for the sum of its
+ * parts. This court answers seven questions SEPARATELY, each with its own state, so no question can
+ * borrow the credibility of another:
+ *
+ *   parse        is this a closed, well-formed receipt?
+ *   signature    does the key you hold verify over the exact bytes the receipt's fields derive?
+ *   trusted_key  is that key the SUBJECT'S registered key? (two files cannot answer this)
+ *   scope        what was actually authorized? (the record carries a digest, not the operation)
+ *   digest       do the receipt's own fields derive the digest it claims?
+ *   attendance   did a person attend? (the record says so; the signature does not cover it)
+ *   custody      what custody is claimed? (same: unsigned metadata)
+ *
+ * STATES, and what each is allowed to mean:
+ *   VERIFIED         checked here, by this program, and it held
+ *   REPORTED         a claim the record CARRIES that the signature does NOT cover — displayed as the
+ *                    receipt's own statement, never as something this program established
+ *   REFUSED          a named refusal; verification stops here
+ *   NOT_ESTABLISHED  these two files do not permit the check at all
+ *
+ * THE RULE THAT MATTERS MOST: unsigned metadata is REPORTED, never shown as VERIFIED. The signature
+ * covers the approval REQUEST — subject, active control digest, operation digest, challenge and the
+ * window — and nothing else. Class, attendance, custody and every ceiling are fields a writer can
+ * change without invalidating it.
+ */
+const STATES = Object.freeze({
+  VERIFIED: 'VERIFIED', REPORTED: 'REPORTED', REFUSED: 'REFUSED', NOT_ESTABLISHED: 'NOT_ESTABLISHED',
+})
+
+/** The fields the signing preimage actually covers, and therefore the only ones verification binds. */
+const SIGNED_FIELDS = Object.freeze([
+  'subject', 'activeControlDigest', 'operationDigest', 'challenge', 'issuedAt', 'expiresAt',
+])
+
+const results = []
+const record = (item, state, detail) => { results.push({ item, state, detail }) }
+
+/** Print every result collected so far, then the named refusal, then exit 1. */
+function refuse(item, reason, detail) {
+  record(item, STATES.REFUSED, reason)
+  for (const result of results) {
+    process.stdout.write(`RESULT ${result.item}: ${result.state}\n`)
+    if (result.detail !== '') process.stdout.write(`  ${result.detail}\n`)
+  }
+  process.stdout.write(`REFUSED: ${reason}\n`)
+  if (detail !== undefined && detail !== '') process.stdout.write(`DETAIL: ${detail}\n`)
+  process.exit(1)
+}
+
+const receiptPath = process.argv[2]
+if (receiptPath === undefined || receiptPath.startsWith('--')) {
+  process.stderr.write('usage: scripts/aumlok/verify-approval <receipt.json> --pub <public key file>\n')
+  process.exit(2)
+}
+const pubIndex = process.argv.indexOf('--pub')
+if (pubIndex === -1 || process.argv[pubIndex + 1] === undefined) {
+  process.stderr.write('usage: scripts/aumlok/verify-approval <receipt.json> --pub <public key file>\n')
+  process.exit(2)
+}
+
+// ── 1. parse — is this a closed, well-formed receipt? ────────────────────────────────────────
+let receipt
+try {
+  // **THE RECEIPT IS SCANNED BEFORE IT IS PARSED (AUMLOK-92 ITEM 4).** MEASURED by Kimi as vulnerability 8: a
+  // published receipt can show one `operationDigest` in its text and still verify as another, because
+  // `JSON.parse` keeps the last duplicate silently — **and a verifier that reads the last one certifies a
+  // document the reader was never shown.**
+  // **THE WHOLE STRICT READER, NOT ONE OF ITS HELPERS (AUMLOK-94).** MEASURED: this shipped
+  // `assertNoDuplicateKeys` alone, so the receipt was still read with a plain `readFileSync` — **following a
+  // symlink, with no regular-file check and no `O_NONBLOCK`.** `readJsonStrictBytes` is the single open those
+  // helpers are built on: `O_NOFOLLOW`, `O_NONBLOCK`, `fstat` the DESCRIPTOR, read from that fd, a depth
+  // bound, a fatal decode, and the duplicate scan.
+  ;({ value: receipt } = readJsonStrictBytes(resolve(receiptPath), { label: 'the approval receipt' }))
+} catch (error) {
+  refuse('parse', REFUSE.RECEIPT_MALFORMED, error instanceof Error ? error.message : String(error))
+}
+try {
+  adapter.parseApprovalReceipt(receipt)
+} catch (error) {
+  refuse('parse', REFUSE.RECEIPT_MALFORMED, error instanceof Error ? error.message : String(error))
+}
+record('parse', STATES.VERIFIED, 'a closed record: exactly the published fields, each an enumerable data property')
+
+// ── 2. trusted_key — re-derive the did:key from the key you hold, BEFORE any signature work ───
+let rawPublicKeyHex
+try {
+  const material = readFileSync(resolve(process.argv[pubIndex + 1]), 'utf8').trim()
+  rawPublicKeyHex = /^[0-9a-f]{64}$/u.test(material)
+    ? material
+    : adapter.ed25519PublicKeyFromPem(`${material}\n`)
+} catch (error) {
+  refuse('trusted_key', REFUSE.KEY_MALFORMED, error instanceof Error ? error.message : String(error))
+}
+const derivedDid = adapter.didKeyFromEd25519PublicKey(rawPublicKeyHex)
+if (receipt.approvalKeyDid !== derivedDid) {
+  // Refused HERE, before the preimage is derived and before the signature is touched: this receipt
+  // names a different key, so there is nothing for that key to verify.
+  refuse('trusted_key', REFUSE.DID_MISMATCH,
+    `the receipt names ${receipt.approvalKeyDid}; the supplied key derives ${derivedDid}`)
+}
+// The BINDING holds — the receipt names the key you hold. TRUST does not follow, and this program
+// will not imply that it does: nothing in these two files says this key is the subject's REGISTERED
+// approval key, because a register is a third thing neither file carries.
+record('trusted_key', STATES.NOT_ESTABLISHED,
+  `the receipt names the key you hold (${derivedDid}); the BINDING is verified, but whether that key `
+  + 'is the subject\'s REGISTERED approval key cannot be checked from a receipt and a public key')
+
+// ── 3. custody — the class rules, still before signature work ────────────────────────────────
+if (!adapter.APPROVAL_CLASSES.includes(receipt.approvalClass)) {
+  refuse('custody', REFUSE.CLASS_UNKNOWN, `${String(receipt.approvalClass)} is not an approval class`)
+}
+if (receipt.approvalClass === 'human-ceremony') {
+  if (receipt.keyClass === 'C') {
+    refuse('custody', REFUSE.HUMAN_CEREMONY_CLASS_C,
+      'human-ceremony is never mintable under key class C (operator-custodied)')
+  }
+  refuse('custody', REFUSE.HUMAN_CEREMONY_UNESTABLISHABLE,
+    'a verifier holding only a public key has no binding register, so it cannot establish that a '
+    + 'human ceremony bound this key; refusing the class rather than printing a claim it cannot check')
+}
+
+// ── 4. digest — re-derive the exact bytes from the receipt's own request fields ──────────────
+let signingBytes
+try {
+  const request = adapter.createApprovalRequest({
+    subject: receipt.subject,
+    activeControlDigest: receipt.activeControlDigest,
+    operationDigest: receipt.operationDigest,
+    challenge: receipt.challenge,
+    issuedAt: receipt.issuedAt,
+    expiresAt: receipt.expiresAt,
+  })
+  signingBytes = adapter.approvalSigningBytes(request)
+} catch (error) {
+  refuse('digest', REFUSE.RECEIPT_MALFORMED, error instanceof Error ? error.message : String(error))
+}
+const derivedDigest = createHash('sha256').update(signingBytes).digest('hex')
+if (derivedDigest !== receipt.signedBytesDigest) {
+  refuse('digest', REFUSE.PREIMAGE_MISMATCH,
+    `the receipt's fields derive ${derivedDigest}, but it claims to have signed ${receipt.signedBytesDigest}`)
+}
+record('digest', STATES.VERIFIED,
+  `the receipt's own fields derive ${derivedDigest}, the digest it claims`)
+
+// ── 5. signature — and only now, under the key from step 2 ───────────────────────────────────
+let verified = false
+try {
+  const key = createPublicKey({
+    key: { kty: 'OKP', crv: 'Ed25519', x: Buffer.from(rawPublicKeyHex, 'hex').toString('base64url') },
+    format: 'jwk',
+  })
+  verified = nodeVerify(null, signingBytes, key, Buffer.from(receipt.signature, 'hex'))
+} catch {
+  verified = false
+}
+if (!verified) {
+  refuse('signature', REFUSE.SIGNATURE_INVALID,
+    `the signature does not verify under ${derivedDid} over the ${String(signingBytes.length)} bytes these fields derive`)
+}
+record('signature', STATES.VERIFIED,
+  `Ed25519 over the ${String(signingBytes.length)} bytes these fields derive, under the key you supplied`)
+
+// ── 6 and 7. the items the signature does NOT reach ─────────────────────────────────────────
+//
+// THIS IS THE PART A SINGLE VERDICT LINE HIDES. The preimage covers the approval REQUEST — subject,
+// active control digest, operation digest, challenge and the window — and nothing else. `keyClass`,
+// `approvalClass`, `attendance`, `signerDeviceTrusted`, `succession`, `identityBound` and the
+// ceilings are fields a writer can change without invalidating the signature. So they are REPORTED:
+// shown as the record's own statements, never as anything this program established.
+const unsignedFields = adapter.APPROVAL_RECEIPT_FIELDS.filter(field => !SIGNED_FIELDS.includes(field))
+
+record('scope', STATES.REPORTED,
+  'the record carries an operation DIGEST, not the operation: what was authorized is not in these bytes')
+record('attendance', STATES.REPORTED,
+  `the record states "${receipt.attendance}"; the signature does not cover this field`)
+record('custody', STATES.REPORTED,
+  `the record states key class ${receipt.keyClass} (${receipt.keyClassMeaning}) and class `
+  + `${receipt.approvalClass}; the signature does not cover these fields`)
+
+// ── the verdict, with its limits read from the receipt ───────────────────────────────────────
+process.stdout.write(`RECEIPT: ${receipt.domain}\n`)
+process.stdout.write(`VERDICT: ${receipt.verdict}\n`)
+process.stdout.write(`KEY_CLASS: ${receipt.keyClass} (${receipt.keyClassMeaning})\n`)
+process.stdout.write(`APPROVAL_CLASS: ${receipt.approvalClass}\n`)
+process.stdout.write(`SUBJECT: ${receipt.subject}\n`)
+process.stdout.write(`ACTIVE_CONTROL_DIGEST: ${receipt.activeControlDigest}\n`)
+process.stdout.write(`APPROVAL_KEY_DID: ${receipt.approvalKeyDid}\n`)
+process.stdout.write(`OPERATION_DIGEST: ${receipt.operationDigest}\n`)
+process.stdout.write(`CHALLENGE: ${receipt.challenge}\n`)
+process.stdout.write(`SIGNED_BYTES_DIGEST: ${receipt.signedBytesDigest}\n`)
+process.stdout.write(`ATTENDANCE: ${receipt.attendance}\n`)
+process.stdout.write(`SIGNER_DEVICE_TRUSTED: ${receipt.signerDeviceTrusted}\n`)
+process.stdout.write(`SUCCESSION: ${receipt.succession}\n`)
+process.stdout.write(`IDENTITY_BOUND: ${String(receipt.identityBound)}\n`)
+for (const line of receipt.ceilings) process.stdout.write(`  ${line}\n`)
+
+process.stdout.write('\nRESULTS — seven questions, answered separately\n')
+for (const result of results) {
+  process.stdout.write(`  RESULT ${result.item}: ${result.state}\n`)
+  process.stdout.write(`    ${result.detail}\n`)
+}
+process.stdout.write(`\nSIGNED_FIELDS: ${SIGNED_FIELDS.join(', ')}\n`)
+process.stdout.write(`UNSIGNED_FIELDS: ${unsignedFields.join(', ')}\n`)
+process.stdout.write('  The signature covers SIGNED_FIELDS and nothing else. Every field listed as\n')
+process.stdout.write('  UNSIGNED can be changed by whoever holds the receipt without invalidating it, so\n')
+process.stdout.write('  this program REPORTS those fields and never shows them as verified.\n')
+process.stdout.write('VERIFIED: the key you supplied signed exactly these bytes\n')
+process.stdout.write('NOT CHECKED: whether anyone attended, whether the key is still current, whether '
+  + 'the history behind this receipt was rewritten, or that any identity is bound\n')
+
+if (process.argv.includes('--json')) {
+  process.stdout.write(`${JSON.stringify({
+    receipt: receipt.domain,
+    verdict: receipt.verdict,
+    results,
+    signedFields: SIGNED_FIELDS,
+    unsignedFields,
+  }, null, 2)}\n`)
+}

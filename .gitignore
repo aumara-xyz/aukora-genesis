@@ -1,0 +1,76 @@
+# Local credentials and secret-bearing runtime material never belong in source control.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.sk
+local-control.json
+# ANCHORED. An unanchored `runtime/` matches a directory of that name at ANY depth,
+# and it silently swallowed three source trees: the carried client runtime, its
+# verbatim copy, and the Auma Lingwa application's own runtime directory — so the
+# app shipped incomplete and a package this repository claimed to carry was never
+# committed at all. The rule is about local runtime material beside the checkout.
+/runtime/
+/backups/
+/.local/
+
+# Dependencies and generated build output.
+node_modules/
+dist/
+coverage/
+.DS_Store
+
+# Tests must generate labelled non-secret key fixtures deterministically;
+# never depend on ignored local files for a clean-clone pass.
+
+# Reproducible upstream source and private build scratch
+/vendor/dsh/
+/vendor/dsh-source.tar.gz
+/.runtime/
+__pycache__/
+
+# ── ARCHIVED TREES (2026-09-27, see ARCHIVE.md) ─────────────────────────────────────────────
+# Removed from the tree; they remain in git history at 5c8508b7f. Lanes and local tools may still
+# write under them in a working checkout (lane reports, court logs, a Python venv). None of that is
+# source, so none of it can be committed again by accident.
+/.agents/
+/courts/
+/experiments/
+
+# ── Build, cache and scratch material that is not source ────────────────────────────────
+# Each line here is a measured fact about a file that was blocking release materialization
+# (the materializer refuses a dirty tree), not a guess. Nothing below is a source file.
+#
+# pnpm's content-addressable store: 1.5 GB of downloaded package blobs beside the checkout.
+/.pnpm-store/
+# The lane's scratch space for throwaway probes.
+/.scratch/
+# A SYMLINK LOOP: this path points at the repository root itself, so it is the repo
+# containing a link to itself. It can never be committed meaningfully.
+/aukora-genesis
+# A stray ZERO-BYTE file literally named `0`, presumably from a mistyped redirect.
+/0
+
+# ── VOICE MATERIAL NEVER ENTERS THIS REPOSITORY (Peter, 2026-09-26) ────────────────────────────────────────────
+# A voice prompt is a RECORDING OF A PERSON, and a repository is the one place it must never live: a clone, a fork
+# or a leak carries the voice with no way to recall it, and `git rm` does not reach into history. **The sidecar
+# reads these from a local, untracked path under the user's AUKORA state directory, and `setup.sh` derives the
+# prompt when it is absent** — so the voice keeps working and the repository carries only the recipe.
+#
+# A BINARY NOBODY DIFFS NEEDS A RULE, NOT A HABIT: an audio file appears in a commit as a size and renders as
+# nothing, so the next person to add a sample or a checkpoint gets no signal from the diff that this tree forbids it.
+plugins/aukora-face/apps/vendor/auma-live/**/voice/models/
+plugins/aukora-face/apps/vendor/auma-live/**/*.wav
+plugins/aukora-face/apps/vendor/auma-live/**/*.mp3
+plugins/aukora-face/apps/vendor/auma-live/**/*.ogg
+plugins/aukora-face/apps/vendor/auma-live/**/*.webm
+plugins/aukora-face/apps/vendor/auma-live/**/*.m4a
+plugins/aukora-face/apps/vendor/auma-live/**/*.flac
+plugins/aukora-face/apps/vendor/auma-live/**/*.opus
+plugins/aukora-face/apps/vendor/auma-live/**/*.aiff
+plugins/aukora-face/apps/vendor/auma-live/**/*.aif
+plugins/aukora-face/apps/vendor/auma-live/**/*.safetensors
+plugins/aukora-face/apps/vendor/auma-live/**/*.pt
+plugins/aukora-face/apps/vendor/auma-live/**/*.pth
+plugins/aukora-face/apps/vendor/auma-live/**/*.npy

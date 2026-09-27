@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111520" />
+  <title>Auma · Lingwa</title>
+  <link rel="icon" href="/assets/aumara-icon-96.png" />
+  <link rel="stylesheet" href="/app/style.css" />
+  <style>
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+    body { background: #111520; }
+    /* The mounted root carries the application's own `.auma-app` scroll
+       container. An `overflow` declaration here outranks that class rule on ID
+       specificity and would pin every view to one screen, so this page sets
+       size and positioning only. */
+    #auma-lingwa-root { position: relative; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <main id="auma-lingwa-root" aria-label="Auma Lingwa"></main>
+  <script type="module">
+    import { mountAuma } from '/app/auma/auma.js';
+    await mountAuma(document.getElementById('auma-lingwa-root'));
+  </script>
+</body>
+</html>

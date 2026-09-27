@@ -1,0 +1,15 @@
+{
+  "id": "repo-root",
+  "why": "The repository root itself is not a writable file and must not be treated as an unmatched path.",
+  "incident": "aukora-seed section 7.6 - a Write with file_path '.' exits 0 today. Only a bare ** rule would catch it.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ]
+  },
+  "attempt": {
+    "path": ".",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

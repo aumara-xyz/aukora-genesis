@@ -1,0 +1,20 @@
+/* "WHY DID SHE SAY THAT?": one calm column. Outside words are a label, not an alarm. */
+.why { max-width: 42rem; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; gap: 14px; font-size: 15px; line-height: 1.5; }
+.whyTitle { font-size: 19px; font-weight: 600; margin: 0; }
+.whyLead { margin: 0; opacity: 0.85; }
+.whyGroups { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.whyGroup { border: 1px solid currentColor; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.whyGroupHead { display: flex; align-items: baseline; gap: 8px; }
+.whyBlock { font-weight: 600; }
+.whyItems { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.whyItem { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.whySource { flex: 1 1 auto; }
+.whyWhen { font-size: 12px; opacity: 0.6; }
+.whyOutside { font-size: 12px; padding: 1px 6px; border: 1px solid currentColor; border-radius: 999px; opacity: 0.9; }
+.whyChecked { margin: 0; font-size: 14px; }
+.whyMismatch { margin: 0; font-size: 14px; }
+.whyUnchecked { margin: 0; font-size: 13px; opacity: 0.75; }
+.whyAbsent { margin: 0; padding: 8px 10px; border: 1px solid currentColor; border-radius: 6px; font-size: 14px; }
+.whyTrouble { margin: 0; font-size: 13px; }
+.whyMenuItem { font: inherit; padding: 4px 8px; text-align: start; background: none; border: 0; cursor: pointer; }
+.whyMenuItemActive { font-weight: 600; }

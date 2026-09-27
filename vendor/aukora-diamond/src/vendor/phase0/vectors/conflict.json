@@ -1,0 +1,16 @@
+{
+  "retained": {
+    "size": 3,
+    "root": "8bfbe02edb7fbb9381ea4320474b9808affd8fe435706b6775c94a911c26adda"
+  },
+  "presented": {
+    "size": 5,
+    "root": "1bfb1dd85db4db74384a1e3f2a9f2da7eaf4d61c8eecb12b1290cbae9d794800",
+    "consistency_path": [
+      "8e7a246fea010c2e3c786e9e9fc8f65984a8797b4c6c1a1d55f86251d2120307",
+      "b20d3925053b1d6cca8a696245567a1933c05bdfe91e01703638d30654f7a90c",
+      "db15e36edf250219185bea735f7c36c2e21d3d1eb1286e2aa9c2bd3922990ed3",
+      "b270d32131034281f45054975f8d2d65013f4793270f68b7372496b71d06745b"
+    ]
+  }
+}

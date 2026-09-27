@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="940" viewBox="0 0 1440 940" role="img" aria-labelledby="title desc">
+  <title id="title">AUKORA Diamond — evidence a stranger can check</title>
+  <desc id="desc">Supplied artifacts and separately supplied public trust anchors enter Diamond's offline verification path. It checks format, content binding, signatures and historical consistency. Results remain separate: valid evidence does not establish cell execution, human attendance, confinement, completeness or latestness. The cold path has no authority to approve or execute actions.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#091223"/><stop offset="1" stop-color="#101c33"/></linearGradient>
+    <linearGradient id="facet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b4fff1"/><stop offset=".5" stop-color="#5cd7ec"/><stop offset="1" stop-color="#748eff"/></linearGradient>
+    <linearGradient id="line"><stop stop-color="#376285"/><stop offset="1" stop-color="#7be7df"/></linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#95b4d8" stroke-opacity=".045"/></pattern>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1L6 4 1 7" fill="none" stroke="#7be7df" stroke-width="1.5"/></marker>
+  </defs>
+  <rect width="1440" height="940" rx="24" fill="url(#bg)"/>
+  <rect width="1440" height="940" rx="24" fill="url(#grid)"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">
+    <g transform="translate(62 53)">
+      <path d="M0 23L15 3H45L60 23 30 58Z" fill="url(#facet)"/>
+      <path d="M0 23H60M15 3L23 23 30 58 38 23 45 3M23 23L30 3 38 23" fill="none" stroke="#092738" stroke-opacity=".6" stroke-width="1.3"/>
+      <text x="82" y="26" fill="#edf5ff" font-size="28" font-weight="700" letter-spacing="3">AUKORA DIAMOND</text>
+      <text x="84" y="51" fill="#8ba7c3" font-size="14" letter-spacing="2">COLD EVIDENCE VERIFICATION</text>
+    </g>
+    <rect x="1160" y="61" width="216" height="35" rx="17" fill="#173348" stroke="#306278"/>
+    <text x="1268" y="84" text-anchor="middle" fill="#96e9e2" font-size="13" font-weight="600" letter-spacing="1">OFFLINE · CALLER-ANCHORED</text>
+    <text x="64" y="183" fill="#f3f7ff" font-size="49" font-weight="700" letter-spacing="-1">Evidence a stranger can check.</text>
+    <text x="66" y="222" fill="#a5b9d1" font-size="21">Separate the artifact, the trust anchor and the claim.</text>
+
+    <text x="66" y="286" fill="#7f9bb8" font-size="13" font-weight="700" letter-spacing="2">01 / SUPPLIED INPUTS</text>
+    <text x="541" y="286" fill="#7f9bb8" font-size="13" font-weight="700" letter-spacing="2">02 / DIAMOND CHECKS</text>
+    <text x="1021" y="286" fill="#7f9bb8" font-size="13" font-weight="700" letter-spacing="2">03 / SCOPED RESULTS</text>
+
+    <rect x="64" y="312" width="358" height="149" rx="16" fill="#14223a" stroke="#2c425f"/>
+    <rect x="88" y="336" width="34" height="40" rx="5" fill="none" stroke="#7799b9" stroke-width="2"/>
+    <path d="M96 347H114M96 355H114M96 363H108" stroke="#7799b9" stroke-width="2"/>
+    <text x="139" y="360" fill="#e6effd" font-size="22" font-weight="600">Public evidence</text>
+    <text x="89" y="406" fill="#a5b9d1" font-size="17">Receipts · records · exact content</text>
+    <text x="89" y="433" fill="#a5b9d1" font-size="17">History · profile-specific statements</text>
+
+    <rect x="64" y="485" width="358" height="157" rx="16" fill="#122d37" stroke="#32717a"/>
+    <circle cx="104" cy="524" r="9" fill="none" stroke="#85e5d9" stroke-width="2"/>
+    <path d="M113 524H128M123 524V531M128 524V529" fill="none" stroke="#85e5d9" stroke-width="2"/>
+    <text x="140" y="532" fill="#d5fbf3" font-size="22" font-weight="600">Separate trust inputs</text>
+    <text x="89" y="578" fill="#a9ced1" font-size="17">Expected public keys</text>
+    <text x="89" y="606" fill="#a9ced1" font-size="17">Optional retained observations</text>
+    <path d="M422 386H461Q479 386 479 405V454H515" stroke="url(#line)" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+    <path d="M422 558H461Q479 558 479 539V502H515" stroke="url(#line)" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+    <rect x="540" y="312" width="364" height="330" rx="18" fill="#172941" stroke="#69cdd9" stroke-opacity=".75"/>
+    <path d="M715 336L702 352 722 377 742 352 729 336Z" fill="url(#facet)"/>
+    <text x="722" y="414" text-anchor="middle" fill="#edf8ff" font-size="25" font-weight="700">Cold verifier</text>
+    <path d="M570 436H874" stroke="#324b66"/>
+    <g fill="#aec2d9" font-size="18">
+      <text x="584" y="477">01  Profile &amp; canonical form</text>
+      <text x="584" y="517">02  Content &amp; signed bindings</text>
+      <text x="584" y="557">03  Signature &amp; expected key</text>
+      <text x="584" y="597">04  Historical consistency</text>
+    </g>
+    <path d="M904 477H985" stroke="#69cdd9" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+
+    <rect x="1010" y="312" width="366" height="330" rx="16" fill="#14223a" stroke="#2c425f"/>
+    <circle cx="1040" cy="349" r="5" fill="#7ee1c3"/>
+    <text x="1059" y="356" fill="#e6effd" font-size="21" font-weight="600">Distinct verdicts</text>
+    <text x="1035" y="401" fill="#a5b9d1" font-size="17">Integrity and signer-key match</text>
+    <text x="1035" y="431" fill="#a5b9d1" font-size="17">Profile-specific content bindings</text>
+    <text x="1035" y="461" fill="#a5b9d1" font-size="17">Retained-history consistency</text>
+    <path d="M1035 487H1351" stroke="#2c425f"/>
+    <text x="1035" y="521" fill="#f1c888" font-size="16" font-weight="600">Missing or invalid required input?</text>
+    <text x="1035" y="550" fill="#a5b9d1" font-size="17">Named refusal. Nonzero exit.</text>
+    <text x="1035" y="603" fill="#96e9e2" font-size="16">Evidence does not become a grant.</text>
+
+    <rect x="64" y="688" width="1312" height="149" rx="16" fill="#0c1729" stroke="#2a3d55"/>
+    <text x="90" y="723" fill="#829bb9" font-size="13" font-weight="700" letter-spacing="2">A GREEN RECEIPT DOES NOT ESTABLISH</text>
+    <g fill="#d6e2f3" font-size="19" font-weight="500">
+      <text x="90" y="765">Cell execution</text><text x="338" y="765">Human attendance</text><text x="642" y="765">Host confinement</text><text x="982" y="765">Complete / latest history</text>
+    </g>
+    <g fill="#7e97b5" font-size="14">
+      <text x="90" y="798">NOT_ESTABLISHED</text><text x="338" y="798">Reported ≠ proven</text><text x="642" y="798">No custody or isolation proof</text><text x="982" y="798">UNDETERMINED / NO_LATESTNESS</text>
+    </g>
+    <text x="66" y="885" fill="#6f8ba9" font-size="14">GENESIS PRODUCES &amp; OPERATES. DIAMOND CHECKS SUPPLIED EVIDENCE.</text>
+    <text x="1375" y="885" text-anchor="end" fill="#8ba7c3" font-size="14">AUKORA  /  CHANNEL 1</text>
+  </g>
+</svg>

@@ -1,0 +1,1625 @@
+{
+  "schemaVersion": 1,
+  "sources": {
+    "luminaraPortal": {
+      "repository": "zeb23ediah/luminara-portal",
+      "commit": "3d32c3ba675307774f6af9805cc4772f7501b720",
+      "tree": "e0fec13742804af16213cc527364546f4da6564f"
+    },
+    "dakiniCode": {
+      "repository": "aumara-xyz/dakini-code",
+      "commit": "1fc98117a9a6234e1179bc7c5084a58ade378963",
+      "buildCommand": "npm ci && npm run build:app",
+      "runtimeEntry": "dakini-code/index.html"
+    },
+    "zetaHarp": {
+      "repository": "aumara-xyz/zeta-harp",
+      "commit": "aa1100fa56e2a86ccd181cb39d13122e62abdf9f",
+      "tree": "8c2f47d67479c19ce98e0c8d57916fd6d86feb34",
+      "runtimeEntry": "zeta-harp/index.html"
+    },
+    "aumaLingwa": {
+      "repositoryRevision": "b413a89b109900a9037a9ed725b0d1b474e4f550",
+      "runtimeEntry": "auma-lingwa/runtime/auma-lingwa.html"
+    },
+    "aumaLive": {
+      "repositoryRevision": "b413a89b109900a9037a9ed725b0d1b474e4f550",
+      "license": "AGPL-3.0-or-later",
+      "runtimeEntry": "auma-live/runtime/auma-live.html"
+    }
+  },
+  "files": {
+    "auma-lingwa/canonical/AUMA_V15_DECISIONS.md": {
+      "bytes": 17279,
+      "sha256": "036384e23e01c8fb7bd095ffcd398c74838285c7ba5ba79719e41413f861057d"
+    },
+    "auma-lingwa/canonical/auma-canon-v14.1.json": {
+      "bytes": 935768,
+      "sha256": "215de53e28287b43bebb771600375f4d4ebea4ca343bc6b56415be6b1c6d61f3"
+    },
+    "auma-lingwa/canonical/auma-canon-v15.json": {
+      "bytes": 855637,
+      "sha256": "173a12b5730abb730fc4f6456e88d0ecb558910e0fd95a334d19b52bc639fee4"
+    },
+    "auma-lingwa/canonical/auma-canon-v16.json": {
+      "bytes": 893781,
+      "sha256": "2d9ffed46912a7860b16c282d071bfed4c5555ee78c0bf8623e77d793531eb7e"
+    },
+    "auma-lingwa/canonical/README.md": {
+      "bytes": 3516,
+      "sha256": "62a6408ead5455cc8c6beb27e64f100dd78baf071a5218b17594722ed6ca8514"
+    },
+    "auma-lingwa/runtime/app/auma/auma.css": {
+      "bytes": 21749,
+      "sha256": "644a48545522b1be4f8a38c0f198ea9ca9aec1ea6190dc1b4a9f05e50291c90c"
+    },
+    "auma-lingwa/runtime/app/auma/auma.js": {
+      "bytes": 38287,
+      "sha256": "81f8ae277451a1360c58f69801c0ff12f48b9bf855781c5a50702365e2f68d36"
+    },
+    "auma-lingwa/runtime/app/auma/canon-v16.json": {
+      "bytes": 893781,
+      "sha256": "2d9ffed46912a7860b16c282d071bfed4c5555ee78c0bf8623e77d793531eb7e"
+    },
+    "auma-lingwa/runtime/app/auma/readers-v1.json": {
+      "bytes": 9344,
+      "sha256": "e4c1b35fa4087cb2f692e1c3f4a831d3ef39b22ddef21849c56634b9bda1224c"
+    },
+    "auma-lingwa/runtime/app/aura-core.js": {
+      "bytes": 13957,
+      "sha256": "571d5909687299537056e111389b6fb5e2c979e36b49a12cf50c67caceec03ab"
+    },
+    "auma-lingwa/runtime/app/style.css": {
+      "bytes": 32009,
+      "sha256": "ff4b815f47c3e3bd3e2718402427bb068b17e8a81afb4cd632d48d32c1dced4c"
+    },
+    "auma-lingwa/runtime/assets/aumara-icon-96.png": {
+      "bytes": 7925,
+      "sha256": "fec7d0bd7f007928fcb1b6866051b2c8344ec76d3211962650e3acd5f8b7e551"
+    },
+    "auma-lingwa/runtime/auma-lingwa.html": {
+      "bytes": 1044,
+      "sha256": "8d939f671d121fde40e58851c089d2b200df33c71fbf3d9a00e5aa978da7e4eb"
+    },
+    "auma-lingwa/tooling/core/tests/auraCore.test.ts": {
+      "bytes": 5563,
+      "sha256": "2b10cfb9c1f82fbd7dfbb9c0b17d9c69fb9424b9b6a30bdc70a19affccca4d73"
+    },
+    "auma-lingwa/tooling/core/tests/auraDetokenized.test.ts": {
+      "bytes": 8682,
+      "sha256": "1b4bbc9c536dd5fdb92c7773e441fb05045fd2301a05f9c6cac1a2e4277838b9"
+    },
+    "auma-lingwa/tooling/core/tests/lingwaLane.test.ts": {
+      "bytes": 4944,
+      "sha256": "471bb4c8f00ae8bbbba8ccf2ea052f154d1e1221765acf1ba4e411565f86a1af"
+    },
+    "auma-lingwa/tooling/scripts/aumaCanonLint.ts": {
+      "bytes": 9190,
+      "sha256": "8a6814737b677cd6bdae753b9d8b574ff8dd4c2c5951d4f86313966144d575d1"
+    },
+    "auma-lingwa/tooling/spatial/lingwaLane.ts": {
+      "bytes": 11468,
+      "sha256": "46c61e55365b6ff98d4bdd2b8bae55e12b0ff078efdee15fee8f2cdde11dcd74"
+    },
+    "auma-live/original-closure/authority/symbiotePaths.ts": {
+      "bytes": 7364,
+      "sha256": "892f30b0348d3b19ef53e021a6a84be16ecf93af1ea33c571cb5235917d47b91"
+    },
+    "auma-live/original-closure/convex/_generated/api.js": {
+      "bytes": 480,
+      "sha256": "f513058549831e85376f8d19cafaf2a4a770b6eb1b859fb371141f2c9dec0d70"
+    },
+    "auma-live/original-closure/convex/_generated/server.js": {
+      "bytes": 3696,
+      "sha256": "aea87b3ee367e0e870f3da81ffce8babd8ea1aea695a1e38689841aebc09a1e8"
+    },
+    "auma-live/original-closure/convex/aukoraActionRegistry.ts": {
+      "bytes": 8619,
+      "sha256": "62bfd489bde8de33aeff3e2e3975bb8a674d32a26ca217ce738e86bb4ca2f094"
+    },
+    "auma-live/original-closure/convex/aukoraConstants.ts": {
+      "bytes": 986,
+      "sha256": "63d7667dbe6c0c47ee07ebdbff5a8d216d63d43e8d73e576b9e68cb1ac23854f"
+    },
+    "auma-live/original-closure/convex/aukoraCore.ts": {
+      "bytes": 27678,
+      "sha256": "7ca52d3da4bccf55a7a8577039d646934fbb8c3f5d0fbfb281cae5272ca3a433"
+    },
+    "auma-live/original-closure/convex/aukoraMerkleLog.ts": {
+      "bytes": 13007,
+      "sha256": "c8455977353b0ace3b10ab87353dd6e8314f24939b59dfa01d274ca08069e245"
+    },
+    "auma-live/original-closure/convex/aukoraPqcSigner.ts": {
+      "bytes": 14284,
+      "sha256": "800421dad2ff8b51991cae66de1746f7489cd26d6997abe47638b1ae258de2b0"
+    },
+    "auma-live/original-closure/convex/aukoraRateLimit.ts": {
+      "bytes": 3391,
+      "sha256": "aec870aafbdeae26a60d9c3c2ea3edc567aaa5a089238cfa10e656e99f69e86e"
+    },
+    "auma-live/original-closure/convex/aukoraReceipts.ts": {
+      "bytes": 29401,
+      "sha256": "a9a0ac61d35314a557517edee1e927cc8275da14412225dece078b870ec26fd1"
+    },
+    "auma-live/original-closure/convex/aukoraRuntime.ts": {
+      "bytes": 21835,
+      "sha256": "5b09cc5fc2974d5b252467bf2849d364b434a9965887f773da3a5fcfa64e04f4"
+    },
+    "auma-live/original-closure/convex/aukoraSignedHead.ts": {
+      "bytes": 18373,
+      "sha256": "5dc93b7e7e4e78f8766f867885476344adbccbd7d81c17e1293210be4dda4079"
+    },
+    "auma-live/original-closure/convex/aukoraToken.ts": {
+      "bytes": 4295,
+      "sha256": "e2fe444fbb0c15884343c469ea846a19d779b61b763fa969ca82a2bb18dfe43c"
+    },
+    "auma-live/original-closure/convex/aumlokManifests.ts": {
+      "bytes": 29821,
+      "sha256": "77dbd5290541e821aebaf91251a6d003db887491261429684d3b7eace5256d7a"
+    },
+    "auma-live/original-closure/convex/aumlokMemory.ts": {
+      "bytes": 44250,
+      "sha256": "f247b7168ddc732367fc40c5947d3ffc5c07fb1418f548d5561633b5f81f2d30"
+    },
+    "auma-live/original-closure/convex/aumlokRootRegistry.ts": {
+      "bytes": 14550,
+      "sha256": "5b2f2ea98a39e357955c752be440b94bf340117e2bdd093d1e03b7bb4725b9f8"
+    },
+    "auma-live/original-closure/convex/popResolver.ts": {
+      "bytes": 15324,
+      "sha256": "b19a417ab2db2c81b55a76dba4db5fcd7b6ab361805ed628ad0513b58c0a84ce"
+    },
+    "auma-live/original-closure/convex/sessionResolver.ts": {
+      "bytes": 2508,
+      "sha256": "253640b8928f56a292d6584e6b552e244fb90574080b146d15247e0a5b2e542e"
+    },
+    "auma-live/original-closure/core/src/aumaWombPrompt.ts": {
+      "bytes": 15376,
+      "sha256": "c23315c0d6c4096097741e31c952fb117441c716ee622940dc3ab957e9b2d85f"
+    },
+    "auma-live/original-closure/core/src/aumlokApprovalRoot.ts": {
+      "bytes": 6289,
+      "sha256": "359c1dfcdd84a5d55e6f6c8eade617c11ebc851a0f7991147edb339aafa82430"
+    },
+    "auma-live/original-closure/core/src/aumlokBondCeremony.ts": {
+      "bytes": 19220,
+      "sha256": "5fedc8639a77681b7f4ff82dc42ae87cd0a9a21bfa40b6d5a24f239bacf1a396"
+    },
+    "auma-live/original-closure/core/src/burnDataset.ts": {
+      "bytes": 41917,
+      "sha256": "ae115992b7401c83f47448732f7407b9a3cbdb27250f3e49656667739cd48ccc"
+    },
+    "auma-live/original-closure/core/src/changeRiskClassifier.ts": {
+      "bytes": 4443,
+      "sha256": "a4f58539bb51f6dc8b45501ae351cf7ad1ad34f44ddb4d7848884f24195e9784"
+    },
+    "auma-live/original-closure/core/src/conversationDistiller.ts": {
+      "bytes": 10926,
+      "sha256": "a7a739216e65ea2537e703ff16dd2babddff5b6670f89a1edd847731c06dd998"
+    },
+    "auma-live/original-closure/core/src/conversationShadowCapture.ts": {
+      "bytes": 15513,
+      "sha256": "6a32716af69864ff83375b7e2bac6d1752bfe1135dc76c8800ba9e04a8a7d050"
+    },
+    "auma-live/original-closure/core/src/convexBrainReadonly.ts": {
+      "bytes": 13042,
+      "sha256": "d30adfc38a676ff22d9a93dbb64a3e78c6e56f25fcd1266ea3b8411048e7ff5b"
+    },
+    "auma-live/original-closure/core/src/convexBrainSnapshot.ts": {
+      "bytes": 5141,
+      "sha256": "3bbaf209959f62e60fbf71eb2b7848bc3f926d005b2ae55cf807e2ad003241a4"
+    },
+    "auma-live/original-closure/core/src/convexCanonicalPin.ts": {
+      "bytes": 9071,
+      "sha256": "05de3b60cd1c46fd96c59f6f0dcf389239fa5bade9d6829ca3beacd77a81441c"
+    },
+    "auma-live/original-closure/core/src/coreMemoryEnvelope.ts": {
+      "bytes": 11565,
+      "sha256": "eeb31ca630c0f7509e6ef6f699c5641eb088ade1039cd6f805bfa75ae920cd2d"
+    },
+    "auma-live/original-closure/core/src/externalReview.ts": {
+      "bytes": 15480,
+      "sha256": "08436d4c3c9f714143229007836d60355064518a70a7eb5b4860c8ed7b9e3197"
+    },
+    "auma-live/original-closure/core/src/focusRegister.ts": {
+      "bytes": 13056,
+      "sha256": "4daa9cf406da525f7fa22e985bfad5468c2e4ab576e5763ec064336a73e90745"
+    },
+    "auma-live/original-closure/core/src/forbiddenContent.ts": {
+      "bytes": 8195,
+      "sha256": "31a942574b0033991cb2db7d66cc72f888d41abd39c8c88354c1ecdc915ec815"
+    },
+    "auma-live/original-closure/core/src/fractalFusion.ts": {
+      "bytes": 15851,
+      "sha256": "b252ec776a71c5c2051d8f8dd0b860db874899c3a802b0098933c400d30eee61"
+    },
+    "auma-live/original-closure/core/src/fusionConfig.ts": {
+      "bytes": 21405,
+      "sha256": "a6ef5a2215b473d37adb903516aa076aa8004e0fb47abda247b1bd48d77c30ac"
+    },
+    "auma-live/original-closure/core/src/fusionSelfOpt.ts": {
+      "bytes": 8542,
+      "sha256": "a26e659247e660c3af6132516c8cd813f8b44962faea8465c7cd89e6214a6b2e"
+    },
+    "auma-live/original-closure/core/src/fusionSwarm.ts": {
+      "bytes": 2787,
+      "sha256": "1338e6ea43441b824ac55b89f2917fdc7e4d73f6e2d42a74fa5f72911160ac48"
+    },
+    "auma-live/original-closure/core/src/importGraphVerifier.ts": {
+      "bytes": 6785,
+      "sha256": "285fa476a617e764ea2ec75cb066524740c24f694e22453c89fd88f2ba87ac9e"
+    },
+    "auma-live/original-closure/core/src/kernelActionClassifier.ts": {
+      "bytes": 16297,
+      "sha256": "04627bda747af3a6202a66445db9eb03ea0689dd224c88d15c8e806a71bbfae6"
+    },
+    "auma-live/original-closure/core/src/kiraBrain.ts": {
+      "bytes": 31977,
+      "sha256": "681f6d6f1018d62e39220a3ea7c248dc9a379691cc944076d055323aa90fde06"
+    },
+    "auma-live/original-closure/core/src/memoryAppend.ts": {
+      "bytes": 12608,
+      "sha256": "2b3f966f5bce3b17a20d1b3970ae2068b1b6cbf36d395731e79ecd3bfd92ee09"
+    },
+    "auma-live/original-closure/core/src/memoryKernelTransport.ts": {
+      "bytes": 16372,
+      "sha256": "79c2b12d8070684ec3e048e99b413c58e6479647900176db73e56a0786ef71f9"
+    },
+    "auma-live/original-closure/core/src/memoryRecall.ts": {
+      "bytes": 23868,
+      "sha256": "af2d9f230ccb2a08ee59c3f7fe46854523046eb18cda79d9d49a1c53a52b01b2"
+    },
+    "auma-live/original-closure/core/src/mldsaSandboxSigner.ts": {
+      "bytes": 12554,
+      "sha256": "65015c888ec97b7cb4e2d384aa891bf47363731756013b390d79d51db6b8e488"
+    },
+    "auma-live/original-closure/core/src/opencodeWombArtifact.ts": {
+      "bytes": 22869,
+      "sha256": "2b7f7218cc0662c2db99e1c9dd667d780afc1fc969cc7d3d278c2c730c79353f"
+    },
+    "auma-live/original-closure/core/src/organismConnectivity.ts": {
+      "bytes": 18749,
+      "sha256": "6665a299f836bd126572e8556ff7c37963570edf498e63cb8cfa0cd9bde8f063"
+    },
+    "auma-live/original-closure/core/src/organismGraph.ts": {
+      "bytes": 13042,
+      "sha256": "4c0eb6ab0a44a94e561eee04f1ff85f7525b2d4a1b9b24aeda817b5015b91496"
+    },
+    "auma-live/original-closure/core/src/patchApproval.ts": {
+      "bytes": 9260,
+      "sha256": "fb1934a3590b6f681d0e2153e2427505cb14207531e4bc4263d963ecedcbc1f7"
+    },
+    "auma-live/original-closure/core/src/patchProposal.ts": {
+      "bytes": 9513,
+      "sha256": "4d743720bf41eaada4fab34e577fa056f6ce5909538bf0d3b19f659d45c8a382"
+    },
+    "auma-live/original-closure/core/src/repoReadPathResolver.ts": {
+      "bytes": 6810,
+      "sha256": "2c36ce69e1b11ed3557062de569b5ab601efc2631f15ecb2e10eaded7131670f"
+    },
+    "auma-live/original-closure/core/src/restingGlyph.ts": {
+      "bytes": 16205,
+      "sha256": "d4ab709ae0e3db4ac373160aac974c9b3fce7f133737331dcbd17e5661f8b9ac"
+    },
+    "auma-live/original-closure/core/src/sandboxApply.ts": {
+      "bytes": 16605,
+      "sha256": "39528f65bb1d9f1dcdc1b6c204e5ced6b01e3bd25a3262fd0924bca5ddb9ac91"
+    },
+    "auma-live/original-closure/core/src/sandboxApplyPermit.ts": {
+      "bytes": 6672,
+      "sha256": "1517bc2cda723b1bb010238bad8a93ed3a81421c6d3ba92d92f73e4fd4e9aa36"
+    },
+    "auma-live/original-closure/core/src/senseBus.ts": {
+      "bytes": 16068,
+      "sha256": "ecb25cbb1648f8248223f7213b0092fca8908e9b7f2db597387fca69c0f69122"
+    },
+    "auma-live/original-closure/core/src/windowsKeyCustody.ts": {
+      "bytes": 6640,
+      "sha256": "88c52805605e546c5cde114c7f2e0825a327c05a58ac910a4be3a4aaf0d2856f"
+    },
+    "auma-live/original-closure/core/src/wombForbiddenPatterns.ts": {
+      "bytes": 2051,
+      "sha256": "3da646ae615cfe79cf9f7919edaa8e02dcc9a1404cabfbefc30f32fa3a2fda57"
+    },
+    "auma-live/original-closure/core/src/wombPatchDraft.ts": {
+      "bytes": 8661,
+      "sha256": "61a74f2ed083f829ac00981da1d4daf9518cf5350b5efaba2a80afda110c6784"
+    },
+    "auma-live/original-closure/core/src/wombTargetDiscovery.ts": {
+      "bytes": 14367,
+      "sha256": "430b0ff69967bec3568a618b2cabf6011999b89bb8bf9f266ef1a0559482d0e6"
+    },
+    "auma-live/original-closure/core/tests/canonReference.test.ts": {
+      "bytes": 2898,
+      "sha256": "037d96966000d572469f33875eacbc4861baa8ae954a1162594fa026605bbf0a"
+    },
+    "auma-live/original-closure/core/tests/capabilityPreamble.test.ts": {
+      "bytes": 10197,
+      "sha256": "c0f545a3c2db4d3c52afdb7ada709499c329408e97fcf779557919e0be3e0dd3"
+    },
+    "auma-live/original-closure/core/tests/captureOrigin.test.ts": {
+      "bytes": 4487,
+      "sha256": "006da107c3def2139ab707be42bdd1080e542f95e43e4d3a6de24e5ab79581d3"
+    },
+    "auma-live/original-closure/core/tests/crossLane.test.ts": {
+      "bytes": 5627,
+      "sha256": "b335c5b6e06bc7fd75d4033779c60272c00836826e18fe04103c89d0b348b64c"
+    },
+    "auma-live/original-closure/core/tests/crossThreadRecall.test.ts": {
+      "bytes": 11764,
+      "sha256": "99837b396d7ef3b32aeb01e0e333228e21c530d47d631406cafe96cc09d492c5"
+    },
+    "auma-live/original-closure/core/tests/fieldDirectives.test.ts": {
+      "bytes": 3265,
+      "sha256": "61167e5341ed54db5b43fec4c304c6f5ac11eb7779b0596a95ace9f402aaf0b7"
+    },
+    "auma-live/original-closure/core/tests/frameGuard.test.ts": {
+      "bytes": 9449,
+      "sha256": "06dcdaffdaeebe8665d3f0cc0e1484eb99adc15328d1536eb9d5fd913118b361"
+    },
+    "auma-live/original-closure/core/tests/identityAnchor.test.ts": {
+      "bytes": 8394,
+      "sha256": "412a82bf9bd5401fbdaea7f72e9dbf5facf830cf5c2e7560af354c0a8a70afb4"
+    },
+    "auma-live/original-closure/core/tests/localPostGuard.test.ts": {
+      "bytes": 3639,
+      "sha256": "0d4ef593fde70c656a9e4f6066cbe435a909211440479f96921afb2db662a978"
+    },
+    "auma-live/original-closure/core/tests/presenceCapture.test.ts": {
+      "bytes": 2669,
+      "sha256": "826750871094c0196b91f88e777c149487f200d6635b37a2a6b081572d2dd096"
+    },
+    "auma-live/original-closure/core/tests/presenceLane.test.ts": {
+      "bytes": 545,
+      "sha256": "39651e5783e263a4a269ca6e65ae7eb5fe164daef0e213bcb4867889f5b7c0ba"
+    },
+    "auma-live/original-closure/core/tests/recallSourceRouting.test.ts": {
+      "bytes": 5658,
+      "sha256": "d38688cd57fb71bb8ba599144bcc5dc101f72bc1af0d91b0710f015d26648151"
+    },
+    "auma-live/original-closure/core/tests/recallStarvationGuard.test.ts": {
+      "bytes": 7600,
+      "sha256": "5f1f4a52d076659f0991d3f5f850d5552191b7a1da9b2c9909e674b4c413cc21"
+    },
+    "auma-live/original-closure/core/tests/recallWhyTraces.test.ts": {
+      "bytes": 6775,
+      "sha256": "0940cb696690af70e3e48c3de6e371c1d9f6fe96147eabe9c8e6880f1f1e058f"
+    },
+    "auma-live/original-closure/core/tests/recencyTier.test.ts": {
+      "bytes": 2760,
+      "sha256": "6a00c58398f727b5df4b128e5cd2043bff0a9058fe9c0ee87b045ea78c56850e"
+    },
+    "auma-live/original-closure/core/tests/shadowCaptureDoor.test.ts": {
+      "bytes": 13366,
+      "sha256": "adb02e9de6468fbb684babb73a42fe8695b0957753b6f9fd50d4964dfe4ff7d3"
+    },
+    "auma-live/original-closure/core/tests/workingFocusFrame.test.ts": {
+      "bytes": 3087,
+      "sha256": "538360e37f5b65c048e815897c21a713fc07c6878c4938c8a34553446b894177"
+    },
+    "auma-live/original-closure/scripts/memoryRecallAdapter.ts": {
+      "bytes": 4435,
+      "sha256": "1b3a707d8a75e91fa6e9dc4f3aac44dd0a5762424cd52c47b186624e6a221757"
+    },
+    "auma-live/original-closure/spatial/app/field-directives.js": {
+      "bytes": 3233,
+      "sha256": "41e1ea5801243c3ad22842511c9e1fb155c846553b216019cca3febf91017a38"
+    },
+    "auma-live/original-closure/spatial/canonReference.ts": {
+      "bytes": 3903,
+      "sha256": "2f33b1692191c6a6a058def3c0e65349488f4c54ca0b20062bcf79f7aa1fe6c8"
+    },
+    "auma-live/original-closure/spatial/capabilityMode.ts": {
+      "bytes": 4422,
+      "sha256": "4fd0b50582925c7c7e0d58cc9f6708064ef7b4377e894c13f3e4e84751cf44b0"
+    },
+    "auma-live/original-closure/spatial/capabilityPreamble.ts": {
+      "bytes": 13552,
+      "sha256": "5624e496d0791fcca62177e19fcdc7bffb49e2bc0b8d8cf6c4948bf9af238477"
+    },
+    "auma-live/original-closure/spatial/coreSession.ts": {
+      "bytes": 4878,
+      "sha256": "940bc09aefc4a1357b2af3a0f321049d658e511904fa14d4e844a8c1d4a1593e"
+    },
+    "auma-live/original-closure/spatial/crossLane.ts": {
+      "bytes": 7301,
+      "sha256": "13642ebbfd74283d78ee4796e4c8360adc3a1438e67a1b9586cad02308eb33ec"
+    },
+    "auma-live/original-closure/spatial/frameGuard.ts": {
+      "bytes": 6916,
+      "sha256": "2fbf16332a9cd74c6b3c382476f4ea1dee95a33ee05a5037ae9ffaabfa81f1ac"
+    },
+    "auma-live/original-closure/spatial/identityAnchor.ts": {
+      "bytes": 8726,
+      "sha256": "ac6057966142dc4f8dbaa10469960918d906fa2a2521903ae09d3fe100cc7bde"
+    },
+    "auma-live/original-closure/spatial/presenceLane.ts": {
+      "bytes": 19966,
+      "sha256": "847c8275012474033b899430f89c8daf9efdaa69f6fc1207a89935e019e46c5f"
+    },
+    "auma-live/original-closure/spatial/recallSource.ts": {
+      "bytes": 22749,
+      "sha256": "55feba5f7f6bd6307c505b6f6cf5f873b3a739a7d708c2fea27d938f5d505b02"
+    },
+    "auma-live/original-closure/spatial/workingFocus.ts": {
+      "bytes": 3484,
+      "sha256": "23a4bbbbc3bc21e78403d9bc9d90eb2f417d03697133d287967559bc13df2255"
+    },
+    "auma-live/runtime/app/aumalive-audio.js": {
+      "bytes": 8987,
+      "sha256": "55bf9d54d7761efbb9150a4db99c24b0ab593388a1cbb0ed73f37fb433fe9505"
+    },
+    "auma-live/runtime/app/aumalive-duplex.js": {
+      "bytes": 10974,
+      "sha256": "007a2b53cc20ff07908b841fad631249f3cf8c793587786c9feea6a6eecf9ca5"
+    },
+    "auma-live/runtime/app/aumalive-mind-choice.js": {
+      "bytes": 4463,
+      "sha256": "7020369c50a06bdbc151ca36a334219ecbd1643ca0a30f01b65e8c2b7bbcf6a0"
+    },
+    "auma-live/runtime/app/aumalive.js": {
+      "bytes": 127338,
+      "sha256": "df6c257ec76130ce091a3c4ca40d1d887a4046590186745c909d26ac953b9173"
+    },
+    "auma-live/runtime/app/aura-trace.js": {
+      "bytes": 10213,
+      "sha256": "d47627071f1db29d89cd820cd33e8d3ceb9fd6fb9df95b45512a136bef3b9714"
+    },
+    "auma-live/runtime/app/chat-log-key.js": {
+      "bytes": 3091,
+      "sha256": "dcd8247b33d955d162e0546ae180de8cf01edecb1c4e0a8a15667b599339ec95"
+    },
+    "auma-live/runtime/app/field-directives.d.ts": {
+      "bytes": 299,
+      "sha256": "08ba8050d0e8c4cc163daa6cd5bc038b0bc6b470ac618491638a7f930d812489"
+    },
+    "auma-live/runtime/app/field-directives.js": {
+      "bytes": 3233,
+      "sha256": "41e1ea5801243c3ad22842511c9e1fb155c846553b216019cca3febf91017a38"
+    },
+    "auma-live/runtime/app/field-quality.js": {
+      "bytes": 9245,
+      "sha256": "3dc79a22777b56d9b4d8413f19f9cf482981f4a313a231dcbe6f672ee472ba4f"
+    },
+    "auma-live/runtime/app/home-session.js": {
+      "bytes": 10604,
+      "sha256": "bb6dee33d046dedd72c4c6ef3b4b0e71c7740fb1444cd7396a6efc70a49d4790"
+    },
+    "auma-live/runtime/app/lane-bridge.js": {
+      "bytes": 5647,
+      "sha256": "86301a7f917ec48eebf1ff95396e83aa60d6d85a18f7152d4adc769780ebebac"
+    },
+    "auma-live/runtime/auma-live.html": {
+      "bytes": 1339,
+      "sha256": "e478cee287dc037f03ab0ba08a4a2fa25b1fea00528ae1257ee977574792d637"
+    },
+    "auma-live/source/app/aumalive-audio.js": {
+      "bytes": 5935,
+      "sha256": "484642694c8ead403dd5253d3d999fa1f7b8f60de44027f83596c6db9d4face2"
+    },
+    "auma-live/source/app/aumalive.js": {
+      "bytes": 73320,
+      "sha256": "de1b8605681cfaaca6bd1067192c27877efa67f4ca564106614b9d99a34577c7"
+    },
+    "auma-live/source/app/field-directives.d.ts": {
+      "bytes": 299,
+      "sha256": "08ba8050d0e8c4cc163daa6cd5bc038b0bc6b470ac618491638a7f930d812489"
+    },
+    "auma-live/source/app/field-directives.js": {
+      "bytes": 3233,
+      "sha256": "41e1ea5801243c3ad22842511c9e1fb155c846553b216019cca3febf91017a38"
+    },
+    "auma-live/source/app/lane-bridge.js": {
+      "bytes": 3251,
+      "sha256": "a87f5487b00ca69c53aea9a0e4bfb76f7813c91c8a7ee8ff5fe7179bac6b28e2"
+    },
+    "auma-live/source/server/crossLane.ts": {
+      "bytes": 7301,
+      "sha256": "13642ebbfd74283d78ee4796e4c8360adc3a1438e67a1b9586cad02308eb33ec"
+    },
+    "auma-live/source/server/presenceLane.ts": {
+      "bytes": 19966,
+      "sha256": "847c8275012474033b899430f89c8daf9efdaa69f6fc1207a89935e019e46c5f"
+    },
+    "auma-live/source/voice/.gitignore": {
+      "bytes": 34,
+      "sha256": "4d276e8683705963fb80e74f3980be0a8500271558279c6a4fa89d5d358f232f"
+    },
+    "auma-live/source/voice/README.md": {
+      "bytes": 8136,
+      "sha256": "53f7c75ec53e51c98562630af20ec57ed4d354864d42210af1865094be867c43"
+    },
+    "auma-live/source/voice/requirements.txt": {
+      "bytes": 239,
+      "sha256": "2529e63300ded489a67ce5d54b780eaa1bcb685bcdb1824da79bd35017ffbd4b"
+    },
+    "auma-live/source/voice/run.sh": {
+      "bytes": 150,
+      "sha256": "63100f4e4e2a1fbe7675b4a9eec66f483b209aed7ddd088c15a7ce9498a64f36"
+    },
+    "auma-live/source/voice/setup.sh": {
+      "bytes": 3828,
+      "sha256": "b19caf789a5da739dc7b8535d0646188bf6309317b22de480987eee84bb8d72b"
+    },
+    "auma-live/source/voice/sidecar.py": {
+      "bytes": 42133,
+      "sha256": "8b28926393423e0413bf7beec60e6574396419e2fc7a75c948c5046d6c077e2b"
+    },
+    "auma-live/source/voice/test_e2e.py": {
+      "bytes": 5855,
+      "sha256": "90fd9b4f6c4d83058d7dfbfc233de2bcbbcd9cdc5dddf04369d51c71d378e3ec"
+    },
+    "auma-live/source/voice/test_fixes.py": {
+      "bytes": 7303,
+      "sha256": "5dc52f73d869d0c6321da3b3083862f873966da03bd1fca65dd53928eb0c0a3a"
+    },
+    "auma-live/source/voice/test_lazy_engines.py": {
+      "bytes": 8826,
+      "sha256": "1a7c56c3003c83c20d975158290b32612f82797e77e09dbfe070a2a3c1033912"
+    },
+    "auma-live/source/voice/test_loop.py": {
+      "bytes": 4376,
+      "sha256": "5ef792b49442429fd06c1e36618047bf69de443ad78adefcf3c1c620da7ce511"
+    },
+    "auma-live/voice/.gitignore": {
+      "bytes": 628,
+      "sha256": "2a5d7c373b58ac714eaaec86ce9bbbd7c3adb6943c8b01f9904151047fee1482"
+    },
+    "auma-live/voice/MODELS.md": {
+      "bytes": 906,
+      "sha256": "c13f3013d5a5655da0846163c7dca942c602d557cf3a452537bbcaf3f3ab452b"
+    },
+    "auma-live/voice/README.md": {
+      "bytes": 3144,
+      "sha256": "069d79e8157bf356773a342c1a764572564f7c6bd34c87338381d063f8431851"
+    },
+    "auma-live/voice/requirements.txt": {
+      "bytes": 243,
+      "sha256": "e9a0789ea82029f05e73865de391ae2c7fb68e500c7c9fdfc2fb8f470ef56de2"
+    },
+    "auma-live/voice/run.sh": {
+      "bytes": 296,
+      "sha256": "34bedd9de7a593def877701c9623742103864968ebb94d18b13f27197475e5db"
+    },
+    "auma-live/voice/setup.sh": {
+      "bytes": 3989,
+      "sha256": "5689f752285d77841d9324dcdf164f564fd950e8607820e10b8a400ed171bd87"
+    },
+    "auma-live/voice/sidecar.py": {
+      "bytes": 46857,
+      "sha256": "55fff820376cfafc0d94853833d300d0a234ec9ee2b6398fbe66f930611bb279"
+    },
+    "auma-live/voice/test_e2e.py": {
+      "bytes": 6224,
+      "sha256": "0da2ef073fa81a91281de44553add8d33d30bb5871f73dc34adccf56fe045638"
+    },
+    "auma-live/voice/test_fixes.py": {
+      "bytes": 19545,
+      "sha256": "acf8c50fb6333dfd1939b0045f0f3322a1cb0304bed37f937aee2de8f6594c60"
+    },
+    "auma-live/voice/test_lazy_engines.py": {
+      "bytes": 8826,
+      "sha256": "1a7c56c3003c83c20d975158290b32612f82797e77e09dbfe070a2a3c1033912"
+    },
+    "auma-live/voice/test_loop.py": {
+      "bytes": 4445,
+      "sha256": "cbccae928272a750048d48081dddc59d9d60f7a67cdf1b75b4d43772b66b1d58"
+    },
+    "dakini-code/assets/index-C2MMIvhO.css": {
+      "bytes": 149512,
+      "sha256": "894bc70bd3165115b62cc0ef1b0d4c77a75bee34b301cb7673d55d23c74243b1"
+    },
+    "dakini-code/assets/index-t74FFCZZ.js": {
+      "bytes": 315451,
+      "sha256": "86a20f0b66960990c79758b07506c9148e2bb66adac3951bc1ed5dd2fb16a2dc"
+    },
+    "dakini-code/assets/space-Bu4O81zr.js": {
+      "bytes": 590245,
+      "sha256": "e31cc0bffed35a44b03c9aba5a1b7d9c1673cab72578b9c605d2918e06894e4a"
+    },
+    "dakini-code/favicon.svg": {
+      "bytes": 354,
+      "sha256": "23f5768dc9a51c98a67c41120f6e690a15b14c9236cc96f3690db80855ce9226"
+    },
+    "dakini-code/index.html": {
+      "bytes": 512,
+      "sha256": "87fda9f9027637a5d3b448194ae63c8ac03480964e8aa3a853f7ca82326bdf3b"
+    },
+    "luminara-portal/.claude/launch.json": {
+      "bytes": 352,
+      "sha256": "b1457a515a0fd0c7f5fac39a32d8a787bc7e6dfd41de7cbeacfd25626f319fcf"
+    },
+    "luminara-portal/.gitignore": {
+      "bytes": 169,
+      "sha256": "80a426cdd0aebcc02009f26e6d9e252d985d111fa3a8dadc263d72df7c140794"
+    },
+    "luminara-portal/core/tests/answeringSpread.test.ts": {
+      "bytes": 10738,
+      "sha256": "f6d6243739cffc8e07c2066e8ca15986f49d9e9028e52ff1902a041d8dcea77a"
+    },
+    "luminara-portal/core/tests/astrolabePlate.test.ts": {
+      "bytes": 4570,
+      "sha256": "a5486fba6bfd3836e1de85eb2b633ebed0a4a5138a8595ce6e3cd8b5d886ce57"
+    },
+    "luminara-portal/core/tests/bookPress.test.ts": {
+      "bytes": 6154,
+      "sha256": "3cc98e199837fb2be1615b495baed7e248b381e961715b64de09cb78fe822127"
+    },
+    "luminara-portal/core/tests/boxFace.test.ts": {
+      "bytes": 3114,
+      "sha256": "6385f52f05445a9dd9684fcb8257aad815d07c22490b6fb6164c05471260aa10"
+    },
+    "luminara-portal/core/tests/canon.fingerprint.json": {
+      "bytes": 2382,
+      "sha256": "03c015e988465241dd9a089ef0a9e50ab45cba1afdb0d90df4b5574c6831bd6d"
+    },
+    "luminara-portal/core/tests/canonFingerprint.test.ts": {
+      "bytes": 2282,
+      "sha256": "066cde8e553810c6d88ea3e76aca36ce8b95cdf0e5e5979cd9d94ba8b3643f51"
+    },
+    "luminara-portal/core/tests/cardsRoom.test.ts": {
+      "bytes": 7627,
+      "sha256": "87bb52918a764a02e1017f37c9a5c88e930b31c031899a6058d9e8a1b9b94e66"
+    },
+    "luminara-portal/core/tests/console.test.ts": {
+      "bytes": 2841,
+      "sha256": "2dabad4d4c5685e01e0a81398cb4ac85b11432edad91fbf7f08dcebaf3d9d476"
+    },
+    "luminara-portal/core/tests/count-hygiene.baseline.json": {
+      "bytes": 2192,
+      "sha256": "d9c9b27f806362ca775cf44974e76a6cb3b88d0b7cf833a498feb1fa60e156cf"
+    },
+    "luminara-portal/core/tests/countHygiene.test.ts": {
+      "bytes": 6822,
+      "sha256": "7783e97692461c61932c5361e5673fd6767cc199e28a9537537f08ffc17cc441"
+    },
+    "luminara-portal/core/tests/cubeInHand.test.ts": {
+      "bytes": 13127,
+      "sha256": "2b68fee91336fab5a0aaf0dc8eaa695045dcdf002b87116df5e8696ec4f56e47"
+    },
+    "luminara-portal/core/tests/cubeLens.test.ts": {
+      "bytes": 5484,
+      "sha256": "df4deca42efe54fa4ae69daecc0a44209a307206791d4d9aeed7ead3572dc4e4"
+    },
+    "luminara-portal/core/tests/cubeRead.test.ts": {
+      "bytes": 7931,
+      "sha256": "daca4591d852cf29d66ee7cb7cf0c0986a6701052804eb54f2de6fcd078d1674"
+    },
+    "luminara-portal/core/tests/doorway.test.ts": {
+      "bytes": 4612,
+      "sha256": "cd5e4ccc44a0567c745c4fbbfe451b01621a4d22abb13a538424a913872a1b8c"
+    },
+    "luminara-portal/core/tests/firstReading.test.ts": {
+      "bytes": 6422,
+      "sha256": "14e66a42ad34269867659a625ca0e35f0e66bcb15cdda0baee727433c4855bc6"
+    },
+    "luminara-portal/core/tests/focus.test.ts": {
+      "bytes": 4572,
+      "sha256": "4206c506487e94c6d260412152788dd02dfe5f1a97d6ee7cbfa31ef8ef40f1f2"
+    },
+    "luminara-portal/core/tests/guidePress.test.ts": {
+      "bytes": 11201,
+      "sha256": "9f7039617e1ddeb6a311fa2e1a1c35a1fdd5eaef8809e4d969d199236828f5d1"
+    },
+    "luminara-portal/core/tests/letterTable.test.ts": {
+      "bytes": 2750,
+      "sha256": "c9ad7a04ad08a96369c212b019c352295d7968b3509d35a6b0dd75866c8398a6"
+    },
+    "luminara-portal/core/tests/livingCube.test.ts": {
+      "bytes": 7383,
+      "sha256": "aa61f9b78866230e7c4847cf737f217a9c9c116505384f51900332d8b97d36c2"
+    },
+    "luminara-portal/core/tests/loom.test.ts": {
+      "bytes": 7615,
+      "sha256": "008ffdeab1a545549e52434f01028b66a91d258a8d36be03e46bc515dca43bb6"
+    },
+    "luminara-portal/core/tests/luminaraBessel.test.ts": {
+      "bytes": 4020,
+      "sha256": "e800873f38764ceedbf95d7436a306c0a75d2da0301796d4cee7b1ca60b37c76"
+    },
+    "luminara-portal/core/tests/luminaraCymatics.test.ts": {
+      "bytes": 9118,
+      "sha256": "d7168e07748d74cc8b17c9e1fca0c5a46037770ba35590f308c964af341df327"
+    },
+    "luminara-portal/core/tests/luminaraField.test.ts": {
+      "bytes": 14052,
+      "sha256": "386f93048369ddbb8334faa5ddf04d55ef107b354bde8902c956f5adde4a90f9"
+    },
+    "luminara-portal/core/tests/luminaraInstrument.test.ts": {
+      "bytes": 24523,
+      "sha256": "7c8cc472af0e84b42370bd57b0da13fb4fb03b085ed712436118cddd34865c4b"
+    },
+    "luminara-portal/core/tests/luminaraMidi.test.ts": {
+      "bytes": 8487,
+      "sha256": "66808ef31ca54f75d6f36bbd40fae014ffe4803bce555028843d51880e2d2eef"
+    },
+    "luminara-portal/core/tests/luminaraPortal.test.ts": {
+      "bytes": 6206,
+      "sha256": "1c144d9b0a6f45b7de7049d5817b3ddc45c99cacc744af23b3b540baddcfc093"
+    },
+    "luminara-portal/core/tests/luminaraRing.test.ts": {
+      "bytes": 3526,
+      "sha256": "b29b930b837e9737fe5c1906abf4b8b50a82fa3419a78460f37c16e0ec69d07e"
+    },
+    "luminara-portal/core/tests/luminaraSea.test.ts": {
+      "bytes": 6603,
+      "sha256": "9a64fd7ca3eb8d933ff4ed81aba5cac95558412e6f536053c1962ddb9965664c"
+    },
+    "luminara-portal/core/tests/luminaraSky.test.ts": {
+      "bytes": 5420,
+      "sha256": "629a07998dfe66c3247e2b7270714a902b4db10adfcdf836e71147efc46d2456"
+    },
+    "luminara-portal/core/tests/luminaraSound.test.ts": {
+      "bytes": 48784,
+      "sha256": "3fd98429c0ce20fb03bb1bf95d09b48c007955bacbe0ea65f39f89041f0734da"
+    },
+    "luminara-portal/core/tests/luminaraVoices.test.ts": {
+      "bytes": 5092,
+      "sha256": "fd30240bf87df36923bfedf34d3f698577efaff5b29632f977ee3e0d8c5ec594"
+    },
+    "luminara-portal/core/tests/mapRoom.test.ts": {
+      "bytes": 22184,
+      "sha256": "f0c97880c29d4edba13e930fff75e3a1a8976e9fde627a6a516a8f24c906c6c6"
+    },
+    "luminara-portal/core/tests/meetings.test.ts": {
+      "bytes": 4053,
+      "sha256": "48e6be591b38d9245a21667f4cfb909e8d1a824526a4baf6636a423e998925e1"
+    },
+    "luminara-portal/core/tests/particleReading.test.ts": {
+      "bytes": 4127,
+      "sha256": "b3fd0e7ebe898c1c802c2e7f1518f29aedbd61b5bd13ad241bbd96bb5d336259"
+    },
+    "luminara-portal/core/tests/portableCast.test.ts": {
+      "bytes": 5565,
+      "sha256": "bee09a9971f498707e73404f5b6e702436d95e810023b255c10414db4a3b83f4"
+    },
+    "luminara-portal/core/tests/readersProtocol.test.ts": {
+      "bytes": 3550,
+      "sha256": "3e8b44867684f2f23cb8b49e8ce19aabaf825bb66ac1df33f08716902080bd5b"
+    },
+    "luminara-portal/core/tests/rosetteRoom.test.ts": {
+      "bytes": 5462,
+      "sha256": "77fc0b8f3a8a8efd852915fbf5a73f5679421703cfc96019cdfd90b492b5f22e"
+    },
+    "luminara-portal/core/tests/sheet.test.ts": {
+      "bytes": 8897,
+      "sha256": "242c831eba0801997814723c87efa39e0040d55fa295f7132e14f64af84abace"
+    },
+    "luminara-portal/core/tests/skyWitness.test.ts": {
+      "bytes": 31632,
+      "sha256": "fc0b494b1f2ba7550b4f35cc3abe64b6dbe5bab1440df97f3fe017c7786ebdb4"
+    },
+    "luminara-portal/core/tests/theBinding.test.ts": {
+      "bytes": 15471,
+      "sha256": "e43a390b0cd0f99cfa020104e209860005e89a924d933b65906ff5b7e88fbe78"
+    },
+    "luminara-portal/core/tests/thirdParty.test.ts": {
+      "bytes": 10690,
+      "sha256": "6331d635c3ecfc4f610fc0b65a7541f3a0f0de738370c86e8cd1d61d6d0e0977"
+    },
+    "luminara-portal/core/tests/waterMeasures.test.ts": {
+      "bytes": 6133,
+      "sha256": "b53bf2b57619172a68a4a271f6cd8931fceeb4827debb9d539391cff63ef8861"
+    },
+    "luminara-portal/core/tests/workshop.test.ts": {
+      "bytes": 8336,
+      "sha256": "3e692ea103ee7a7415b1ce16ee2b374a0c3f4c890c87ab9ad7ff7c857846419b"
+    },
+    "luminara-portal/core/tests/zetaChord.test.ts": {
+      "bytes": 5078,
+      "sha256": "e2e193da286b19b48840a7c558e6a340d17cd1179635a8eb2574d4945e6ad1fb"
+    },
+    "luminara-portal/core/tests/zetaHarp.test.ts": {
+      "bytes": 12900,
+      "sha256": "e3a45a89232ac4261b68e2ad964144fa57e1e21f87010fcc3a6323d2af80749d"
+    },
+    "luminara-portal/docs/CARD_PRESS_NOTES.md": {
+      "bytes": 4485,
+      "sha256": "0381ad0a81fe91bde6968829741204d2bd58d45c0c80ac182b621b4c8d0f3eb4"
+    },
+    "luminara-portal/docs/COHERENCE_GLYPH.md": {
+      "bytes": 8233,
+      "sha256": "232387b88ed74af6e3fb5626d89cf7cbcda4148da603a4909a1770d1bee4647c"
+    },
+    "luminara-portal/docs/CONVERGENCE_ARCHIVE.md": {
+      "bytes": 40614,
+      "sha256": "f1178bfeb38dbdac070ea2dd1b3b90f05d7ee8e918531a37201471fd43a0be9b"
+    },
+    "luminara-portal/docs/GLYPH_MATHEMATICS.md": {
+      "bytes": 6865,
+      "sha256": "867770f45017225a1ad997e3408d63334362292769c9334e852b0f07f12c9fec"
+    },
+    "luminara-portal/docs/LUMINARA_CARDS_2026-07-12.png": {
+      "bytes": 1669569,
+      "sha256": "75c824650647f36bfb16806fe0a398d9f3599f863b2a01d225c3e07ee95496eb"
+    },
+    "luminara-portal/docs/Luminara_Cards_Illustrated_Guide.pdf": {
+      "bytes": 515691,
+      "sha256": "7af37e374f0dc32accabdf38a605f017d93450af97824f733e33c8046e59937e"
+    },
+    "luminara-portal/docs/LUMINARA_CASTERS_LAW.md": {
+      "bytes": 16039,
+      "sha256": "75ef4ec85dfe0fcb96e5155a1603ab5c5a4f3a44c89ce1fdbb65c691f7802ff5"
+    },
+    "luminara-portal/docs/LUMINARA_CYMATICS_INSTRUMENT.md": {
+      "bytes": 7864,
+      "sha256": "bbed165add2722661b3a4e73e0b2c122eaed778f6e22aa0075ff86c4e983f44a"
+    },
+    "luminara-portal/docs/LUMINARA_DECK_REVEAL_2026-07-12.pdf": {
+      "bytes": 12215791,
+      "sha256": "c4435dbf18c302ea95b93f273bf1be86f4ddf49b9c9d282e3a07b22a2ccbf781"
+    },
+    "luminara-portal/docs/LUMINARA_FIRST_NAMES.md": {
+      "bytes": 6617,
+      "sha256": "c4d68952d28778fb27d67edecd46b5bdd2f5d0cd72cb99c1d089ffb1c4d15436"
+    },
+    "luminara-portal/docs/LUMINARA_MAP_ROOM.md": {
+      "bytes": 23861,
+      "sha256": "531aeb20bc972c36ce3d29e8d982b08db311a2a2d4ee4be6fd7090f52759729f"
+    },
+    "luminara-portal/docs/LUMINARA_PORTABLE_CAST.md": {
+      "bytes": 15653,
+      "sha256": "905bdbef3d791019818fcc919a29f8d233980f1139865a8ede80094bed77b150"
+    },
+    "luminara-portal/docs/LUMINARA_SYSTEM_SPEC_v1.md": {
+      "bytes": 19281,
+      "sha256": "22e398ea644ddd65a94a1ce988c99dac7755e642b472fbb702250c6081b01ee9"
+    },
+    "luminara-portal/docs/LUMINARA_TRAINED_CELL.md": {
+      "bytes": 2427,
+      "sha256": "3c885001fb0f069baf1b4a72a4cf69373221477d4e5f1eace235a45556357882"
+    },
+    "luminara-portal/docs/luminara-box-face.html": {
+      "bytes": 17702,
+      "sha256": "b93a71f3487ba57d3d28bb09454237859faa38cca298f6035a21393e1eb9abdf"
+    },
+    "luminara-portal/docs/luminara-cards-guide.html": {
+      "bytes": 2061889,
+      "sha256": "1f39ef73e8f77a5e2218ff8bf22539561f2d0fa0602ebb884a548300101dd04c"
+    },
+    "luminara-portal/docs/map-room/A_CYPHERPUNKS_MANIFESTO.md": {
+      "bytes": 12364,
+      "sha256": "17c4a717d116aa9510589705f0f968a717c1bb251831cab122fe86776959bf7b"
+    },
+    "luminara-portal/docs/map-room/A_DECLARATION_OF_THE_INDEPENDENCE_OF_CYBERSPACE.md": {
+      "bytes": 11802,
+      "sha256": "3ed751c506fffffa453a51baa784337c2e72011126602d86b2aa714848e00374"
+    },
+    "luminara-portal/docs/map-room/BIOGEOMETRY_SIGNATURES.md": {
+      "bytes": 6331,
+      "sha256": "4b337b28c1eaba099f0d9a240c94f861560dd625ee758aaf01f99e93b854314c"
+    },
+    "luminara-portal/docs/map-room/THE_ARROW_AND_THE_DWELLING.md": {
+      "bytes": 6439,
+      "sha256": "66ec1a308c8f42948b1b6dbc38e5a05fb85b79289bdc4c35b4d269841a4fb507"
+    },
+    "luminara-portal/docs/map-room/THE_ASTROLABE_OF_THE_27.md": {
+      "bytes": 32380,
+      "sha256": "25157c5c3f280c0261d877ad40ad066d7e22b84dc58035d2159df0170da64ea4"
+    },
+    "luminara-portal/docs/map-room/THE_ATLAS.md": {
+      "bytes": 9269,
+      "sha256": "c92be0850d36a793413a07060cec13dbb5e920bea0a9da0c1ec50a971614619c"
+    },
+    "luminara-portal/docs/map-room/THE_ATTRIBUTES.md": {
+      "bytes": 7467,
+      "sha256": "1d308f0851f041995c38e22a5f3a0c3925a6f4180e57d3ee84087838ced42c3e"
+    },
+    "luminara-portal/docs/map-room/THE_BINDING.md": {
+      "bytes": 18548,
+      "sha256": "622b052b568ed886f8f6d18b815fc3447f628b9596391dea72614350bd3d9acf"
+    },
+    "luminara-portal/docs/map-room/THE_CARDS.md": {
+      "bytes": 2746,
+      "sha256": "8aa97c8514ffbbfddee24d7b68badf4bee0117c693d1970b008b0559cbfd4368"
+    },
+    "luminara-portal/docs/map-room/THE_CARRY.md": {
+      "bytes": 7275,
+      "sha256": "2bada5828fd6b28a91b74593bf909222dd84c5085b38a53d52ffcb134e667d12"
+    },
+    "luminara-portal/docs/map-room/THE_CUBE_IN_THE_HAND.md": {
+      "bytes": 8990,
+      "sha256": "ca77d20c12b9eae3bde8aa52ea00bad04323fc360d2f042da88bfe7461c80014"
+    },
+    "luminara-portal/docs/map-room/THE_DRAW.md": {
+      "bytes": 2534,
+      "sha256": "282e355a930915d504a8e48279e74bfe410775b2474ddec727cf75f2e6d11599"
+    },
+    "luminara-portal/docs/map-room/THE_EMERGENCE.md": {
+      "bytes": 2774,
+      "sha256": "001e6e231af990f8c8f3fb8805eb4ac767c4d9b67d0949148dd6475b2d89bed2"
+    },
+    "luminara-portal/docs/map-room/THE_FOCUS_LEVELS.md": {
+      "bytes": 5427,
+      "sha256": "beff699696f4e93cd9f026b6ee5855370a1b8b69ad85fbeac13f4a6fe262fb05"
+    },
+    "luminara-portal/docs/map-room/THE_FOUR_NAMES.md": {
+      "bytes": 4282,
+      "sha256": "460cc32c121a05d13e8a62edfc39d993343620536c615df97d46f74a68db11e7"
+    },
+    "luminara-portal/docs/map-room/THE_HARMONIC_LANGUAGE.md": {
+      "bytes": 15029,
+      "sha256": "52097692f14090c3075859271c1a260f158b69e9f255b1d4ce600ccd065d0cf3"
+    },
+    "luminara-portal/docs/map-room/THE_HARMONIC_LATTICE.md": {
+      "bytes": 4401,
+      "sha256": "5cf9b30f5aa8dbccc153a28ffc9dc749187519fe31b1752e4642a6b7bb3cf207"
+    },
+    "luminara-portal/docs/map-room/THE_HERMETIC_PRINCIPLES.md": {
+      "bytes": 5460,
+      "sha256": "3721bcffe8b18280fd30525b8f42be893002fac864d13ebc16d54c324d56c961"
+    },
+    "luminara-portal/docs/map-room/THE_INSTRUMENT_AND_THE_MEDICINE.md": {
+      "bytes": 17310,
+      "sha256": "e381627f48e6e7bd5d8580a55ba8592b20652c0a958810a7bbb9d31000d7545c"
+    },
+    "luminara-portal/docs/map-room/THE_INTERIOR_WEATHER.md": {
+      "bytes": 9323,
+      "sha256": "3d42354d7d3d610dcc53674256204a192d57598d0977c184f3533c9e16e02166"
+    },
+    "luminara-portal/docs/map-room/THE_INVARIANT_PATHWAY.md": {
+      "bytes": 8687,
+      "sha256": "60674e18660d83dcc804e21f6f27e78ca45ffedf582fd7d49f1f70fdc98eebe1"
+    },
+    "luminara-portal/docs/map-room/THE_KNOTS_AND_THE_PRIMES.md": {
+      "bytes": 5530,
+      "sha256": "a528b7874e3a2080cd75fddd700d72e539d4860ba854b453de831c723f8ba03d"
+    },
+    "luminara-portal/docs/map-room/THE_LADDER_AND_THE_SEAMS.md": {
+      "bytes": 8536,
+      "sha256": "90b26e4d8494d236ec40704bc46373bd521e92108edc0fed05233b605db2a07b"
+    },
+    "luminara-portal/docs/map-room/THE_LANDING.md": {
+      "bytes": 8868,
+      "sha256": "ed9cd620d78f3d6b35e49f91193f9be7551d002b2468bf489ec6190baf8add31"
+    },
+    "luminara-portal/docs/map-room/THE_LANGUAGE_OF_THE_BIRDS.md": {
+      "bytes": 5569,
+      "sha256": "08d9b71c1ad27e31322dc7b1552608d104a911d64ae3ba22654a252623e14efc"
+    },
+    "luminara-portal/docs/map-room/THE_LAW_OF_SPREADS.md": {
+      "bytes": 9900,
+      "sha256": "39da0aa7d995d9cf6ec8194d034838db155b1777b824d52f012ad9b36b45c300"
+    },
+    "luminara-portal/docs/map-room/THE_LETTERS_LEDGER.md": {
+      "bytes": 25688,
+      "sha256": "45ee287915ccec7b8395a595f5bfa41036f281978af640d474340fed7b4e84c3"
+    },
+    "luminara-portal/docs/map-room/THE_LIVING_CUBE.md": {
+      "bytes": 2852,
+      "sha256": "659c5a6ab2512cc57163be53d235d7b7442298c210b1d00314aff6fd93c69ac5"
+    },
+    "luminara-portal/docs/map-room/THE_LOOM.md": {
+      "bytes": 4673,
+      "sha256": "0fad4dee912beda24a2305976d9e53fcbbf7f72a56e1a8a36aaf1e63a5d2ee72"
+    },
+    "luminara-portal/docs/map-room/THE_NODUS.md": {
+      "bytes": 13109,
+      "sha256": "aae71f1c6520990be0582ce0e35636839741ce95413fd0eb3ab1f70fe460c13e"
+    },
+    "luminara-portal/docs/map-room/THE_PARTICLE_READING.md": {
+      "bytes": 4567,
+      "sha256": "db232fbb9c0738c7ade3ea0839ac81a1b7f0359b44dbaed6e2a9b573c4f1ce12"
+    },
+    "luminara-portal/docs/map-room/THE_QUTRIT_AND_THE_CARD.md": {
+      "bytes": 7580,
+      "sha256": "74d8d9b5fd2ab136abc18f0971b0fa44736166d842db18ffaa31f30f4e80b198"
+    },
+    "luminara-portal/docs/map-room/THE_RITE_AND_THE_WORKSHOP.md": {
+      "bytes": 5799,
+      "sha256": "cfa14839065b20feb71dd767f861bda9bccf46f6aaa24e97c29548783e2e43d5"
+    },
+    "luminara-portal/docs/map-room/THE_ROSETTE_IN_THE_ROUND.md": {
+      "bytes": 7214,
+      "sha256": "d12e6de7866093d2d2dc10a0b2452e408a843081ea9c2181e31fb8d9e7e6c898"
+    },
+    "luminara-portal/docs/map-room/THE_SAFE_MAKING.md": {
+      "bytes": 7424,
+      "sha256": "00a98e09d84fb0aaf98afa895e36a06a42f2b69100a35f8dfd8a95cb027436d0"
+    },
+    "luminara-portal/docs/map-room/THE_SAVE_AND_THE_VESSEL.md": {
+      "bytes": 5120,
+      "sha256": "ee9e0d9092a6e7780838912d2c301de177df12afc8317e33f79cf47254300ffd"
+    },
+    "luminara-portal/docs/map-room/THE_SCORESHEET.md": {
+      "bytes": 3362,
+      "sha256": "3c4f2da636459be8670ca094b0938a16548fdf0a245545c12d06c2301b5f04a2"
+    },
+    "luminara-portal/docs/map-room/THE_SECOND_SHEET.md": {
+      "bytes": 2108,
+      "sha256": "6531e8820d8c72731c3bee7b00cce5c92ca4189075374ac819913eb8fe0f0fbe"
+    },
+    "luminara-portal/docs/map-room/THE_SHAPE_OF_THE_YEAR.md": {
+      "bytes": 4970,
+      "sha256": "3d2d16d20bc9117a36d7bfd2f9a0737ee11e3fa949d8213685e818ac0e0b5b44"
+    },
+    "luminara-portal/docs/map-room/THE_SPINE.md": {
+      "bytes": 7485,
+      "sha256": "139a610fb4fee7c919ffbddc3f92adff450175f0de09a8f3fb10990d4f6732b1"
+    },
+    "luminara-portal/docs/map-room/THE_STAVE.md": {
+      "bytes": 4934,
+      "sha256": "265463083e25a262ae5391186aaed302543cf8923d9d8da8d5cd4fa47cc571d0"
+    },
+    "luminara-portal/docs/map-room/THE_THIRD_SUBSTRATE.md": {
+      "bytes": 3185,
+      "sha256": "49b7fa76b132d5e18fec3f81b9d2ac1e9ee7109b2ddd1755261193bccf777189"
+    },
+    "luminara-portal/docs/map-room/THE_THREE_CODES.md": {
+      "bytes": 10427,
+      "sha256": "b7d89ec59e05bf3d1185e8dc4f4735c88885588a45f5574ec69c659f2dd1a5b8"
+    },
+    "luminara-portal/docs/map-room/THE_THREE_THE_SIX_THE_NINE.md": {
+      "bytes": 6651,
+      "sha256": "455804c7c934a85df3822632c529882910d8deb3a26166892780158c4917c959"
+    },
+    "luminara-portal/docs/map-room/THE_TORUS_ATLAS.md": {
+      "bytes": 1260,
+      "sha256": "6a38493a257c53608ce9fb7cfdd0aff4e8cc9a14312e3538260f81b8a18d2150"
+    },
+    "luminara-portal/docs/map-room/THE_TREE_OF_LIFE.md": {
+      "bytes": 8368,
+      "sha256": "05face1bf43ae67a17c1870c52d043a11f50ba23580a5327d1f90a8a746880e8"
+    },
+    "luminara-portal/docs/map-room/THE_TWENTY_SEVEN_KNOTS.md": {
+      "bytes": 17302,
+      "sha256": "2c1b719db8cdbc9b34c5a6edae6dcd124d5f5151edeab95990e0f2bf94b6d0d8"
+    },
+    "luminara-portal/docs/map-room/THE_TWO_AND_THE_THREE.md": {
+      "bytes": 10303,
+      "sha256": "173d890f3a7467780d6bce873aa2dc02a56edf737bbdc39ab95534fc58264bb6"
+    },
+    "luminara-portal/docs/map-room/THE_VORTEX_ATOM.md": {
+      "bytes": 5328,
+      "sha256": "a796cfe18b548273bc9ad7bf8ecf6ea70aff080f64798cde81b2bfddf94c7f60"
+    },
+    "luminara-portal/docs/map-room/THE_WALK.md": {
+      "bytes": 13499,
+      "sha256": "3a1b1d26c816954a96502bb2c37739c7895be9b30aa362c726063a1015f8132e"
+    },
+    "luminara-portal/docs/map-room/THE_WATCHES.md": {
+      "bytes": 4326,
+      "sha256": "9f8aac786287a1314e08f15a44e82ef070de06c829b451e59287f02edebe5be0"
+    },
+    "luminara-portal/docs/map-room/THE_WATERSHED.md": {
+      "bytes": 8109,
+      "sha256": "ced3f493e94b92b52f05436b379cb23767e03b4d77b7237c6358f8e0fd530c14"
+    },
+    "luminara-portal/docs/map-room/THE_WOUND_AND_THE_CARD.md": {
+      "bytes": 10195,
+      "sha256": "ca6ddb02c6b32671d8c48471623ea685ac270fa20efa2b3239f8bf266ceef34f"
+    },
+    "luminara-portal/docs/map-room/WHAT_LUMINARA_IS.md": {
+      "bytes": 12861,
+      "sha256": "3c912a0e19bd47d69b2ca9d0f095ffb964fb768faefde738b0646ff715c0a0c0"
+    },
+    "luminara-portal/docs/OPEN_WEAVE.md": {
+      "bytes": 54106,
+      "sha256": "7136afb63c297e0acfc74bd20ff127e538fb2328a2e23ad319a4a692df1a785a"
+    },
+    "luminara-portal/docs/THE_81_AUM_FULL_WIDTH.md": {
+      "bytes": 39130,
+      "sha256": "f61d9adcd48c842a63f89c05da7024808a8b240b140cfef0783ecf8efe4fac24"
+    },
+    "luminara-portal/docs/THE_BOOK_OF_LUMINARA.md": {
+      "bytes": 19875,
+      "sha256": "3d64df9bc1327828df62b61d2cc1a5691893aef2aed759850cbe50dfc434e921"
+    },
+    "luminara-portal/docs/THE_CONCORDANCE_OF_OPPOSITES.md": {
+      "bytes": 20480,
+      "sha256": "9d7b6b626c3691769f2653412b7a3cb012a453ee542ce0f5f4cf23dd0569d719"
+    },
+    "luminara-portal/docs/THE_CREATE_LAW.md": {
+      "bytes": 10502,
+      "sha256": "f33ba52b7b009115bbeb40791548f7b5b38dcaefea41c2241c859e5173dbaf72"
+    },
+    "luminara-portal/docs/THE_HOLDING_PLAN.md": {
+      "bytes": 7945,
+      "sha256": "54a2b535e099f580f20d2b3a8ed1da362fe09112f9a5e58992fd06986eae5c93"
+    },
+    "luminara-portal/docs/THE_LIGHT_OF_LUMINARA.md": {
+      "bytes": 52163,
+      "sha256": "a487ec403b7e894feca1d60dc2a868b9c0cbab383287c153b558bd02a0ba5117"
+    },
+    "luminara-portal/docs/THE_LIVING_CUBE_PLAN.md": {
+      "bytes": 11204,
+      "sha256": "d47804ca857cd457dce9e0096041891cce857c0b2cf5092321cf0971ed34edb9"
+    },
+    "luminara-portal/docs/THE_LOCAL_PROGRAMME.md": {
+      "bytes": 8462,
+      "sha256": "a7b4227df09404fed82be95dc86598de07fe3a1a6d66ab0594ff311087f052a0"
+    },
+    "luminara-portal/docs/THE_MATHEMATICS_OF_CONCORDANCE.md": {
+      "bytes": 26353,
+      "sha256": "fc553e3b11d9d47647c7085522f94748cc79f264fe7e52e3dd884b0b8e589f6c"
+    },
+    "luminara-portal/docs/THE_MATHEMATICS_OF_HEALING.md": {
+      "bytes": 32103,
+      "sha256": "706eca49a89736465e8e5069b06321ac4919344f7898e98450d5f963d2c8239f"
+    },
+    "luminara-portal/docs/The_Mathematics_of_Healing.pdf": {
+      "bytes": 220396,
+      "sha256": "cabd5718a239ad8124f579645073cb12928fb59290a848ea8b3513295a6856a8"
+    },
+    "luminara-portal/docs/THE_MATHEMATICS_OF_STILLNESS.md": {
+      "bytes": 31506,
+      "sha256": "c9040c6c1457f6d173fdf4ced3248d53fd7ad6a0b5a6f01eaf92d38a2af549bd"
+    },
+    "luminara-portal/docs/THE_PRO_HUMAN_AI_DECLARATION.md": {
+      "bytes": 9483,
+      "sha256": "918aa8f64c5b033a89dc6976f01b7a29cf8275cc2f46ef6aba0521aab83f382a"
+    },
+    "luminara-portal/docs/THE_SHAPE_OF_TRAUMA.md": {
+      "bytes": 57578,
+      "sha256": "a46d9b74ee6145022c4d2237f3b9decb2919570330c1e03fa9824ba7b1769ca8"
+    },
+    "luminara-portal/docs/The_Shape_of_Trauma.pdf": {
+      "bytes": 283289,
+      "sha256": "541555df8c974730512653391f29e937954d335fdfb86061e278d0ddae32794b"
+    },
+    "luminara-portal/docs/THE_TOPOLOGY_OF_THE_WORK.md": {
+      "bytes": 18059,
+      "sha256": "1bc22a8c854bf71fa6326b05334ac11249e4ab6b52a047b5ff6c2d625a77ce28"
+    },
+    "luminara-portal/docs/THE_TUNING.md": {
+      "bytes": 12600,
+      "sha256": "78c1c904fdf9566e42281992d5d7dab7482404683c511a99c457a891349b6f36"
+    },
+    "luminara-portal/docs/THE_TWELVE_LAWS.md": {
+      "bytes": 4421,
+      "sha256": "cdc5591038e9a7ed7d5f25bed09bc9cf68ac22541900ce3d60edf19af4706077"
+    },
+    "luminara-portal/docs/THE_TWO_COUPLINGS.md": {
+      "bytes": 4931,
+      "sha256": "e056214d15b789a63f46724ae3eabdb8c50c217cf5fcce6a220b4bf0be670100"
+    },
+    "luminara-portal/docs/the-book-of-luminara-p1.html": {
+      "bytes": 1503421,
+      "sha256": "f3eda5f04e60ebe537ec2ea28c50cfcc128413e10149724394b20997190c1509"
+    },
+    "luminara-portal/docs/THIRD_PARTY.md": {
+      "bytes": 6355,
+      "sha256": "bb30a772bae9caa6f9ac67a2f9a5763ebcd660bc220a56f172d010b8cd24aeaf"
+    },
+    "luminara-portal/docs/TOPOLOGY_BOOK_THREE.md": {
+      "bytes": 22275,
+      "sha256": "b5266b1a6ad9de2c46171152637088d35382896f0228d6a112431aeab40cb4ed"
+    },
+    "luminara-portal/docs/TWELVE_LAWS_PROTOCOLS.md": {
+      "bytes": 12683,
+      "sha256": "5bf0b69969048cff6c488037464b3eea93b4a0125e20f932a2b6139da2a45a99"
+    },
+    "luminara-portal/docs/TWELVE_LAWS_SYSTEMS_CHECK.md": {
+      "bytes": 16772,
+      "sha256": "a36b644be24687b213d2f576239cad1149de952f3ffe9cda6c719e9eea613389"
+    },
+    "luminara-portal/docs/zeta-harp/CLAIM_BOUNDARY.md": {
+      "bytes": 2264,
+      "sha256": "55b70c7aecbadff42184d7053b48a00b35a4363ff0d3504408f35676a508da43"
+    },
+    "luminara-portal/docs/zeta-harp/MATH_SPEC.md": {
+      "bytes": 3742,
+      "sha256": "71de3a3375792ffc38bca8904f590d3fbfc928c8e28be541d843dddac730e038"
+    },
+    "luminara-portal/docs/zeta-harp/VALIDATION_PLAN.md": {
+      "bytes": 2801,
+      "sha256": "6fee972a8e7d2476a3e801fee2d202cb94058e0db7c356eb70ecf1deabfe1a84"
+    },
+    "luminara-portal/doorway/doorway.mjs": {
+      "bytes": 7622,
+      "sha256": "af70050b01601af5b5c4a06c1ba609670a69a20583c873086c135f1ae5745b7e"
+    },
+    "luminara-portal/doorway/README.md": {
+      "bytes": 1166,
+      "sha256": "8731cd9b6b331e1ed3822a7b4e8072c45efb7844fb3d21bd62ad0083c27fec00"
+    },
+    "luminara-portal/doorway/server.mjs": {
+      "bytes": 1691,
+      "sha256": "50b58e3abb5e62c42f7b3cc4b7c8975c1c6a7e924f3e3ea9e678b5bf7f521af8"
+    },
+    "luminara-portal/handoff/luminara-cell/cellReferee.mjs": {
+      "bytes": 2971,
+      "sha256": "0405f897a9acdb1a242bfe603d50cbb23a122bfa08a2e69382ca91de0f1c2c0a"
+    },
+    "luminara-portal/handoff/luminara-cell/LUMINARA_CELL_HANDOFF.md": {
+      "bytes": 2498,
+      "sha256": "ce28e817a1378ac157346e568b7e04c3fe71615b9f2aed230d51b67d05045186"
+    },
+    "luminara-portal/handoff/luminara-cell/luminara-cell-v1.jsonl": {
+      "bytes": 54079,
+      "sha256": "66cae6d14adb4bcd24f1e0c66e594b3af2753983e7563bbb7fdab5b69750d868"
+    },
+    "luminara-portal/handoff/luminara-cell/reference.json": {
+      "bytes": 20093,
+      "sha256": "f6737baa863530c5daa37a6e1ec8fb93a4da456ccd0380836706581507304814"
+    },
+    "luminara-portal/luminara.cmd": {
+      "bytes": 1969,
+      "sha256": "114cd4f644202fd03a72654f784f349444b588cf77485a1f4585714e2a84e3e6"
+    },
+    "luminara-portal/package.json": {
+      "bytes": 163,
+      "sha256": "e6ae59bf7272c0e8dd83efd3911a43358c3646a39616c4e29e2b4e40774d0f8d"
+    },
+    "luminara-portal/README.md": {
+      "bytes": 2904,
+      "sha256": "2ead627fe0afa316a88e3a1e6db4ba47fba793faf4329e9e5604a9e629608743"
+    },
+    "luminara-portal/scripts/book_mathematics_of_healing_pdf.py": {
+      "bytes": 50367,
+      "sha256": "c34b4b14940c38aeaa0e3303c8665039575e97464d560ff863c524b951485e05"
+    },
+    "luminara-portal/scripts/book_shape_of_trauma_pdf.py": {
+      "bytes": 62115,
+      "sha256": "248045601c015e63fbcb41069d2d3219495c189be89c32f80b60ada6a9a12c78"
+    },
+    "luminara-portal/scripts/cellReferee.mjs": {
+      "bytes": 3117,
+      "sha256": "2b8c0c407f6c4bf403be29fedaa03b56e4c8636bcf9da0295f5f36050fd0bef8"
+    },
+    "luminara-portal/scripts/cellRefereeStandalone.mjs": {
+      "bytes": 2971,
+      "sha256": "0405f897a9acdb1a242bfe603d50cbb23a122bfa08a2e69382ca91de0f1c2c0a"
+    },
+    "luminara-portal/scripts/exportCellHandoff.mjs": {
+      "bytes": 5087,
+      "sha256": "366f8f1f61aad3c2aac7066608badc9160c0934f832e1f74d698b5cde86f2f68"
+    },
+    "luminara-portal/scripts/exportTexts.ts": {
+      "bytes": 8969,
+      "sha256": "97e7b2649419533eaf074abfeeb5defc02c5e8de9a448f647d91b39dead7ab90"
+    },
+    "luminara-portal/scripts/generateCellCorpus.mjs": {
+      "bytes": 6515,
+      "sha256": "26d9820ff2a18fe52ee7e562f4013175a37d35631dd5951b96bdf75865324de4"
+    },
+    "luminara-portal/scripts/harpFixtures.py": {
+      "bytes": 7437,
+      "sha256": "9eb9bf50f5a12b7857eb7a21fdf22a908316c4bbe27b8fe3897603eb5c5de24e"
+    },
+    "luminara-portal/scripts/phiTest.mjs": {
+      "bytes": 7392,
+      "sha256": "f9df03ada478c1476b1c5e999207fa01c6057f08e7b32526f7b0402f2f4077ba"
+    },
+    "luminara-portal/scripts/pressBookOfLuminara.mjs": {
+      "bytes": 27737,
+      "sha256": "921da4488a5212106fb9a7ca86dfdc3dacef80e98a2f6bea54ce5ccba9f68d04"
+    },
+    "luminara-portal/scripts/pressBoxFace.mjs": {
+      "bytes": 3758,
+      "sha256": "93f018cc84d098620e23bfab7f510797b1d78533eaf13766eb0707533dc05f68"
+    },
+    "luminara-portal/scripts/pressCards.mjs": {
+      "bytes": 4347,
+      "sha256": "87e1b2329d3f644af2c8c2586a87718f224ec145fa8fbda41949471ab11ff7af"
+    },
+    "luminara-portal/scripts/pressIllustratedGuide.mjs": {
+      "bytes": 30327,
+      "sha256": "85582c9773c9a8aad3b5b42510559f33688c789128bc4d20b27f32cb855e7656"
+    },
+    "luminara-portal/scripts/pressPortableCast.mjs": {
+      "bytes": 10529,
+      "sha256": "4117389672cc803cc2b0703d8d9f2e26f714eeaeb2676561ff698340a230f28d"
+    },
+    "luminara-portal/spatial/app/coherence-glyph.js": {
+      "bytes": 12766,
+      "sha256": "cedbb1968cca470ae350fa3fa140f1204d33e1c9d74652fa46cedfba4cccdb06"
+    },
+    "luminara-portal/spatial/app/harp-fixtures.json": {
+      "bytes": 85457,
+      "sha256": "fc83accfc52d59cb2cd17c2d23903d1f6a622123ae42b487478d8f3acf4df29b"
+    },
+    "luminara-portal/spatial/app/luminara-81-aum.js": {
+      "bytes": 35150,
+      "sha256": "1e3ab174360a1e19d115ec2963d8b442f173da7213dca23a5e4532ed53d230d8"
+    },
+    "luminara-portal/spatial/app/luminara-81-ma.js": {
+      "bytes": 34421,
+      "sha256": "189bbc9c1ba769b6ce7d43de52571d39a71b19714e57452bfb02f5c74bee684e"
+    },
+    "luminara-portal/spatial/app/luminara-81-ra.js": {
+      "bytes": 34186,
+      "sha256": "e155bf03189a35aecc3d2b50408f96f268db720c15e8fb73063a300db5644d60"
+    },
+    "luminara-portal/spatial/app/luminara-81.js": {
+      "bytes": 14702,
+      "sha256": "3b60d2deef1ad1435a6974b40722a11ba2dd3d21e35df470c96f3731e3c189cc"
+    },
+    "luminara-portal/spatial/app/luminara-address.html": {
+      "bytes": 26661,
+      "sha256": "0f2e274d57dafa8feee3b3ba40b67c644fb29c97cddb72479e1fa80bd9316850"
+    },
+    "luminara-portal/spatial/app/luminara-astrolabe.html": {
+      "bytes": 53843,
+      "sha256": "302eb5b838e95bca8aa37891f8d04af603aa7b27e3d9de4a306773257b7ad93b"
+    },
+    "luminara-portal/spatial/app/luminara-bessel.js": {
+      "bytes": 4015,
+      "sha256": "1208ca120e932ee3a8a8e218d3c20d6bfcbaabaefc0ad47e50f0db81ce42bbcd"
+    },
+    "luminara-portal/spatial/app/luminara-canon.d.ts": {
+      "bytes": 2361,
+      "sha256": "58ed8f2b2436b65dbba37099b33d6c108801f4db73374600b386947d0276e9bf"
+    },
+    "luminara-portal/spatial/app/luminara-canon.js": {
+      "bytes": 43547,
+      "sha256": "f7a7e4097a725900c25380f00bd6f997af5efb80f1915ecf2409513bc278808c"
+    },
+    "luminara-portal/spatial/app/luminara-cards.html": {
+      "bytes": 26089,
+      "sha256": "c94c8aa71698fb7bcdb584ad20216249c7e2367c382ce5219221e6b446477b54"
+    },
+    "luminara-portal/spatial/app/luminara-cast-dial.js": {
+      "bytes": 13859,
+      "sha256": "5aa09253790ac7c035e79287bed1271614818660a12e30054a6726115822f739"
+    },
+    "luminara-portal/spatial/app/luminara-concord.html": {
+      "bytes": 52736,
+      "sha256": "c19ce63784bd1534e9ddf84cffadd648765dd78d5ca7847e222a12099a319a76"
+    },
+    "luminara-portal/spatial/app/luminara-console.html": {
+      "bytes": 14002,
+      "sha256": "325658e10fe0042a6b76122b328726008d704fc1ecd0030625c21f7cbe4907cb"
+    },
+    "luminara-portal/spatial/app/luminara-cube-in-the-hand.html": {
+      "bytes": 57890,
+      "sha256": "d9e505d0b607dfd074d84271f7b3fd51b7fc448ff049dbba3c19c9901904e2c6"
+    },
+    "luminara-portal/spatial/app/luminara-cube-lens.html": {
+      "bytes": 18355,
+      "sha256": "9f078eda522d3c5fdfb588c62a0e4711d7e6b0767daed411fed72a861e5fc53e"
+    },
+    "luminara-portal/spatial/app/luminara-cube-read.js": {
+      "bytes": 6511,
+      "sha256": "59f98ce270c640a9e403bca4900e7d36606b7c06b73123bef5b147cfd397adec"
+    },
+    "luminara-portal/spatial/app/luminara-cube.html": {
+      "bytes": 14966,
+      "sha256": "a84976e241b4e2edff2896f93174a3c5ddcb54c21ffb232f81e235b8d71e97cf"
+    },
+    "luminara-portal/spatial/app/luminara-cube.js": {
+      "bytes": 8137,
+      "sha256": "61676dc49342e8b2282af5cae12d64e90ed4835caf6b3bb3fa5a40338344f06b"
+    },
+    "luminara-portal/spatial/app/luminara-cymatics.html": {
+      "bytes": 18589,
+      "sha256": "3163ff78908ccfa9c28f5db10c00b8b6fbf58e8a09cf1d4d0d08c58164e2889e"
+    },
+    "luminara-portal/spatial/app/luminara-cymatics.js": {
+      "bytes": 6821,
+      "sha256": "1810fce3994794484be39c3921bb2f07ea6fc963c29373e6158d1992b0a6c5fb"
+    },
+    "luminara-portal/spatial/app/luminara-data.js": {
+      "bytes": 46939,
+      "sha256": "8fb2336f3b8cdb38e866fab0a6e879252677374033ca3d1d9991777eeb1ea4a3"
+    },
+    "luminara-portal/spatial/app/luminara-deck-reveal.html": {
+      "bytes": 14036,
+      "sha256": "569192612701b63248a6f9a3bd408157b78ec7ff971296bc7763269395665b7b"
+    },
+    "luminara-portal/spatial/app/luminara-draw.html": {
+      "bytes": 10351,
+      "sha256": "a86687abe62675d77a725e0a35e3be6228f296ab196f041753176cc031c26f85"
+    },
+    "luminara-portal/spatial/app/luminara-emergence-tune.html": {
+      "bytes": 23196,
+      "sha256": "f15a73c0bf14a870d15adf90e2e44b88a06b9af294ced2eb1009e949f437ef38"
+    },
+    "luminara-portal/spatial/app/luminara-emergence.html": {
+      "bytes": 14576,
+      "sha256": "87d06baa29b96ba68b1edc828831167452f5df1d55ca0cd4e6d2c7d6b7e3fd84"
+    },
+    "luminara-portal/spatial/app/luminara-field.js": {
+      "bytes": 10439,
+      "sha256": "dcc991b2379fd30cdcdfa05d239ca19bd545fb4b2d0b5fa66352fc43521b97da"
+    },
+    "luminara-portal/spatial/app/luminara-film.js": {
+      "bytes": 17679,
+      "sha256": "f95e05c4a551f222079b3b8d1edd16475fdee474eb0daeaff844a1f02783956c"
+    },
+    "luminara-portal/spatial/app/luminara-focus.js": {
+      "bytes": 4728,
+      "sha256": "09cdfee32ed605e53e9d093da3b929db2dabf64d9b68d2d612d9c21f7a3714a3"
+    },
+    "luminara-portal/spatial/app/luminara-form.js": {
+      "bytes": 3994,
+      "sha256": "5286d3f82d8ce0858f7ee070496d0129e05a7dc9539e7aad32cf8c7a668954ee"
+    },
+    "luminara-portal/spatial/app/luminara-harmonic-language.html": {
+      "bytes": 39452,
+      "sha256": "fc4eb5d5700f314cdafa2a58320c2d42a94e16579529728ccb7b8866dbf644c6"
+    },
+    "luminara-portal/spatial/app/luminara-harp-math.js": {
+      "bytes": 7012,
+      "sha256": "5952fa1a3bb39b86bde7d9d640e73369c2e5e55a94f92b878069105c98a9bc64"
+    },
+    "luminara-portal/spatial/app/luminara-harp-v2.html": {
+      "bytes": 203775,
+      "sha256": "d89ab2e2478f4b05bec6d09f882a57a5b911bb080fd98ca317146e57ae41966d"
+    },
+    "luminara-portal/spatial/app/luminara-harp.html": {
+      "bytes": 28451,
+      "sha256": "2e0e4be6f9bc4fc75195be62aa9ea34225aa96e6fade2ee613a7868f36b3dcf5"
+    },
+    "luminara-portal/spatial/app/luminara-instrument-v1.html": {
+      "bytes": 23664,
+      "sha256": "d33f3eec97fac7d58d84c2e2a8c3172af57788a75f825efb4f0f229c66b90ce9"
+    },
+    "luminara-portal/spatial/app/luminara-instrument.html": {
+      "bytes": 46816,
+      "sha256": "792d92c58c3a99dc4a53440de5e25307b9629464307b09302adfefb255475966"
+    },
+    "luminara-portal/spatial/app/luminara-instrument.js": {
+      "bytes": 14917,
+      "sha256": "be0b484d5572cec4389d11d00b9bb211c9be44367831ffbaa6046c1ee3a2121f"
+    },
+    "luminara-portal/spatial/app/luminara-knots.js": {
+      "bytes": 5268,
+      "sha256": "37164ca302a988352effe4afe606865dff6fb3b4f3f6be6b21010c7250d658a4"
+    },
+    "luminara-portal/spatial/app/luminara-letter-table.html": {
+      "bytes": 22062,
+      "sha256": "07b78ea5136837068c7b796686a16d1142b69cc17da2565127d0e03d251e0adb"
+    },
+    "luminara-portal/spatial/app/luminara-loom.html": {
+      "bytes": 31271,
+      "sha256": "cbeafd5d11088146648105fe2aaf39a44ce30694ee09fbe656e484b35da4a358"
+    },
+    "luminara-portal/spatial/app/luminara-map-room.html": {
+      "bytes": 44633,
+      "sha256": "86bda98596c03fd2d14a900fd2805c599e7287a55e587a8bb2eb41331ed8b8a8"
+    },
+    "luminara-portal/spatial/app/luminara-meetings.js": {
+      "bytes": 2832,
+      "sha256": "70400596c22544bc248804cf7cf695ce9cf8b2801c52d6b3fba30b5d3382873e"
+    },
+    "luminara-portal/spatial/app/luminara-midi.js": {
+      "bytes": 7555,
+      "sha256": "ce7f39ad49abce16d9a2d4877e63e223d2d57f3d8aac3d3e1ce8caa222dc285e"
+    },
+    "luminara-portal/spatial/app/luminara-read.html": {
+      "bytes": 101686,
+      "sha256": "dc561259fb4577b2446b98a913d06fb08b798938a021f5d92809864ae46a43e5"
+    },
+    "luminara-portal/spatial/app/luminara-resonance.html": {
+      "bytes": 37587,
+      "sha256": "7e27fba42bada00482669eabaaee817ffafdd274e9ba835069ffd2024dea3adf"
+    },
+    "luminara-portal/spatial/app/luminara-ring.html": {
+      "bytes": 27141,
+      "sha256": "fb307b6addd64a8570cb2fb80e516cda34b71b459a5556d1a2955d43584c1722"
+    },
+    "luminara-portal/spatial/app/luminara-rosette.html": {
+      "bytes": 25403,
+      "sha256": "6bd1071c598ac63271c1907234446318276516b82137ae87063d0b8a1d68369b"
+    },
+    "luminara-portal/spatial/app/luminara-sand.js": {
+      "bytes": 10011,
+      "sha256": "8fa14fdec39affd1f6fb668ebcbdc9e2d2b221724c7b0ace2609cee5dc50c79e"
+    },
+    "luminara-portal/spatial/app/luminara-sea.html": {
+      "bytes": 50359,
+      "sha256": "51a4d99c924fef8f595c10e036d8e3edfa91f5fea3ba47d7af9385387cecdf29"
+    },
+    "luminara-portal/spatial/app/luminara-sheet.html": {
+      "bytes": 20829,
+      "sha256": "912da0134d9a9bbb6e6ed824c0c52dcc9da20d2c6da6cd78e851fd96745a225e"
+    },
+    "luminara-portal/spatial/app/luminara-skin.js": {
+      "bytes": 4145,
+      "sha256": "9fed6af6160760ffe6fcfbd94782414464ce70af5bd1e212690bc6adfd1bd2cf"
+    },
+    "luminara-portal/spatial/app/luminara-sky.js": {
+      "bytes": 6089,
+      "sha256": "81182bbdb13520b257a3b3aa32d892be882f75ee9da85a603d3482060a4490e3"
+    },
+    "luminara-portal/spatial/app/luminara-sound.js": {
+      "bytes": 33831,
+      "sha256": "ec102f44212735862f5c14d842aa108ced4efbf75a6c982cbef17ce5411a7ac4"
+    },
+    "luminara-portal/spatial/app/luminara-spectrum.html": {
+      "bytes": 33993,
+      "sha256": "e1a1001c6069b6088b70a090d888ff230d343fdc794b90f9d7f292919a90758e"
+    },
+    "luminara-portal/spatial/app/luminara-stages.js": {
+      "bytes": 61471,
+      "sha256": "8925d3f632ab66491d3bbfb62f94d4d687d4a7cbac04ada244f7e345a3c9e07f"
+    },
+    "luminara-portal/spatial/app/luminara-the-one.html": {
+      "bytes": 21920,
+      "sha256": "7c19b1a61710326c95bfd20f445d076ece682ad29da0e377994df97fe425c20f"
+    },
+    "luminara-portal/spatial/app/luminara-unfolding.html": {
+      "bytes": 19680,
+      "sha256": "930fc882d11413c336c0a165fbb2022adc69885b35eba9276a0015d8a288857f"
+    },
+    "luminara-portal/spatial/app/luminara-voices.js": {
+      "bytes": 2058,
+      "sha256": "fa6917841fca94847fea27514d4b743f1a7421cd2c2426c59370ae67b47b810e"
+    },
+    "luminara-portal/spatial/app/luminara-water.js": {
+      "bytes": 21034,
+      "sha256": "fe922d946c8389099fc4830f3cd47c2e988931847d9c1391b4b71f46fc24cd89"
+    },
+    "luminara-portal/spatial/app/luminara-workshop.html": {
+      "bytes": 16811,
+      "sha256": "9f662e01c85fef3867d3888d50b8ff14a22759296cd8fcec929084c46ebe65c2"
+    },
+    "luminara-portal/spatial/app/luminara-zeta.js": {
+      "bytes": 12609,
+      "sha256": "512371ddaa88df9c1c450240b127bdd9642e6765857dab60491f72415de16894"
+    },
+    "luminara-portal/spatial/app/map-room-figures.js": {
+      "bytes": 52878,
+      "sha256": "40f9a366342616bd3478ae5c9b29df67513b8afa11a77cc557a327edf9100f10"
+    },
+    "luminara-portal/spatial/app/map-room-md.js": {
+      "bytes": 6252,
+      "sha256": "adf7ae89ad41ec9130bdc66a9f96158074796cdd2dc6b8cc443db575eed3ae5b"
+    },
+    "luminara-portal/spatial/app/map-room.json": {
+      "bytes": 41073,
+      "sha256": "cff3440d732e167f881582da6f215c512c57bc1aeb75e88f06bb90ca2bb4934e"
+    },
+    "luminara-portal/spatial/serve.ts": {
+      "bytes": 2818,
+      "sha256": "1e5ba55d1eea0044beda668a62431495cce5c9c7bf405cdc1d3581698bbf07df"
+    },
+    "luminara-portal/training/luminara-cell-v1.jsonl": {
+      "bytes": 54079,
+      "sha256": "66cae6d14adb4bcd24f1e0c66e594b3af2753983e7563bbb7fdab5b69750d868"
+    },
+    "zeta-harp/fold.html": {
+      "bytes": 38325,
+      "sha256": "f1d7a131d7829473f27f387b367111afbcefa79a2f96a57ee5f156f0be918e4d"
+    },
+    "zeta-harp/index.html": {
+      "bytes": 26807,
+      "sha256": "f49e098ca7624a761e472e3a2a78db06000fa98f4a8aea3841ef2e0b466fa49f"
+    },
+    "zeta-harp/js/zh-app-1-state.js": {
+      "bytes": 8089,
+      "sha256": "27ce8337e06f2856afcb9fc35757116e713d2d60cb86d97c1f89a946326abbbd"
+    },
+    "zeta-harp/js/zh-app-2-gl.js": {
+      "bytes": 17760,
+      "sha256": "7f03b39c09d3d5a963d8be3c516674e28721ace02570a926ad12b6812724a7c0"
+    },
+    "zeta-harp/js/zh-app-3-panels.js": {
+      "bytes": 20376,
+      "sha256": "35831635de0fbab9179d81cf20d83de79a50b45d7e9fe01c21a6adc48dff3bf1"
+    },
+    "zeta-harp/js/zh-app-4-audio.js": {
+      "bytes": 16097,
+      "sha256": "991dab5e1d12ff782c2ff0548b3eb209fec51ca92d243d2eb8010fe4f89ec8ec"
+    },
+    "zeta-harp/js/zh-app-5-orchestration.js": {
+      "bytes": 17140,
+      "sha256": "51a672fb24be0ece5eedd3ef3a6212d1291267678b829a5a8c2cd5a2930ce181"
+    },
+    "zeta-harp/js/zh-app-6-main.js": {
+      "bytes": 15366,
+      "sha256": "216edb7b20e98964105d1c785074215714e1cbadf71b4aef301d55976739a34a"
+    },
+    "zeta-harp/js/zh-fixtures-1.js": {
+      "bytes": 18799,
+      "sha256": "e5d3e5c3a71515419af8315cfe3d94c52b1aaba581f24167bf57ced582a02adc"
+    },
+    "zeta-harp/js/zh-fixtures-2.js": {
+      "bytes": 14445,
+      "sha256": "8292c8eb17f4dcf0caf1ac69f87853c4bf0e5aed1c638b168404c9fa525b44b4"
+    },
+    "zeta-harp/js/zh-math.js": {
+      "bytes": 4496,
+      "sha256": "ce59fc0c3876ef21df265a058f599a5c8c05f63dac6232d602adab89581b02e2"
+    },
+    "zeta-harp/README.md": {
+      "bytes": 3311,
+      "sha256": "20de49b6ec332c6904888e72ca589e96f4c8b88e7d8679db8357f4dc38755e3d"
+    },
+    "zeta-harp/UNLOCK.md": {
+      "bytes": 12687,
+      "sha256": "4ad2166d7c50bc9515b30799b162c1b23b95db9c5966bef371e44432a558498c"
+    }
+  }
+}

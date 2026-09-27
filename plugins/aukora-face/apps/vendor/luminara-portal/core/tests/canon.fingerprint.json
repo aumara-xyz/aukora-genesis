@@ -1,0 +1,157 @@
+{
+  "cards": [
+    {
+      "n": 1,
+      "name": "The Seed",
+      "letter": "I"
+    },
+    {
+      "n": 2,
+      "name": "The Drift",
+      "letter": "P"
+    },
+    {
+      "n": 3,
+      "name": "The Fold",
+      "letter": "B"
+    },
+    {
+      "n": 4,
+      "name": "The Resonance",
+      "letter": "Z"
+    },
+    {
+      "n": 5,
+      "name": "The Depth",
+      "letter": "V"
+    },
+    {
+      "n": 6,
+      "name": "The Saturation",
+      "letter": "W"
+    },
+    {
+      "n": 7,
+      "name": "The Dreamer",
+      "letter": "U"
+    },
+    {
+      "n": 8,
+      "name": "The Knot",
+      "letter": "F"
+    },
+    {
+      "n": 9,
+      "name": "The Threshold",
+      "letter": "M"
+    },
+    {
+      "n": 10,
+      "name": "The Cut",
+      "letter": "E"
+    },
+    {
+      "n": 11,
+      "name": "The Mirror",
+      "letter": "T"
+    },
+    {
+      "n": 12,
+      "name": "The Gate",
+      "letter": "D"
+    },
+    {
+      "n": 13,
+      "name": "The Surgeon",
+      "letter": "A"
+    },
+    {
+      "n": 14,
+      "name": "The Scar",
+      "letter": "S"
+    },
+    {
+      "n": 15,
+      "name": "The Twins",
+      "letter": "L"
+    },
+    {
+      "n": 16,
+      "name": "The Labyrinth",
+      "letter": "C"
+    },
+    {
+      "n": 17,
+      "name": "The Void",
+      "letter": "R"
+    },
+    {
+      "n": 18,
+      "name": "The Bridge",
+      "letter": "N"
+    },
+    {
+      "n": 19,
+      "name": "The Ray",
+      "letter": "O"
+    },
+    {
+      "n": 20,
+      "name": "The Face",
+      "letter": "K"
+    },
+    {
+      "n": 21,
+      "name": "The Echo",
+      "letter": "G"
+    },
+    {
+      "n": 22,
+      "name": "The Mask",
+      "letter": "X"
+    },
+    {
+      "n": 23,
+      "name": "The Beacon",
+      "letter": "H"
+    },
+    {
+      "n": 24,
+      "name": "The Spectrum",
+      "letter": "Y"
+    },
+    {
+      "n": 25,
+      "name": "The Witness",
+      "letter": "Q"
+    },
+    {
+      "n": 26,
+      "name": "The Crown",
+      "letter": "SH"
+    },
+    {
+      "n": 27,
+      "name": "The Return",
+      "letter": "J"
+    }
+  ],
+  "silences": {
+    "4": {
+      "name": "The Depths",
+      "asks": "descent"
+    },
+    "16": {
+      "name": "The Expanse",
+      "asks": "expansion of the frame"
+    },
+    "22": {
+      "name": "The Threshold",
+      "asks": "surrender"
+    },
+    "25": {
+      "name": "The Return",
+      "asks": "recognition"
+    }
+  }
+}

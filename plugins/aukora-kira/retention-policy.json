@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "source": "~/aukora-private/reviews/memory-design-2026-09-26.md §3.2 (the closed category list and its Default retention column) and §6.4 (the example policy: `weak-patterns` and `kept`)",
+  "why": "The design's table, as data rather than as code, because §5.1 says the nightly job applies THE POLICY and a policy a person cannot read is a policy nobody can argue with. THE FIRST MATCHING RULE WINS, which decides the ORDER and is why the first two rules are the narrow ones: a rule that tests only `category` matches a Kept note as readily as any other, so `kept` and `weak-patterns` must stand ABOVE the category rules or they can never fire. THE DESIGN'S OWN §6.4 EXAMPLE LISTS `kept` LAST, WHERE THAT RULE IS DEAD ON ARRIVAL; it is first here, and `weak-patterns` is second, for the same mechanical reason. `kept` carries §4's promise that a Kept note is never silently replaced — the app's Keep control sets that flag, and without this rule a Kept feeling still expired on day 8 because `feeling-7d` below matches it too. `weak-patterns` is §6.4's verbatim — dream-attributed, low confidence, never recalled — and it is the one rule that reads §5.1's usage layer; it matches nothing today because the dream pass is off, so it is inert until dreaming exists, which is exactly when it will matter. NOTHING IN THIS FILE TAKES EFFECT UNTIL HOUSEKEEPING IS RUN WITH --apply.",
+  "rules": [
+    { "name": "kept", "kept": true, "expireAfter": "never" },
+    { "name": "weak-patterns", "attributedTo": ["dream"], "confidenceBelow": 0.5, "neverRecalled": true, "expireAfter": "14d" },
+    { "name": "correction-kept", "category": "correction", "expireAfter": "never" },
+    { "name": "instruction-kept-inert", "category": "instruction", "expireAfter": "never" },
+    { "name": "fact-kept", "category": "fact", "expireAfter": "never" },
+    { "name": "preference-kept", "category": "preference", "expireAfter": "never" },
+    { "name": "decision-kept", "category": "decision", "expireAfter": "never" },
+    { "name": "person-kept", "category": "person", "expireAfter": "never" },
+    { "name": "project-kept", "category": "project", "expireAfter": "never" },
+    { "name": "commitment-30d-after-due", "category": "commitment", "expireAfter": "30d-after-due" },
+    { "name": "event-90d", "category": "event", "expireAfter": "90d" },
+    { "name": "feeling-7d", "category": "feeling", "expireAfter": "7d" }
+  ],
+  "neverListed": "A category not named above matches nothing and is therefore untouched — the design's own default. `dream` and later kinds are added by editing this file, not by widening a catch-all."
+}

@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "kind": "aukora-plugin-build",
+  "source": {
+    "src/index.ts": "d4243e96b6c983947f7d50738c914f72c909afa7476df074c4bc68539ce465a7",
+    "src/client/index.tsx": "aa53084947ce210013cbcc0c2d71ca0964eb90ae767d145d35bad12ce89e3fee",
+    "tsdown.config.ts": "4e1d0872b988e69560956213f76cc1c9dc0642775880a85554a390110f5f1348"
+  },
+  "brandAsset": {
+    "source": "assets/AUMARA-FULL-TRANSPARENT-ICON.png",
+    "sourceSha256": "ff70a0b50ad45a7d949bdf5f6244b4c1db4590566ed3df5b088a65dbd7e1336e",
+    "derived": "png 96x96 alpha",
+    "derivedSha256": "fec7d0bd7f007928fcb1b6866051b2c8344ec76d3211962650e3acd5f8b7e551"
+  },
+  "outputs": {
+    "lib/client.js": "2f8c54346a033f8b213985d541544e868912a7cf49cd07a8b3469e509f6edc16",
+    "lib/index.js": "9159396367a4ac5ae2cd3bcc929ee53f42937d5543f3c2d9124a9e6a975cdc58"
+  }
+}

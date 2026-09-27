@@ -1,0 +1,895 @@
+{
+ "repo": "github.com/aumara-xyz/aukora-membrane",
+ "commit": "d8b17faca5f17bb6e279feb30a2ea808a1f31cb8",
+ "files": [
+  {
+   "path": "LAW.md",
+   "gitBlob": "5be5050b91ae7890ffe325a1f55ae00ab113dbfb",
+   "sha256": "b2ffbe5893da33116ff0c604d506999b57a12addf9f875a629d8b43cac165870",
+   "bytes": 18064
+  },
+  {
+   "path": "LICENSE",
+   "gitBlob": "c7c75fef6d89032593dbbea75a34f40ff743efd8",
+   "sha256": "2fbcc733e9f59b5bd2fc44520aa9939ee01d9c47b088ce34ff3f829fb1b1bf63",
+   "bytes": 4674
+  },
+  {
+   "path": "NOT-READY.md",
+   "gitBlob": "9713a2d89864e0cedd3a9c0f87b72777ea4f2fdd",
+   "sha256": "ac605c5e34fbc1dd2b5520cdd98b27f480900520a3adda05c1da096574260a9a",
+   "bytes": 6316
+  },
+  {
+   "path": "docs/heads/demo/CONTRACT.json",
+   "gitBlob": "0d497aa7c8c98733fcd9d66de779796ef1efe82a",
+   "sha256": "3c3b38e5850db80620c4079baaea16a33a20d1a881565d68f48daed6934f8f10",
+   "bytes": 4714
+  },
+  {
+   "path": "docs/heads/demo/README.md",
+   "gitBlob": "79b56faee0dfb3795ba590b112c33ae576ca0242",
+   "sha256": "20782bd8bf2496e8741f37eb9d441e5f8b8bf4ef9a50096cb240710ceaba35dc",
+   "bytes": 13851
+  },
+  {
+   "path": "docs/heads/demo/append-only-1024/presented.json",
+   "gitBlob": "d1f137e21dc5e990e7dc804f52f68c1a00b251bc",
+   "sha256": "036825d283fb2cacd70e0ac9877bc42e27c042a2964d24624661449365a8797f",
+   "bytes": 429
+  },
+  {
+   "path": "docs/heads/demo/append-only-1024/retained.json",
+   "gitBlob": "42089b71de21201cf818417eefc2aa29efe7d824",
+   "sha256": "97df1ddd846b4431dfd0763b9b4df27ad00e6b80c26ef84b446d1dbdb4785062",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/append-only/presented.json",
+   "gitBlob": "9885c2bbb2931852dd2ad25b2a45315ea6f52df9",
+   "sha256": "7deb81f1c2d0752119a5edaad7095e44870c3cfc21f107077da927a8fabee6b5",
+   "bytes": 965
+  },
+  {
+   "path": "docs/heads/demo/append-only/retained.json",
+   "gitBlob": "dfa80deedcfe075be06a60411ea7e2ed36a8355c",
+   "sha256": "bc2368b839ef644837e7003a92845b497002e47f583243d0ea44e94440df8a37",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/cases.json",
+   "gitBlob": "0252ed96be5ddb846f9f41de3e8b3db471778986",
+   "sha256": "d65ee41ecee7834532671dbc3e1221484fa28fa7b6b8523c08f81a889d562117",
+   "bytes": 8742
+  },
+  {
+   "path": "docs/heads/demo/damaged-proof-1024/presented.json",
+   "gitBlob": "09e5ded8a3766dc46e1a7c0a42fb5be2d7e58448",
+   "sha256": "748334fb028225931ed06ffacb20a2407fdbf28fe49c4d78ee4985dc0bc0bd85",
+   "bytes": 429
+  },
+  {
+   "path": "docs/heads/demo/damaged-proof-1024/retained.json",
+   "gitBlob": "42089b71de21201cf818417eefc2aa29efe7d824",
+   "sha256": "97df1ddd846b4431dfd0763b9b4df27ad00e6b80c26ef84b446d1dbdb4785062",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/damaged-proof/presented.json",
+   "gitBlob": "a2b529cde176e12adb802b59c8a9935143e96fa1",
+   "sha256": "3e6c90fbaf018d0f51b689a5f89b24518fc80ac53e496781f479c28ab0cf8dc4",
+   "bytes": 965
+  },
+  {
+   "path": "docs/heads/demo/damaged-proof/retained.json",
+   "gitBlob": "dfa80deedcfe075be06a60411ea7e2ed36a8355c",
+   "sha256": "bc2368b839ef644837e7003a92845b497002e47f583243d0ea44e94440df8a37",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/encoding-bignum/presented.json",
+   "gitBlob": "f2466e7d901f3692e6097887d8e82eaf8424ab6f",
+   "sha256": "7680173f1686a4dd9443f42266901338fb08a0fcd037d3a7f32df7b047dffeae",
+   "bytes": 308
+  },
+  {
+   "path": "docs/heads/demo/encoding-bignum/retained.json",
+   "gitBlob": "fd0ebd149da0d1630d9b55eeae265a7c663018c6",
+   "sha256": "69c57a30650eb5365a38cfbc82417f689a172522b613a8f6aed1e1bf360c9952",
+   "bytes": 285
+  },
+  {
+   "path": "docs/heads/demo/encoding-exponent/presented.json",
+   "gitBlob": "9885c2bbb2931852dd2ad25b2a45315ea6f52df9",
+   "sha256": "7deb81f1c2d0752119a5edaad7095e44870c3cfc21f107077da927a8fabee6b5",
+   "bytes": 965
+  },
+  {
+   "path": "docs/heads/demo/encoding-exponent/retained.json",
+   "gitBlob": "03c0357432d862b83280bde870bbf047c7e8f04e",
+   "sha256": "acd0e81a49aae35e34c06874c2bc3edf70b4bf13b2274043d3727b015aa7cfa6",
+   "bytes": 272
+  },
+  {
+   "path": "docs/heads/demo/malformed-root/presented.json",
+   "gitBlob": "3c3d55700f2394c8c7b3b251952ca9b1c5d7543b",
+   "sha256": "7795a209b23a07aa1bd0f40d7441d45e4ebcd4a0c6a1040d5669c78aa8eb5afc",
+   "bytes": 964
+  },
+  {
+   "path": "docs/heads/demo/malformed-root/retained.json",
+   "gitBlob": "dfa80deedcfe075be06a60411ea7e2ed36a8355c",
+   "sha256": "bc2368b839ef644837e7003a92845b497002e47f583243d0ea44e94440df8a37",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/rewrite-2047/presented.json",
+   "gitBlob": "270e898dcee7a108a7827359fa186b5adfc0ee60",
+   "sha256": "84aae933a9fc68431f296dad15b71fd2d96878fa117b3b254af2565cb2380985",
+   "bytes": 1166
+  },
+  {
+   "path": "docs/heads/demo/rewrite-2047/retained.json",
+   "gitBlob": "27abc1f733a5e5548393b97152f68664fcb0d547",
+   "sha256": "3406d424f31575f84b2443dcf79a96d2deaed28e543429d809ed68b84cf99480",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/rewrite-2048/presented.json",
+   "gitBlob": "41f76d723010c41930ae95edbfd4790e16e457ac",
+   "sha256": "3dad972cdc5344b8f5af6e33d839d68b08e54f2cbf55f6226ecba03841cf1f64",
+   "bytes": 362
+  },
+  {
+   "path": "docs/heads/demo/rewrite-2048/retained.json",
+   "gitBlob": "596f6ced1ec85108ea4385495f2d4aca6c20167d",
+   "sha256": "7b4b09d83b3e083c998591e486cbd0587d2a2c4719b11fe354bf18286474ac6f",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/zero-growth-conflict-1024/presented.json",
+   "gitBlob": "d3af89560628c8c138f102607d100b4f39cbfc9f",
+   "sha256": "3ff2df0de6dc87ad08b62187a147efc96c98e4dc5aa1e476b88f9fa0049f2032",
+   "bytes": 296
+  },
+  {
+   "path": "docs/heads/demo/zero-growth-conflict-1024/retained.json",
+   "gitBlob": "42089b71de21201cf818417eefc2aa29efe7d824",
+   "sha256": "97df1ddd846b4431dfd0763b9b4df27ad00e6b80c26ef84b446d1dbdb4785062",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/zero-growth-conflict/presented.json",
+   "gitBlob": "292e52fee75083b7e18a840281dc0d6518a98b93",
+   "sha256": "e37c6012a94f82f61f8794f86d0bb1e4e84412556cc55b3fd041d871c468f4de",
+   "bytes": 296
+  },
+  {
+   "path": "docs/heads/demo/zero-growth-conflict/retained.json",
+   "gitBlob": "1a02728981a268909d34c7237475b5f0980929f6",
+   "sha256": "53f05533eb34de2a3bc838fcc0c38194179fa42b655449497b5306e7de1ee79b",
+   "bytes": 273
+  },
+  {
+   "path": "docs/heads/demo/zero-growth-malformed/presented.json",
+   "gitBlob": "a02a0f9462172595e71599fcf78bc9193fad1444",
+   "sha256": "cbc43d9fe815049e9b9c0760636b9580e181c14b0b89e096ea2beb16f4b4b193",
+   "bytes": 295
+  },
+  {
+   "path": "docs/heads/demo/zero-growth-malformed/retained.json",
+   "gitBlob": "1a02728981a268909d34c7237475b5f0980929f6",
+   "sha256": "53f05533eb34de2a3bc838fcc0c38194179fa42b655449497b5306e7de1ee79b",
+   "bytes": 273
+  },
+  {
+   "path": "minimal/CLAIM.md",
+   "gitBlob": "53eca188f887a000cbb0f75928ce4acbf7282790",
+   "sha256": "dbd0e7e2a16a8157c822944d06030bb0c1bcca034acc2a58acdd1e8349d77cb7",
+   "bytes": 3692
+  },
+  {
+   "path": "minimal/replicas/README.md",
+   "gitBlob": "0cdc63a1aa7e7f0e6a96797c196da821e21954b1",
+   "sha256": "e8a471d8042cc76cf2890eab00dffeacb941a349177003045a892154fd5fdb4e",
+   "bytes": 959
+  },
+  {
+   "path": "minimal/replicas/rust-verifier/.gitignore",
+   "gitBlob": "2f7896d1d1365eafb0da03d9fe456fac81408487",
+   "sha256": "b53ee26e6ff1da219b0563333a76d2c9ec19eec713d6ee54e11a1edacb0e9f3d",
+   "bytes": 8
+  },
+  {
+   "path": "minimal/replicas/rust-verifier/Cargo.lock",
+   "gitBlob": "1c89f70f6b6200f8fef0d6f03337849e17fb4272",
+   "sha256": "97f5a3d9df776b4399c3154ca1e14622306964dbf2e897ae26c2ca9688dec0bb",
+   "bytes": 4866
+  },
+  {
+   "path": "minimal/replicas/rust-verifier/Cargo.toml",
+   "gitBlob": "388689f077cc2324b3b4a4c0fafb7d85a158556b",
+   "sha256": "7383ee295d21f02691c1e7f83e54c864eb7b677f2148b5e34adb7fec433a79f3",
+   "bytes": 192
+  },
+  {
+   "path": "minimal/replicas/rust-verifier/src/main.rs",
+   "gitBlob": "ba5c6d3f9f838d3bd917b45c115f65be146115f3",
+   "sha256": "86454f070228c007d9d2acd05be2fd76ff55f6fc2650429926edbcb2b6ad0e4b",
+   "bytes": 14885
+  },
+  {
+   "path": "minimal/replicas/rust-verifier/src/serde_probe.rs",
+   "gitBlob": "7bf7553aa5ec640378368e936abcaee285d65bdf",
+   "sha256": "3718b8733b96b4faa032200f03a5e3e5b1ac6266cff34bbe3a82ceb3cd8eeae5",
+   "bytes": 952
+  },
+  {
+   "path": "minimal/tour.py",
+   "gitBlob": "abecb07d0820f3c8138ba61d8785884cc9b3b277",
+   "sha256": "dc4b21fe468d278cde0d8c49538070584db8f65a480cf3de54f704ade75f9558",
+   "bytes": 15753
+  },
+  {
+   "path": "minimal/vectors/append-only.json",
+   "gitBlob": "86dffefcb928ec3b61974433b456c35394f09bf5",
+   "sha256": "bb3d061f184f71268d5cc3410d2b8679f34d4760363669c05540bec3adddd566",
+   "bytes": 508
+  },
+  {
+   "path": "minimal/vectors/power-of-two-presented.json",
+   "gitBlob": "2ee3da8cc91fafc073a6c341821b94f7131b2495",
+   "sha256": "f1bcef7c4a99e978aa2fea5ae438ccfea38883d2d3e54371a84d3ebf820fa096",
+   "bytes": 292
+  },
+  {
+   "path": "minimal/vectors/power-of-two-retained.json",
+   "gitBlob": "9a1dbb3c43127b28628aa335fa95043b7ae087c4",
+   "sha256": "6ebb2509df1d5588deff3188b406a0595e90a0ab77d7a4f6b90de1f2dda2b84a",
+   "bytes": 119
+  },
+  {
+   "path": "minimal/vectors/retained.json",
+   "gitBlob": "77fa599f306e315766299a32e6320908f1be92cb",
+   "sha256": "cb2ecdf40dcf7af66a9cd739eaf5a61218e88162b6b5692e88b8a536d991a031",
+   "bytes": 196
+  },
+  {
+   "path": "minimal/vectors/rewritten.json",
+   "gitBlob": "b53009f4408f4b26d8ae542fefe85ae0aad8629c",
+   "sha256": "bd22c2c1b56963417f788718102e169df154a4117fc2bbc6adabfc82914bb2f2",
+   "bytes": 508
+  },
+  {
+   "path": "minimal/verify.py",
+   "gitBlob": "601d4bd4a499a1dbab29dbaa2355e1b3ee1c6e6a",
+   "sha256": "039aa8999f9a1e1a8b8e01eb51598bfc546e4e574b2c9333f13e8bb303958089",
+   "bytes": 9731
+  },
+  {
+   "path": "scripts/consistency-differential.ts",
+   "gitBlob": "00e09fb18b5cb2a58577ad4c29285e0bce0c0365",
+   "sha256": "6086347253c08ec91af76cf37c176f7f27f6a2a6df940cfd8cf6a2e454ed2276",
+   "bytes": 53089
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/ADMISSION-DIVERGENCE.md",
+   "gitBlob": "b4ac14494c430d1ffd7354f586a1c6a5978b7497",
+   "sha256": "e625d5c729b564007ece6ca920d4c3e0b2949aaa0bb02be34461d329dfc1f45d",
+   "bytes": 1146
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/PROVENANCE.md",
+   "gitBlob": "b04a4e06ce0c483c372602deee3512f03deb6624",
+   "sha256": "8d21ccf09c17877ca9f403d684fc931564669d65cdd5232ab88d6c1e5d84df35",
+   "bytes": 735
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/RESULTS.json",
+   "gitBlob": "a66872350b6af9aff4aeca9b5d0e2a80015a8a14",
+   "sha256": "20acb4183c9187c56cb06bf9058a85eda7a880c4e9b63eb7ded53863bd9577b2",
+   "bytes": 74761
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/SUMMARY.md",
+   "gitBlob": "1e35e21a361ad5939bb34b72af7095074fcdb81a",
+   "sha256": "b131f7ac24001cbe7bc955d90afa83222ed405a3f660d08007893d32c9a29335",
+   "bytes": 1403
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/0/happy-path.json",
+   "gitBlob": "db1fd04fe048908a00d68fe152d93b4be1d5d271",
+   "sha256": "5aae6059f25e905b9ba2eb20471d584e50f31ba5dc8a1797547fb38af25d032e",
+   "bytes": 209
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/empty-proof.json",
+   "gitBlob": "7360b332be378f4c96945f3ca872e3e08fae558e",
+   "sha256": "e22197c7668bd10a4db4d7f19549972ffaf10ec740fe82d60c7fc5930f1d01b1",
+   "bytes": 207
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/happy-path.json",
+   "gitBlob": "7092acc2e365aaf3dd0b139789fdbfcc35de923e",
+   "sha256": "3d94a9f4a5ecd5ec6338beba1a523798a8553553cadb8247ed5d9e3ba9b3cea6",
+   "bytes": 365
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/modified-proof@0-bit-@4.json",
+   "gitBlob": "2b0c84cd2f33d56384e65313e1106d0ba737a750",
+   "sha256": "7aea5234a5c9491e26e059b969c982f856d427198afb532493230002117047e0",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/modified-proof@1-bit-@4.json",
+   "gitBlob": "09708b6205bcf80ea7787141c1fd42867304ab68",
+   "sha256": "5f765f45be75e9b8c56b258851e63094d93db22c832cc33e83f3951ba89cf5c9",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/modified-proof@2-bit-@4.json",
+   "gitBlob": "daaf227ae548588902282ade2fa2a6c912c2d078",
+   "sha256": "93fbbc14cb1f8ab4a8a95957278cd5b513b5c5ec707719f14250b659a807871c",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/preceding-garbage.json",
+   "gitBlob": "826e15bb38d56e87ba19628c3149f50ce7a33e9f",
+   "sha256": "0492cbb368964bb6518c27a7d2773cafd580d3bd7f4fc738d652202ba47f5ee7",
+   "bytes": 379
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/preceding-proof-@0.json",
+   "gitBlob": "2be952632aa3229e58794fb04413d31a6ce7965f",
+   "sha256": "316ba3f26f0a7d945b44966bd95337bab46efe969b9093e07bc341bce5c1f812",
+   "bytes": 424
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/preceding-root1.json",
+   "gitBlob": "381ed9ee01f7f479c14ebeb65d47102e49956c95",
+   "sha256": "9299ea4a93730f27e4e8c50907b054629dd5613b762dc39bf5dd51bfeba3e959",
+   "bytes": 421
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/preceding-root2.json",
+   "gitBlob": "33b8b1f4e900b0f5e56c670294c980f325e00c44",
+   "sha256": "34d248aac57627ccb2566c72aee832d33f442dd8bde79f76a5437a7994c66302",
+   "bytes": 421
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/size1-XOR-@2.json",
+   "gitBlob": "32414f7a9e651dd23d0b37738eea36650890d98a",
+   "sha256": "a74bd77dbe60ffe1fa9bc7f57edaa20dc3af929c4f7bf21b476b1b705df39dfd",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/size1-plus-@1.json",
+   "gitBlob": "b3366bed1c4f1db6b1ed1878ecb0f88618206f1c",
+   "sha256": "3ca2763008e0b542f02cea8b2da0b8554bd9c03818341a74ead4891228d65c5c",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/size1-sub-@1.json",
+   "gitBlob": "acd1be0d6622699d8d19a1c451f97935fbcf9098",
+   "sha256": "e784ea9ce8505c2cb087456955c5df865ab863867fc3257aa6697036e15f4e39",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/size2-div-@2.json",
+   "gitBlob": "c49f2d6e19eec06e40a1466d3f497aa6da019d3d",
+   "sha256": "122bdb60562f6704534757be7b11dea22e8f773df24c27b0ca87a93839513232",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/size2-mul-@2.json",
+   "gitBlob": "8d93fb3b12103932bf12983e8da4651aaab61451",
+   "sha256": "9afba685da42a34942406cc3b842e80c1b590018ff7bea1ce2778621dab1a5e9",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/swapped-roots.json",
+   "gitBlob": "474a78d8ead19e43a81ed6fb48cb86cc87990978",
+   "sha256": "cfe90529e7e1dab013c7d9ae534497cd002570cc1c93f739382eff237f453cc6",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/trailing-garbage.json",
+   "gitBlob": "13b35f7be054383372e0983e428c0bc37f5938d8",
+   "sha256": "d6db5479b148a4eee252e300a30112e0f90930c419ac3a562d0402a2508bf5ae",
+   "bytes": 378
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/trailing-root1.json",
+   "gitBlob": "e6ddcb4a625dba43aaa3b63074f17908f779a2ad",
+   "sha256": "f59ad1b2b91b9b38c73ed8750d27f77cf1325b461c6b2696ce8b1eabbd5c4505",
+   "bytes": 420
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/trailing-root2.json",
+   "gitBlob": "7f6b12a2106039119775144aaed455079cbbbf0a",
+   "sha256": "39cf65408da86bd265b4b2b1ed03cc9b2d250e18bfdf4a2038cde3ced7a8147b",
+   "bytes": 420
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/truncated-proof.json",
+   "gitBlob": "e3d90fd29c99ec7f607d16bc6e64117f4e146fa5",
+   "sha256": "f73c0d8e39eddc7a248779a832dee06b297664727e1995d83a726c1cc4cfb1ed",
+   "bytes": 317
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/wrong-root1.json",
+   "gitBlob": "988c46e0d929a54188878fb667e7a10a38f689a8",
+   "sha256": "0b2d0031fafdd2db9d4adc267817001fb35e4e486f40c38a7c83c51f4465f07c",
+   "bytes": 333
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/1/wrong-root2.json",
+   "gitBlob": "2d41f6893ae15460131e073d3cf131836a5a8543",
+   "sha256": "03c7f02303a8c87fbbb5182f3bb802a46587ceb8bcb2218c2d12dacb34948480",
+   "bytes": 333
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/empty-proof.json",
+   "gitBlob": "62ec6b02586e6c4eb17ebed4e881848333fc71e6",
+   "sha256": "ec4082660edcd526de3c60c921c04cfe54d0c4148c4c3d5bd1f3b230dab852ea",
+   "bytes": 207
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/happy-path.json",
+   "gitBlob": "611166e6abbcb0432faad84222d7ea50ec30c835",
+   "sha256": "084d20811521ec2017cb0cf8d4ebe9aa987e7415e559374f51f5647635b12636",
+   "bytes": 365
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/modified-proof@0-bit-@4.json",
+   "gitBlob": "b2a25b32d58e2b40654f3e9301ddd1c4a7ad80f2",
+   "sha256": "ca4601ea9acbc444cf958417ec115e807ac7606d570df51d11945a0eed53e193",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/modified-proof@1-bit-@4.json",
+   "gitBlob": "4d55e23cf81817ac20cd2d72d6d6eff81e2c4092",
+   "sha256": "ec8e65d8c107ea1e4081d3a015e37b05f23e99dccd357b27240b1c665ada8fc6",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/modified-proof@2-bit-@4.json",
+   "gitBlob": "020ebbefa231fe69e30dd8c79082b32bbba8c889",
+   "sha256": "e40a4a25d7944443a348e6b69fb0bc63bf4d6d71803cf5faa0d8c10ff3715303",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/preceding-garbage.json",
+   "gitBlob": "d55b4f3fb9cb387694e555810fdf138c322dccfc",
+   "sha256": "dd83c355a69a2260b1230e0d239b9b172f98ec550c38ed2dfa9750f9d280a698",
+   "bytes": 379
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/preceding-proof-@0.json",
+   "gitBlob": "4b795a26dd235f3e762a6cb36bfe03858dd4be65",
+   "sha256": "17665e47af7ad7f4064a4f6727e3a99e3e77593e79d1cdef5355ce00c6ad9086",
+   "bytes": 424
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/preceding-root1.json",
+   "gitBlob": "138478f4b080380f8341d371d4ed3d9a611d0335",
+   "sha256": "34bdc545493448ae0724fbfd25202c837bfee4e524ed5a1a47618540a543e81b",
+   "bytes": 421
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/preceding-root2.json",
+   "gitBlob": "2d3cdd1778a9c5040ddaca72b82d49e775921a38",
+   "sha256": "0624b19da287c268a4731a346e2c6783c0ab85098cc93ccb95b5624520f10ce1",
+   "bytes": 421
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/size1-XOR-@2.json",
+   "gitBlob": "18c8ca76b00fcb7e28e639bd48289a2d43cf74c5",
+   "sha256": "9124a65062ec50f4bf2bbe6e380bfcf0f50e08df3383fc66fe1ba5d80a6cc8d2",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/size1-plus-@1.json",
+   "gitBlob": "180021151c607a9573cec3e6b2a98450f9139e20",
+   "sha256": "5c7b1c43cf2f3771c24abc1c8995e19696ccf5a8ce6f5c290249d3d203c5e7e8",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/size1-sub-@1.json",
+   "gitBlob": "26293fcf2ebdb68b067814caaed9e0d06aed76b6",
+   "sha256": "7339cab4aec340df69c12a25b90cd65733b45647ed4a7c81996a924711b719a8",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/size2-div-@2.json",
+   "gitBlob": "6340fffed2eaa5f1424c03787f00d53927fc465f",
+   "sha256": "7b42e05913ab0ed36c0c047c98ca083396ae39994619b09d430f5928ee5a5f9c",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/size2-mul-@2.json",
+   "gitBlob": "e9c558255da8c658a97e441d29e01e7243b65f8b",
+   "sha256": "d99d28b305790311fdcd433c8d121b8c7b7bb6015ee4a8c996df87fce35a00e5",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/swapped-roots.json",
+   "gitBlob": "b7e5663803867e69cf405f4765d7e4bf38088365",
+   "sha256": "9d76aec8d78cadf9cc655835416df1f4e3ba92937759645ea40f1e1298377750",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/trailing-garbage.json",
+   "gitBlob": "cbba5e00478cd69047d804577cb8f7d47c4e17f3",
+   "sha256": "49a5a29d30bc1805ce6576a61587cf7b761b9c3ad717697b3540ccd636d18e78",
+   "bytes": 378
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/trailing-root1.json",
+   "gitBlob": "6255130fa0c302f08867db548c8f37b973fa73ea",
+   "sha256": "9bffee17990f1c5ac172e39bf345813c072da4dd580bc1030d825c5b1d0ec3da",
+   "bytes": 420
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/trailing-root2.json",
+   "gitBlob": "67e386b8d6f81ab82059ab1b5b2d3267c2407519",
+   "sha256": "9fd95aba94cbde262587336903afd0172bbba1920700a0f5bdec1bc7874ee356",
+   "bytes": 420
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/truncated-proof.json",
+   "gitBlob": "ee4003e0f7b99356a8f03a68945339ce74bff7bd",
+   "sha256": "eb06d644bed264654e6c29bdd728cda1c22970a8f12195a10dc9aa19bb0ae589",
+   "bytes": 317
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/wrong-root1.json",
+   "gitBlob": "17126a662639b1e018b5aa94a4a055073c8e0bf7",
+   "sha256": "06058a6f79166a691676c603e67d6ddeb5bac948df26236215397ab9f75b45ff",
+   "bytes": 333
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/2/wrong-root2.json",
+   "gitBlob": "57a1c8a01a7b7a071a510c8a178672ea84a13437",
+   "sha256": "70ff2bb5a5072eb47738123c65c6767eb00e76f90d3cdf8ee64ee6f2109292d2",
+   "bytes": 333
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/empty-proof.json",
+   "gitBlob": "9e6d2bafbb6bdd6accd909ca3a80ae3d4e39680f",
+   "sha256": "2e38d4aa541d6831fc5c4ed4356d3c3ec0048327663efdbe20e7e8bef1935d46",
+   "bytes": 207
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/happy-path.json",
+   "gitBlob": "a4092fdc1d0b82c83af3f87684287f6d810bd772",
+   "sha256": "2254557f34595bcbeff662da226507648be8cbf570653f54d053806024d12f8c",
+   "bytes": 313
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/modified-proof@0-bit-@4.json",
+   "gitBlob": "c94c501e64f89607ebdcc623b21744009478dc19",
+   "sha256": "cb42966dced2a55ca0afc0818a284414c2f5e9909e4470f78e3c77aec7c91ff5",
+   "bytes": 325
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/modified-proof@1-bit-@4.json",
+   "gitBlob": "7b470dba85949743baf3280837a2e33bb8063504",
+   "sha256": "12d92f178f0038ffac5e02663d5fdf1905270a8fb66cb11f54c534cc7db89a32",
+   "bytes": 325
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/preceding-garbage.json",
+   "gitBlob": "d5e88daf6394f64a8c1a007c3b34005221b4387b",
+   "sha256": "7cfde166b55587cc75a05bab19c287afcfa85cb6bc4e4328c0f5f89c1e607601",
+   "bytes": 327
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/preceding-proof-@0.json",
+   "gitBlob": "a1137e6e4cabdf9d27b6ac487469194431bfab24",
+   "sha256": "56284726d95dae03dfb3e1f5a9b77a017839fff8eb481edc4274d8465c9e7942",
+   "bytes": 372
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/preceding-root1.json",
+   "gitBlob": "f6d98a8229232299cb8bae25ac983b65ed9a1310",
+   "sha256": "8196dc52cf6eb43a0bcd342e6455b3eeca48f874eedfc39ccfb2f61107617551",
+   "bytes": 369
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/preceding-root2.json",
+   "gitBlob": "4bf310569fdd40dfbe9074bf4c6362fce1d80fb8",
+   "sha256": "2adbb8259c0b125bab7f92a59f6588d59d785e4288f365ca6be8f3e6c4925177",
+   "bytes": 369
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/size1-XOR-@2.json",
+   "gitBlob": "07d12be38bf6f6d1593033d4a1b9d88d448cd955",
+   "sha256": "07939ec79bdb2990bd27e9ff20f56142c5a9094c76023f69978e1ec88c40ab43",
+   "bytes": 314
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/size1-plus-@1.json",
+   "gitBlob": "d0adf0bc6daf7cb287956101a1c576ed5e248745",
+   "sha256": "0a7d8772d38dc785ae00c94883bde0c57210b65d4929da6f2789192a44d272c8",
+   "bytes": 315
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/size1-sub-@1.json",
+   "gitBlob": "b9f25bb26118aa52fd1c410d5ef1625a66c4e7dc",
+   "sha256": "311af0ee236b2029a7c074f7d40d750812137377c67f0fcdca7c8c0f2762173a",
+   "bytes": 314
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/size2-div-@2.json",
+   "gitBlob": "1a82e16e4aa543bbb5f5ebebe6b2a4b15e1b8521",
+   "sha256": "652ba8e0cc4a5c04bed1b4f34d6a3dbffe4370f9fd6d4923afbb7b40a782d5ca",
+   "bytes": 314
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/size2-mul-@2.json",
+   "gitBlob": "676687a76019e4c50a8402c2784140a60ca7076c",
+   "sha256": "baca1b282559d2d4dae1534927210201e91a4555a8f50f37746cb619a153e9d8",
+   "bytes": 315
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/swapped-roots.json",
+   "gitBlob": "01c4a6bda1bf9272c27c4fe5e40b58b8860426a2",
+   "sha256": "4d64c8f6329e84848c70cb0bd47674659eb2815424ec0a9aae5d844a30b5018d",
+   "bytes": 315
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/trailing-garbage.json",
+   "gitBlob": "0fd19a9be6c5565883b938adb1c5d6318900097a",
+   "sha256": "578bbb940df9a2a0520c101f726ddf41205761b7bf5ac0a796bbfe856e209107",
+   "bytes": 326
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/trailing-root1.json",
+   "gitBlob": "f9f4813f143a3bdabc8f4cd801519611aa18415a",
+   "sha256": "a57f5d5490fae1f34c05c0aa00a92f63e9d5a9cd0228f68123fb0b84deaeef0c",
+   "bytes": 368
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/trailing-root2.json",
+   "gitBlob": "9ca49ee14cf19a7c4b153802d30ec0dc9b45fbf2",
+   "sha256": "07c015d2181b07f135142c6af774b1a8e93594ecfa0c23dcda0209fbaa940f7b",
+   "bytes": 368
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/truncated-proof.json",
+   "gitBlob": "9d4e3bb7e35ffae340b9f9616969131c7662f754",
+   "sha256": "dc9f13d86c5c89c01375106968925786eb255764fe32dd3b9b17dfd700fd14ed",
+   "bytes": 265
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/wrong-root1.json",
+   "gitBlob": "8ef3cd023ca83f83ac824637488561bf8afe3db9",
+   "sha256": "94f0a364e6ccede8ad4206876ca351411384b57b73cd567c012f5fd1b8818cd2",
+   "bytes": 281
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/3/wrong-root2.json",
+   "gitBlob": "496897e95bee279674b92c23f40825908eef6c20",
+   "sha256": "78252fd2ccb009a0216bebcf159c27428419f22069086cced32070d3d839e267",
+   "bytes": 281
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/empty-proof.json",
+   "gitBlob": "579a8e1eb002ed71ca7ede661c681561ff88d2d8",
+   "sha256": "5415576db5f90989ab2fb53746452709fb8fb31a0675ac4bdb6872936029a641",
+   "bytes": 207
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/happy-path.json",
+   "gitBlob": "963a90eaa1f8aad6cf58fe41df209a35bc66443b",
+   "sha256": "e57266a3bff16d997c57a1a30b6f9283cf8dd150d165201016cb4d9774cde020",
+   "bytes": 365
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/modified-proof@0-bit-@4.json",
+   "gitBlob": "2e5e15ebcb06afc26999e567da7dda9f65cad2f1",
+   "sha256": "ad0e9ed6a5508d77163bea7c0f0fd1894c13bd4a07656cc2cdadd32ffeeee02c",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/modified-proof@1-bit-@4.json",
+   "gitBlob": "eb0d3b5a315e865db4f322a11caedfdd1589cb5e",
+   "sha256": "d819ae30905ba2ed95bc16693b43cd2c53cd60505c0c8358bb2b6aa2df49c582",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/modified-proof@2-bit-@4.json",
+   "gitBlob": "53a703d1474f169d74dbd2ac1e7b19d7721f0c9a",
+   "sha256": "fee5be7b0e9aacf6e654396a5c406335e92991aac778d5f0277343f6222142b1",
+   "bytes": 377
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/preceding-garbage.json",
+   "gitBlob": "5fe18e6c50c9ae00eb0cf25c81d65b35553d5415",
+   "sha256": "612afff8a9018bc6d6867b169ba67fd05dbf0458522bdc017864c0895ab3bfa7",
+   "bytes": 379
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/preceding-proof-@0.json",
+   "gitBlob": "3642e9dffc8faf4a9054ed3866e27a51d1910381",
+   "sha256": "5703cdc64cf313e4b99dea6511c58e465f4e3f0e4b41347d5da1db91d65147c3",
+   "bytes": 424
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/preceding-root1.json",
+   "gitBlob": "bd93e750e3ec7e629bd792f1ec771dc874f35815",
+   "sha256": "203257657718e04de9ad16e26c37f54cf3785d5a1cbf1bdde7f76c2e49905922",
+   "bytes": 421
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/preceding-root2.json",
+   "gitBlob": "bbe7256c3f1fdc9112db2fa32c777053b4ced436",
+   "sha256": "0d99d21e81f4cb4df8c52d2bd28b37820ff36aded81bb28cead41f87a522a864",
+   "bytes": 421
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/size1-XOR-@2.json",
+   "gitBlob": "eecc0b2ac3fb7df90b2d73fcd39ea8e9ab8f5477",
+   "sha256": "8c5e004fa63b506917df613cdd23349d1769cc1661a0c4e3f94113f765845687",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/size1-plus-@1.json",
+   "gitBlob": "25d8ba397c00fea25e2c2d001de91f7a2ddf7d4b",
+   "sha256": "16c803cd5e99418ab5431c603536ae7b156a37211ca81041b4a629eb9de20a3a",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/size1-sub-@1.json",
+   "gitBlob": "e452a8cc8f1b2a43d7280a73c98336ddadaf685d",
+   "sha256": "c5c223dbe3e5a19917b94cf85ceee3d337cc8d276b383c00bebb37045566601f",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/size2-div-@2.json",
+   "gitBlob": "5f8cfb4a27dd5be9c7b31c1085d43cbf2c626111",
+   "sha256": "021ac7e0ca7d1cd8c6a94661e675f5cee954162aee2aa713e9db1549395c606f",
+   "bytes": 366
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/size2-mul-@2.json",
+   "gitBlob": "3cb8ec8e99f60ae06900e79b6d6bc3a0bba6ce90",
+   "sha256": "48a7aad932f8246b5d2693686f02693a5b441e462c2becd52a53808531c895fd",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/swapped-roots.json",
+   "gitBlob": "93a6c8364a1ec4e0ce1bd4586666248a59ba08e9",
+   "sha256": "aa6721f3bb2070b5ef38862590bc96cb1967d2752c3c5760359bc7cd81be770b",
+   "bytes": 367
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/trailing-garbage.json",
+   "gitBlob": "00eb9bbe71b4c01b5ac764fd56400925d563f666",
+   "sha256": "2fbf98562c089581a696084cafd5218d26a7a68c9e469e770c65646ec46ff2b3",
+   "bytes": 378
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/trailing-root1.json",
+   "gitBlob": "62d02d3cded1848362b03a2fff77696633298658",
+   "sha256": "c4e59019ca947ba89017fa95d185b2de4540be02055fe8304ad200b451b25050",
+   "bytes": 420
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/trailing-root2.json",
+   "gitBlob": "5626da233f043c153a1496fdd2a9cc9d12a7497c",
+   "sha256": "508c72702068c99247077c1a9abcb359202b27c630c6329df8d059e6fbcda800",
+   "bytes": 420
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/truncated-proof.json",
+   "gitBlob": "8b62ab51eca6515278d97953da1dc72d49da1051",
+   "sha256": "fbea51e83a7dc75b4cd2d540f12fac9a4b4add96e8a91feea9f41b3635d964fc",
+   "bytes": 317
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/wrong-root1.json",
+   "gitBlob": "0131bbee449a5f7ab2315974c583eb9366952471",
+   "sha256": "eea7504c638633507c4deb91ad78d95107c53cc956c4aecb61a1de95118737b1",
+   "bytes": 333
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/4/wrong-root2.json",
+   "gitBlob": "a587fbc87b5b367a63916d8291736d4fbc769003",
+   "sha256": "c6d331e4a31b5f65b2dacfb9c1c80a803b5571675ddcd211d2309e00104e1fc5",
+   "bytes": 333
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/consistency-check-on-empty-tree-size1-is-zero-is-useless.json",
+   "gitBlob": "fa91bad1efff71d7a66a1f5f1e21f7443a42cd86",
+   "sha256": "79f3c30ab409e6dfa03d7e867f3fdc805c2746acdafad14723415201dbb54344",
+   "bytes": 308
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/roots-do-not-match-and-sizes-are-zero.json",
+   "gitBlob": "3c468e5749261557afcdb9242048b333fc92b7ab",
+   "sha256": "9cdc69e52597ef811d4c41f5e0082972d0b0490c7564d326725ff95787a7b5f5",
+   "bytes": 205
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/roots-do-not-not-match-and-sizes-are-one.json",
+   "gitBlob": "24aaa9881f5689b12fc66f9b1416701043001671",
+   "sha256": "84368b54d79503141bff7be768ad68cb67b08357ca22c526369e603a2773c265",
+   "bytes": 208
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/size1-is-greater-than-size2-again.json",
+   "gitBlob": "667c13744e4771b9889b257f7e6823a297820b5f",
+   "sha256": "7a773a5005c1afea01e61d33482ed57139ebffa4027efc6c1ad051d6d7302331",
+   "bytes": 173
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/size1-is-greater-than-size2.json",
+   "gitBlob": "9c48ccc374e9754ddb927f6593e89ac9119babca",
+   "sha256": "a041a04840d45657a4d7a0d251b9fc55e4e39d2fed50746640925c943de103ab",
+   "bytes": 167
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/size1-is-zero-and-does-not-equal-size2.json",
+   "gitBlob": "cc4d81ded288be24ff544c05794f5b11897b9bd2",
+   "sha256": "a9575876b7008b6309ef7152c07f993c5a33f1ecbda3c9536b82d7d669362483",
+   "bytes": 178
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/size1-is-zero-and-size2-is-not-zero.json",
+   "gitBlob": "a054a889835223fd09e76d2c69259ce2a4eb75e5",
+   "sha256": "302e69cf1464e0d64259ffcdccdb4ecd5224b503a76a831a93a0f2b9900caa54",
+   "bytes": 203
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-are-equal-one-and-proof-is-empty.json",
+   "gitBlob": "b620ad3cf69a671760511d709bdc2d4f59c1a7bb",
+   "sha256": "c2c2292dcd1a35d783fd140c7372d7c82b0fd8eb489c7f9c116a21cdab4bf0d4",
+   "bytes": 181
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-are-equal-one-but-roots-are-not.json",
+   "gitBlob": "4ca977b1fbb302a5cc7bcc8289714a4151b80f4a",
+   "sha256": "351b5066571d0b95ebbefca9b52ba19321477e17dbcde90ca2113a16c1c2260f",
+   "bytes": 179
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-are-equal-zero-and-proof-is-empty.json",
+   "gitBlob": "6e5706e337cd40e9601e8fad1c7440f7c9e902d7",
+   "sha256": "536902781661a7544731f807820b3a80f4ff5809f0c6ba3a959a4e7fb85baad6",
+   "bytes": 181
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-are-equal-zero-but-roots-are-not.json",
+   "gitBlob": "21cc3dda605871a06c7d6fa1c370be3cf8adc42f",
+   "sha256": "99479e80081302a4e964d7cd23c1e6a2f4c1b912fd1901f4e157f5d0af2f37b3",
+   "bytes": 180
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-do-not-watch-and-proof-is-empty.json",
+   "gitBlob": "1382ab5f21794dc496e356a940bd4340bbce1e00",
+   "sha256": "fc68307eea04595a05317159d80a17e1d3ad327a31b7bb1a7e8bd8965bbd1ce1",
+   "bytes": 177
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-match-but-proof-is-not-empty-and-sizes-are-one.json",
+   "gitBlob": "fcb7fc9a3731a315cb19d1f65fa00294caa3032f",
+   "sha256": "3744febfb161c8a900818e0aa5df455642b293fa2260ba1b7bc5563b753119fa",
+   "bytes": 302
+  },
+  {
+   "path": "scripts/fixtures/external-oracle/transparency-dev-consistency/additional/sizes-match-but-proof-is-not-empty-and-sizes-are-zero.json",
+   "gitBlob": "141ce12ffce74f7a537947e92db4cc27652c294b",
+   "sha256": "98f195a665b1f82475485aa320a11938ef2a60bde63bafc13c1454e7d7b5e9fd",
+   "bytes": 303
+  },
+  {
+   "path": "scripts/peer-class-corpus-verify.ts",
+   "gitBlob": "a259e6a8eb30594cd1f821ac406869660af397cf",
+   "sha256": "a653ff155f5c37f33c08c96800ff414e4ff9b76aa6455fc29286aad783fbd943",
+   "bytes": 25510
+  }
+ ],
+ "mismatch": []
+}

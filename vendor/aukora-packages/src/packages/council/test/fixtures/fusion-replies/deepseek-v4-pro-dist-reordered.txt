@@ -1,0 +1,1 @@
+STANCE:⊕ CONFIDENCE:⇈ STRATEGY:↙ FRAMEWORK:statistical DIST:(exploit=0.10,verify=0.70,explore=0.10,abstain=0.10) HYP:"The comment correctly explains the design decision with a concrete historical example, making it a high-value addition that prevents future regressions."

@@ -1,0 +1,79 @@
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 9px;
+  padding: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-secondary);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: 1px;
+}
+
+.iconButton:disabled {
+  cursor: wait;
+  opacity: 0.45;
+}
+
+.iconButton[aria-pressed='true'] {
+  background: color-mix(in srgb, currentColor 13%, transparent);
+}
+
+.pinAction[aria-pressed='true'] {
+  color: var(--dsw-static-spatial-violet);
+}
+
+.unreadAction[aria-pressed='true'] {
+  color: var(--dsw-alias-state-success-primary);
+}
+
+/* Gold is this button's archived state, not its resting colour: it is gated
+   on the pressed state the button publishes, exactly as the sibling
+   ThreadListHeaderActions filter does. The class pair keeps the specificity
+   that carries it over the .iconButton:hover recolor above. */
+.iconButton.archiveAction[aria-pressed='true'] {
+  color: var(--dsw-static-spatial-gold);
+}
+
+.renameInput {
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  padding: 0 11px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+}
+
+.renameInput:focus {
+  border-color: var(--dsw-static-spatial-violet);
+  outline: none;
+}
+
+.renameError {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-state-error-primary);
+}

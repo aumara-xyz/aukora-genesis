@@ -1,0 +1,27 @@
+{
+  "kind": "aukora-kira-memory-receipt/v1",
+  "operation": "memory.put",
+  "recordId": "kira:00936cbeffe741e462897fa9621fceeab46fe952f40a00e8991523751e6e97af",
+  "effectDigest": "83689c20bb6211f0bdaf3c46391e5c09a8ef9f1377f5ff4ba4e4293e8dbb4fd0",
+  "nonce": "c4fb4109-466d-4f3f-b6c6-a78988f07eff",
+  "issuedAt": 1789884361,
+  "approval": {
+    "approvalId": "0f04153f9d99d2a2e3f6e61e2b598ebb13a48564982cff5f14ce89335724326c",
+    "artifactDomain": "aukora:approval-receipt:v1",
+    "challenge": "4a5feb6781e25ebb85d6d19bc95cd7fbd2c42b4dda638568306c0732aa5f0e78",
+    "subject": "aukora:1:3c48a2d3031422ff7c88cb4e0f50629aebbf42dcc8a7b03b9f043e620b0bfd3e",
+    "approverDid": "did:key:z6Mkt1D3SBuwjDpBMaB5YJerofTgcPVPMQBZ1Zae17N7rGf1",
+    "operationDigest": "0d00865d5b044dbcfad1b4086113fec1e34f21e5ee469f08d1842aaefa54c61b",
+    "signature": "e679d1f6dc40cf140bee80d58683974237b40ea4c11b172a4bb841c1241faeee3a51aad9bc515335564b14de269bd4ea8c24395ecbe67bba5ffe8990843f770a",
+    "approvalClass": "scripted",
+    "keyClass": "B"
+  },
+  "aura": {
+    "entryHash": "7ee4a4ad1a3844e88e17b878036b295026b179f6676e85f89c5b691996bfb990",
+    "seq": 1,
+    "priorHead": null,
+    "head": "7ee4a4ad1a3844e88e17b878036b295026b179f6676e85f89c5b691996bfb990"
+  },
+  "sig": "73b86ada0a808cd0c47cc538e28b60efb2ce299c64bfb4b1219973ca6a9ff1c154314dc514c1ca94ebe1b3e4992749fff146435574d9848ac56f96d51802d608",
+  "issuerPk": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEATjiN/yciyvKl3MFVxwd7wD6HUOi/SD2tgblZ9jO5sms=\n-----END PUBLIC KEY-----\n"
+}

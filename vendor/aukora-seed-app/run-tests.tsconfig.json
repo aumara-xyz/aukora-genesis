@@ -1,0 +1,8 @@
+{
+  "//": "Genesis-authored, not upstream. r39 runs src/apps/seed/scripts/scan-public-tree.ts through `npx tsx`; upstream resolved its @aukora/evidence import through npm workspace links. run-tests.vitest.config.mjs points tsx here instead.",
+  "compilerOptions": {
+    "paths": {
+      "@aukora/evidence": ["./src/packages/evidence/src/index.ts"]
+    }
+  }
+}

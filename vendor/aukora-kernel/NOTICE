@@ -1,0 +1,29 @@
+Aukora Kernel
+Copyright (c) 2026 Peter Viviani / Aumara
+
+This product is licensed under the GNU Affero General Public License v3.0 or later
+(AGPL-3.0-or-later). See the LICENSE file for the full text. Each source file carries
+an SPDX-License-Identifier header.
+
+--------------------------------------------------------------------------------
+Third-party components (their own licenses apply; not covered by the AGPL grant above):
+
+- @noble/post-quantum  — ML-DSA / ML-KEM implementations (MIT)
+- @noble/ciphers       — XChaCha20-Poly1305 AEAD (MIT)
+- @noble/hashes        — SHA-256 / HKDF (MIT)
+- Convex               — runtime / data platform (Apache-2.0; see Convex's own license terms)
+
+Dependency versions are pinned in package-lock.json; see each package's own license file.
+
+--------------------------------------------------------------------------------
+Cryptographic standards referenced and corroborated:
+
+- FIPS 204 (ML-DSA), FIPS 203 (ML-KEM) — NIST post-quantum standards.
+- NIST ACVP test vectors (public domain, U.S. Government) — used to corroborate the
+  ML-DSA-65 signing spine. Corroboration against published vectors is NOT an
+  independent cryptographic audit.
+- RFC 6962 / RFC 9162 (Certificate Transparency) — the append-only Merkle history
+  pattern; corroborated against the CT reference vectors.
+
+No warranty. This is a PROVEN-LAB research/engineering artifact, not a production
+system. See CLAIMS.md for the precise claim/evidence boundary.

@@ -1,0 +1,11 @@
+{
+  "name": "@aukora/kernel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vendored verifier-only kernel from aumara-xyz/aukora packages/kernel at def297f. Genesis-authored manifest: marks lib/ and lib-test/ as ES modules. See PROVENANCE.json.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.js"
+  }
+}

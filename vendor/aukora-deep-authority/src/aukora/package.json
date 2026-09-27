@@ -1,0 +1,19 @@
+{
+  "name": "@aukora/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Aukora authority core: verifier, broker, effect, Aura record, and guest. Plain ESM, imported by both the courts and the governed DSH tool package.",
+  "type": "module",
+  "dependencies": {
+    "@deepseek-ai/cordis-plugin-include": "workspace:^",
+    "@deepseek-ai/cordis-plugin-loader": "workspace:^",
+    "@deepseek-ai/dsh-brand": "workspace:^",
+    "@noble/curves": "2.2.0",
+    "@noble/post-quantum": "0.6.1",
+    "js-yaml": "^4.2.0"
+  },
+  "exports": {
+    "./*": "./*"
+  },
+  "license": "AGPL-3.0-or-later"
+}

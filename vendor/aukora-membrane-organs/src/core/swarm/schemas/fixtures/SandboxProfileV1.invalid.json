@@ -1,0 +1,16 @@
+{
+  "schema": "aukora-swarm-sandbox-profile-v1",
+  "profileId": "sbx-invalid",
+  "readablePaths": ["/tmp"],
+  "writablePaths": ["/tmp"],
+  "deniedPaths": [],
+  "networkPolicy": "allow-all",
+  "environmentAllowlist": ["*"],
+  "limits": {
+    "maxOutputBytes": -100,
+    "timeoutMs": 0,
+    "maxProcesses": 0
+  },
+  "enforcementBackend": "unknown",
+  "enforcementStatus": "INVALID"
+}

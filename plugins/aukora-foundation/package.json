@@ -1,0 +1,33 @@
+{
+  "name": "@aukora/dsh-plugin-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AUKORA foundation: sidebar brand slots (icon + AUKORA wordmark) and the AUKORA dark palette, delivered as a composed DSH client plugin.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-sidebar",
+        "@deepseek-ai/dsh-client-ui-theme",
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ],
+      "platform": "web"
+    }
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "assets"
+  ]
+}

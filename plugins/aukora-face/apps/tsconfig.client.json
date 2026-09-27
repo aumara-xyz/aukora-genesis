@@ -1,0 +1,37 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+  },
+  "files": [
+    "src/auma-canvas/types.ts",
+    "src/css-modules.d.ts",
+    "src/client/AumaLanguageSurface.tsx",
+    "src/client/AumaLiveSurface.tsx",
+    "src/client/auma-live-session.ts",
+    "src/client/DakiniCode.tsx",
+    "src/client/EmbeddedAppSurface.tsx",
+    "src/client/LuminaraSurface.tsx",
+    "src/client/StockAppMenu.tsx",
+    "src/client/ZetaHarpSurface.tsx",
+    "src/client/contract.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts"
+  ],
+  "references": [
+    { "path": "../ui-session" },
+    { "path": "../ui-renderer" },
+    { "path": "../connection/tsconfig.client.json" },
+    { "path": "../../api/session-controller/tsconfig.client.json" },
+    { "path": "../ui-conversation" },
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../runtime-diagnostics/invariants" },
+    { "path": "../../session/session-projection" },
+    { "path": "../locale" },
+    { "path": "../ui-slots" },
+    { "path": "../ui-primitives" },
+    { "path": "../aukora-face-layout" }
+  ]
+}

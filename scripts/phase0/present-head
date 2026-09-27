@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""present-head — present the current Aura head, with the proof that it extended what you kept.
+
+    python3 scripts/phase0/present-head --state <stateRoot> [--retained <file>] --out <file>
+
+With a retained observation in hand this writes a presented document carrying the
+current tree size, the current root, and the RFC 6962 consistency proof from the
+retained size to the current size. The pair is then a question a stranger can settle.
+
+With no retained observation — or with one that this state's stream can no longer
+extend, because an earlier record was rewritten — it prints CONSISTENCY_UNCHECKED and
+exits 3. It does not present a head as though the question had been asked and
+answered. An export that names a head without a retained/presented pair may not claim
+stranger-complete verification, so this refuses to be that export quietly.
+"""
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import phase0log  # noqa: E402
+
+DEFAULT_CHAIN_KEY = "genesis-phase0:aura-chain"
+UNCHECKED_EXIT = 3
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="present the current Aura head with a consistency proof")
+    parser.add_argument("--state", required=True, help="state root holding aura/records.jsonl")
+    parser.add_argument("--retained", help="a previously retained observation; defaults to the state's own kept copy")
+    parser.add_argument("--out", required=True, help="where to write the presented observation")
+    parser.add_argument("--chain-key", default=DEFAULT_CHAIN_KEY)
+    args = parser.parse_args(argv[1:])
+
+    def unchecked(reason: str) -> int:
+        print(f"CONSISTENCY_UNCHECKED\nREASON: {reason}")
+        print()
+        print("A head named without a retained/presented pair is not stranger-complete verification.")
+        print("Retain one now, and present against it later:")
+        print(f"  python3 scripts/phase0/retain-head --state {args.state} --out retained.json")
+        return UNCHECKED_EXIT
+
+    retained_file = args.retained or phase0log.retained_path(args.state, args.chain_key)
+    if not os.path.exists(retained_file):
+        return unchecked(f"no_retained_observation_at {retained_file}")
+
+    try:
+        retained = phase0log.read_document(retained_file)
+        hashes, _ = phase0log.leaf_hashes(args.state)
+    except phase0log.Phase0Error as exc:
+        return unchecked(str(exc))
+
+    size = retained.get("treeSize")
+    if not isinstance(size, int) or size < 1:
+        return unchecked(f"retained_observation_has_no_usable_tree_size: {retained_file}")
+    if size > len(hashes):
+        return unchecked(f"retained_size_{size}_exceeds_the_{len(hashes)}_records_present")
+    if retained.get("chainKey") not in (None, args.chain_key):
+        return unchecked(
+            f"retained_observation_is_for_chain_{retained.get('chainKey')}_not_{args.chain_key}")
+
+    # The producer-side check, and the only one this script makes: does the stream in
+    # front of us still extend the observation you kept? If the root over the first
+    # `size` records has moved, an earlier record was rewritten. Presenting a proof
+    # would then ask the court about a log that no longer exists, so this refuses
+    # instead of presenting. The court is not bypassed here; the pair is simply not
+    # produced, because producing it would bury the conflict inside the arithmetic.
+    retained_root = retained.get("root")
+    if isinstance(retained_root, str):
+        current_prefix = phase0log.tree_head(hashes[:size]).hex()
+        if current_prefix != retained_root:
+            print("CONSISTENCY_UNCHECKED")
+            print(f"REASON: retained_prefix_rewritten — the root over the first {size} records is now")
+            print(f"        {current_prefix}")
+            print(f"        but the retained observation says {retained_root}")
+            print()
+            print("An earlier record was rewritten, or this retained observation belongs to a")
+            print("different stream. The retained file is still the true earlier reading: keep it,")
+            print("and present the stream you actually have against it, in that order.")
+            return UNCHECKED_EXIT
+
+    if size == len(hashes):
+        # Nothing grew. The proof is empty by definition; whether the roots agree is
+        # exactly what the court decides, so an unchanged size is a legitimate case.
+        proof: list[str] = []
+    else:
+        try:
+            proof = [x.hex() for x in phase0log.proof_from(size, hashes)]
+        except phase0log.Phase0Error as exc:
+            return unchecked(str(exc))
+
+    current = phase0log.observation(len(hashes), hashes, 2, args.chain_key)
+    document = dict(current)
+    document["proofFromPrevious"] = proof
+    document["retainedTreeSize"] = size
+    document["presentedAt"] = phase0log.now_ms()
+
+    digest = phase0log.write_document(args.out, document)
+    print(f"PRESENTED      : {args.out}")
+    print(f"DOCUMENT_SHA256: {digest}")
+    print(f"treeSize       : {document['treeSize']}   (retained size {size})")
+    print(f"root           : {document['root']}")
+    print(f"proofFromPrevious: {len(proof)} digest(s)")
+    print()
+    print("Now the whole question, and no trust in this program required:")
+    print(f"  python3 vendor/phase0-consistency/verify.py {retained_file} {args.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

@@ -1,0 +1,2040 @@
+{
+  "domain": "aukora:kernel-deps-pin:v1",
+  "repo": "github.com/aumara-xyz/aukora",
+  "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+  "paths": [
+    "packages/kernel/package.json",
+    "package-lock.json",
+    "packages/kernel/SBOM.cdx.json"
+  ],
+  "pinnedBy": {
+    "packages/kernel/package.json": {
+      "gitBlob": "f8bba66ebec87f04cc1e8c9f9792ca58c912bf6d",
+      "dependencies": {
+        "@noble/curves": "2.2.0",
+        "@noble/hashes": "2.2.0",
+        "@noble/post-quantum": "0.6.1"
+      }
+    },
+    "package-lock.json": {
+      "gitBlob": "997e3a081a859f79f620950d4be9f49c68d493eb",
+      "sha256": "500e3add8c686d5ff7e5d464913e74027d77c9086f800ba5c3f6650b2233291a",
+      "lockfileVersion": 3
+    },
+    "packages/kernel/SBOM.cdx.json": {
+      "gitBlob": "dea591ddcd711cb581fe5b8be5c7fced78b926f9",
+      "components": [
+        "@noble/ciphers@2.2.0",
+        "@noble/curves@2.2.0",
+        "@noble/hashes@2.2.0",
+        "@noble/post-quantum@0.6.1"
+      ],
+      "note": "the kernel's own CycloneDX SBOM lists exactly these four packages as required, with the same SHA-512"
+    }
+  },
+  "taken": "Each tarball was read from the local npm cache (~/.npm/_cacache/content-v2/sha512/..., content-addressed by the same sha512 the lockfile records), its sha512 re-computed and compared with the def297f package-lock.json integrity, then extracted with `tar -xzf <tgz> --strip-components 1 -C deps/<name>@<version>`. Every file below is a tar member byte for byte (compared member by member); nothing was added, removed or rewritten. No network, nothing installed.",
+  "packages": [
+    {
+      "name": "@noble/curves",
+      "version": "2.2.0",
+      "dir": "@noble/curves@2.2.0",
+      "license": "MIT",
+      "licenseFile": "@noble/curves@2.2.0/LICENSE",
+      "role": "ed25519 (the classical half of the hybrid authorization); `@noble/curves/utils.js` and `abstract/fft.js` for ML-DSA",
+      "pinnedBy": "packages/kernel/package.json",
+      "lockfile": {
+        "key": "node_modules/@noble/curves",
+        "version": "2.2.0",
+        "resolved": "https://registry.npmjs.org/@noble/curves/-/curves-2.2.0.tgz",
+        "integrity": "sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ==",
+        "dependencies": {
+          "@noble/hashes": "2.2.0"
+        }
+      },
+      "tarball": {
+        "integrity": "sha512-T/BoHgFXirb0ENSPBquzX0rcjXeM6Lo892a2jlYJkqk83LqZx0l1Of7DzlKJ6jkpvMrkHSnAcgb5JegL8SeIkQ==",
+        "integrityMatchesLockfile": true,
+        "integrityMatchesKernelSbom": true,
+        "bytes": 436285,
+        "members": 113,
+        "unpackedBytes": 1874513
+      }
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "2.2.0",
+      "dir": "@noble/hashes@2.2.0",
+      "license": "MIT",
+      "licenseFile": "@noble/hashes@2.2.0/LICENSE",
+      "role": "sha256 and the byte helpers the kernel imports; sha512 for ed25519; shake128/256 for ML-DSA",
+      "pinnedBy": "packages/kernel/package.json",
+      "lockfile": {
+        "key": "node_modules/@noble/hashes",
+        "version": "2.2.0",
+        "resolved": "https://registry.npmjs.org/@noble/hashes/-/hashes-2.2.0.tgz",
+        "integrity": "sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==",
+        "dependencies": {}
+      },
+      "tarball": {
+        "integrity": "sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==",
+        "integrityMatchesLockfile": true,
+        "integrityMatchesKernelSbom": true,
+        "bytes": 180002,
+        "members": 98,
+        "unpackedBytes": 889457
+      }
+    },
+    {
+      "name": "@noble/post-quantum",
+      "version": "0.6.1",
+      "dir": "@noble/post-quantum@0.6.1",
+      "license": "MIT",
+      "licenseFile": "@noble/post-quantum@0.6.1/LICENSE",
+      "role": "ML-DSA-65 (the post-quantum half of the hybrid authorization)",
+      "pinnedBy": "packages/kernel/package.json",
+      "lockfile": {
+        "key": "node_modules/@noble/post-quantum",
+        "version": "0.6.1",
+        "resolved": "https://registry.npmjs.org/@noble/post-quantum/-/post-quantum-0.6.1.tgz",
+        "integrity": "sha512-+pormrDZwjRw05U8ADK4JpHejo87+gBd+muRBB/ozztH5yhDLMDF4jHQWN3NQQAsu1zBNPWTG0ZwVI0CR29H0A==",
+        "dependencies": {
+          "@noble/ciphers": "~2.2.0",
+          "@noble/curves": "~2.2.0",
+          "@noble/hashes": "~2.2.0"
+        }
+      },
+      "tarball": {
+        "integrity": "sha512-+pormrDZwjRw05U8ADK4JpHejo87+gBd+muRBB/ozztH5yhDLMDF4jHQWN3NQQAsu1zBNPWTG0ZwVI0CR29H0A==",
+        "integrityMatchesLockfile": true,
+        "integrityMatchesKernelSbom": true,
+        "bytes": 200021,
+        "members": 43,
+        "unpackedBytes": 832395
+      }
+    },
+    {
+      "name": "@noble/ciphers",
+      "version": "2.2.0",
+      "dir": "@noble/ciphers@2.2.0",
+      "license": "MIT",
+      "licenseFile": "@noble/ciphers@2.2.0/LICENSE",
+      "role": "NOT on the kernel import path: a declared dependency of @noble/post-quantum 0.6.1, pinned 2.2.0 by the same lockfile and listed as a required component in the kernel SBOM, carried so the pinned set is complete",
+      "pinnedBy": "@noble/post-quantum@0.6.1 dependencies (\"@noble/ciphers\": \"~2.2.0\") and package-lock.json",
+      "lockfile": {
+        "key": "node_modules/@noble/ciphers",
+        "version": "2.2.0",
+        "resolved": "https://registry.npmjs.org/@noble/ciphers/-/ciphers-2.2.0.tgz",
+        "integrity": "sha512-Z6pjIZ/8IJcCGzb2S/0Px5J81yij85xASuk1teLNeg75bfT07MV3a/O2Mtn1I2se43k3lkVEcFaR10N4cgQcZA==",
+        "dependencies": {}
+      },
+      "tarball": {
+        "integrity": "sha512-Z6pjIZ/8IJcCGzb2S/0Px5J81yij85xASuk1teLNeg75bfT07MV3a/O2Mtn1I2se43k3lkVEcFaR10N4cgQcZA==",
+        "integrityMatchesLockfile": true,
+        "integrityMatchesKernelSbom": true,
+        "bytes": 163727,
+        "members": 53,
+        "unpackedBytes": 726834
+      }
+    }
+  ],
+  "resolutionLinks": [
+    {
+      "path": "node_modules/@noble/curves",
+      "target": "../../@noble/curves@2.2.0",
+      "why": "Node resolves the bare `@noble/curves/...` specifiers inside the untouched packages here (deps/node_modules is the nearest one); it realpaths to @noble/curves@2.2.0"
+    },
+    {
+      "path": "node_modules/@noble/hashes",
+      "target": "../../@noble/hashes@2.2.0",
+      "why": "Node resolves the bare `@noble/hashes/...` specifiers inside the untouched packages here (deps/node_modules is the nearest one); it realpaths to @noble/hashes@2.2.0"
+    },
+    {
+      "path": "node_modules/@noble/post-quantum",
+      "target": "../../@noble/post-quantum@0.6.1",
+      "why": "Node resolves the bare `@noble/post-quantum/...` specifiers inside the untouched packages here (deps/node_modules is the nearest one); it realpaths to @noble/post-quantum@0.6.1"
+    },
+    {
+      "path": "node_modules/@noble/ciphers",
+      "target": "../../@noble/ciphers@2.2.0",
+      "why": "Node resolves the bare `@noble/ciphers/...` specifiers inside the untouched packages here (deps/node_modules is the nearest one); it realpaths to @noble/ciphers@2.2.0"
+    }
+  ],
+  "kernelImportClosure": {
+    "note": "The modules node loads for the four @noble specifiers the kernel imports (static ESM graph). Everything else in the packages is carried, not executed.",
+    "modules": [
+      "@noble/curves@2.2.0/abstract/curve.js",
+      "@noble/curves@2.2.0/abstract/edwards.js",
+      "@noble/curves@2.2.0/abstract/fft.js",
+      "@noble/curves@2.2.0/abstract/frost.js",
+      "@noble/curves@2.2.0/abstract/hash-to-curve.js",
+      "@noble/curves@2.2.0/abstract/modular.js",
+      "@noble/curves@2.2.0/abstract/montgomery.js",
+      "@noble/curves@2.2.0/abstract/oprf.js",
+      "@noble/curves@2.2.0/ed25519.js",
+      "@noble/curves@2.2.0/utils.js",
+      "@noble/hashes@2.2.0/_md.js",
+      "@noble/hashes@2.2.0/_u64.js",
+      "@noble/hashes@2.2.0/sha2.js",
+      "@noble/hashes@2.2.0/sha3.js",
+      "@noble/hashes@2.2.0/utils.js",
+      "@noble/post-quantum@0.6.1/_crystals.js",
+      "@noble/post-quantum@0.6.1/ml-dsa.js",
+      "@noble/post-quantum@0.6.1/utils.js"
+    ],
+    "crossPackageBareImports": [
+      "@noble/curves@2.2.0/abstract/frost.js -> @noble/hashes/utils.js",
+      "@noble/curves@2.2.0/ed25519.js -> @noble/hashes/sha2.js",
+      "@noble/curves@2.2.0/ed25519.js -> @noble/hashes/utils.js",
+      "@noble/curves@2.2.0/utils.js -> @noble/hashes/utils.js",
+      "@noble/post-quantum@0.6.1/_crystals.js -> @noble/curves/abstract/fft.js",
+      "@noble/post-quantum@0.6.1/_crystals.js -> @noble/hashes/sha3.js",
+      "@noble/post-quantum@0.6.1/ml-dsa.js -> @noble/curves/utils.js",
+      "@noble/post-quantum@0.6.1/ml-dsa.js -> @noble/hashes/sha3.js",
+      "@noble/post-quantum@0.6.1/utils.js -> @noble/hashes/utils.js"
+    ]
+  },
+  "files": [
+    {
+      "path": "@noble/ciphers@2.2.0/LICENSE",
+      "gitBlob": "5a53d5f181739a33f6ea3e58bd464f4ec25cd458",
+      "sha256": "f36671a5487c9c5050efacb58011c37c24c55a889803cb036cf9d9a6347c1e2d",
+      "bytes": 1161
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/README.md",
+      "gitBlob": "aea8e6b69a3b33c48f365b43ec640ce9b6b5d894",
+      "sha256": "e8b7fa9b8536b67d1bf535b219c095e22fd1a011abf7970b3d268abd6771f4da",
+      "bytes": 26915
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_arx.d.ts",
+      "gitBlob": "e8c79315c2c09232f403e818baa207317b04c054",
+      "sha256": "29b8c817d7bdb02be2b6d73fb07476cb16e1f9ad448fd9e1fe3281eab040195c",
+      "bytes": 6513
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_arx.d.ts.map",
+      "gitBlob": "2d385c03054edfd24649fdf63efcabb9b2e260bb",
+      "sha256": "71fc6c627cb9b711e65135746077705c5d35f3b09235bb9db28a2213520ecdf0",
+      "bytes": 2099
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_arx.js",
+      "gitBlob": "e182c7b01f23ae2115a81c5b9b4b2ecc35e7db95",
+      "sha256": "716513b7eaa43115c3371420094eaa7dfb6d9d28d928e4237e705df1e9e2e2e1",
+      "bytes": 16542
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_arx.js.map",
+      "gitBlob": "ac5be2d5284418fa44d315890fe39077def2b558",
+      "sha256": "4df8a2223ea4319d1baba2e2e50683d2e07fcebf17f380adcc18b9ac05183534",
+      "bytes": 11180
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_poly1305.d.ts",
+      "gitBlob": "479a890ce7e9f3255239191ef14a5fff6f51919a",
+      "sha256": "c7e8f05eb9807296b2accf15999435d992dff30ba4bd03fa15685585d43937d8",
+      "bytes": 2743
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_poly1305.d.ts.map",
+      "gitBlob": "bd03e626bc75e60675c3b501b27cf01097e09dfb",
+      "sha256": "784c4427bccbf007c7497a64cd1e166b4edfe0d9830138ed1997df76d50d225b",
+      "bytes": 912
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_poly1305.js",
+      "gitBlob": "deff7b02757598066e3922990bef8d3fcf3c5b76",
+      "sha256": "add658c1b6aaf894c023083ed14bd1d1126e15baa9e63ba97664c28e68a01703",
+      "bytes": 14291
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_poly1305.js.map",
+      "gitBlob": "d6f4f2f8e2df67323150703fe237597533ed5344",
+      "sha256": "d8ae2ed855ab6fa72ca1fa8bfc777c80f0c3b71fe31f91aa963804e7f6ef2c3c",
+      "bytes": 17728
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_polyval.d.ts",
+      "gitBlob": "ba5f5fbb2a4d49f46635839046baf1d9e35ad5be",
+      "sha256": "4cefc8f8e6b657d66a729d109de17b044459a372898a99f2e59f72566e970be6",
+      "bytes": 4091
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_polyval.d.ts.map",
+      "gitBlob": "ac3f9c68dcb16408eb3627b98de878a24e94caaf",
+      "sha256": "6a9bcccaa33b2ebfc5390f4d9f8f99bfcac3cb807b1c718ffacb784d19731da1",
+      "bytes": 1654
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_polyval.js",
+      "gitBlob": "38db8e4a0f3521a3a84504d6973b1edb22443ba5",
+      "sha256": "87a6cdf9cad2cec61229404cc7f8da1214952a76114b8a6342a3e771f1127cd1",
+      "bytes": 12947
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/_polyval.js.map",
+      "gitBlob": "bb454fdba5d5990b22db3c8319d274ccea2035d0",
+      "sha256": "8709860198689b5bdcefa3f2d32f039ec53879e6d7f0318bc71a2887fcb83930",
+      "bytes": 10836
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/aes.d.ts",
+      "gitBlob": "1dab65fdab3856107a6b0e66d061d607b0bd78b6",
+      "sha256": "0c78747da9a236a01ac8f48aceab3c5f71d34a4acb5a4ad443763ad8799ef324",
+      "bytes": 17864
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/aes.d.ts.map",
+      "gitBlob": "f1ce7e86f0d38aeb31808a5c30146b1d1c557237",
+      "sha256": "9862cfc5579a5d42ada510d115ccb78292355b648dc2ea50b5ad621eaa04f949",
+      "bytes": 6486
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/aes.js",
+      "gitBlob": "fdd85a530c7a90f38cf921f03470a2082e57e652",
+      "sha256": "d079978bb7dac51e88586dd881ea3d7be010624b876d332f395f4a2b934f5fbc",
+      "bytes": 76796
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/aes.js.map",
+      "gitBlob": "3a71e272861a6af155a0a58261da832c6800414e",
+      "sha256": "00f2621b1e5335dfea4fcd6d5f4d855a911ddb538d7443157bb1df41baf46ccb",
+      "bytes": 60465
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/chacha.d.ts",
+      "gitBlob": "55c5983c9153b7921ffa56d2168dd6f97e891b8b",
+      "sha256": "2447df8b537a868fc56324c9cc19629a6b0717f7807f577e2594c224515de550",
+      "bytes": 10109
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/chacha.d.ts.map",
+      "gitBlob": "4d37373b461d7fa8a71c612093a1618f71468fbb",
+      "sha256": "3c969f28e13bb78e62f3544724f87a0cf18dd2727341367d4ee03aa48d0781d8",
+      "bytes": 1774
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/chacha.js",
+      "gitBlob": "97ecca27eef1688b6208506c0ce749ba1f9970d5",
+      "sha256": "78a9d8f9e4061212370dd216debe1e8a0cc52b7f2f94325fe278af039f033e80",
+      "bytes": 22648
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/chacha.js.map",
+      "gitBlob": "349a252666ad9fff9783254bcdbc6efbe84f7efe",
+      "sha256": "3353e2036ba72ff19948135864ea894f95188b2c0b154b48da086400c13548d4",
+      "bytes": 19333
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/ff1.d.ts",
+      "gitBlob": "7eadb8782f6fc6a3e3896afd47a2662486120ae2",
+      "sha256": "af5ca149d51d88ae0c48a0da9245a48f78f9d2d85ee49e6ed3368a0d5635b349",
+      "bytes": 1408
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/ff1.d.ts.map",
+      "gitBlob": "f2ae60ff344ffcf0387e140cc5cd59f8ec684649",
+      "sha256": "10c08b2771cc47b2d58fc63433b357884c750759c8bb79484a53144a6508910b",
+      "bytes": 581
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/ff1.js",
+      "gitBlob": "79679bab0eb245ddc0b8f601d422646d2c664a77",
+      "sha256": "c13c255ba20d60a3f19ff6446e72ecc623420c6952f56c1b9c31dca49b0cd25a",
+      "bytes": 8117
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/ff1.js.map",
+      "gitBlob": "8a4131a55b343f11db3bb1f46ec376820995ebfc",
+      "sha256": "cc2f0014503939186294bb4842cd469faccdf2927481b8fee8e6b62d482b8c96",
+      "bytes": 8193
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/index.d.ts",
+      "gitBlob": "e26a57a8ca84c682b2b77b57b9d6e340ffd33436",
+      "sha256": "f667f6b1d66ba55f0dcd27f5ff050063fecfe289bad00e8c5d48344a775c1439",
+      "bytes": 46
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/index.d.ts.map",
+      "gitBlob": "4e8c5816b41ae88c764eefae33e5eb965d87148b",
+      "sha256": "7755bad6a1fd1a6a721ae0bbaac3da2d95847c72f2dff7bdaf44d56cd82ac9d9",
+      "bytes": 101
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/index.js",
+      "gitBlob": "c531a4138073fa3b6b44e05c7285c33c0e7b780d",
+      "sha256": "38cb06129f98972c1ee031afc63e10c285d66384da60299e32d8cabd4b5625c9",
+      "bytes": 1102
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/index.js.map",
+      "gitBlob": "b4a54840a86844f05118b749f8c512b2d233f89b",
+      "sha256": "be8c13ac53d042e7925eb2b352d2e8b97a204aec67af9a0843286a80e3f2b7a1",
+      "bytes": 173
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/package.json",
+      "gitBlob": "2f176853e7e63140626de1a85f7a56c3e4a4dfa0",
+      "sha256": "4038bb147bd3e6e862fcf93c2cb119007a6474038421f29a6a7d32967c6a1a1c",
+      "bytes": 2449
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/salsa.d.ts",
+      "gitBlob": "a56e465b44727070b622fbf5a921eb467a1490fc",
+      "sha256": "db90972f907f1f67301e37caeb9568837dd6d3a2e377b07f729eb220e6836cc9",
+      "bytes": 4596
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/salsa.d.ts.map",
+      "gitBlob": "de0f2e0640c8ee06d4cb1128f18bca7a34b4fe79",
+      "sha256": "6e306cf5a5540f7274f91e5b5a3794ac8b666fad7407ed95a6c5e2b60c8ad30f",
+      "bytes": 1036
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/salsa.js",
+      "gitBlob": "8574db2c4dd8be7007fcba3767658fe4b2317d42",
+      "sha256": "624617b6135a84e68e4eafcd80b45d7c0406330641cfc18b978b3918b35838d3",
+      "bytes": 15730
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/salsa.js.map",
+      "gitBlob": "6a801a11a89368f9c1ca079b3551ef934efc0241",
+      "sha256": "8378a1248e6302b206935fd886aa2f20b0c57deae770e758c8aa003e866bd778",
+      "bytes": 14265
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/_arx.ts",
+      "gitBlob": "fd43e9462a576b8e37299abc5c35eaf06376c601",
+      "sha256": "7e7be397dd11e6a4238e13a80e4abd5111704938dfbac4fe003569746907699b",
+      "bytes": 19135
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/_poly1305.ts",
+      "gitBlob": "351a47987dcc73f44d3118f2bad121dd936adec9",
+      "sha256": "bf95715705fe8ab30d310e111056fac19aea68c0098fdf64d75a84cbdf46ce60",
+      "bytes": 13754
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/_polyval.ts",
+      "gitBlob": "f94b885410768a6579342e83a5e397c47e5030f3",
+      "sha256": "6ea7d020e8771661fd5ae50a81b55628a4776dd908f3ede1148206b84d5ad995",
+      "bytes": 13143
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/aes.ts",
+      "gitBlob": "960d67cc969b11b90a3f1262bea437c9ee1c7ea9",
+      "sha256": "984c3b2fc5107e697cd62718e650e68842e0c1c498cee72011458377f0951056",
+      "bytes": 80492
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/chacha.ts",
+      "gitBlob": "7b1d7c38f531d1a6701db3e56ab98ca4a7ed2586",
+      "sha256": "d8463828c79b1e805300a4fe06367bd8cebc2d1599c3e6748c3041d263f27e99",
+      "bytes": 22998
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/ff1.ts",
+      "gitBlob": "45a178efcc8f13faa1d84f8ae5117506bb71426a",
+      "sha256": "9bba08d42f4de59651902c8fc08f8058e7b3d919eb51e6880bf90c11c4d0b273",
+      "bytes": 8336
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/index.ts",
+      "gitBlob": "466af8287e83f77dbb6150d6a99e1548591dde99",
+      "sha256": "7f0a1638598b9bff44aa83009a01fcf6a077c8406c6b0afbf80444d49edb66e9",
+      "bytes": 1058
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/salsa.ts",
+      "gitBlob": "840fbc1c100f9165077a981395bb21f677b9a68f",
+      "sha256": "fc12f296418e950532a4e3c2972e79b03ac40f49f84e086bb52c94e769a8ac59",
+      "bytes": 16167
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/utils.ts",
+      "gitBlob": "08b6d0dfeb93ec6b851713e928a5199427311981",
+      "sha256": "bad057c5237a5bdd174deac7cf978fb1d92b27f512b324fe22dcf01278f1bee2",
+      "bytes": 42089
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/src/webcrypto.ts",
+      "gitBlob": "889d91e54ad29de7df829f5c6b5b6128163e6410",
+      "sha256": "7539db1a8ad166b4a7856caa5a1302843293d8611622727804ff9e644fdbda5c",
+      "bytes": 8005
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/utils.d.ts",
+      "gitBlob": "2aee9dfc8253a373fccbd71d2db7d57f175a49fb",
+      "sha256": "f4c8dae46451e66bed3175f66473a706b4bb7de6dd15fa2f39b842b21650d773",
+      "bytes": 28684
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/utils.d.ts.map",
+      "gitBlob": "8242ae79e4a4303a92091adc281c673900dcaa32",
+      "sha256": "ca05e2be91fb6ecb05d70d078d71299856f172c1e6e119bfe97766cd22963dfd",
+      "bytes": 11198
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/utils.js",
+      "gitBlob": "692efa06b4fb94f741e7af7f7bf99e148d3d192f",
+      "sha256": "cfb9806b3339c79544a48a7026ee3c868cd1f0a1555c5eef4854b7eec43ccb63",
+      "bytes": 29143
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/utils.js.map",
+      "gitBlob": "fd8c6e3d953815c6f720c65de5211333d4bf4c16",
+      "sha256": "c0d2c28ac175cb3951cbfb2624145ba86124779cf57cf85ef5a0d25660b0d820",
+      "bytes": 14788
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/webcrypto.d.ts",
+      "gitBlob": "4f4985f9e8899e2363c4aae6aa31db965ce08fd3",
+      "sha256": "e72b64b58620292fcd60eb0bb613af36099d97ce57ff57a77322dcf9755fe8b1",
+      "bytes": 3393
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/webcrypto.d.ts.map",
+      "gitBlob": "b42e059d4ce4a3a8922297f13d2cf67984f57555",
+      "sha256": "7045846ca65a4127aa8a33f295bc628b2a1a3a71a12f2799eeb82bd4ca8a6c25",
+      "bytes": 1363
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/webcrypto.js",
+      "gitBlob": "78e44a53a2c6a2eb0e8eaf9468d64ff50d055edb",
+      "sha256": "eb4786239603cf1cd0dc21ee34faad0062e9a8b7c6d597f74ec09d84d02354f6",
+      "bytes": 6616
+    },
+    {
+      "path": "@noble/ciphers@2.2.0/webcrypto.js.map",
+      "gitBlob": "9c0edf584cf892d06df7333392dae4c9d8de8a1a",
+      "sha256": "7a7d59ea115050824161155079075979f3ee97330b8d7a1b1965039d2bdea07e",
+      "bytes": 3588
+    },
+    {
+      "path": "@noble/curves@2.2.0/LICENSE",
+      "gitBlob": "9297a046d01cf521f93679535be51a8e5b736c0d",
+      "sha256": "4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec",
+      "bytes": 1109
+    },
+    {
+      "path": "@noble/curves@2.2.0/README.md",
+      "gitBlob": "77a998a58860121e759716cea5bc91e08f87d95a",
+      "sha256": "9854e5789a03b893bc3768cd669f25db0b4f3df403fa7aed5df367e4352a5646",
+      "bytes": 46558
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/bls.d.ts",
+      "gitBlob": "1ade638216ef3e817aade3bcfbeb6be1f2c35da7",
+      "sha256": "c8c78aa94b4a38637adc337de836cb041eb527c5524cb49bd2fe26520a5d159e",
+      "bytes": 17626
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/bls.d.ts.map",
+      "gitBlob": "55d82eb2aa4e93afad0873c32e48329e7c3df769",
+      "sha256": "cf50fcc7be30c8304f007df1e2fd803a1b099c767da382b71ca8882806e09d61",
+      "bytes": 6795
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/bls.js",
+      "gitBlob": "56e83db942dac803e2540dfdd29eaf36827beaee",
+      "sha256": "85d8a2c893c5dc68399620edb069125533fa7e894d7b25231d3077239398b425",
+      "bytes": 19813
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/bls.js.map",
+      "gitBlob": "91b4fd8895a5f73424924ecd19dc052898b22a13",
+      "sha256": "14bbdc65e49ea0dd7153a4d1a5bd0937124a072740db6494e1275459e2e6ecd2",
+      "bytes": 16133
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/curve.d.ts",
+      "gitBlob": "8e98cccc1796092ac3ce821563333bb8a354dba1",
+      "sha256": "77c8470b0c4e7c753019282e09de7e3cb211d19554b4c5f4dc9c63f4f99d6869",
+      "bytes": 17941
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/curve.d.ts.map",
+      "gitBlob": "78f2910232503feb336315c4f072483ff56525e5",
+      "sha256": "29cd791c2860f925abf7ebd3862fd2c6183cb540727640f3463f29f53b3c9446",
+      "bytes": 6574
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/curve.js",
+      "gitBlob": "6808517e4949df2b5fb780fa4decb2ec0602e0df",
+      "sha256": "fa597b90ed89a5c9fc659231b2af94679c290724d2db419fee0c3e3902902fb3",
+      "bytes": 24560
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/curve.js.map",
+      "gitBlob": "a60e31547e04f4ccba57871cf59a2a8f82a338cd",
+      "sha256": "e8deedbc931c89f84c6876285b5937b569c4349ecda00cb3eee9ff08b13a5002",
+      "bytes": 14499
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/edwards.d.ts",
+      "gitBlob": "ccfe3d442f2cdaec9a2b496d52cf43babe23999a",
+      "sha256": "8b58881cb85ba02eaf002107bc0be0151414ba8ec082a4371830f09bfa75d9c2",
+      "bytes": 13353
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/edwards.d.ts.map",
+      "gitBlob": "6393e1f43ad7dbe6fc96a0065cae1c1af08ff644",
+      "sha256": "381271762ae6c457b2bb2b3d01e760edaf580f0f4c48679ccec3833e8d855bc6",
+      "bytes": 5475
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/edwards.js",
+      "gitBlob": "ee5cefc48f59508298f48cfe594b55d0230c2b0a",
+      "sha256": "4b58e733183b915d1b4c73c675e54f3d24e895f04ddff21bbb19dd848dae3c9e",
+      "bytes": 30593
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/edwards.js.map",
+      "gitBlob": "2bba3b7f180b107868ab13a11517ad00f81f015c",
+      "sha256": "55ab0fd84d28f961276b349a542ebdb68fc7f1c779180a7951584a684c8ca345",
+      "bytes": 22476
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/fft.d.ts",
+      "gitBlob": "de23516625e53431b96ff7b7b21d58701dfcbaf8",
+      "sha256": "a9e3cf2a36a402556435370c0d9e7e21738a19f428ce94672f20535058c62dfb",
+      "bytes": 16327
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/fft.d.ts.map",
+      "gitBlob": "93d9f622be0883e1dd921b0dc252f4036f49ea9a",
+      "sha256": "6a7f95cede4fc86a46000e2354286332a018b84f409cec740ab57ca6599d38a7",
+      "bytes": 5642
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/fft.js",
+      "gitBlob": "db818e665d408e2e148be8ab12e4debf31a579fc",
+      "sha256": "b3ad080004e7d6db3839fef60de78ec12847ff508bd6a44c7e58c4658e5202b3",
+      "bytes": 21482
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/fft.js.map",
+      "gitBlob": "05e32be403197214197d111f45079469c372964e",
+      "sha256": "19e5bf1089044f974b82a651913dc7cf63f85760c54130c87cf47a7881e91507",
+      "bytes": 19154
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/frost.d.ts",
+      "gitBlob": "9c2b3a6b60f8d78a4c0a32b5a104f097290c34f6",
+      "sha256": "c7daa95773371f6b985ee0f44d0fac79b111d04f4923205f492f90b8ee9e3796",
+      "bytes": 13125
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/frost.d.ts.map",
+      "gitBlob": "5d15170210d20b3a5691e66521cfcee44ee504cc",
+      "sha256": "888fb603c7b5ff5ed1102b6ec1cd439f2e62ed567ffc7a3624c27e1b959490ba",
+      "bytes": 7347
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/frost.js",
+      "gitBlob": "3653ffa16bfff8dcbd4af578c7e57e5045468567",
+      "sha256": "30ea2d4cb60117b06ea74cd06d1ee1a1270d2df728407fa437c7d5e382946591",
+      "bytes": 36562
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/frost.js.map",
+      "gitBlob": "153db08c5797eb33d3a2415583c0cc0a9f498384",
+      "sha256": "1c198fd51cab145e87ebdd9f40fe6842df5a33409af17b4581b1427c68117d91",
+      "bytes": 31592
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/hash-to-curve.d.ts",
+      "gitBlob": "64e5d61119cf12ac744455255c42bf79809b3d0e",
+      "sha256": "8f6ca4f9652c9f86ddb7a13d7e31ec808387af06fcdc610d9cbcbccadc05931d",
+      "bytes": 10006
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/hash-to-curve.d.ts.map",
+      "gitBlob": "b6cd38fccf260ce781ae52bb1c4897f9231b50b0",
+      "sha256": "943af539a40a51574839722a9e78afb1132144d0aea29a9f89d0e25589c861ff",
+      "bytes": 3385
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/hash-to-curve.js",
+      "gitBlob": "0b458272a62ad5e9a783ad04a0811930ac8b623b",
+      "sha256": "5ea9542031ac4c9c94e6817de1384d52b68fcfde9724fe06a06f3ab613a74c3f",
+      "bytes": 14886
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/hash-to-curve.js.map",
+      "gitBlob": "b1b9b286ca957e0a5ec7702c2d6a03f2bab392f6",
+      "sha256": "51e53b0ddc0a40575d592431bae4f99a178812424c35a2cf31e5fdeed01a7996",
+      "bytes": 9813
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/modular.d.ts",
+      "gitBlob": "af8d1b5bd60448170276fb65871255501df8b3c1",
+      "sha256": "6166ff2b901ca77dc9d58169f797bc926dbc9de96163ee4a720f2f11f5b3addb",
+      "bytes": 20380
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/modular.d.ts.map",
+      "gitBlob": "022524714d0b7edccfcfe0f5c8d94bd62832cec0",
+      "sha256": "5e8da00280220e916255a698e8c5dcac6c95047796398474feedbbcc51b6795e",
+      "bytes": 5255
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/modular.js",
+      "gitBlob": "157f239d06248640942c9c35d262b459fe152531",
+      "sha256": "3af2a1f790880bcffb7730f53b4a91ab87c32701be8f1848a236cfae83b1101b",
+      "bytes": 33433
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/modular.js.map",
+      "gitBlob": "21f9457da3830bf95adea81a4153fc0d5944c2ff",
+      "sha256": "fa6229f9e175eaa4d6b3b750e3996b51a7110c7126409b0d6e4bd4e686dbf311",
+      "bytes": 19923
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/montgomery.d.ts",
+      "gitBlob": "836cd93d365e22b0b98100db1473627d58805415",
+      "sha256": "64346ae208817553bdc240c54bb8a03745f4e68594fbaf40c5a7b18b07fdfd67",
+      "bytes": 3806
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/montgomery.d.ts.map",
+      "gitBlob": "a8df1c8d12572d306b9a9852fcc1f806e320624b",
+      "sha256": "421083e2062811e3be4c2383e455e456c5ba40daede4ae1609f05421d196e9ea",
+      "bytes": 1601
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/montgomery.js",
+      "gitBlob": "2a5dceab4c42c0e32ca8fd0fc2ff03e5f7c4ebdc",
+      "sha256": "86f9e542f8781197a3ba0de7a5456fb7d10eb23ffbdbf25ac3937aae0044b805",
+      "bytes": 7346
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/montgomery.js.map",
+      "gitBlob": "a848bbadc46a83a82c4e8a085d435a0e77ba4979",
+      "sha256": "456d4e304187256d7b674d0f841ed14e554d97fb52a51c0b5d2946508704adc7",
+      "bytes": 6025
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/oprf.d.ts",
+      "gitBlob": "0ebf1e0f13cb0b3487d8f29e2f7584248959a1cd",
+      "sha256": "ac9d10d061c3c6ccc196d24f63f77cfb34c7f4d3d5dcf7c0e2e3803648c675ca",
+      "bytes": 18276
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/oprf.d.ts.map",
+      "gitBlob": "91c8ec94a00c3f436fcf077592d30a24b89e0b56",
+      "sha256": "e6bb95d0f748ec9ce23774c95f5be96a901766ef072a0c927a02ed8901904294",
+      "bytes": 5405
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/oprf.js",
+      "gitBlob": "32dc1f04f7c578bf7e19ae470f227e616e30c594",
+      "sha256": "26105837d73772874441a0b77c1bc292c35385cb46bdbd076c70dc59fb0ff0fa",
+      "bytes": 17227
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/oprf.js.map",
+      "gitBlob": "6d6380f56ff3a3dde7d08970655453e8f6819d79",
+      "sha256": "d1dccef78aaacbd005574b6e0686b22a0ef4a3c4b62e2e8ef68907c1cd5b86bd",
+      "bytes": 15585
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/poseidon.d.ts",
+      "gitBlob": "441f43555f1c3ef98986d1078fccdf328de22771",
+      "sha256": "ca26e9c17cebf439440dd069f8acc768d5f3fdcfd099b8875be29fa9904158e9",
+      "bytes": 7599
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/poseidon.d.ts.map",
+      "gitBlob": "7741b1632aea7a21a4b9c99985831597f4c78e6d",
+      "sha256": "5993924c18fe86457c764c08af82c55285ee802f96a749fd368de0ec3d9346ea",
+      "bytes": 2643
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/poseidon.js",
+      "gitBlob": "45fdcebb0341ae25bc503af1f365f6ef7276e181",
+      "sha256": "c436d17050b6061fa4cb51262126cb7249bbf9d886133313c17f1bf87e6eab0f",
+      "bytes": 18491
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/poseidon.js.map",
+      "gitBlob": "97036f0c0892beb065a74c80a72c10ffac9e21cc",
+      "sha256": "8fdace2cba5e2b8a3c72f8af093799c0c4afb86d9a5ad49cb06b63b2795af9bb",
+      "bytes": 14211
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/tower.d.ts",
+      "gitBlob": "02559d83dca80519c836a083393ec683c36e9d8f",
+      "sha256": "4a27dae71bc104129867d9520feba8d011a47a335b7b67fb8616bdcf789ed6f6",
+      "bytes": 7895
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/tower.d.ts.map",
+      "gitBlob": "7991bc058311fbc29ba664ddf4beaa44ba65b455",
+      "sha256": "2cb6760a5edaebadbea93286966f3ba10caea7e2dbc1f658f9e6f368acb6d611",
+      "bytes": 4988
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/tower.js",
+      "gitBlob": "c1f8420e500b0300d3158d8c95c8b322f0fa6a47",
+      "sha256": "86defd3414b13d629f527ef9d6db2090b696caa2fca7dd21eafb88c5329ed655",
+      "bytes": 35183
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/tower.js.map",
+      "gitBlob": "28768874985dd9ed2e8458cb4cceec08ce6fc706",
+      "sha256": "aab35e6d44fb3fb35e4fef3b67c75ffaa48fa3845901ca055f392b9e06f2ad6d",
+      "bytes": 41936
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/weierstrass.d.ts",
+      "gitBlob": "9c43b768a0b3536c5e9390c1288e70a548cec6c3",
+      "sha256": "67893131b82b994ab84e464d28f2a101392c32c6961052eb604e52d0ef8532d9",
+      "bytes": 23623
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/weierstrass.d.ts.map",
+      "gitBlob": "edaf101d4248ed9a5183970484a9f5dc54edd0ff",
+      "sha256": "8e304e1f2d905d5cefd98b9b8b105cd3d804adb126dd396bc70ca5e4c3040da7",
+      "bytes": 8471
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/weierstrass.js",
+      "gitBlob": "21b5ad782d93593488fcb220106f31999831f2a4",
+      "sha256": "188310386593be023ffadfd2fefc69b5efa79a63e0362bb8c9c11f0d5f4e673b",
+      "bytes": 63508
+    },
+    {
+      "path": "@noble/curves@2.2.0/abstract/weierstrass.js.map",
+      "gitBlob": "466df4b7810e65e0d228899c7b5757004f213fb5",
+      "sha256": "3eab97a24c4bea749f4fd4b02751a1d6895c81f9e0ca6cbbce430223b4e7f4ac",
+      "bytes": 50208
+    },
+    {
+      "path": "@noble/curves@2.2.0/bls12-381.d.ts",
+      "gitBlob": "126548085687b3e116b4ce54f9908a423351ef8d",
+      "sha256": "1010d72eb91a8fb0ee737553a9e11ce16aed99948218d7797531ddeb3b056694",
+      "bytes": 878
+    },
+    {
+      "path": "@noble/curves@2.2.0/bls12-381.d.ts.map",
+      "gitBlob": "4b4560ab0dd4c20aa59f334ca3ce559737d0cfd9",
+      "sha256": "33655924dd5581faac4a37cdffe91d90201784c5df3534bbfdda9ad4a4e90fea",
+      "bytes": 393
+    },
+    {
+      "path": "@noble/curves@2.2.0/bls12-381.js",
+      "gitBlob": "60f68f7aeecef2552b77beb28eab2bb3a91ce262",
+      "sha256": "a3bbb0a3ed0f1350a9a5bc0d7f8a454c851c670667ca3b3aaaba0a8d7115269a",
+      "bytes": 32572
+    },
+    {
+      "path": "@noble/curves@2.2.0/bls12-381.js.map",
+      "gitBlob": "59e8fe97295ec2dda99f79d5a356b3d462cf17d0",
+      "sha256": "60932917719053f62dfe9ad8ab6b1764a07d042399bcf0f84d54b644ede003b2",
+      "bytes": 18549
+    },
+    {
+      "path": "@noble/curves@2.2.0/bn254.d.ts",
+      "gitBlob": "6472432f87746ee6767c4aa52522a7fdb7031107",
+      "sha256": "cc2e1eb6d7f58058ba048544919bdc1e17fc3cc5ac1cad007f34cbe5b9eeb335",
+      "bytes": 3183
+    },
+    {
+      "path": "@noble/curves@2.2.0/bn254.d.ts.map",
+      "gitBlob": "5a5a128ac57d85400b137ddfb62a970a8b5613c9",
+      "sha256": "601df8565828b09632adaae40ea5e7153e77bfa2b9e1583d51fe714c5ca38951",
+      "bytes": 512
+    },
+    {
+      "path": "@noble/curves@2.2.0/bn254.js",
+      "gitBlob": "835721de7260088278c6b48da76fb1209bcafbe9",
+      "sha256": "8dee7249cce4cbef90e297876c4959f56cebc09a483b48819d33b33e9b0ea057",
+      "bytes": 10726
+    },
+    {
+      "path": "@noble/curves@2.2.0/bn254.js.map",
+      "gitBlob": "afea859681bb63ecbc17d7069ca0ea467728dad2",
+      "sha256": "af796b85c3add01438673ca9deb07b34ee998d087291b4dd26a894a6a08d7445",
+      "bytes": 6405
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed25519.d.ts",
+      "gitBlob": "ac231ed57f6c4f8e5a01fcf29e20d96ab4e5fe86",
+      "sha256": "98c60dbeab73d55f18c8ac2b911d5452ebcd8df4d83ab40475b52add67d2093e",
+      "bytes": 8482
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed25519.d.ts.map",
+      "gitBlob": "65d2472ed463df404e1b3793f329c173f97a4280",
+      "sha256": "4418d41ce9081c4b1c82b45f31a1f88ebfff082fb61d36abc3a446f45d30578c",
+      "bytes": 2212
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed25519.js",
+      "gitBlob": "bff1851685845890f69f12b6bba92616efd15ae1",
+      "sha256": "28c6fd6157fe2d1c69ea4751844c3d8fe3ee1a496b4f10fb7b48a51c48857a21",
+      "bytes": 28545
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed25519.js.map",
+      "gitBlob": "b6298030767191a3c37b4effdcc81e3fc81a3ca3",
+      "sha256": "ac46e80f7fee7ab94dbab4ef4cc3ac9cad57a7f3ffbd3d70bacd1f76919ad3c0",
+      "bytes": 20783
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed448.d.ts",
+      "gitBlob": "90ba82d74d5bde999d9a0727a310187a0b4715aa",
+      "sha256": "178417a4e8678e72afeaebca24ea5ed79c58ca06e4dcf4ba4f1815818cd74ebf",
+      "bytes": 7065
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed448.d.ts.map",
+      "gitBlob": "5edebc1a72af2277dca0619bab78c2c11cf0401f",
+      "sha256": "11217726cb7815fd0b35e7cab79ab9cfe91c6147218aa010cad7b2ab3f5a2f26",
+      "bytes": 1957
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed448.js",
+      "gitBlob": "07450430c7c5ddab252c98b49cc07aac90325168",
+      "sha256": "726f64e0d4bb2ed48d08c585c399676e45c8da672060c4edc6fe2abba816105f",
+      "bytes": 28149
+    },
+    {
+      "path": "@noble/curves@2.2.0/ed448.js.map",
+      "gitBlob": "73572e058081992fdfb5a183e19b027a27c943ff",
+      "sha256": "ce33b4806d1f47f527c72447093286b36db30edb71f873efd7f54191223c529e",
+      "bytes": 21294
+    },
+    {
+      "path": "@noble/curves@2.2.0/index.d.ts",
+      "gitBlob": "e26a57a8ca84c682b2b77b57b9d6e340ffd33436",
+      "sha256": "f667f6b1d66ba55f0dcd27f5ff050063fecfe289bad00e8c5d48344a775c1439",
+      "bytes": 46
+    },
+    {
+      "path": "@noble/curves@2.2.0/index.d.ts.map",
+      "gitBlob": "4e8c5816b41ae88c764eefae33e5eb965d87148b",
+      "sha256": "7755bad6a1fd1a6a721ae0bbaac3da2d95847c72f2dff7bdaf44d56cd82ac9d9",
+      "bytes": 101
+    },
+    {
+      "path": "@noble/curves@2.2.0/index.js",
+      "gitBlob": "49820ba4c6f311d5ca27f0c8c830246d5ca86b8f",
+      "sha256": "90cbdb0ee3135186dc63c6f640844d73907a4e7e2bebb7f7976fced115053fa2",
+      "bytes": 1467
+    },
+    {
+      "path": "@noble/curves@2.2.0/index.js.map",
+      "gitBlob": "671e14b09f65b11ccb6a6fdf00e4e37d98bf75b6",
+      "sha256": "23763a52c1553280801725720cba994ea6dd7a1fcc585d9cab990260ad635dd2",
+      "bytes": 185
+    },
+    {
+      "path": "@noble/curves@2.2.0/misc.d.ts",
+      "gitBlob": "ead84f7e19079bc78ed96e6aaf9306b089c77a2b",
+      "sha256": "59484352c10a7d07d38553f28debf2c5d9ad9d03fc9943bd8b361877e64291d1",
+      "bytes": 4444
+    },
+    {
+      "path": "@noble/curves@2.2.0/misc.d.ts.map",
+      "gitBlob": "abfb0d1aaa09f3e6f1d5b5a65099b069051a8ee8",
+      "sha256": "3bb6b3ceea2d7f64bd0c076eaf914f43d23582fd70ee1c525513797e8cdd8f57",
+      "bytes": 823
+    },
+    {
+      "path": "@noble/curves@2.2.0/misc.js",
+      "gitBlob": "4c013027199a33781f95e7a3c71a00eef12f7a4b",
+      "sha256": "1afe7ddde9822da4e11357e5bc838de94af5252c11b83cf094c1b837062173cb",
+      "bytes": 10649
+    },
+    {
+      "path": "@noble/curves@2.2.0/misc.js.map",
+      "gitBlob": "198561a2d82cabc8bdf070dfda4c6382cddfef39",
+      "sha256": "46ac0f70024ca018a31b3b0481aa61381640dfc934761b277d94f6448cccd88c",
+      "bytes": 4385
+    },
+    {
+      "path": "@noble/curves@2.2.0/nist.d.ts",
+      "gitBlob": "03b369175aa19a7b16e2b994e15706e1a5c54d83",
+      "sha256": "b7df913118b45185181411a750e07647c15256c0bcbce04a9d5f3ff4089aa571",
+      "bytes": 4852
+    },
+    {
+      "path": "@noble/curves@2.2.0/nist.d.ts.map",
+      "gitBlob": "f7d6d54b4e73fbe04dbae21e5223e00eda17c00b",
+      "sha256": "fff9650727f3c076bbf48a02292405b27cc52b52aa2bb82fd4068576358f993f",
+      "bytes": 1081
+    },
+    {
+      "path": "@noble/curves@2.2.0/nist.js",
+      "gitBlob": "9c1741eee50ebbe2bbae0f65a9d1645eb4b4b94d",
+      "sha256": "1e577b2c76b769a585b402ca166614f1ae3c75116406889acddebba12c72c62d",
+      "bytes": 11300
+    },
+    {
+      "path": "@noble/curves@2.2.0/nist.js.map",
+      "gitBlob": "7596d15b7eaa2b40f096d83badd11bbe833cf981",
+      "sha256": "e5070f8ad94aee6f4a97aa24d0c481f283bf8268b5963ebb3d2c4c8808d4ead0",
+      "bytes": 4801
+    },
+    {
+      "path": "@noble/curves@2.2.0/package.json",
+      "gitBlob": "fcc6b92f78d439cacfb01455d40acf930f5bdcfb",
+      "sha256": "b305a9a8e20df7767458bff98aafb7423cb39e00f543fffea5a9e0b88e0ada9e",
+      "bytes": 3243
+    },
+    {
+      "path": "@noble/curves@2.2.0/secp256k1.d.ts",
+      "gitBlob": "baf5050c61ca1402f65c8968d7edf73d8c9ea171",
+      "sha256": "7f039062bf7d864f8112773e0467695606e96aff2256ac07aea85186cd6100d4",
+      "bytes": 6426
+    },
+    {
+      "path": "@noble/curves@2.2.0/secp256k1.d.ts.map",
+      "gitBlob": "63dcca6069c8282993713f5c108023c72553b62b",
+      "sha256": "a916de66d8dbdb8d73afeeeb40f7eb0838fd4529aaff9bba911e40913a8fca35",
+      "bytes": 2230
+    },
+    {
+      "path": "@noble/curves@2.2.0/secp256k1.js",
+      "gitBlob": "fc6cf702ac4f9de4f811ae6c6b26a3bb09058871",
+      "sha256": "ebd20b0ca873941f2186ddb0dbffeed25dda749d182298fe5f0d58fb2c6bb486",
+      "bytes": 20086
+    },
+    {
+      "path": "@noble/curves@2.2.0/secp256k1.js.map",
+      "gitBlob": "983cf1e1a8931dea454cb5b998dea2ff2f7ce64d",
+      "sha256": "0ba351216145f718d24a93cb34458f47af94948c622d34aa3c367d254e24e6a7",
+      "bytes": 15496
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/bls.ts",
+      "gitBlob": "bc575b81bd8b9393bb2d7e6324a8176743f625b3",
+      "sha256": "35704e3d96d55a980667436b801b4de7aed2cada7692f02c64fb8d0b1c6e6719",
+      "bytes": 34155
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/curve.ts",
+      "gitBlob": "c65e71d6f7df32fdb42916010427534d8a57f341",
+      "sha256": "9d2f466ca7f77f24660147d84e36b64f9363a4fdf60776049a40fae85947d645",
+      "bytes": 34454
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/edwards.ts",
+      "gitBlob": "e5e278f463fd9c8de9fa64596b1d483e719f564e",
+      "sha256": "97282de81d6a51b5cb5f8443a472b1f7affc479a90c69c145853759af98db415",
+      "bytes": 38358
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/fft.ts",
+      "gitBlob": "3edd51b99983875b29cdf9a247e4323690bc6040",
+      "sha256": "45adc8c0841df6bc37ab839897f144af538590138e2444872c516092db51edd3",
+      "bytes": 30337
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/frost.ts",
+      "gitBlob": "6189b51dde696e948b3b9dff869081d3be1558cb",
+      "sha256": "38d34fc9f12186cb068748ea4bb9e86e93852d670de4c16aab23f067bb7afb37",
+      "bytes": 48500
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/hash-to-curve.ts",
+      "gitBlob": "3ce6dd45e143bac855c31c32d58dee195e37517e",
+      "sha256": "654ec1c26c31abb05dc0c74d4468a40fafc7be00fc6c95e9f2b2c4e9025250e1",
+      "bytes": 19779
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/modular.ts",
+      "gitBlob": "f40eca042ba600b078a8c31fca61df0147b18f12",
+      "sha256": "6c2d77dc1d70e591e5024bb4a868f12dd1df4d866de63d9d871f9f845f48d94f",
+      "bytes": 39955
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/montgomery.ts",
+      "gitBlob": "cf49cd545b9804a08747f243357b9dc526a27833",
+      "sha256": "5228f122f0547152202e805da9371d310d486f469f6aaaea450cf644877585cc",
+      "bytes": 10041
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/oprf.ts",
+      "gitBlob": "32dab936c8ab6797849e415cafe8597a96aa7122",
+      "sha256": "d52bcf35584b0ad786a47ca72a40ed7209f37ab5b86c415965b98a98597754b6",
+      "bytes": 33008
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/poseidon.ts",
+      "gitBlob": "c927e867dc5ec5b44531207f1c1afd0302ff6a18",
+      "sha256": "345236100f33a814f54fbc43a60b58e0809f884a493fbf556858ff41498c40ad",
+      "bytes": 20169
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/tower.ts",
+      "gitBlob": "51ba82a3fbe0512ef2f22a64fff45e130fbf5162",
+      "sha256": "502e7b95adf580bc685130eb242cddd0b6da0f2041d3478c72bd9e083a468975",
+      "bytes": 40076
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/abstract/weierstrass.ts",
+      "gitBlob": "62ae5b4c13c97a22a3fb6b26ad7ac50d61e78694",
+      "sha256": "563361460e5d0f602c86c0289843beea8068f01c2cc7b2a9f58cbc965153a846",
+      "bytes": 78760
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/bls12-381.ts",
+      "gitBlob": "457bd46ab94323de1b6ff48779e8aa3024c0be38",
+      "sha256": "9eaf4c8a7c1ad802a7a52f0c08321649e566483f05fb43ba1077440afd6f7b1a",
+      "bytes": 33470
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/bn254.ts",
+      "gitBlob": "4e4590c0e9ff5571c76b660f3b2f5f071c48eac1",
+      "sha256": "18bf12c1bc1d569efbf64ce33ac6b3cdad5f2a289eadc48f2a9298ec328bddbf",
+      "bytes": 11124
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/ed25519.ts",
+      "gitBlob": "42cf21a582b6d4bb51fa41d46348943ff4b6985a",
+      "sha256": "b9637bdb256a0c708f37ddbd37912444519cf7ddee6c6e881bae14b9b176eabf",
+      "bytes": 29255
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/ed448.ts",
+      "gitBlob": "9580dc13984654fbcf03dad6313ff8cabd86a960",
+      "sha256": "448a6ae98699e63d9116f41049a7e4c12328a1b0126b1e93af23a0a8b1249d75",
+      "bytes": 28833
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/index.ts",
+      "gitBlob": "201a00ac89a1187ed9bdf8e89d44e285af8761b3",
+      "sha256": "b32a7b257dc52b0f4974f437854c82166ab97b211b1556785bb6624184c75210",
+      "bytes": 1423
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/misc.ts",
+      "gitBlob": "e9abde296001bcb6f7769ae58f7555c19362c68d",
+      "sha256": "ea16b7d72ad6ca9a93d41ce1a2fca450f82cecfd8937262f427f876063e4ebf5",
+      "bytes": 10937
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/nist.ts",
+      "gitBlob": "ffec01dda0e55263304a9dd786cea31e730c587e",
+      "sha256": "70ae927ba568b9db823af7e5ed2e1aa2488c08c3399871608d736f4e821ed565",
+      "bytes": 11872
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/secp256k1.ts",
+      "gitBlob": "4380a2774cf163315bb1d495ea9d9e771e3488c9",
+      "sha256": "4066ffb3c027726491f570da4b63545248d6c6030476c2009f60c3568fad7f55",
+      "bytes": 22880
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/utils.ts",
+      "gitBlob": "beec9db9a1bd8ed633e286c888ece8fc253fee1f",
+      "sha256": "afa875275e04b0ed8e1d38861ef2d117fd32576a83a551c8a7a8f6969b188d9b",
+      "bytes": 27124
+    },
+    {
+      "path": "@noble/curves@2.2.0/src/webcrypto.ts",
+      "gitBlob": "b30755ca5b51b66daf3aabbbf5e0ced2fd152cbb",
+      "sha256": "419dddc222a84a07602a1dc292ed0b1c43a23b2777a5c3eefbcc70561d10de74",
+      "bytes": 24170
+    },
+    {
+      "path": "@noble/curves@2.2.0/utils.d.ts",
+      "gitBlob": "078e8d9873a31dfaf11666afcaaa6f5c26f8ee57",
+      "sha256": "f59d777c3891f6dfce863dd43ee46a870a63459669032d134d1bd11e24ab5ba6",
+      "bytes": 19218
+    },
+    {
+      "path": "@noble/curves@2.2.0/utils.d.ts.map",
+      "gitBlob": "9881ab6c73a30693e4a4f707d8edab85d1dee6bd",
+      "sha256": "9e85c801def173b0ad88373cd3df4ab5b180c9cedd534efb2b1c5e7ba15bffa8",
+      "bytes": 8255
+    },
+    {
+      "path": "@noble/curves@2.2.0/utils.js",
+      "gitBlob": "87cf2f712b59b9e1f8a24ac85899cd3b752cc184",
+      "sha256": "b4847e39fbb4a93e2a3e9f3945e41eabf6d58da5898cddaf45f7ed768f0e3758",
+      "bytes": 19271
+    },
+    {
+      "path": "@noble/curves@2.2.0/utils.js.map",
+      "gitBlob": "fbb5eae0b3783a479d15e54fdb6c6b6dba78d42a",
+      "sha256": "21c8984c9e53cf0d79382628429c59cd2cb2dea661663ae34bbfc62bb0a5361d",
+      "bytes": 9229
+    },
+    {
+      "path": "@noble/curves@2.2.0/webcrypto.d.ts",
+      "gitBlob": "42d926c55b20ad45c96245f19a54407e672e8ba1",
+      "sha256": "e5806c201813d55c642d9d5d2b92a9fc6ef72c2c648b40b87b4727b95efac445",
+      "bytes": 10006
+    },
+    {
+      "path": "@noble/curves@2.2.0/webcrypto.d.ts.map",
+      "gitBlob": "d71670ea129f860c7ab2a2b102f88abc4c3b72fa",
+      "sha256": "00db32b6f7861779187a939b80155a0cd608eb2792dbf413557072c18ab9f97f",
+      "bytes": 3143
+    },
+    {
+      "path": "@noble/curves@2.2.0/webcrypto.js",
+      "gitBlob": "41ef43ab624ca025f3746fbe069e2da86537b646",
+      "sha256": "f64c2a0dcebe5423a7472316a456108b330dcac9f8e5a8240fa79432fcd984d4",
+      "bytes": 16890
+    },
+    {
+      "path": "@noble/curves@2.2.0/webcrypto.js.map",
+      "gitBlob": "5b4d7537725523b80a4e15fc810fab52a8b1ae46",
+      "sha256": "3f2fd0b99e004236e85a5ca566b6965ecb782f7808b8b1be1ae5a87e4b4c3f71",
+      "bytes": 10657
+    },
+    {
+      "path": "@noble/hashes@2.2.0/LICENSE",
+      "gitBlob": "9297a046d01cf521f93679535be51a8e5b736c0d",
+      "sha256": "4f221aee6e072336700c408c68ab3b96a3fc09f6aebe6f48f1bd99e5ef13faec",
+      "bytes": 1109
+    },
+    {
+      "path": "@noble/hashes@2.2.0/README.md",
+      "gitBlob": "7cb8034e1adef138a2a9d646a4da05f2194f85ac",
+      "sha256": "e87dfafe55390e65273e1e7dfe10abf166909aa5f87a8f431521ea43a66ea97c",
+      "bytes": 23426
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_blake.d.ts",
+      "gitBlob": "e509cf5537f943c6d16cdb3a8f6370f36307ba30",
+      "sha256": "8d809af1af72d2ffb294bd26c4f539c7548f2ea756b8afa2934101645f5eb8d9",
+      "bytes": 776
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_blake.d.ts.map",
+      "gitBlob": "c7de007203860b7cdb958c2dac83fbe88129bbb2",
+      "sha256": "9c33c09d981fc17b1c7eba81551b4b8ad72f8b58756f3238a31b07114660b843",
+      "bytes": 628
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_blake.js",
+      "gitBlob": "23a11c6629f75513e23d3591bfba5ccfa5ded974",
+      "sha256": "d25543ec4f84723fa4aec60d2d55a90b51bb7eeb9f70c747f2f55503e67ee75b",
+      "bytes": 2240
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_blake.js.map",
+      "gitBlob": "1869f1ba2bafdf1c9e41ef18856f7b185cba1b7d",
+      "sha256": "ade7fb31cdb01dc1f45def540d7b65cb4b9483e74d72e9efb16fe1a95a2317ab",
+      "bytes": 3696
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_md.d.ts",
+      "gitBlob": "44b0272b643215eb16b294d6c82ea9f1f3533604",
+      "sha256": "d7e7a34f5a1877ad89e8ada891c47d4559649f7c41d9e97c550d491a0e98c623",
+      "bytes": 4348
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_md.d.ts.map",
+      "gitBlob": "0d422832a74f77e5f2ea1a7084e9ede39a97606d",
+      "sha256": "d8375d69daa6a99c6a362edf4ca1576c92a381736d1e111d04f1c4af255b66c5",
+      "bytes": 1716
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_md.js",
+      "gitBlob": "0fda375caf2ceff2b56b1e5d1e39c25ef0a9a1fd",
+      "sha256": "8227b9b5cabf078a9d7f7317f7a1ace6e46627539aa9364667aec724e1636f14",
+      "bytes": 8372
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_md.js.map",
+      "gitBlob": "9f2e86cff49d73f328180d87758ac78130f50a31",
+      "sha256": "92d7e31e15d8050a636125f7b6f837c477bc6cace618b81ca217d1272de21c04",
+      "bytes": 5196
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_u64.d.ts",
+      "gitBlob": "306b1c58fce90cb1ddbfb70e3ab533c02457a5cd",
+      "sha256": "9932eb9900ccf560eca21841b6223a586b256fa5c5b79c09775ebbc3bf20affb",
+      "bytes": 3393
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_u64.d.ts.map",
+      "gitBlob": "6fa63a474f56524e398ff8e88a1ed740c412d4d6",
+      "sha256": "757522b4676dd1c6fcfbea1e40226f6821a53885d5d931bc7e773c479c454d4b",
+      "bytes": 4390
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_u64.js",
+      "gitBlob": "e66551e233b13cde28d90aabd7878c8f12004458",
+      "sha256": "766b91a693a798f9d3cde97b25db4a6d0cef66b2ca21153d3d42424d37878870",
+      "bytes": 4972
+    },
+    {
+      "path": "@noble/hashes@2.2.0/_u64.js.map",
+      "gitBlob": "538e5334b90cff88f466cf18a622c1fdb3f4efaa",
+      "sha256": "01bac6b32e4cdf8629739deb8da436a311a7eb17723fd297b08e66a46f517869",
+      "bytes": 5319
+    },
+    {
+      "path": "@noble/hashes@2.2.0/argon2.d.ts",
+      "gitBlob": "541fdac8f2a3942e1c39c279f57ba7974c3dc8e4",
+      "sha256": "85cf3ba3a1e2927e1bbcef97c8165976858dce5cad9274f353a730db2a42836f",
+      "bytes": 4819
+    },
+    {
+      "path": "@noble/hashes@2.2.0/argon2.d.ts.map",
+      "gitBlob": "6d0f0d8bb99043a4aae27fff429d7113643823fd",
+      "sha256": "4a116794119f4115f2781b30a3ffc2cabe9de9ed4f7395b97a4f9705d93ff8f8",
+      "bytes": 1720
+    },
+    {
+      "path": "@noble/hashes@2.2.0/argon2.js",
+      "gitBlob": "b2fcd1f925e1cd69c5609f41107ecabb8f5d989d",
+      "sha256": "234745e4cdeb7dda6df63f828532ba79463714778f772c6546066d489e28656b",
+      "bytes": 23604
+    },
+    {
+      "path": "@noble/hashes@2.2.0/argon2.js.map",
+      "gitBlob": "d98e07e11f82202cae8e5cbc219b500167ba92ae",
+      "sha256": "2ffa23eca4cc545c1b2b4df0ad32b17b92aeff5a8061a5e273c1d294e692fe40",
+      "bytes": 22114
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake1.d.ts",
+      "gitBlob": "11d8782d6f5055bc028d732ed890f89febb1eae8",
+      "sha256": "b950dfa64eff1e6efaae669a1a4b5de13204f7062dd2d104db313e41fa8a1958",
+      "bytes": 4938
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake1.d.ts.map",
+      "gitBlob": "16d351e65647abbd35905e3e5e0c68a61cd6ae7c",
+      "sha256": "623e13126db9d74966f3830542853980114ad7eb899305823619abdc197063d6",
+      "bytes": 3945
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake1.js",
+      "gitBlob": "01ff8e0e016aedf6e29f1634d73aed98641f7e91",
+      "sha256": "88a0649706a8a01495028458a466f71eae83dc76a14a3a501dde7e086ce9d180",
+      "bytes": 23205
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake1.js.map",
+      "gitBlob": "496638d4f193867907794cbf5494cc0989a5d5a9",
+      "sha256": "b627dc46af2ac7647a152bdbbfc79bff39f1eb2bc2bf31008b6d5370ae747ec6",
+      "bytes": 28877
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake2.d.ts",
+      "gitBlob": "ff66cdbd42294f6a89f4649c1ef83a7d4de17465",
+      "sha256": "05430fddafdadc731b51474339ca8944ff988c1fbb2028160fd16726906fca56",
+      "bytes": 5975
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake2.d.ts.map",
+      "gitBlob": "947c111d5a7e5e84b76865cb0d92d3e14ee1809a",
+      "sha256": "fdf15fff41878983c9843f9289bd35de0b12a68aa9474e749a29af0ee7249248",
+      "bytes": 4380
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake2.js",
+      "gitBlob": "7c80cefc75f462ca64b93ff022fbe7febc2da483",
+      "sha256": "0349c61ff467cb14d413421b212616c0343f4dd4e36a0b1d626e1847dcabafd5",
+      "bytes": 20415
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake2.js.map",
+      "gitBlob": "2f8733f53b671824de76897c8b8838a42be6f4cf",
+      "sha256": "4a23d6d0e79cb386fb48cdc3c5d5fb29293f41bebdb113242a01625f9d738bd3",
+      "bytes": 26366
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake3.d.ts",
+      "gitBlob": "1fd4cc7bd72c4a8dfee7c290aee3fcb50329cc4f",
+      "sha256": "a52e2e71f34040c09d74fd321a5613f8763af7942f096ba9e9afc7fe3f38448d",
+      "bytes": 2521
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake3.d.ts.map",
+      "gitBlob": "94e019ef6346d2c77e3b508baa0d1400f6490dce",
+      "sha256": "4003e04a44015032d90d46086c011bbf89f3c762400cded11a633ca36cac3a60",
+      "bytes": 1495
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake3.js",
+      "gitBlob": "a5718c2beeded749d92ffa036b798e86116bd28a",
+      "sha256": "fa2cf9aa74cc1a4c2e3a3c4b6bc2c9e7b060fa01f9b8b472ba9cfa6cdb516563",
+      "bytes": 11322
+    },
+    {
+      "path": "@noble/hashes@2.2.0/blake3.js.map",
+      "gitBlob": "40965f658ecce95a946aeeeea64476f9db2b71e2",
+      "sha256": "d2b5332f34a5ed5ec215a28e390ada32d014b6ab80b2dc13ced93fc2cf2c62c4",
+      "bytes": 11104
+    },
+    {
+      "path": "@noble/hashes@2.2.0/eskdf.d.ts",
+      "gitBlob": "7ff4281bbbc1f602264bdd51bbea3a81b7d7b3de",
+      "sha256": "d512c960f6a500828263c782045181c1a063c8afa6da5136f1e8f454a822a91e",
+      "bytes": 3764
+    },
+    {
+      "path": "@noble/hashes@2.2.0/eskdf.d.ts.map",
+      "gitBlob": "d0a79538f7c9e249b86ebda2b87d1dd6806f6e04",
+      "sha256": "f763153495ba532ceba94217e7d493f30007a48214e14e6a13b6efd85614a95d",
+      "bytes": 1060
+    },
+    {
+      "path": "@noble/hashes@2.2.0/eskdf.js",
+      "gitBlob": "5ea541dce7902524a9969470cb0382f389e47d3c",
+      "sha256": "0e9224c728638dd84c5ae36bc3bd497ba5d469d79ffe4a678aa14542066aca53",
+      "bytes": 9488
+    },
+    {
+      "path": "@noble/hashes@2.2.0/eskdf.js.map",
+      "gitBlob": "49209e522c6031a21e18f62ab2100f16ddde675d",
+      "sha256": "fc8bdba43e5737f26b5a4ddd6179fcf12bbea1b8c3efd04653790d20fb2189b1",
+      "bytes": 6277
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hkdf.d.ts",
+      "gitBlob": "0ace1fec74b83a467857c8bdd4550e8b48191228",
+      "sha256": "78a7b31e84db4998964ded8db68c99a88108a10ef8e8909d335b71bd1e419003",
+      "bytes": 3298
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hkdf.d.ts.map",
+      "gitBlob": "9b6a97f3b9724a4be2243633565a405d7dc9ed98",
+      "sha256": "b445c737942c78f03eafeeabdd8c1ee31a8e7db346d2cc8fcd74ce81e7b12673",
+      "bytes": 816
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hkdf.js",
+      "gitBlob": "ccb01302a4b048cb18312eb73d08ff8b09ff9f4a",
+      "sha256": "c0de209ef30cc76c14781d7746e6802b44eb17b7bfad6c07e5c17c5806c9836d",
+      "bytes": 5315
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hkdf.js.map",
+      "gitBlob": "1a783f478483903275e7c332cfc3b0e51d4f3ea9",
+      "sha256": "1b99f324224123fc48d1fe6f69652c1ceb3b7b6ca8935b0ef15504b220a66e63",
+      "bytes": 2385
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hmac.d.ts",
+      "gitBlob": "7ec669dd709aa7670e6d38c365ce2792329ae2b2",
+      "sha256": "2c8266d989528442c6967133a6caccb1f98acee8f64dbc3633fca9a59d42ef10",
+      "bytes": 1499
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hmac.d.ts.map",
+      "gitBlob": "07fe4ab7fc7e71a06690b07fe7e559fc9c963099",
+      "sha256": "56212ea4ac3b4f5b9d57f756ee8e9e0a493f6a9d899a5386ba9a0b653aee4a7c",
+      "bytes": 1208
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hmac.js",
+      "gitBlob": "fd066ea7d29f6700211587e268b01b3b1ca01996",
+      "sha256": "137ed94227806b351a55b09801287a4dba72d2a35d3838730becf641271bc3dd",
+      "bytes": 3143
+    },
+    {
+      "path": "@noble/hashes@2.2.0/hmac.js.map",
+      "gitBlob": "4f3ed1a231b9d3a9fa7ebc18c4618159c6a7a923",
+      "sha256": "97b2b9333b804257bc78d72144dedc41ee7f1158d472b20dcb433a15d2d52ad7",
+      "bytes": 3311
+    },
+    {
+      "path": "@noble/hashes@2.2.0/index.d.ts",
+      "gitBlob": "e26a57a8ca84c682b2b77b57b9d6e340ffd33436",
+      "sha256": "f667f6b1d66ba55f0dcd27f5ff050063fecfe289bad00e8c5d48344a775c1439",
+      "bytes": 46
+    },
+    {
+      "path": "@noble/hashes@2.2.0/index.d.ts.map",
+      "gitBlob": "4e8c5816b41ae88c764eefae33e5eb965d87148b",
+      "sha256": "7755bad6a1fd1a6a721ae0bbaac3da2d95847c72f2dff7bdaf44d56cd82ac9d9",
+      "bytes": 101
+    },
+    {
+      "path": "@noble/hashes@2.2.0/index.js",
+      "gitBlob": "5bcf9597458cf69d0fbf171516c9699e064bbcc4",
+      "sha256": "3c9667faad18381e2bb97e6cb66db21f61bd25eb38d0b433619bb25c463f0355",
+      "bytes": 1166
+    },
+    {
+      "path": "@noble/hashes@2.2.0/index.js.map",
+      "gitBlob": "9ad47d21a149e7a36b5115f86e805882ac82c8a5",
+      "sha256": "83b6afe18f37031aa4c8392ad00baf0ab21198c110cf46bc39400e980924c855",
+      "bytes": 181
+    },
+    {
+      "path": "@noble/hashes@2.2.0/legacy.d.ts",
+      "gitBlob": "1f9fd4369dd130a0c243901b127daf776c5d1caa",
+      "sha256": "038e9c0f13a591880b6e5850d2989481dbef39a1f69ec6c5610f291498d1f4ee",
+      "bytes": 3464
+    },
+    {
+      "path": "@noble/hashes@2.2.0/legacy.d.ts.map",
+      "gitBlob": "538ff86e35956549f2139908308e137a9f953c0a",
+      "sha256": "a45be558d2b50f9c16c43c9bcbddd79432b355c2a3ddde0bcb9bcc95c8cfc45d",
+      "bytes": 1983
+    },
+    {
+      "path": "@noble/hashes@2.2.0/legacy.js",
+      "gitBlob": "20c3b998a889689ddd0fd5693b11dbfcea513ec7",
+      "sha256": "4722d1db35565d162f60f56065a6c283397188f582255b2a3cef809837b254cd",
+      "bytes": 11867
+    },
+    {
+      "path": "@noble/hashes@2.2.0/legacy.js.map",
+      "gitBlob": "c36f29e00bdb5cbd00cb1b4dccd025e09fc018b5",
+      "sha256": "75bdccc13ec3c786fb7477b621eb5e71928b7b6a2633e1d4e00445e9bbc2b3ce",
+      "bytes": 13778
+    },
+    {
+      "path": "@noble/hashes@2.2.0/package.json",
+      "gitBlob": "0ace74d459b29361953b1bf567befa6bcdb829e1",
+      "sha256": "df2580ed1896b0deffc07437c6a8d83fcf233e4c4c1e77c12e491563222c4719",
+      "bytes": 2971
+    },
+    {
+      "path": "@noble/hashes@2.2.0/pbkdf2.d.ts",
+      "gitBlob": "cf4a659c245a3df6711823f6b554ddcdff69150e",
+      "sha256": "d29d2f98f32eaa310f3ad5eea66f67a53cf3b560908a1dee9b037b6937e1480f",
+      "bytes": 2801
+    },
+    {
+      "path": "@noble/hashes@2.2.0/pbkdf2.d.ts.map",
+      "gitBlob": "2f7dc0864a792442ba78441e367abdc10bcd3b9d",
+      "sha256": "0eaa93589f875a6bb23b177180f3f82beb9b9f6c860a3e72fc5f8667e1ee28e3",
+      "bytes": 828
+    },
+    {
+      "path": "@noble/hashes@2.2.0/pbkdf2.js",
+      "gitBlob": "50ee4dba4d38e16a6e9a55707d8dc7b936bd9027",
+      "sha256": "d61f870b99cf8e67b6df0ae5f582c74177445844d6a92ea51e8060032d05b555",
+      "bytes": 6004
+    },
+    {
+      "path": "@noble/hashes@2.2.0/pbkdf2.js.map",
+      "gitBlob": "291eca438f000708e0cdf31b8c1ad67b58d6cb56",
+      "sha256": "0d087596faad30cbd7c4ba8b8ea9a5901f972b27f0980a4b81e0a4c8c1651366",
+      "bytes": 4421
+    },
+    {
+      "path": "@noble/hashes@2.2.0/scrypt.d.ts",
+      "gitBlob": "b23a26e9979bbbc0bb9226616719648f8bc13a8b",
+      "sha256": "b0d010fe61506614e26981c05ca5a050ce39280f9fce1ba2a64ff7a2af09c94e",
+      "bytes": 3066
+    },
+    {
+      "path": "@noble/hashes@2.2.0/scrypt.d.ts.map",
+      "gitBlob": "4b642af60e016a94fb3d3b03e137e7d9076d3c83",
+      "sha256": "c2e1e42a3d0ecddad7cf4448e226bab3e2ecb017fd5ad9ed6d006e3fe474b346",
+      "bytes": 927
+    },
+    {
+      "path": "@noble/hashes@2.2.0/scrypt.js",
+      "gitBlob": "29ff88354ebddba5362be926731aa5d1a4d929dc",
+      "sha256": "fa8355cfeac385ec3bedf5902c51f109df3a16622c7efa9926f5dc4cdf9361c2",
+      "bytes": 12029
+    },
+    {
+      "path": "@noble/hashes@2.2.0/scrypt.js.map",
+      "gitBlob": "7daddda84fcb515e8d4d123d3508d43def0c1a2d",
+      "sha256": "980579eba718b4e733d95349093fda4e6d6907681e8181a5b6d3566209344653",
+      "bytes": 12412
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha2.d.ts",
+      "gitBlob": "b7a1d54cd08b9e560f3bc6d272e87c84d993a4b5",
+      "sha256": "e4bb95a0c8fe1fa1de39286287a8e9f714e8b27639064eaabcdbed9c2c55d02e",
+      "bytes": 7960
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha2.d.ts.map",
+      "gitBlob": "717e788253f00b2804cbf701d8dfc37d825f57b4",
+      "sha256": "ef16788d3a6d9024543a6f8e70110af7b6a2a054622282b7e2c7e74c7761abbf",
+      "bytes": 6500
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha2.js",
+      "gitBlob": "be202322b75621af26537ee22f4d0081a6ce9300",
+      "sha256": "0fb8e3c3f2c73a890be2524ac5d2542aaed4decff69e561231a86131203b3973",
+      "bytes": 19112
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha2.js.map",
+      "gitBlob": "9c8bb3d59e55832f0fc707abb2567f1da0a42965",
+      "sha256": "3ff4a350f0c889147a4c1952a115fe22ade88c2418433635b56eab32ee6133fd",
+      "bytes": 20237
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3-addons.d.ts",
+      "gitBlob": "762b044679398a2da4e8bd559eebf5771f734e25",
+      "sha256": "91afb3ee38724ff044d2b57cd835350a6c41e0f446671aa232ad8fc90417fe17",
+      "bytes": 17277
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3-addons.d.ts.map",
+      "gitBlob": "e43e1e304848bd2d6c5d89aa9785adb6b81e76d5",
+      "sha256": "fc3103ebd0ca44e971688a1abbfd8047dfd4ef88c3f7dd4effd74a1a96f6b6eb",
+      "bytes": 5458
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3-addons.js",
+      "gitBlob": "21229ed4304fba801c852d208c21a80c922a2cf0",
+      "sha256": "2111ee351601d648828ce66b532662cf1f1e2fa27ae2e4b1bbecf97159fb301f",
+      "bytes": 30659
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3-addons.js.map",
+      "gitBlob": "106532988a21df992b526ef44aec6a1d2a065cc9",
+      "sha256": "1917a8d84bb5018fe0696ecaa9bb12841c1c1e127ae4885a5cb152b319d9a6bc",
+      "bytes": 19440
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3.d.ts",
+      "gitBlob": "19e8075153b742972a9c1f739237dd18059bfc54",
+      "sha256": "47c94c6c03262bd2f68985060d4086560d00e898fcbf5e95f01de51e8cbcb8ab",
+      "bytes": 6060
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3.d.ts.map",
+      "gitBlob": "12d5be2e3368261ee86ceafaa5164fbbc2af6d3b",
+      "sha256": "ae7bcb18660bdb8fc500284318f475f0ad81151fdcdb7e89d0d01b23d3d5f1ef",
+      "bytes": 2403
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3.js",
+      "gitBlob": "02e643282b74402add6c78c72181237b1b0be114",
+      "sha256": "55b453d0a65c657aa408ec86d4ea8dd8f96740cd68963ea9ef180db4004f878f",
+      "bytes": 14905
+    },
+    {
+      "path": "@noble/hashes@2.2.0/sha3.js.map",
+      "gitBlob": "4be599921f6183926841f7f665b2761ef5fbd91a",
+      "sha256": "fae8bd97ffd8cd3dee2ea1c5a1571cdb0e322b45da026f4b8c70b2b065afee21",
+      "bytes": 12224
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/_blake.ts",
+      "gitBlob": "743303329b4f89f903b9796532bad0c2203215ec",
+      "sha256": "03c2ce5f9ce4400e45f48d1083d2851092dfb6b5c23d4a739ea87ad86d120818",
+      "bytes": 2364
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/_md.ts",
+      "gitBlob": "1de12587a649d8ba5ac59b038b0edc8910c2552f",
+      "sha256": "075488c9f102694bddcf71e30aae477d91dbc833f8a555bd11828954ebd6da16",
+      "bytes": 8787
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/_u64.ts",
+      "gitBlob": "2b7c59314cbe329359f1c410699b2a80bedcbd71",
+      "sha256": "af1a378f452ba03fb2302ed79f26764dc863982512681ffc068a122e3f3e4ed3",
+      "bytes": 7163
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/argon2.ts",
+      "gitBlob": "51fd3154846143dc539a940fe994169ba82c6818",
+      "sha256": "4f56a2c933caef2037a37e1ef749c6329b132482edc4e6560dd758e1f78ce2f4",
+      "bytes": 25050
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/blake1.ts",
+      "gitBlob": "72cb4f675dead588815304fd236557af057fc64d",
+      "sha256": "1c29a6c54eeab28720e3082aa0b60aafd8aa01c51f7af11212c82b1cc32982b0",
+      "bytes": 23767
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/blake2.ts",
+      "gitBlob": "01f604613da4353c008eacc8a1335fb53f1827fe",
+      "sha256": "aa8ae43c63113ca05d4727c70385fd9a5b2fca539e44d8ba4ecb89f4447e3e28",
+      "bytes": 21620
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/blake3.ts",
+      "gitBlob": "bb96a5a704b11fb7182fc7903ee33727005028c8",
+      "sha256": "e77d358bb5ab896d66e20e6d77cfea09168b79cdd53c37bfaa569488d750b605",
+      "bytes": 11664
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/eskdf.ts",
+      "gitBlob": "08d50cdebab8f810ab2a343f8eecc735ecbd5a6e",
+      "sha256": "6aebb0e4ca27f2227d0e9d1f1f042b3ff8d74c68fb3465297b9653feb516855e",
+      "bytes": 10642
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/hkdf.ts",
+      "gitBlob": "1adbc7ef52a0c10252570b2f88826673741b23e9",
+      "sha256": "a92d0498f18771c17d2b45feb147640f2eb8c3593522e48ca9f2f05fa2a975c1",
+      "bytes": 5492
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/hmac.ts",
+      "gitBlob": "b914ebfb16084f0e50a995d5c068e5fd65dbd973",
+      "sha256": "c036247c1df936ece5cef21d10827b4fe4aecbc27934520f3d775c6ae120149a",
+      "bytes": 4006
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/index.ts",
+      "gitBlob": "c6a9c23a572e85fa5925a65aadadfeb635814e94",
+      "sha256": "9f2034ab7b5c452fd7b2b9df6ec7ef0266830cd11f05908e9f5e862993a19c30",
+      "bytes": 1122
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/legacy.ts",
+      "gitBlob": "0e185fb5cd79e05c4144dc1ac3887e97588ffad0",
+      "sha256": "c7a602006acaa6bdf2c77340dec674255f8e79445006e3210daa49699f0b2c9b",
+      "bytes": 11647
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/pbkdf2.ts",
+      "gitBlob": "ea7cda6f81abc290ec4dd52f77f599ad581388fc",
+      "sha256": "9073ca755fa8ac828cfc8b57fb76897d63dd30bb07373afa629d846b5d3ad5f4",
+      "bytes": 6744
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/scrypt.ts",
+      "gitBlob": "a68c89017dc2140ff1cce5dca0e2d9ba5e153b2c",
+      "sha256": "cc64e929d9f8e1a5340c891d88bb249d4483e46f47aa9683a65927cccc39776f",
+      "bytes": 13085
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/sha2.ts",
+      "gitBlob": "2ff7e65e0fef61bb42d91a6abd6ca00853890e7b",
+      "sha256": "cbfb39c31c0cc4eac0a5c3a3e865a4919b7aee3d535ea060e025881e25f0992a",
+      "bytes": 21497
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/sha3-addons.ts",
+      "gitBlob": "a50a2ac894d470cc847d37818301a7917e476c5b",
+      "sha256": "21df8ac0d3e81f6bd7d2fe084a32a56a319e96887512e219170898c3151dd6fd",
+      "bytes": 35305
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/sha3.ts",
+      "gitBlob": "c81af0683e61b56abec20aa4c3040851803871d3",
+      "sha256": "a54cfefe730fd657db7456b5c30e0103e828ef52026020fdb479afe4a87bb543",
+      "bytes": 15350
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/utils.ts",
+      "gitBlob": "961dab262c245953e3fb02640d640e655c6306c8",
+      "sha256": "f6d41d00837e63f8f96f4cc6d3a9f2b1f907858eb1501b96d257e085d6410b16",
+      "bytes": 29355
+    },
+    {
+      "path": "@noble/hashes@2.2.0/src/webcrypto.ts",
+      "gitBlob": "3f772e12f7230f753fe8c163dabc7f9bd89e364d",
+      "sha256": "d9ac6b1041b15fc38651ca28184d938f6b36a24f2ba0a5ed5c823c7c5e3622d0",
+      "bytes": 8809
+    },
+    {
+      "path": "@noble/hashes@2.2.0/utils.d.ts",
+      "gitBlob": "4033d83cad0dcbb0944ffd2cbd90ad68eefb9c7e",
+      "sha256": "ed8b5ae9e1f97b6aaf52f7ed14ffabf6ed0cdd7946210ef26f19219023393c62",
+      "bytes": 20457
+    },
+    {
+      "path": "@noble/hashes@2.2.0/utils.d.ts.map",
+      "gitBlob": "a76edfc51bca3d3901d06c722bf6065a3899fb16",
+      "sha256": "336aba14ab08a90f5b36f9dbb3f2c32b9f539491bcf5aeb8e078ad3b7b80a172",
+      "bytes": 8879
+    },
+    {
+      "path": "@noble/hashes@2.2.0/utils.js",
+      "gitBlob": "b4c71b6bf711a9fdc77686242def3956ef1556fb",
+      "sha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f",
+      "bytes": 20182
+    },
+    {
+      "path": "@noble/hashes@2.2.0/utils.js.map",
+      "gitBlob": "76f809d9c54c2f6774fe31739e151306d5e6fb2e",
+      "sha256": "8a56fa0c496abef9ac999dcb6db5f66eadbab3a849f674a3d62abc9c30521666",
+      "bytes": 10492
+    },
+    {
+      "path": "@noble/hashes@2.2.0/webcrypto.d.ts",
+      "gitBlob": "9226c66e9ebf3a7b5e4a4e2cc3e740fb66a89e50",
+      "sha256": "eb2c9abbad2d68e86adc437b2fc307bec69e62cecbd5ad8c244795d65e8ef5cb",
+      "bytes": 5158
+    },
+    {
+      "path": "@noble/hashes@2.2.0/webcrypto.d.ts.map",
+      "gitBlob": "be40d079653bef1586047b0eb8834c3b25feca05",
+      "sha256": "3e915ede2df86777e7e5e26e30f3670f10bda6fc193c2b90068d329082c12a6e",
+      "bytes": 1583
+    },
+    {
+      "path": "@noble/hashes@2.2.0/webcrypto.js",
+      "gitBlob": "0818023340f71bc3577bb0557dbcf67abbf8c65c",
+      "sha256": "549577dbf7db80b5faad042045eb4f39692088578bf4a4603b31f781b5e7ca9e",
+      "bytes": 6841
+    },
+    {
+      "path": "@noble/hashes@2.2.0/webcrypto.js.map",
+      "gitBlob": "f489b267b906e805c6ce86c2935dec76a6ea0e71",
+      "sha256": "10f0a20bbf420597a7413cdfd156d3a5b301e80ffd1b4bc5d5fd7e198ad97d2b",
+      "bytes": 4171
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/LICENSE",
+      "gitBlob": "da95be39fd10549b4626dd1f7e3f21424873bf68",
+      "sha256": "0dea4b70b40ca57e3cfe30186e3dbd245147fe4d83ac566e92e70203aac59034",
+      "bytes": 1109
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/README.md",
+      "gitBlob": "23045ae19e66e499fdb31e4aae721c5a6212bb47",
+      "sha256": "4aca7ed35f4fabfbbf2261e37cc69209562bc74acec47d701312678169a78bcb",
+      "bytes": 16076
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/_crystals.d.ts",
+      "gitBlob": "53ce5fe47fc1339340a88cd20b83dc3dfba8eef0",
+      "sha256": "1d71b431c2614b4ce9517ad68b9476da5e81ad220c5bc20f7830d9b67ef3aec4",
+      "bytes": 4739
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/_crystals.d.ts.map",
+      "gitBlob": "e9b0cfd0797367ef0d767845c0a6f07ec51e30b7",
+      "sha256": "5056022fa2c824a31da2ea7c41af5a0a1b1f9d8970c31746936f0d3f3bbfcf26",
+      "bytes": 1812
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/_crystals.js",
+      "gitBlob": "42221843f809d00b4c9a405bccae8f0a0e2bbed3",
+      "sha256": "7ff49f3f09213990027d5f307df5c84b36c9a47313a7d1069acd581b3e30eada",
+      "bytes": 7752
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/_crystals.js.map",
+      "gitBlob": "7f6a0ab386e1a8eea349efa6aa2bef1d45b508eb",
+      "sha256": "16e0b26d864ce22cbeb3700c619b8be2a6a7bff82f065014ab951688f6fe072d",
+      "bytes": 5742
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/falcon.d.ts",
+      "gitBlob": "794cc99661817aec309356ce0ecce6e786ff7eac",
+      "sha256": "bf760b050175cb182a3eb177a8f8408fb74fd3841e6fa46b2e8653fac5c2e379",
+      "bytes": 3303
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/falcon.d.ts.map",
+      "gitBlob": "a8e06615f71c7ea9922b728e430f397985b49d60",
+      "sha256": "54823d1a84402fef124e5f64755f423e115338e710a2865311313b4452d06c17",
+      "bytes": 1141
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/falcon.js",
+      "gitBlob": "96c8cef030c71230a6551d5809384e5d0e316d03",
+      "sha256": "19ccfacfdf97eb9330cde5628133b6ccb7e425ac9af3a48ad9c4d7fff90c0f56",
+      "bytes": 126747
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/falcon.js.map",
+      "gitBlob": "6993dacd81af8ed5883351302db51e955b860bde",
+      "sha256": "39213391a8508117449a1b1f2ff85444ce4661456006f990030d22108015ca84",
+      "bytes": 80917
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/hybrid.d.ts",
+      "gitBlob": "ed036097ad3c41e85d9e72977f8593270d221c51",
+      "sha256": "2fdbbae1b1ceaf5479fd4187de4ec98ab73c20be05add4d7b7c910c830875a49",
+      "bytes": 13002
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/hybrid.d.ts.map",
+      "gitBlob": "7394c21dd56bca35b1c245e5346f80c5732d0bf2",
+      "sha256": "160e60f1d3b5f3300a40f57421cc72a4c81a3307bf9680277ff4c6fd367047a7",
+      "bytes": 3107
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/hybrid.js",
+      "gitBlob": "9c76a8f6ccbcabc3d03762b67a226c9db070c94e",
+      "sha256": "d34a54df90fe07baf2af075aab4c046ac5f06caf3af1998f82a9b711c727a140",
+      "bytes": 32893
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/hybrid.js.map",
+      "gitBlob": "fd2feb25aedac6d8700aa2244c4d03d41d88813c",
+      "sha256": "03cccb54eff40250593e75c01a75fc29396d9af9f7ce11dbfbc9ae355d4833a4",
+      "bytes": 17378
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/index.d.ts",
+      "gitBlob": "e26a57a8ca84c682b2b77b57b9d6e340ffd33436",
+      "sha256": "f667f6b1d66ba55f0dcd27f5ff050063fecfe289bad00e8c5d48344a775c1439",
+      "bytes": 46
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/index.d.ts.map",
+      "gitBlob": "4e8c5816b41ae88c764eefae33e5eb965d87148b",
+      "sha256": "7755bad6a1fd1a6a721ae0bbaac3da2d95847c72f2dff7bdaf44d56cd82ac9d9",
+      "bytes": 101
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/index.js",
+      "gitBlob": "11ecb789f78b3732bade106bd194c38550e5b37f",
+      "sha256": "4c196731af6be58a3d86c7a79ab12778cd925c05526a927a279595600a3a3ee7",
+      "bytes": 1045
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/index.js.map",
+      "gitBlob": "452a8693e306a2ad4f8ab4e71316fc305807471d",
+      "sha256": "adf11de105e2c75c8938b8c172d107bbd7a78ac9edc82abfe878ee89825c4c8e",
+      "bytes": 175
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-dsa.d.ts",
+      "gitBlob": "fa034ce0d7380bcb742bb35910c7e93f7371eb44",
+      "sha256": "e8da43348d681ab4c6abd39821f36a402678aa4e41cf47a564c3a5b2e482cb76",
+      "bytes": 2463
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-dsa.d.ts.map",
+      "gitBlob": "5dcc3d02403bc65d2ed171286894cda08a457609",
+      "sha256": "a992f25dc6d7d0ec2b5432954e61f101fbb0ff1df7b3a7d2608e96760089a59d",
+      "bytes": 1522
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-dsa.js",
+      "gitBlob": "441518b1683737dfd859277f037d386959a902a8",
+      "sha256": "210a020b4933275edf89201e2a5168ee404190f2d5cfa676d0cb13b7a1072276",
+      "bytes": 29265
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-dsa.js.map",
+      "gitBlob": "a88c7d2fb0abe4587e88d0153215d229d7047059",
+      "sha256": "d8af1dd41ef9ebe92096f5f111a89039a264ab9ab6293f615ca2be395d6a3d7e",
+      "bytes": 28353
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-kem.d.ts",
+      "gitBlob": "25de4fe016960d29703cf44d8ad826b830cde79f",
+      "sha256": "56057458ad260f938d32b6dc330c6bb1b4d62f0bc9f8fb99a015282b3270ac1a",
+      "bytes": 1742
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-kem.d.ts.map",
+      "gitBlob": "bc51790248d2e220ebfa4b38ded8f4a31ccab294",
+      "sha256": "36cb3632572993f04adfa8f92cf48c6e6403c84ac545c77ac5561caf9649ea52",
+      "bytes": 849
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-kem.js",
+      "gitBlob": "e8fb4f2b05ce5f7cac7014fa514ae90870cd8de5",
+      "sha256": "c008845afa0118b39f2e37c5a4dc83cecac5bb7fef261d68fb4ca9561c58a326",
+      "bytes": 20106
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/ml-kem.js.map",
+      "gitBlob": "4d13760b608f5950524538e02f8db5f459b14a95",
+      "sha256": "490a36e9a385b5ad2e4ac3fb7ea058a652c96b81edb523dd91774a02b5828f1c",
+      "bytes": 18217
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/package.json",
+      "gitBlob": "93a2d5cbb2debc41c3fbdc2c9617647fb0fa94f2",
+      "sha256": "40963a943deda8d07352543d7263316b7bac48b04bab121d3cf4d6fcce5a47f9",
+      "bytes": 2426
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/slh-dsa.d.ts",
+      "gitBlob": "a251f3881093b62f1a977434a9b3fad24a17a099",
+      "sha256": "fbaf0095184750f1a8cfea5cd4597271da3f3c474ec8c4946c9338dde5f117c9",
+      "bytes": 6986
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/slh-dsa.d.ts.map",
+      "gitBlob": "62d6401790972ee6bbee9767a795deb1c54eaa70",
+      "sha256": "7d7af614fd9e5b6ae77766e35ac4bf4ad84aa930b6d15ad7afd0cd8e6553f63e",
+      "bytes": 2816
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/slh-dsa.js",
+      "gitBlob": "3e29d1c30fbf0e95a8702252882d8ebbc0cddde4",
+      "sha256": "8f51711a4fbd32bc25efcd73f6fda77a2971af279f8d5f165fa93881cab2c1a7",
+      "bytes": 34525
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/slh-dsa.js.map",
+      "gitBlob": "63550570fdd3044b7a6bda2d04736031d2dc1849",
+      "sha256": "59fed62ee6e256c258ff5f1c0165b8d53da2a860dde0b75c24bec86fac921a35",
+      "bytes": 30909
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/_crystals.ts",
+      "gitBlob": "f6c3df347c54393ec0088fe9f42a88fa5628f122",
+      "sha256": "76fdb675a894346b958dded69b6a6f5bf9b3c33ecb5107ebca3e0517f8365b90",
+      "bytes": 10251
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/falcon.ts",
+      "gitBlob": "43c87243b9ae8326768306fa2f78d00471e7dde7",
+      "sha256": "94ac99ecbe45aba87bbcb2d08ad6259237072701a22cd9ab1fe3d155e9752617",
+      "bytes": 124994
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/hybrid.ts",
+      "gitBlob": "de015f78304aa562db99ab3caefed773a2f85dc5",
+      "sha256": "c360ae418ee83a34d6c1c8efe06e61649e16d8e2decbd87540a28f924eb0bd00",
+      "bytes": 34607
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/index.ts",
+      "gitBlob": "f4bf3f0280cda0e368b8d802c4f5fd0157c29415",
+      "sha256": "993eca395ca0f11dec4ec6ba3ec38f57897ded5e351d0d3cbcf477774757a4ca",
+      "bytes": 1001
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/ml-dsa.ts",
+      "gitBlob": "3358cc2f941cdd3786d8faa6670c5709325d104e",
+      "sha256": "c54a117fc2fbc86ae39e8680372c8decc525d937243dfcfe3c571439a56b9075",
+      "bytes": 29963
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/ml-kem.ts",
+      "gitBlob": "80f893fc5a5fe52605d6b91780e93d0658e5d0ab",
+      "sha256": "c743a50e82e63c90fa8d393e604e6090685d5b149fa678a53bf62536c75dd258",
+      "bytes": 21187
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/slh-dsa.ts",
+      "gitBlob": "98d5af96d3dc84a6c6f26ab7b0ad186b154d97be",
+      "sha256": "2f0b781e3c2dea213697434bd5e3501db7981f0b58b5bacd51a25fd52c616021",
+      "bytes": 38799
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/src/utils.ts",
+      "gitBlob": "038d548b5258b4891737012b8ca597823da236cb",
+      "sha256": "7d47e7bed8f02457c3ad22ee2910e38a3e35f1c354af97e06d959ebc8f151b87",
+      "bytes": 24567
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/utils.d.ts",
+      "gitBlob": "ab09c1e7266539a7a5b5fccdf813470e13424a0b",
+      "sha256": "54ce17d409dd1aad56b8242f0ac97a5b87ae0d96378c79fa412ef8ce1ea56622",
+      "bytes": 18568
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/utils.d.ts.map",
+      "gitBlob": "7c49a13dba6ffaa137d25383e313ae117291a418",
+      "sha256": "6ee022cafbdaea3eaac8c228e11d9f9787ecad51d277b5914483fa072ed23b87",
+      "bytes": 8395
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/utils.js",
+      "gitBlob": "999e58260b80a2311c139d987a3d272cfce076d6",
+      "sha256": "b3d97248f0a16ea60119de0585def637a8aa3f27c4124d8825e1709588de53f8",
+      "bytes": 15333
+    },
+    {
+      "path": "@noble/post-quantum@0.6.1/utils.js.map",
+      "gitBlob": "406f14b7a8702c53770847ca59d90d229ae46911",
+      "sha256": "a451cd17484eb641d734efef4c5ab43be51000bd241c4329aeea23c35a3b2bf5",
+      "bytes": 7466
+    }
+  ]
+}

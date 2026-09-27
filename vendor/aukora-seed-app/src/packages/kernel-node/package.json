@@ -1,0 +1,21 @@
+{
+  "name": "@aukora/kernel-node",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "AGPL-3.0-or-later",
+  "description": "Protected Node-runtime persistence for the kernel's constitutional trusted state — a crash-safe, single-writer, rollback-refusing TrustedStateStore OUTSIDE Convex and OUTSIDE model-facing code. Consumes @aukora/kernel's pure decide(); persists consumed authorization IDs + receipt head + PREPARED effect descriptors atomically before any Git effect.",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@aukora/kernel": "*"
+  },
+  "scripts": {
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

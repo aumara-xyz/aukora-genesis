@@ -1,0 +1,23 @@
+{
+  "face": "documents",
+  "srcDigest": "7c07cab4adcb8e2ae7bc635f4d4edd8f8b251cc2134e10fa99cbee445027350d",
+  "files": [
+    "package.json",
+    "src/client/Documents.module.css",
+    "src/client/DocumentsIcons.tsx",
+    "src/client/DocumentsMenu.tsx",
+    "src/client/DocumentsSurface.tsx",
+    "src/client/MarkdownView.tsx",
+    "src/client/documents-loader.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/markdown.ts",
+    "src/css-modules.d.ts",
+    "src/documents-reader.ts",
+    "src/documents-route.ts",
+    "src/index.ts",
+    "src/invariant.ts",
+    "tsdown.config.ts"
+  ],
+  "builtAt": "2026-09-27T06:10:27Z"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "dangling-symlink",
+  "why": "The leaf is a symlink whose target does not exist YET. An existsSync guard placed before an lstat never runs, so the check is skipped and the write follows the link out of the world.",
+  "incident": "SAKANA, 2026-07-27 - wrote ESCAPED-VIA-DANGLING-LINK outside world/. Closed by O_NOFOLLOW, which fails ELOOP without needing the target to exist.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "symlinks": {
+      "world/mind.md": "/nonexistent-target-xyz.txt"
+    }
+  },
+  "attempt": {
+    "path": "world/mind.md",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

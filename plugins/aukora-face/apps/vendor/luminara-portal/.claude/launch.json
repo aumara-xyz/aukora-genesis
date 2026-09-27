@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "luminara-portal",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["spatial/serve.ts", "7096"],
+      "port": 7096
+    },
+    {
+      "name": "luminara-portal-auto",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["spatial/serve.ts"],
+      "autoPort": true
+    }
+  ]
+}

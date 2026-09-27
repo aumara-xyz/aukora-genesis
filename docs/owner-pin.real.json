@@ -1,0 +1,17 @@
+{
+  "kind": "aukora:owner-pin:v1",
+  "policyVersion": 1,
+  "approvalKeys": [
+    "did:key:z6Mkty7ygHQUs4hVBB2hfhBMLcNQWR5EG15jMoiRDJqL84Vq"
+  ],
+  "gatePaths": [
+    "AGENTS.md",
+    ".github/workflows/b1.yml",
+    "docs/owner-pin.json",
+    "plugins/aukora-aumlok/lib/repo-advance.mjs",
+    "plugins/aukora-owner-daemon/lib/consumption-witness.mjs",
+    "scripts/aukora-courts.sh",
+    "scripts/aukora/advance-main.mjs",
+    "tests/GREEN-ONLY.txt"
+  ]
+}

@@ -1,0 +1,22 @@
+node_modules/
+*.log
+.DS_Store
+
+# ══ THE CHAIN IS PER-MACHINE, AND THAT IS NOT A COMPROMISE ══
+#
+# This file used to say the opposite — `!.aukora/chain.jsonl`, committed on purpose, with the argument
+# that "a ledger nobody can read from the repository is not accountability, it is a local log file."
+# Half of that is right, and the other half breaks the thing it is defending.
+#
+# A hash chain links each entry to the one before it. Two machines appending to one file do not produce
+# one chain; they produce two, interleaved, and every entry after the first divergence has a `prev` that
+# does not match its neighbour. That is precisely the fork condition `verifyChain` exists to DETECT — so
+# committing the live chain guarantees the failure the verifier was written to catch, and a merge
+# conflict on every landing besides. Two writers cannot share a chain. That is not policy, it is the
+# data structure.
+#
+# So each node keeps its own chain and verifies its own history. Chains are PUBLISHED, never merged: a
+# node that wants its record read exports a snapshot under its own name. Cross-machine agreement is then
+# a real check — Peter's box recomputing Sam's exported chain and agreeing — rather than an artifact of
+# two processes writing to one file and hoping the interleaving was kind.
+.aukora/

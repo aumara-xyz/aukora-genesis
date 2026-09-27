@@ -1,0 +1,73 @@
+NOTICE
+======
+
+This file records third-party notices for material distributed with AUKORA. It is additive: **it changes no
+`package.json` licence field and no copyright-holder line, because those are the maintainer's and counsel's
+call.** See `LICENSE` (AGPL-3.0) for the terms this repository itself is offered under.
+
+DeepSeek Harness — MIT
+----------------------
+
+**Parts of the face code under `plugins/aukora-face/` are derived from the DeepSeek Harness**, which this
+repository pins in `upstream-dsh.json`:
+
+    repository : https://github.com/deepseek-ai/deepseek-harness
+    commit     : 0d1f50007f9bca3f52b06e1c3074fa14d5fb0720
+    licence    : MIT
+
+**The MIT licence requires that its copyright notice and permission notice be preserved in all copies or
+substantial portions of the software, so they are reproduced here in full and verbatim.** The text below is the
+notice as it appears in `vendor/dsh/LICENSE`, which is the pinned upstream tree:
+
+```
+MIT License
+
+Copyright (c) 2026 DeepSeek
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+*** WHY THIS FILE EXISTS, AND WHY IT IS NOT A `package.json` LINE. *** **`vendor/dsh` carries that notice itself,
+so code taken *from* it is covered while it stays there. Code *derived* from it and living under this repository's
+own tree is a copy or a substantial portion in the MIT sense, and the notice has to travel with it.** *The two
+facts a reader needs are which upstream it came from — named by commit above — and the notice itself, and this
+file carries both.*
+
+**NOT ASSERTED HERE:** which individual files are derived, and whether any given file is a "substantial portion".
+**That is a legal characterisation and it is not this file's to make.** This file reproduces the notice, names the
+pin, and leaves the characterisation to the maintainer and to counsel — *which is the same boundary the rest of
+this repository draws between what it measured and what it decided.*
+
+Other vendored material
+-----------------------
+
+**The other vendored trees carry their own licences beside their own code, and each is pinned in its manifest:**
+
+| tree | manifest | licence |
+|---|---|---|
+| `vendor/phase0-consistency/` | `upstream-phase0.json` | AGPL-3.0-only |
+| `vendor/receipt-v3/` | `upstream-receipt-v3.json` | AGPL-3.0-only |
+| `vendor/diamond-cold/` | `upstream-diamond.json` | AGPL-3.0-only |
+
+**Every `LICENSE` in this tree that claims to be the AGPL carries section 13 — *Remote Network Interaction* —
+as of 2026-09-27** (`LICENSE` and the three above; checked by hand when the court that checked it,
+`tests/aukora-agpl-section-13.test.mjs`, was archived with the test forest, `ARCHIVE.md`). **That court existed
+because one of these files was, until 2026-09-26, a paraphrase that omitted section 13 and carried the FSF's own
+"changing it is not allowed" notice while being a changed copy.** See
+`vendor/phase0-consistency/upstream-phase0.json` for the recorded reason that file departs from upstream bytes.

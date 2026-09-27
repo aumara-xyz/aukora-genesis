@@ -1,0 +1,16 @@
+{
+  "_": "Content-free pin of the MECHANICAL PORT check for ui/ceremony/phrase.mjs. The port was verified against the owner's own source with the donor checkout present; these digests record that verification so the check no longer silently evaporates on machines without it. No donor content is stored - digests only.",
+  "why": "test/ceremony-phrase.test.mjs used a bare `return` when the donor was absent, so on every machine but the owner's it printed SKIPPED and reported ok. A test that cannot run must not report a pass, and it was feeding the anti-drift baseline floor while verifying nothing.",
+  "donorCheckout": "aukora-pqc-integration",
+  "donorPath": "core/src/aumlokPhrase.ts",
+  "verifiedAt": "2026-07-26",
+  "anchorCount": 18,
+  "anchorsIdentical": true,
+  "invented": [],
+  "donorAnchorsSha256": "24b84ba3eb25721c8a60fd3276dff4e10dbbcb7ea14eeb3f642e037dac5226ed",
+  "ourAnchorsSha256": "24b84ba3eb25721c8a60fd3276dff4e10dbbcb7ea14eeb3f642e037dac5226ed",
+  "donorWordsetSha256": "6dd55ed20374dd648ce945408254a58c78e946cc3cc52663990e82782e151712",
+  "ourWordsetSha256": "61876024101745a087fb1b81f4d468794f36586c0612ca8e37ada7af82e9771e",
+  "donorWordCount": 275,
+  "ourWordCount": 274
+}

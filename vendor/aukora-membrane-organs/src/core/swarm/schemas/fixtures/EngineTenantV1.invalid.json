@@ -1,0 +1,13 @@
+{
+  "schema": "aukora-swarm-engine-tenant-v1",
+  "engineId": "engine-local-fixture-v1",
+  "adapterVersion": "1.0.0",
+  "modelProvider": "local/deterministic-v1",
+  "briefDigest": "invalid-hex-brief-digest",
+  "leaseDigest": "2222222222222222222222222222222222222222222222222222222222222222",
+  "baseCommit": "0123456789abcdef0123456789abcdef01234567",
+  "baseTreeDigest": "3333333333333333333333333333333333333333333333333333333333333333",
+  "timeoutMs": -500,
+  "networkPolicy": "allow-all",
+  "environmentAllowlist": ["PATH"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "dsh-profile-8088-inside-out",
+  "private": true,
+  "dependencies": {},
+  "dsh": {
+    "profile": {
+      "bundles": []
+    }
+  },
+  "license": "AGPL-3.0-or-later"
+}

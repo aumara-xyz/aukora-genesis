@@ -1,0 +1,64 @@
+{
+  "extends": "../../../tsconfig.base.client.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+  },
+  "files": [
+    "src/invariant.ts",
+    "src/client/AppFrame.tsx",
+    "src/client/ApprovalsMenu.tsx",
+    "src/client/ApprovalsSurface.tsx",
+    "src/client/FirstRunSurface.tsx",
+    "src/client/HealthMenu.tsx",
+    "src/client/HealthSurface.tsx",
+    "src/client/WhyMenu.tsx",
+    "src/client/WhySurface.tsx",
+    "src/client/approvals-api.ts",
+    "src/client/approvals-model.ts",
+    "src/client/auma-status.ts",
+    "src/client/auma-thread.ts",
+    "src/client/conversation-opener.ts",
+    "src/client/first-run-api.ts",
+    "src/client/first-run.ts",
+    "src/client/health-api.ts",
+    "src/client/health-model.ts",
+    "src/client/index.ts",
+    "src/client/locales.ts",
+    "src/client/service.ts",
+    "src/client/stores.ts",
+    "src/client/theme-presenter.ts",
+    "src/client/types.ts",
+    "src/client/waiting.ts",
+    "src/client/why-api.ts",
+    "src/client/why-model.ts",
+    "src/css-modules.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../ui-session"
+    },
+    {
+      "path": "../ui-renderer"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../ui-slots"
+    },
+    {
+      "path": "../ui-theme"
+    },
+    {
+      "path": "../ui-primitives"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    }
+  ]
+}

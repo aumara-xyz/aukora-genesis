@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""memory-head — CLI entry point. See memory_head.py for the reasoning.
+
+    python3 scripts/phase0/memory-head retain --state <kira-state> [--target <dir>]
+    python3 scripts/phase0/memory-head check  --state <kira-state> [--target <dir>]
+
+`retain` keeps a head of Kira's `aura.jsonl` OUTSIDE the state directory.
+`check`  asks whether that ledger still extends the head that was kept.
+
+Exit: 0 retained / court said APPEND_ONLY, 1 truncation or a rewritten prefix,
+      2 the log itself is unreadable, 3 COMPLETENESS UNDETERMINED (no head was kept).
+"""
+import os
+import sys
+
+sys.dont_write_bytecode = True
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import memory_head  # noqa: E402
+
+if __name__ == "__main__":
+    sys.exit(memory_head.main(sys.argv))

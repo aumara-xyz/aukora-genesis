@@ -1,0 +1,806 @@
+<!doctype html>
+<!-- AUMA LUMINARA · THE MAP ROOM (opened as THE LIBRARY 2026-07-17; named
+     THE MAP ROOM by the architect the same day, the cave expedition's
+     chamber where the ropes and charts are kept; THE DESK added the same
+     day, second pass).
+     The room is a LENS, NEVER A PEN onto the repository (docs/
+     LUMINARA_MAP_ROOM.md): every chart is exactly one markdown file, fetched
+     through the server's read-only /docs/ door and rendered by the resident
+     lens (map-room-md.js: escape first, markup second). The shelves come
+     from the catalogue (map-room.json) and from nothing else; charts route
+     by hash (#/slug). The room READS NOTHING and DRAWS NOTHING from the
+     engine: no seeds, no casts. Since 19 July 2026 a chart may LINK to an
+     instrument (/app/...), at the architect's word: pointing at a surface
+     is not operating one, and the room still holds no engine of its own.
+     THE DESK: a chart can be opened for editing right here, a textarea and
+     a live preview through the SAME lens. The draft lives only in this
+     browser's storage, per chart, never sent to the server (the spatial
+     server stays GET/HEAD only; this process never writes to disk). Nothing
+     becomes canon until the draft is downloaded (as markdown, or as a
+     printed page) and carried into the repository through the lane, same
+     as any other change. The room can propose a file; it can never write
+     one. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the map room</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34); --line:rgba(255,255,255,0.08); }
+  html,body { margin:0; background:#0a0b0e; color:var(--text); font:14px/1.6 system-ui, sans-serif; }
+  .wrap { max-width:760px; margin:0 auto; padding:26px 18px 80px; }
+  header { text-align:center; margin-bottom:6px; }
+  h1 { font-size:15px; letter-spacing:0.34em; margin:0 0 3px;
+    background:linear-gradient(100deg,#C9D3E2,#EFE7CF 55%,#F0C25E);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:10px; letter-spacing:0.2em; color:var(--faint); }
+  .lnav { display:flex; gap:18px; justify-content:center; margin:9px 0 2px; }
+  .lnav a { font-size:10px; letter-spacing:0.22em; color:var(--faint); text-decoration:none; padding:3px 2px; border-bottom:1px solid transparent; }
+  .lnav a:hover { color:var(--dim); }
+  .lnav a.on { color:#EFE7CF; border-bottom-color:rgba(240,194,94,0.4); }
+  .note { text-align:center; font-size:11px; color:var(--dim); max-width:560px; margin:14px auto 24px; }
+  /* the credo on the door: WHY A MAP ROOM, ratified by the architect. The
+     room says what it is; the reasons open to whoever asks for them. */
+  .credo { max-width:580px; margin:16px auto 26px; }
+  .credo p { text-align:center; font-size:11px; line-height:1.7; color:var(--dim); margin:0 0 10px; }
+  .credo-expand { background:none; border:none; padding:0; margin-left:4px; cursor:pointer;
+    font:inherit; color:rgba(240,194,94,0.8); border-bottom:1px solid rgba(240,194,94,0.3); }
+  .credo-expand:hover { color:#EFE7CF; }
+  #credoMore { display:none; margin-top:12px; }
+  #credoMore.open { display:block; }
+  .credo .esintro { text-align:center; color:var(--faint); letter-spacing:0.18em; font-size:9.5px; margin:20px 0 10px; }
+  .credo .essences { text-align:left; max-width:520px; margin:0 auto; }
+  .credo .essences p { text-align:left; }
+  .credo .ename { color:#EFE7CF; font-weight:600; letter-spacing:0.03em; }
+  .credo .esynth { text-align:center; margin-top:14px; }
+  .credodesk { text-align:center; font-size:9.5px; font-style:italic; letter-spacing:0.05em; color:var(--faint); margin-top:12px; }
+  /* the three motions worn as toggles: trefoil the map, genus the workshop,
+     phi the becoming: the room read the way a spread is read */
+  .faces { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin:0 0 22px; }
+  .faces button { background:none; border:1px solid var(--line); color:var(--dim); font:10.5px system-ui;
+    letter-spacing:0.14em; padding:7px 14px; border-radius:18px; cursor:pointer; }
+  .faces button:hover { border-color:rgba(240,194,94,0.4); color:var(--text); }
+  .faces button.on { color:#EFE7CF; border-color:rgba(240,194,94,0.5); }
+  .facenote { text-align:center; font-size:10px; font-style:italic; color:var(--faint); margin:-12px auto 20px; max-width:520px; }
+  .resline { font-size:10px; letter-spacing:0.06em; color:var(--dim); margin-top:6px; }
+  .resline a { color:rgba(240,194,94,0.8); text-decoration:none; border-bottom:1px solid rgba(240,194,94,0.25); }
+  .resline a:hover { color:#EFE7CF; }
+  .resnote { text-align:center; font-size:10px; font-style:italic; color:var(--faint); margin:18px 0 0; }
+  .worknote { font-size:11px; font-style:italic; color:var(--faint); margin:-2px 0 10px; line-height:1.6; }
+  #chartRes { display:none; text-align:center; font-size:10px; letter-spacing:0.06em; color:var(--dim); margin:0 0 14px; }
+  #chartRes a { color:rgba(240,194,94,0.8); text-decoration:none; border-bottom:1px solid rgba(240,194,94,0.25); }
+  #chartRes a:hover { color:#EFE7CF; }
+  .searchrow { display:flex; gap:8px; justify-content:center; align-items:center; margin:14px 0 2px; }
+  .searchrow input { flex:1; max-width:420px; background:#101116; border:1px solid var(--line);
+    color:var(--text); font:12px ui-monospace,monospace; padding:8px 11px; border-radius:8px; }
+  .searchrow input::placeholder { color:var(--faint); }
+  .searchrow input:focus { outline:none; border-color:rgba(240,194,94,0.4); }
+  .searchrow button { background:none; border:1px solid var(--line); color:var(--dim);
+    font:10.5px system-ui; padding:8px 12px; border-radius:8px; cursor:pointer; }
+  .searchrow button:hover { color:#EFE7CF; border-color:rgba(240,194,94,0.35); }
+  .searchnote { text-align:center; font-size:9.5px; letter-spacing:0.08em; color:var(--faint);
+    min-height:1.4em; margin-top:6px; }
+  .shelf mark { background:rgba(240,194,94,0.22); color:#EFE7CF; border-radius:2px; padding:0 1px; }
+  .sface { color:rgba(240,194,94,0.7); }
+  #chartLive { display:none; text-align:center; margin:0 0 16px; }
+  #chartLive a { display:inline-block; font-size:11px; letter-spacing:0.08em; color:#F0C25E;
+    text-decoration:none; border:1px solid rgba(240,194,94,0.4); border-radius:10px;
+    padding:7px 16px; margin:3px 4px; }
+  #chartLive a:hover { background:rgba(240,194,94,0.1); border-color:rgba(240,194,94,0.7); }
+  /* the pressed volume is a companion rather than an instrument: same weight,
+     quieter metal, so the two doors are told apart before they are read */
+  #chartLive a.pressed { color:#EFE7CF; border-color:rgba(239,231,207,0.28); }
+  #chartLive a.pressed:hover { background:rgba(239,231,207,0.07); border-color:rgba(239,231,207,0.55); }
+  .shelfhead { text-align:center; font-size:11px; letter-spacing:0.28em; color:#EFE7CF; margin:26px 0 12px; }
+  .shelfhead:first-child { margin-top:0; }
+  .shelf { display:block; border:1px solid var(--line); border-radius:12px; padding:13px 16px; margin:0 0 10px;
+    text-decoration:none; color:inherit; }
+  a.shelf:hover { border-color:rgba(240,194,94,0.3); }
+  .shelf .stitle { font-size:12.5px; letter-spacing:0.12em; color:#EFE7CF; }
+  .shelf .stitle a { color:inherit; text-decoration:none; border-bottom:1px solid rgba(240,194,94,0.3); }
+  .shelf .stitle a:hover { color:#fff; }
+  .shelf .sline { font-size:11px; color:var(--dim); margin-top:3px; }
+  .shelf .swhere { font-size:9.5px; letter-spacing:0.14em; color:var(--faint); margin-top:5px; }
+  #chartView { display:none; }
+  .backlink { display:inline-block; font-size:10px; letter-spacing:0.22em; color:var(--faint); text-decoration:none; margin-bottom:14px; }
+  .backlink:hover { color:var(--dim); }
+  .toolbar { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; align-items:center; margin:2px 0 14px; }
+  /* the way back stands in the row, wearing the same coat as the rest */
+  .toolbar button, .toolbar .backlink { background:none; border:1px solid var(--line); color:var(--dim); font:10.5px system-ui;
+    letter-spacing:0.1em; padding:6px 12px; border-radius:16px; cursor:pointer; }
+  .toolbar .backlink { margin:0; text-decoration:none; }
+  .toolbar button:hover, .toolbar .backlink:hover { border-color:rgba(240,194,94,0.4); color:var(--text); }
+  .toolbar button.on { color:#EFE7CF; border-color:rgba(240,194,94,0.5); }
+  .deskstate { display:none; text-align:center; font-size:10px; letter-spacing:0.06em; color:var(--faint); margin:0 0 16px; }
+  .deskstate button { background:none; border:none; color:rgba(240,194,94,0.8); font:inherit; letter-spacing:0.06em;
+    text-decoration:underline; cursor:pointer; padding:0; margin-left:6px; }
+  #desk { display:none; }
+  #desk textarea { width:100%; box-sizing:border-box; min-height:320px; resize:vertical;
+    background:#101116; border:1px solid var(--line); border-radius:10px; color:var(--text);
+    font:12.5px/1.6 ui-monospace, monospace; padding:14px 16px; outline:none; }
+  #desk textarea:focus { border-color:rgba(240,194,94,0.4); }
+  .deskdivider { text-align:center; font-size:9px; letter-spacing:0.2em; color:var(--faint); margin:20px 0 4px; }
+  #deskPreview { border-top:1px solid var(--line); padding-top:20px; }
+  /* the desk never leaves the browser: printing is the paper door out */
+  @media print {
+    body { background:#fff; color:#111; }
+    header, .lnav, .note, .credo, .facenote, .faces, #shelves, .toolbar, .backlink, .deskstate, .deskdivider, .register, #desk textarea { display:none !important; }
+    .wrap { max-width:100%; padding:0; }
+    article, #deskPreview { font-family:Georgia, 'Times New Roman', serif; color:#111; border-top:none; padding-top:0; }
+    article h1, #deskPreview h1 { -webkit-text-fill-color:#111 !important; color:#111 !important; background:none !important; }
+    article h2, article h3, article h4, #deskPreview h2, #deskPreview h3, #deskPreview h4 { color:#111; }
+    article p, article li, article td, #deskPreview p, #deskPreview li, #deskPreview td { color:#222; }
+    article a, #deskPreview a { color:#111; text-decoration-color:#999; }
+    article code, #deskPreview code { background:#f0f0f0; color:#333; }
+    article pre, #deskPreview pre { background:#f7f7f7; border-color:#ddd; }
+    article blockquote, #deskPreview blockquote { color:#444; border-left-color:#bbb; }
+    .chartfig figcaption { color:#555; }
+  }
+  article { border-top:1px solid var(--line); padding-top:22px;
+    font-family:Georgia, 'Times New Roman', serif; font-size:15px; line-height:1.85; }
+  article h1 { font:13px system-ui, sans-serif; letter-spacing:0.3em; color:#EFE7CF; text-align:center;
+    background:none; -webkit-text-fill-color:#EFE7CF; margin:0 0 22px; }
+  article h2 { font-family:system-ui, sans-serif; font-size:10.5px; letter-spacing:0.26em; color:var(--dim); font-weight:400; margin:34px 0 10px; }
+  article h3, article h4 { font-family:system-ui, sans-serif; font-size:11.5px; letter-spacing:0.14em; color:#EFE7CF; font-weight:400; margin:24px 0 8px; }
+  article p { margin:0 0 14px; color:rgba(233,230,220,0.86); }
+  article em { color:#EFE7CF; }
+  article strong { color:#EFE7CF; font-weight:600; }
+  article ul, article ol { margin:0 0 14px; padding-left:22px; color:rgba(233,230,220,0.86); }
+  article li { margin-bottom:5px; }
+  article blockquote { margin:0 0 14px; padding-left:14px; border-left:2px solid rgba(240,194,94,0.35); color:var(--dim); font-style:italic; }
+  article code { font-family:ui-monospace, monospace; font-size:12.5px; color:#C9D3E2; background:rgba(255,255,255,0.05); padding:1px 5px; border-radius:5px; }
+  article pre { background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:10px; padding:12px 14px; overflow-x:auto; margin:0 0 14px; }
+  article pre code { background:none; padding:0; }
+  article hr { border:none; border-top:1px solid var(--line); margin:24px 0; }
+  article a { color:#EFE7CF; text-decoration:underline; text-decoration-color:rgba(240,194,94,0.4); }
+  article figure.chartfig { margin:22px auto 24px; text-align:center; }
+  /* Sized by HEIGHT, not width: the figures range from square to 2.5:1, and a
+     single width rule makes the wide ones tiny and the square ones enormous.
+     One height gives them all the same weight in the column. */
+  article .chartfig svg { height:240px; width:auto; max-width:100%; display:block; margin:0 auto; overflow:visible; }
+  article .chartfig figcaption { font:italic 10.5px Georgia, 'Times New Roman', serif; color:var(--faint);
+    margin-top:8px; letter-spacing:0.04em; max-width:380px; margin-left:auto; margin-right:auto; }
+  article table { border-collapse:collapse; margin:0 0 14px; font-size:12.5px; font-family:system-ui, sans-serif; width:100%; }
+  article th, article td { border:1px solid var(--line); padding:6px 9px; text-align:left; color:rgba(233,230,220,0.86); vertical-align:top; }
+  article th { color:#EFE7CF; letter-spacing:0.06em; font-weight:500; }
+  .register { text-align:center; font-size:10px; letter-spacing:0.14em; color:var(--faint); margin-top:40px; font-family:system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE MAP ROOM</h1>
+    <div class="sub">EVERY CHART THE CAVE HAS KEPT, AND NOT ONE OF THEM CASTS</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html" class="on">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+
+  <div class="searchrow" id="searchRow">
+    <input id="searchIn" type="search" spellcheck="false" autocomplete="off"
+      placeholder="search the shelves by name, line or shelf" aria-label="search the charts">
+    <button id="searchClear" type="button">clear</button>
+  </div>
+  <div class="searchnote" id="searchNote">&nbsp;</div>
+
+  <div class="credo" id="credo">
+    <p>The chart room of the cave: where the ropes and charts are kept. What is gathered
+      here is never cast and never drawn: codes, constructions, correspondences, and texts
+      kept because they lend clarity to the seeing of the shapes. Every chart is one living
+      file; the charts grow as the seeing does.
+      <button class="credo-expand" id="credoExpand" type="button" aria-expanded="false"
+        aria-controls="credoMore">expand</button></p>
+    <div id="credoMore">
+      <p>The room is named for the one thing nobody owns. A map belongs to whoever walks
+        with it, and it is corrected by anyone who returns from the territory with better
+        bearings. To claim ownership would be gatekeeping.</p>
+      <p>The map is not the territory. A reading describes and never operates, a figure is
+        an instrument and never a verdict, the standing cell is weather, not fate.</p>
+      <p>The territory is not the map. The world is not obliged to our charts, and nothing
+        drawn here binds what it draws. This is why the hard law costs nothing: maps may be
+        split, merged, and re-embedded without a cut ever landing.</p>
+      <p>Maps grow and evolve: the charts are living files. And maps are tools for
+        navigating flows, not things: the canon itself reads no objects, only what holds
+        still, what flows, and what turns. A wayfinder steers by currents. That is why the
+        instrument next door bears its name, and why this room stands beside it.</p>
+      <div class="esintro">THE THREE ESSENCES</div>
+      <div class="essences">
+        <p><span class="ename">TREFOIL · THE MAPS.</span> The criterion here is the completed
+          refinement of what has already been knotted. The trefoil is the first true knot,
+          the simplest structure that cannot be undone by any smooth deformation.
+          Trefoil-status means a piece earns its place as a Map when further deformation no
+          longer changes it. When the distillations stop finding anything to remove, when the
+          form holds under every re-working, the piece has knotted in. A Map is a completed
+          knot: refined, accomplished, and load-bearing as a rope you can actually hang weight
+          on while navigating.</p>
+        <p><span class="ename">GENUS · THE DOORWAYS.</span> In topology, genus
+          counts holes. It is the number of handles, passages, openings a surface carries, so
+          the mapping of each doorway of the rooms of the caves is not an analogy laid over
+          Genus; it is what genus measures. The Genus bench works by increasing the genus of
+          the inquiry: opening new passages, fractalising into every research pathway, adding
+          handles to the surface of what is known. Its material is deliberately unrefined:
+          sources, references, gathered fragments, open questions, because its priority is not
+          potency, it is coverage. A Genus piece is valued for the doorways it opens, not the
+          weight it bears. The criterion here is expansion; the live cut of the present, the
+          working edge.</p>
+        <p><span class="ename">PHI · THE BECOMING.</span> The criterion is invariance under
+          deformation. Phi, the number, is the proportion invariant under its own continuation
+          (φ = 1 + 1/φ; the golden spiral maps onto itself under turning), so deforming into
+          the invariants is exactly its mathematics: the Phi bench is where a working is
+          actively deformed, split, merged, condensed, re-embedded, to discover what stays
+          fixed while everything turns. Distillation is invariant-finding. A Phi piece wears
+          turning marks; it is mid-transformation, spiralling toward its essential form, a turn
+          completing into new stillness. When a Phi piece's deformation completes, it crosses
+          to Trefoil. That is what becoming a Map is, mechanically: the becoming law applied to
+          knowledge.</p>
+      </div>
+      <p class="esynth">The library here is the three states of the canon applied to knowledge
+        itself. Genus gathers (flow), Phi deforms (turning), Trefoil holds (still), and the
+        circulation closes because maps in hand are what let you go and open new doorways.</p>
+    </div>
+    <div class="credodesk">a chart can be drafted right here too, watched through the same
+      lens as it sharpens, and printed as .md or a .pdf</div>
+  </div>
+
+  <div class="faces" id="faces">
+    <button id="faceTrefoil" class="on" type="button">TREFOIL · THE MAPS</button>
+    <button id="faceGenus" type="button">GENUS · THE DOORWAYS</button>
+    <button id="facePhi" type="button">PHI · THE BECOMING</button>
+  </div>
+  <div class="facenote" id="faceNote"></div>
+
+  <div id="shelves"></div>
+
+  <div id="chartView">
+    <div class="toolbar" id="toolbar">
+      <a class="backlink" id="backLink" href="#">&larr; THE CHARTS</a>
+      <button id="modeView" class="on" type="button">VIEW</button>
+      <button id="modeEdit" type="button">EDIT</button>
+      <button id="deskSave" type="button" style="display:none">SAVE</button>
+      <button id="dlMd" type="button">DOWNLOAD · MD</button>
+      <button id="dlTxt" type="button">DOWNLOAD · TXT</button>
+      <button id="dlPdf" type="button">DOWNLOAD · PDF</button>
+    </div>
+    <div id="chartLive"></div>
+    <div id="chartRes"></div>
+    <div class="deskstate" id="deskState"></div>
+    <article id="chartBody"></article>
+    <div id="desk">
+      <textarea id="deskSource" spellcheck="false"></textarea>
+      <div class="deskdivider">THE PREVIEW · AS THE LENS WILL RENDER IT</div>
+      <article id="deskPreview"></article>
+    </div>
+  </div>
+
+  <div class="register">HELD, NEVER CAST · THE MAP ROOM LENDS CLARITY, NOT VERDICTS</div>
+</div>
+
+<script type="module">
+import { renderMarkdown, liveLinkOf } from '/app/map-room-md.js';
+
+const SHELF_ORDER = ['books', 'seeings', 'laws', 'instruments', 'workings', 'references'];
+const SHELF_NAMES = {
+  books: 'THE BOOKS · THE PRESSED LINEAGE',
+  seeings: 'THE SEEINGS · THE DISTILLED PIECES',
+  laws: 'THE LAWS · THE ROOM’S SPINE',
+  instruments: 'THE INSTRUMENTS',
+  workings: 'THE WORKINGS · BUILT, RUNNING, NOT YET RULED',
+  references: 'REFERENCES · THE WIDER FIELD',
+};
+
+const shelvesEl = document.getElementById('shelves');
+const credoEl = document.getElementById('credo');
+const facesEl = document.getElementById('faces');
+const faceNoteEl = document.getElementById('faceNote');
+const searchRowEl = document.getElementById('searchRow');
+const searchInEl = document.getElementById('searchIn');
+const searchNoteEl = document.getElementById('searchNote');
+const chartLive = document.getElementById('chartLive');
+const chartRes = document.getElementById('chartRes');
+const chartView = document.getElementById('chartView');
+const chartBody = document.getElementById('chartBody');
+const toolbar = document.getElementById('toolbar');
+const deskStateEl = document.getElementById('deskState');
+const desk = document.getElementById('desk');
+const deskSource = document.getElementById('deskSource');
+const deskPreview = document.getElementById('deskPreview');
+const modeViewBtn = document.getElementById('modeView');
+const modeEditBtn = document.getElementById('modeEdit');
+let CAT = [];
+
+const escText = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// resident and draft both render and open for editing; draft only differs
+// in what the shelf SAYS about the text's own maturity.
+const isOpenable = (e) => e.status === 'resident' || e.status === 'draft';
+
+// THE SEARCH'S OWN LENS. The room escapes before it marks up, and the
+// highlighter must not weaken that: every fragment of the raw string is
+// escaped on its way out and <mark> is inserted BETWEEN the escaped pieces,
+// never matched against escaped text. Marking already-escaped HTML would
+// let a query like "amp" cut an entity in half.
+const escRx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function highlight(raw, terms) {
+  const s = String(raw);
+  if (!terms.length) return escText(s);
+  const rx = new RegExp('(' + terms.map(escRx).join('|') + ')', 'ig');
+  let out = '', last = 0, m;
+  while ((m = rx.exec(s)) !== null) {
+    if (m.index === rx.lastIndex) { rx.lastIndex++; continue; }   // zero-length guard
+    out += escText(s.slice(last, m.index)) + '<mark>' + escText(m[0]) + '</mark>';
+    last = m.index + m[0].length;
+  }
+  return out + escText(s.slice(last));
+}
+
+function shelfCard(e, terms) {
+  const t = terms || [];
+  const face = t.length ? '<span class="sface">' + escText(FACE_WORDS[e.field] || e.field) + '</span> · ' : '';
+  const inner = '<div class="stitle">' + highlight(e.title, t) + '</div>'
+    + '<div class="sline">' + highlight(e.line, t) + '</div>'
+    + '<div class="swhere">' + face + whereOf(e) + '</div>';
+  if (isOpenable(e)) return '<a class="shelf" href="#/' + e.slug + '">' + inner + '</a>';
+  if (e.path) return '<a class="shelf" href="/docs/' + escText(e.path.replace(/^docs\//, '')) + '" target="_blank" rel="noopener">' + inner + '</a>';
+  return '<div class="shelf">' + inner + '</div>';
+}
+
+function whereOf(e) {
+  const companion = e.pdf ? ' · THE PRESSED VOLUME STANDS BESIDE IT' : '';
+  if (e.status === 'resident') return 'RESIDENT · ' + escText(e.path) + companion;
+  if (e.status === 'draft') return 'DRAFT · AWAITING DISTILLATION · ' + escText(e.path) + companion;
+  if (e.path) return 'HELD · ' + escText(e.path) + ' · OPENS THE VOLUME';
+  return 'HELD ELSEWHERE · ' + escText(e.where || 'location recorded in the catalogue');
+}
+
+// ---------------------------------------------------------------------------
+// THE DESK: a local draft per chart, held in this browser only, never sent
+// to the server. try/catch throughout: a blocked or full localStorage simply
+// means the draft does not persist this session, never a hard failure.
+// ---------------------------------------------------------------------------
+const draftKey = (slug) => 'lm-draft:' + slug;
+function loadDraft(slug) {
+  try { const raw = localStorage.getItem(draftKey(slug)); return raw ? JSON.parse(raw) : null; }
+  catch { return null; }
+}
+function saveDraft(slug, text) {
+  try { localStorage.setItem(draftKey(slug), JSON.stringify({ text, at: Date.now() })); }
+  catch { /* quota, or storage blocked, the draft just does not persist this session */ }
+}
+function clearDraft(slug) {
+  try { localStorage.removeItem(draftKey(slug)); } catch { /* fine */ }
+}
+function agoText(ms) {
+  const s = Math.max(1, Math.round((Date.now() - ms) / 1000));
+  if (s < 60) return s + 's ago';
+  if (s < 3600) return Math.round(s / 60) + 'm ago';
+  if (s < 86400) return Math.round(s / 3600) + 'h ago';
+  return Math.round(s / 86400) + 'd ago';
+}
+
+let currentEntry = null;
+let currentOriginalText = '';
+let mode = 'view';
+
+function renderDeskState() {
+  if (!currentEntry) { deskStateEl.style.display = 'none'; return; }
+  const draft = loadDraft(currentEntry.slug);
+  if (mode !== 'edit' && !draft) { deskStateEl.style.display = 'none'; return; }
+  deskStateEl.style.display = 'block'; // .deskstate defaults to display:none in the stylesheet
+  if (draft) {
+    deskStateEl.innerHTML = 'a local draft is held here, touched ' + agoText(draft.at)
+      + '<button type="button" id="discardDraft">discard, start fresh from the repository</button>';
+    document.getElementById('discardDraft').addEventListener('click', () => {
+      clearDraft(currentEntry.slug);
+      if (mode === 'edit') { deskSource.value = currentOriginalText; updatePreview(); }
+      renderDeskState();
+    });
+  } else {
+    deskStateEl.textContent = 'editing a fresh copy from the repository; nothing is written until you download it';
+  }
+}
+
+function updatePreview() {
+  deskPreview.innerHTML = renderMarkdown(deskSource.value);
+}
+
+function setMode(next) {
+  mode = next;
+  modeViewBtn.classList.toggle('on', mode === 'view');
+  modeEditBtn.classList.toggle('on', mode === 'edit');
+  document.getElementById('deskSave').style.display = mode === 'edit' ? '' : 'none';
+  chartBody.style.display = mode === 'view' ? '' : 'none';
+  desk.style.display = mode === 'edit' ? 'block' : 'none'; // #desk defaults to display:none in the stylesheet
+  if (mode === 'edit') {
+    const draft = loadDraft(currentEntry.slug);
+    deskSource.value = draft ? draft.text : currentOriginalText;
+    updatePreview();
+  }
+  renderDeskState();
+}
+
+// SAVE: the deliberate act on top of the desk's quiet autosave. It commits
+// the draft to this browser's storage and says so plainly. It cannot write
+// the repository: the server is GET/HEAD only by constitution, so canon is
+// still made by download + the lane, exactly as the charter says.
+document.getElementById('deskSave').addEventListener('click', () => {
+  if (!currentEntry || mode !== 'edit') return;
+  saveDraft(currentEntry.slug, deskSource.value);
+  renderDeskState();
+  const b = document.getElementById('deskSave');
+  b.textContent = 'SAVED ✓';
+  b.classList.add('on');
+  setTimeout(() => { b.textContent = 'SAVE'; b.classList.remove('on'); }, 1400);
+});
+
+deskSource.addEventListener('input', () => {
+  saveDraft(currentEntry.slug, deskSource.value);
+  updatePreview();
+  renderDeskState();
+});
+modeViewBtn.addEventListener('click', () => setMode('view'));
+modeEditBtn.addEventListener('click', () => setMode('edit'));
+
+function downloadText(filename, text, mime = 'text/markdown;charset=utf-8') {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+// ---------------------------------------------------------------------------
+// THE INSTRUMENT TRAVELS WITH ITS CHART.
+//
+// A chart that describes an instrument is half a thing on its own, so taking
+// the markdown away takes the instrument too. The download must therefore be
+// SELF-CONTAINED: a bare copy of the page would import /app/*.js from a
+// server that is not there, and arrive broken, which is worse than arriving
+// not at all.
+//
+// The bundling is done HERE, in the browser, and never on the server: the
+// portal's own constitution holds that it serves two directories and nothing
+// else, "a lens onto the repository, never a pen". So the room fetches what
+// the server already serves and assembles the copy itself.
+//
+// Modules are inlined as data: URLs rather than concatenated, because the
+// canon's modules privately reuse names (gcd, PHI, hashSeed, signOf, sfc all
+// appear in more than one file) and concatenation would collide. A data: URL
+// keeps every module in its own scope, exactly as the real import does. Each
+// module is rewritten deepest-first so that by the time a module is encoded,
+// every specifier inside it is already an absolute data: URL: a module at a
+// data: URL has no base to resolve a relative path against.
+// ---------------------------------------------------------------------------
+const IMPORT_RE = /from\s+['"](\.\/|\/app\/)([a-zA-Z0-9._-]+\.js)['"]/g;
+
+async function inlineModule(name, seen = new Map()) {
+  if (seen.has(name)) return seen.get(name);
+  const src = await fetch('/app/' + name).then((r) => {
+    if (!r.ok) throw new Error('missing module: ' + name);
+    return r.text();
+  });
+  // resolve this module's own imports first, deepest before shallowest
+  const deps = [...src.matchAll(IMPORT_RE)].map((m) => m[2]);
+  const urls = {};
+  for (const d of new Set(deps)) urls[d] = await inlineModule(d, seen);
+  const rewritten = src.replace(IMPORT_RE, (_m, _p, file) => "from '" + urls[file] + "'");
+  const url = 'data:text/javascript;base64,' + btoa(unescape(encodeURIComponent(rewritten)));
+  seen.set(name, url);
+  return url;
+}
+
+async function bundleInstrument(appPath) {
+  const html = await fetch(appPath).then((r) => {
+    if (!r.ok) throw new Error('missing instrument: ' + appPath);
+    return r.text();
+  });
+  const seen = new Map();
+  const deps = [...html.matchAll(IMPORT_RE)].map((m) => m[2]);
+  const urls = {};
+  for (const d of new Set(deps)) urls[d] = await inlineModule(d, seen);
+  const out = html.replace(IMPORT_RE, (_m, _p, file) => "from '" + urls[file] + "'");
+  const note = '<!-- SELF-CONTAINED COPY, assembled by the Map Room. Every module this\n'
+    + '     instrument imports is inlined as a data: URL, so this file runs with no\n'
+    + '     server and no network. It is a copy of a lens, not the repository: the\n'
+    + '     canon it draws from lives in the portal, and this file cannot write to\n'
+    + '     it. Taken ' + new Date().toISOString().slice(0, 10) + '. -->\n';
+  return out.replace(/^<!doctype html>/i, '<!doctype html>\n' + note);
+}
+
+// which instruments does the chart in hand actually link to?
+function instrumentsIn(text) {
+  return [...new Set([...text.matchAll(/\/app\/(luminara-[a-z0-9-]+\.html)/g)].map((m) => m[1]))];
+}
+
+document.getElementById('dlMd').addEventListener('click', async () => {
+  if (!currentEntry) return;
+  const text = mode === 'edit' ? deskSource.value : currentOriginalText;
+  downloadText(currentEntry.slug + '.md', text);
+  // and the instruments it names, each made to stand on its own
+  const btn = document.getElementById('dlMd');
+  const was = btn.textContent;
+  for (const inst of instrumentsIn(text)) {
+    try {
+      btn.textContent = 'bundling ' + inst.replace('luminara-', '').replace('.html', '') + '…';
+      const bundled = await bundleInstrument('/app/' + inst);
+      downloadText(inst, bundled, 'text/html;charset=utf-8');
+    } catch (err) {
+      btn.textContent = 'instrument failed';
+      console.error('[map room] could not bundle ' + inst, err);
+      await new Promise((r) => setTimeout(r, 1400));
+    }
+  }
+  btn.textContent = was;
+});
+document.getElementById('dlTxt').addEventListener('click', () => {
+  if (!currentEntry) return;
+  const text = mode === 'edit' ? deskSource.value : currentOriginalText;
+  downloadText(currentEntry.slug + '.txt', text, 'text/plain;charset=utf-8');
+});
+// PDF needs no library: the browser's own print dialog offers "Save as PDF"
+// on every platform this room runs on. Print CSS shows only the currently
+// visible pane (view or the live desk preview) on a plain page.
+document.getElementById('dlPdf').addEventListener('click', () => window.print());
+
+// ---------------------------------------------------------------------------
+// THE FIELD (the charter's fifth pass): every chart carries its field, the
+// curated station it stands in, and the toggles read it directly. TREFOIL
+// THE MAPS: pieces that earned their names, knotted in, refined until
+// deformation changes nothing. GENUS THE DOORWAYS: what opens onto what is not
+// itself (genus counts holes; each hole is a passage). Renamed 19 July
+// 2026: it had been THE WORKBENCH, which collided with the workings that
+// now stand on phi. Two benches competing for the same word.
+// PHI THE BECOMING: the deforming bench, workings turned toward their
+// invariants, wearing their resonances as they sound.
+// ---------------------------------------------------------------------------
+let face = 'trefoil';
+const FACE_WORDS = { trefoil: 'TREFOIL', genus: 'GENUS', phi: 'PHI' };
+const FACE_NOTES = {
+  trefoil: 'what is knotted in and cannot be undone: pieces that earned their names as Maps, refined until deformation changes nothing',
+  genus: 'what opens onto what is not itself: sources, references and gathered fragments, valued for the passages they open rather than the weight they bear',
+  phi: 'the deforming bench: workings turned toward their invariants, trajectory never prediction, resonances named as they sound',
+};
+const bySlug = (slug) => CAT.find((e) => e.slug === slug);
+
+function resChip(slug) {
+  const t = bySlug(slug);
+  if (!t) return escText(slug);
+  const label = escText(t.title);
+  return isOpenable(t) ? '<a href="#/' + t.slug + '">' + label + '</a>' : label;
+}
+
+function phiCard(e) {
+  const title = (e.status === 'draft' ? '~ ' : '') + escText(e.title);
+  let inner = '<div class="stitle">' + (isOpenable(e) ? '<a href="#/' + e.slug + '">' + title + '</a>' : title) + '</div>'
+    + '<div class="sline">' + escText(e.line) + '</div>';
+  if (e.resonates && e.resonates.length) inner += '<div class="resline">in consonance with · ' + e.resonates.map(resChip).join(' · ') + '</div>';
+  if (e.frictions && e.frictions.length) inner += '<div class="resline">in friction with · ' + e.frictions.map(resChip).join(' · ') + '</div>';
+  return '<div class="shelf">' + inner + '</div>';
+}
+
+function renderPhi() {
+  // Phi is a true bench now: it shows its own pieces, each wearing its
+  // resonances inline, because naming what a working touches IS the
+  // deformation work. The card is a div, the title carries the door: the
+  // resonance chips are anchors, and an anchor may never stand in an anchor.
+  //
+  // THE WORKINGS stand first, above the pieces, named by the architect on
+  // 19 July 2026 and placed here because this face was already calling them
+  // that: phi is "the deforming bench, workings turned toward their
+  // invariants". A working is a SURFACE that runs and is not finished: it
+  // holds a question rather than a conclusion, and its chart opens it. They
+  // are listed rather than hidden so that a built instrument cannot wait
+  // unseen for a ruling, which is what happened before this shelf existed.
+  const phi = CAT.filter((e) => e.field === 'phi');
+  const workings = phi.filter((e) => e.shelf === 'workings');
+  const pieces = phi.filter((e) => e.shelf !== 'workings');
+  let s = '';
+  if (workings.length) {
+    s += '<div class="shelfhead">' + SHELF_NAMES.workings + '</div>'
+      + '<div class="worknote">Surfaces that run and are not finished. Each holds a question, '
+      + 'and each chart opens the instrument it describes.</div>'
+      + workings.map(phiCard).join('');
+    s += '<div class="shelfhead">THE PIECES · TURNED TOWARD THEIR INVARIANTS</div>';
+  }
+  s += pieces.map(phiCard).join('');
+  const quiet = CAT.filter((e) => !(e.resonates && e.resonates.length) && !(e.frictions && e.frictions.length)).length;
+  s += '<div class="resnote">' + quiet + ' chart' + (quiet === 1 ? '' : 's')
+    + ' across the room not yet listened to: their resonances await naming.</div>';
+  shelvesEl.innerHTML = s;
+}
+
+// THE SEARCH. The catalogue is the room's only source of shelves, so it is
+// also the only thing searched: title, line, slug, shelf and field, matched
+// on every term at once. It reaches ACROSS the three faces, because a reader
+// who cannot remember a chart's name will not remember which bench it stands
+// on either, and a search confined to one face would answer half a question
+// while looking like a whole one. No network, no index, nothing stored: the
+// catalogue is already in hand.
+let query = '';
+const termsOf = () => query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+function hits(terms) {
+  return CAT.filter((e) => {
+    const hay = [e.title, e.line, e.slug, e.shelf, e.field, e.status, e.where || '']
+      .join(' ').toLowerCase();
+    return terms.every((t) => hay.includes(t));
+  });
+}
+function renderSearch(terms) {
+  const found = hits(terms);
+  searchNoteEl.textContent = found.length
+    ? found.length + (found.length === 1 ? ' chart answers' : ' charts answer')
+      + ' across all three faces · escape to return to the shelves'
+    : 'nothing on the shelves answers to that';
+  if (!found.length) { shelvesEl.innerHTML = ''; return; }
+  let s = '';
+  for (const shelf of SHELF_ORDER) {
+    const entries = found.filter((e) => e.shelf === shelf);
+    if (!entries.length) continue;
+    s += '<div class="shelfhead">' + SHELF_NAMES[shelf] + '</div>'
+      + entries.map((e) => shelfCard(e, terms)).join('');
+  }
+  shelvesEl.innerHTML = s;
+}
+
+// the browsing chrome stands down while a search is open: the faces and the
+// credo describe how the room is arranged, and a search deliberately ignores
+// that arrangement
+function applyBrowseChrome() {
+  const searching = termsOf().length > 0;
+  facesEl.style.display = searching ? 'none' : 'flex';
+  faceNoteEl.style.display = searching ? 'none' : '';
+  credoEl.style.display = searching ? 'none' : '';
+}
+
+function renderShelves() {
+  const terms = termsOf();
+  applyBrowseChrome();
+  if (terms.length) { renderSearch(terms); return; }
+  searchNoteEl.innerHTML = '&nbsp;';
+  faceNoteEl.textContent = FACE_NOTES[face];
+  if (face === 'phi') { renderPhi(); return; }
+  let s = '';
+  for (const shelf of SHELF_ORDER) {
+    const entries = CAT.filter((e) => e.shelf === shelf && e.field === face);
+    if (!entries.length) continue;
+    s += '<div class="shelfhead">' + SHELF_NAMES[shelf] + '</div>' + entries.map((e) => shelfCard(e)).join('');
+  }
+  shelvesEl.innerHTML = s;
+}
+
+function setFace(next) {
+  face = next;
+  document.getElementById('faceTrefoil').classList.toggle('on', face === 'trefoil');
+  document.getElementById('faceGenus').classList.toggle('on', face === 'genus');
+  document.getElementById('facePhi').classList.toggle('on', face === 'phi');
+  renderShelves();
+}
+document.getElementById('faceTrefoil').addEventListener('click', () => setFace('trefoil'));
+document.getElementById('faceGenus').addEventListener('click', () => setFace('genus'));
+document.getElementById('facePhi').addEventListener('click', () => setFace('phi'));
+
+// the search: live as it is typed, cleared by the button or by escape
+function setQuery(next) {
+  query = next;
+  if (searchInEl.value !== next) searchInEl.value = next;
+  renderShelves();
+}
+searchInEl.addEventListener('input', () => setQuery(searchInEl.value));
+searchInEl.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') { setQuery(''); searchInEl.blur(); }
+});
+document.getElementById('searchClear').addEventListener('click', () => {
+  setQuery('');
+  searchInEl.focus();
+});
+
+// the credo opens to whoever asks: the room says what it is, and its reasons
+// wait behind one word
+const credoMore = document.getElementById('credoMore');
+const credoExpand = document.getElementById('credoExpand');
+credoExpand.addEventListener('click', () => {
+  const open = credoMore.classList.toggle('open');
+  credoExpand.textContent = open ? 'collapse' : 'expand';
+  credoExpand.setAttribute('aria-expanded', String(open));
+});
+
+let routeToken = 0;
+async function route() {
+  const myToken = ++routeToken;
+  const m = location.hash.match(/^#\/(.+)$/);
+  const entry = m && CAT.find((e) => e.slug === m[1] && isOpenable(e));
+  currentEntry = entry || null;
+  currentOriginalText = '';
+  toolbar.style.display = entry ? '' : 'none';
+  if (!entry) {
+    chartView.style.display = 'none';
+    shelvesEl.style.display = '';
+    searchRowEl.style.display = 'flex';
+    searchNoteEl.style.display = '';
+    deskStateEl.style.display = 'none';
+    // the search survives opening and closing a chart, so a reader may walk
+    // several results without typing the query again
+    applyBrowseChrome();
+    return;
+  }
+  shelvesEl.style.display = 'none';
+  credoEl.style.display = 'none';
+  facesEl.style.display = 'none';
+  faceNoteEl.style.display = 'none';
+  searchRowEl.style.display = 'none';
+  searchNoteEl.style.display = 'none';
+  // the chart's own resonances, walkable from its head
+  const resLines = [];
+  if (entry.resonates && entry.resonates.length) resLines.push('in consonance with · ' + entry.resonates.map(resChip).join(' · '));
+  if (entry.frictions && entry.frictions.length) resLines.push('in friction with · ' + entry.frictions.map(resChip).join(' · '));
+  chartRes.innerHTML = resLines.join('<br>');
+  chartRes.style.display = resLines.length ? 'block' : 'none';
+  // THE DOORS OUT OF THE CHART, both at its head rather than buried in it: a
+  // pressed volume standing beside the text, and a live instrument the text
+  // itself points at. The pressed volume is known from the catalogue alone,
+  // so it is hung before the fetch and survives a chart that fails to answer.
+  const doors = [];
+  if (entry.pdf) {
+    doors.push('<a class="pressed" href="/docs/' + escText(entry.pdf.replace(/^docs\//, ''))
+      + '" target="_blank" rel="noopener">&#8595; the pressed volume &middot; pdf</a>');
+  }
+  const paintDoors = () => {
+    chartLive.innerHTML = doors.join('');
+    chartLive.style.display = doors.length ? 'block' : 'none';
+  };
+  paintDoors();
+  chartView.style.display = 'block'; // the stylesheet hides it by default; '' would fall back to hidden
+  try {
+    const r = await fetch('/' + entry.path);
+    if (!r.ok) throw new Error('the door answered ' + r.status);
+    const text = await r.text();
+    // a slower answer for a chart the reader has already left must never
+    // overwrite what a faster, later navigation already put on screen
+    if (myToken !== routeToken) return;
+    currentOriginalText = text;
+    chartBody.innerHTML = renderMarkdown(currentOriginalText);
+    // if the chart itself links to a live instrument, that link stands at
+    // the top too, a lens surfacing what the text already says rather than
+    // a second source of truth: nothing here is read from the engine, only
+    // from the chart's own markdown
+    const live = liveLinkOf(currentOriginalText);
+    if (live) {
+      doors.push('<a href="' + escText(live.href) + '">&#8599; open the live window &middot; '
+        + escText(live.text) + '</a>');
+      paintDoors();
+    }
+  } catch (err) {
+    if (myToken !== routeToken) return;
+    chartBody.innerHTML = '<p><em>The chart did not answer: ' + escText(err.message) + '.</em></p>';
+    toolbar.style.display = 'none'; // nothing fetched, nothing to edit or download
+  }
+  setMode('view');
+  window.scrollTo(0, 0);
+}
+
+document.getElementById('backLink').addEventListener('click', (ev) => {
+  ev.preventDefault();
+  location.hash = '';
+});
+window.addEventListener('hashchange', route);
+
+(async () => {
+  try {
+    CAT = await (await fetch('/app/map-room.json')).json();
+  } catch {
+    shelvesEl.innerHTML = '<div class="note">The catalogue did not answer; the shelves stand empty this hour.</div>';
+    return;
+  }
+  renderShelves();
+  route();
+})();
+</script>
+</body>
+</html>

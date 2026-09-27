@@ -1,0 +1,377 @@
+<!doctype html>
+<!-- AUMA LUMINARA · THE SHEET: a study companion for the physical deck.
+
+     A workshop instrument, unlinked from the nav until the architect
+     graduates it. Built to be PRINTED and set beside the cards, not to be
+     read from: it holds no cast, asks no question, and speaks about no
+     person. It states, for each of the twenty-seven, the qualities the
+     canon already derives and no surface has yet shown whole.
+
+     THE RULING IT DOES NOT TOUCH (canon, 2026-07-12): the card faces carry
+     no rendering of the emanation contract; the knots speak for themselves.
+     A sheet on the table is not a card face. Nothing here is proposed for
+     printing ON a card.
+
+     EVERY COLUMN IS DERIVED, NONE ASSIGNED. That is the whole difference
+     from an attribution table: tarot's zodiac and alchemical
+     correspondences are decisions a person made and another person may
+     dispute. A genus is a consequence. Nothing below can be argued with,
+     only checked, and the pins check it.
+
+     Sources: luminara-canon.js (code, knot, interval, emanation, counter,
+     becoming, silences), luminara-cube.js (piece), luminara-knots.js
+     (glyph, metal). Nothing is re-derived here except the two roll-ups the
+     canon does not expose: the becoming-root and the receptivity, both
+     computed by walking the canon's own becoming map.
+
+     Letter-free. Nothing here is a reading. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA · the sheet</title>
+<style>
+  :root {
+    --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34);
+    --line:rgba(255,255,255,0.09); --field:#0a0b0e;
+    --gold:#F0C25E; --silver:#C9D3E2; --bronze:#C9873D; --whitegold:#EFE7CF;
+  }
+  html,body { margin:0; background:var(--field); color:var(--text);
+    font:13px/1.55 Georgia,'Times New Roman',serif; }
+  .wrap { max-width:1180px; margin:0 auto; padding:clamp(22px,3.5vw,40px) clamp(12px,2.5vw,26px) 50px;
+    box-sizing:border-box; }
+  h1 { font:300 clamp(18px,3vw,25px)/1.2 Georgia,serif; letter-spacing:0.32em; padding-left:0.32em;
+    text-align:center; margin:0 0 6px;
+    background:linear-gradient(100deg,var(--silver),var(--whitegold) 55%,var(--gold));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { text-align:center; font-size:10px; letter-spacing:0.22em; color:var(--faint);
+    text-transform:uppercase; margin-bottom:12px; }
+  .note { text-align:center; font-size:11.5px; font-style:italic; color:var(--dim);
+    max-width:70ch; margin:0 auto 6px; line-height:1.7; }
+  .note b { color:rgba(233,230,220,0.85); font-weight:400; font-style:normal; }
+
+  .lnav { display:flex; gap:18px; justify-content:center; margin:9px 0 2px; }
+  .lnav a { font-size:10px; letter-spacing:0.22em; color:var(--faint); text-decoration:none; padding:3px 2px; border-bottom:1px solid transparent; }
+  .lnav a:hover { color:var(--dim); }
+  .lnav a.on { color:#EFE7CF; border-bottom-color:rgba(240,194,94,0.4); }
+
+  .ctl { display:flex; justify-content:center; gap:8px; margin:16px 0 6px; flex-wrap:wrap; }
+  .ctl button { font:11px Georgia,serif; letter-spacing:0.1em; color:var(--dim); background:none;
+    border:1px solid var(--line); border-radius:8px; padding:6px 14px; cursor:pointer; }
+  .ctl button:hover { color:var(--whitegold); border-color:rgba(240,194,94,0.35); }
+  .ctl button.on { color:var(--whitegold); border-color:rgba(240,194,94,0.55); background:rgba(240,194,94,0.06); }
+
+  /* ---- the cards ---- */
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:14px; }
+  @media (max-width:900px) { .grid { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:600px) { .grid { grid-template-columns:1fr; } }
+  .card { border:1px solid var(--line); border-radius:7px; padding:9px 10px 8px;
+    background:rgba(255,255,255,0.012); display:grid; grid-template-columns:60px 1fr; gap:9px;
+    break-inside:avoid; page-break-inside:avoid; }
+  .card .gl { width:60px; }
+  .card .gl svg { display:block; width:100%; height:auto; }
+  .card .gl .cd { font:8.5px ui-monospace,Menlo,monospace; color:var(--faint); text-align:center;
+    letter-spacing:0.1em; margin-top:2px; }
+  .hd { display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; margin-bottom:3px; }
+  .hd .n { font:9px ui-monospace,Menlo,monospace; color:var(--faint); }
+  .hd .nm { font-size:13.5px; letter-spacing:0.04em; }
+  .hd .sil { font-size:8px; letter-spacing:0.14em; text-transform:uppercase;
+    color:rgba(201,211,226,0.9); border:1px solid rgba(201,211,226,0.4); border-radius:4px; padding:1px 5px; }
+  .rows { display:grid; grid-template-columns:auto 1fr; gap:1px 8px; font-size:10.5px; }
+  .rows dt { color:var(--faint); font-size:8.5px; letter-spacing:0.13em; text-transform:uppercase;
+    align-self:baseline; padding-top:1px; }
+  .rows dd { margin:0; color:var(--dim); }
+  .rows dd b { color:rgba(239,231,207,0.95); font-weight:400; }
+  .rows dd .q { font-family:ui-monospace,Menlo,monospace; font-size:9.5px; }
+
+  /* ---- the table view ---- */
+  .tablewrap { overflow-x:auto; margin-top:14px; }
+  table { border-collapse:collapse; width:100%; font-size:10.5px; min-width:940px; }
+  th, td { text-align:left; padding:4px 7px; border-bottom:1px solid rgba(255,255,255,0.055); white-space:nowrap; }
+  th { font-size:8px; letter-spacing:0.15em; text-transform:uppercase; color:var(--faint); font-weight:400;
+    border-bottom:1px solid rgba(240,194,94,0.25); }
+  td.mono { font-family:ui-monospace,Menlo,monospace; font-size:9.5px; color:var(--dim); }
+  tr.aum td:first-child { border-left:2px solid var(--bronze); }
+  tr.ma td:first-child { border-left:2px solid var(--silver); }
+  tr.ra td:first-child { border-left:2px solid var(--gold); }
+  tbody tr:hover { background:rgba(240,194,94,0.045); }
+
+  .legend { margin-top:24px; border-top:1px solid rgba(240,194,94,0.16); padding-top:16px;
+    columns:2; column-gap:34px; font-size:11px; color:var(--dim); line-height:1.65; }
+  @media (max-width:700px) { .legend { columns:1; } }
+  .legend p { margin:0 0 9px; break-inside:avoid; }
+  .legend b { color:rgba(239,231,207,0.95); font-weight:400; }
+  .register { text-align:center; font-size:9.5px; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--faint); margin-top:26px; line-height:2; }
+
+  @media print {
+    html,body { background:#fff; color:#111; }
+    .ctl, .register { display:none; }
+    h1 { -webkit-text-fill-color:#111; background:none; }
+    .note, .sub, .rows dt, .card .gl .cd, th, .hd .n { color:#555; }
+    .rows dd, .legend { color:#222; }
+    .rows dd b, .legend b, .note b { color:#000; }
+    .card { border-color:#bbb; background:none; }
+    .grid { grid-template-columns:repeat(2,1fr); }
+    table { min-width:0; }
+    th, td { border-color:#ddd; }
+    td.mono { color:#444; }
+    /* the Silence badge needs real contrast on paper */
+    .hd .sil { color:#1a3550; border-color:#8fa6bd; }
+    /* THE GLYPH KEEPS ITS FIELD. luminara-knots draws depth as luminance
+       against the deck's night: bright strands turning toward the eye. On
+       white that inverts into invisibility. Rather than re-derive or invert
+       the glyph (which would break the one-renderer law), the cell keeps the
+       dark ground the renderer was written for, and prints as a small night
+       square. The knot on paper is then exactly the knot on screen. */
+    .card .gl { background:#0a0b0e; border-radius:4px; padding:3px 3px 1px;
+      align-self:start;   /* a small night square, not a full black column */
+      -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .card .gl .cd { color:rgba(233,230,220,0.5); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>THE SHEET</h1>
+  <div class="sub">A Study Companion for the Twenty-Seven</div>
+  <nav class="lnav">
+    <a href="/app/luminara-read.html">THE WAYFINDER</a>
+    <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+    <a href="/app/luminara-ring.html">THE RING</a>
+    <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+    <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+    <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+    <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+    <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+    <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+    <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+  </nav>
+  <p class="note">Every quality here is <b>derived, not assigned</b>. That is the whole difference from an
+    attribution table: a zodiac correspondence is a decision someone made and someone else may dispute,
+    while a genus is a consequence. Nothing below can be argued with, only checked. Set this beside the
+    printed cards; it is a companion, not a face.</p>
+
+  <div class="ctl">
+    <button id="bCards" type="button">the cards</button>
+    <button id="bDeep" type="button">the second page</button>
+    <button id="bTable" type="button">the table</button>
+    <button id="bPrint" type="button">print</button>
+  </div>
+
+  <div id="view"></div>
+
+  <div class="legend">
+    <p><b>The interval</b> is what the card sounds, read from its winding ratio. It belongs to the
+      <i>dyad</i>, not the card: a counter negates the count and the interval reads its size, so every card
+      shares its sound with its opposite. Twelve intervals and silence across thirteen axes, and only the
+      perfect fifth is shared by two dyads.</p>
+    <p><b>The kind</b> is what the strand does. A <i>circle</i> closes without crossing (the Seed alone).
+      A <i>coil</i> winds but never knots. A <i>knot</i> is a single strand genuinely tied. A <i>link</i>
+      is several separate rings bound only by each other, which is plainly visible once printed.</p>
+    <p><b>The strands</b> count the separate rings: one, three or seven. Six cards are links, in three
+      dyads: Surgeon and Witness, Labyrinth and Mask, three rings each; Void and Spectrum, seven.</p>
+    <p><b>The genus</b> measures how knotted, from nought to thirty-six. Links and coils are nought.
+      The Scar and the Return reach the ceiling.</p>
+    <p><b>The clarity</b> is the interval's consonance, one for the crisp and closed, down toward nought
+      for the far dissonances. The Seed, the Void and the Spectrum all stand at exactly one: seven rings
+      sounding one tone is as clear as silence.</p>
+    <p><b>The piece</b> is where the card sits in the cube: the single <i>core</i>, six <i>centres</i>,
+      twelve <i>edges</i>, eight <i>corners</i>. The corners are the restless eight, and their dyads are
+      the cube's four body diagonals.</p>
+    <p><b>The root</b> is where the card falls if you follow its becoming to the end. There are eight, and
+      the Seed catches eight cards including itself. <b>The receptivity</b> is the reverse: how many cards
+      resolve into this one. Only seven cards receive anything at all, so twenty are pure sources.</p>
+    <p><b>The Scar receives nothing and sends nothing.</b> It is settled, so it becomes no card, and no
+      card can become it, since resolving a turning mark cannot create a moving one. The deck's one true
+      isolate, and worth feeling when it turns up.</p>
+    <p><b>The second page.</b> <b>In the tables</b> names the card's shape in the mathematical
+      literature: the trefoil arrives exactly four times, all in AUM; the Depth and the Threshold are
+      8₁₉, the first knot in the tables that cannot be drawn alternating; the Scar and the Return, at
+      seventy-eight crossings, stand far beyond every table. <b>The figure</b> is the sand's three rings,
+      each layer vibrating at its own rung of the 3·6·9 ladder. <b>The tone</b> is the voice those same
+      rings sound, measured against the unstruck ground at G; the Seed alone is silent. <b>From home</b>
+      counts steps to the Seed walking answers and becomings only. And the <b>months, days and hours</b>
+      are where the calendar's own walk stands on this card's cell: weather, never a cast.</p>
+  </div>
+
+  <div class="register">A WORKSHOP INSTRUMENT, UNLINKED UNTIL THE ARCHITECT GRADUATES IT<br>
+    DERIVED, NEVER ASSIGNED &middot; A COMPANION, NOT A FACE &middot; NOTHING HERE IS A READING</div>
+</div>
+
+<script type="module">
+import { CARDS, cardOf, codeOf, codeMarks, knotOf, emanationOf,
+  counterOf, becomingOf, isSilent, SILENCES } from '/app/luminara-canon.js';
+import { classOf } from '/app/luminara-cube.js';
+import { knotSvg, glyphInk, metalOf } from '/app/luminara-knots.js';
+import { spectrumOf } from '/app/luminara-cymatics.js';
+import { voiceOf } from '/app/luminara-sound.js';
+
+const $ = (id) => document.getElementById(id);
+const nm = (n) => cardOf(n).name;
+const short = (n) => cardOf(n).name.replace('The ', '');
+
+// the two roll-ups the canon does not expose, both walked from its own map
+const rootOf = (n) => { let x = n, g = 0; while (becomingOf(x) !== null && g++ < 10) x = becomingOf(x); return x; };
+const RECEIVES = {};
+for (let n = 1; n <= 27; n++) RECEIVES[n] = 0;
+for (let n = 1; n <= 27; n++) { const b = becomingOf(n); if (b) RECEIVES[b]++; }
+
+const house = (n) => (n <= 9 ? 'AUM' : n <= 18 ? 'MA' : 'RA');
+const qsign = (q) => (q > 0 ? '+' + q : String(q));
+
+// ---- the second page's derivations, each from the module that owns it ----
+
+// THE NAME IN THE TABLES: which knot of the mathematical literature this is.
+// Identification is standard: T(p,q) and T(q,p) are the same knot; the only
+// torus knots inside the classical tables are the T(2,q) family and T(3,4)
+// (8_19, the first non-alternating knot) and T(3,5); crossing number of a
+// torus knot is min(p(q-1), q(p-1)) (Murasugi); the components of a torus
+// link are g strands each pair linked pq/g^2 times.
+const gcd2 = (a, b) => (b ? gcd2(b, a % b) : a);
+function tableNameOf(n) {
+  const k = knotOf(n), aq = Math.abs(k.q);
+  if (aq === 0) return { name: 'the unknot: one circle, no crossing', cross: 0 };
+  if (k.p === 1 || aq === 1) return { name: 'the unknot, worn as a coil', cross: 0 };
+  const g = gcd2(k.p, aq);
+  if (g > 1) {
+    const lk = (k.p * aq) / (g * g);
+    return { name: g + ' unknotted rings, each pair linked ' + lk + ' time' + (lk > 1 ? 's' : ''), cross: null };
+  }
+  const lo = Math.min(k.p, aq), hi = Math.max(k.p, aq);
+  const cross = Math.min(k.p * (aq - 1), aq * (k.p - 1));
+  const TABLE = { '2,3': 'the trefoil, 3₁', '2,5': 'the cinquefoil, 5₁',
+    '2,7': '7₁', '2,9': '9₁', '3,4': '8₁₉', '3,5': '10₁₂₄' };
+  const key = lo + ',' + hi;
+  return { name: TABLE[key] ? TABLE[key] + ', in the tables' : 'the (' + lo + ',' + hi + ') torus knot, beyond the tables', cross };
+}
+
+// THE DISTANCE HOME: steps from the Seed walking answers and becomings only,
+// the binding graph's own shells (0, then 7, then 7, then 12).
+const SHELL = (() => {
+  const adj = Array.from({ length: 28 }, () => []);
+  for (let n = 1; n <= 27; n++) {
+    const c = counterOf(n); if (c !== n) { adj[n].push(c); adj[c].push(n); }
+    const b = becomingOf(n); if (b !== null) { adj[n].push(b); adj[b].push(n); }
+  }
+  const d = new Array(28).fill(-1); d[1] = 0; const q = [1];
+  while (q.length) { const x = q.shift(); for (const y of adj[x]) if (d[y] < 0) { d[y] = d[x] + 1; q.push(y); } }
+  return d;
+})();
+
+// THE TONE: the voice the cymatic ground already derives, path B (the three
+// zones). The strongest partial is the core's, and the Seed alone is silent.
+function toneOf(n) {
+  const v = voiceOf(spectrumOf(n, 'B'));
+  if (!v.struck) return null;
+  const top = v.partials.reduce((a, b) => (b.gain > a.gain ? b : a));
+  return { hz: Math.round(top.freq), count: v.partials.length, decay: v.decay };
+}
+
+// THE HOUR-SEATS: the calendar walks the cells in threes (standingCellOf's
+// own arithmetic): month against the field, day against the middle, hour
+// against the core. Each card recurs where the remainders agree.
+const MONTHS = [['Jan', 'Apr', 'Jul', 'Oct'], ['Feb', 'May', 'Aug', 'Nov'], ['Mar', 'Jun', 'Sep', 'Dec']];
+function seatsOf(n) {
+  const d = codeOf(n);
+  return {
+    months: MONTHS[d[0]].join(' '),
+    days: (1 + d[1]) + ', ' + (4 + d[1]) + ', ' + (7 + d[1]) + '…',
+    hours: d[2] + ', ' + (d[2] + 3) + ', ' + (d[2] + 6) + '…',
+  };
+}
+
+function deepRowsFor(n) {
+  const t = toneOf(n), tn = tableNameOf(n), s = seatsOf(n);
+  const e = emanationOf(n);
+  const ladder = e.zones.slice().reverse().map((z) => z.layer + ' ' + z.harmonic).join(' · ');
+  return [
+    ['in the tables', '<b>' + tn.name + '</b>' + (tn.cross ? ' &middot; ' + tn.cross + ' crossings' : '')],
+    ['figure', '<span class="q">' + ladder + '</span> &middot; the sand’s three rings'],
+    ['tone', t ? '<b>' + t.hz + ' Hz</b> &middot; ' + t.count + ' partial' + (t.count > 1 ? 's' : '')
+      + ' &middot; rings ' + t.decay.toFixed(1) + 's' : '<i>silent: the unstruck ground</i>'],
+    ['from home', SHELL[n] === 0 ? '<i>it is home</i>'
+      : '<b>' + SHELL[n] + '</b> step' + (SHELL[n] > 1 ? 's' : '') + ' from the Seed'],
+    ['months', '<b>' + s.months + '</b>'],
+    ['days', s.days + ' of the month'],
+    ['hours', s.hours + ' of the day'],
+  ];
+}
+
+function rowsFor(n) {
+  const k = knotOf(n), e = emanationOf(n), b = becomingOf(n);
+  const r = rootOf(n);
+  return [
+    ['sounds', '<b>' + k.interval + '</b>'],
+    ['knot', '<span class="q">T(' + k.p + ',' + qsign(k.q) + ')</span> &middot; ' + k.kind
+      + (k.components > 1 ? ' of <b>' + k.components + '</b> rings' : '')
+      + (k.genus ? ' &middot; genus ' + k.genus : '')],
+    ['clarity', '<b>' + e.clarity.toFixed(3) + '</b>' + (e.struck ? '' : ' &middot; unstruck')],
+    ['body', k.hand + ' hand &middot; ' + house(n) + ' &middot; the ' + classOf(n)],
+    ['answers', '<b>' + nm(counterOf(n)) + '</b>'],
+    ['becomes', b ? '<b>' + nm(b) + '</b>' : '<i>settled: it becomes nothing</i>'],
+    ['falls to', r === n ? '<i>it is a root itself</i>' : '<b>' + nm(r) + '</b>'],
+    ['receives', RECEIVES[n] === 0 ? '<i>nothing resolves into it</i>'
+      : '<b>' + RECEIVES[n] + '</b> card' + (RECEIVES[n] > 1 ? 's' : '')],
+  ];
+}
+
+function drawCards(rows) {
+  $('view').innerHTML = '<div class="grid">' + CARDS.map((c) => {
+    const n = c.n, k = knotOf(n);
+    return '<div class="card"><div class="gl">'
+      + glyphInk(knotSvg(k.p, k.q, [metalOf(n)], 0.20, 0.30))
+      + '<div class="cd">' + codeOf(n).join('') + '</div></div><div>'
+      + '<div class="hd"><span class="n">' + n + '</span><span class="nm">' + nm(n) + '</span>'
+      + (isSilent(n) ? '<span class="sil">a Silence &middot; asks ' + SILENCES[n].asks + '</span>' : '')
+      + '</div><dl class="rows">'
+      + rows(n).map(([k2, v]) => '<dt>' + k2 + '</dt><dd>' + v + '</dd>').join('')
+      + '</dl></div></div>';
+  }).join('') + '</div>';
+}
+
+function drawTable() {
+  const head = ['n', 'card', 'code', 'marks', 'T(p,q)', 'sounds', 'kind', 'rings',
+    'genus', 'clarity', 'piece', 'answers', 'becomes', 'falls to', 'recv'];
+  let html = '<div class="tablewrap"><table><thead><tr>'
+    + head.map((h) => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>';
+  for (const c of CARDS) {
+    const n = c.n, k = knotOf(n), e = emanationOf(n), b = becomingOf(n), r = rootOf(n);
+    html += '<tr class="' + house(n).toLowerCase() + '">'
+      + '<td class="mono">' + n + '</td>'
+      + '<td>' + short(n) + (isSilent(n) ? ' &middot;' : '') + '</td>'
+      + '<td class="mono">' + codeOf(n).join('') + '</td>'
+      + '<td class="mono">' + codeMarks(n) + '</td>'
+      + '<td class="mono">T(' + k.p + ',' + qsign(k.q) + ')</td>'
+      + '<td>' + k.interval + '</td>'
+      + '<td>' + k.kind + '</td>'
+      + '<td class="mono">' + k.components + '</td>'
+      + '<td class="mono">' + k.genus + '</td>'
+      + '<td class="mono">' + e.clarity.toFixed(3) + '</td>'
+      + '<td>' + classOf(n) + '</td>'
+      + '<td>' + short(counterOf(n)) + '</td>'
+      + '<td>' + (b ? short(b) : '&mdash;') + '</td>'
+      + '<td>' + (r === n ? '&mdash;' : short(r)) + '</td>'
+      + '<td class="mono">' + RECEIVES[n] + '</td>'
+      + '</tr>';
+  }
+  return $('view').innerHTML = html + '</tbody></table></div>';
+}
+
+let view = 'cards';
+function render() {
+  $('bCards').classList.toggle('on', view === 'cards');
+  $('bDeep').classList.toggle('on', view === 'deep');
+  $('bTable').classList.toggle('on', view === 'table');
+  if (view === 'cards') drawCards(rowsFor);
+  else if (view === 'deep') drawCards(deepRowsFor);
+  else drawTable();
+}
+$('bCards').addEventListener('click', () => { view = 'cards'; render(); });
+$('bDeep').addEventListener('click', () => { view = 'deep'; render(); });
+$('bTable').addEventListener('click', () => { view = 'table'; render(); });
+$('bPrint').addEventListener('click', () => window.print());
+render();
+</script>
+</body>
+</html>

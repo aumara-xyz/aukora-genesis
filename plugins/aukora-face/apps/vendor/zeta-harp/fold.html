@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>THE FOLD — infinity, addressed</title>
+<!--
+  THE FOLD — the machine around the Zeta Harp.
+  ARCHITECTURE AND ANALOGY. NOT EVIDENCE FOR RH OR GHP.
+  Self-contained: no CDN, no network, no external assets.
+  Every visual on this page is computed live.
+-->
+<style>
+:root {
+  --bg: #0a0f1c;
+  --ink: #c6d1e2;
+  --dim: #6b7890;
+  --faint: #3a4459;
+  --blue: #5b8ef2;
+  --purple: #a06bff;
+  --gold: #e2b45a;
+  --hair: rgba(198, 214, 240, 0.13);
+  --panel: rgba(7, 10, 18, 0.82);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --serif: Georgia, "Times New Roman", serif;
+  --sans: -apple-system, "Segoe UI", system-ui, sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+body {
+  font-family: var(--sans); color: var(--ink); font-size: 15px;
+  background: radial-gradient(ellipse at 50% 30%, #0d1322 0%, var(--bg) 70%);
+  display: flex; flex-direction: column;
+}
+
+/* ---- masthead lane ------------------------------------------------------ */
+#topbar {
+  flex: none; display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 14px 18px 10px;
+}
+#masthead h1 {
+  font-family: var(--serif); font-weight: 400; letter-spacing: 0.42em;
+  font-size: 16px; color: var(--ink); text-transform: uppercase;
+}
+#masthead .sub {
+  font-family: var(--serif); font-style: italic; font-size: 12.5px;
+  letter-spacing: 0.04em; color: var(--dim); margin-top: 4px;
+}
+.chip {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+  color: var(--dim); background: rgba(16,22,38,0.6); text-decoration: none;
+  border: 1px solid rgba(148,163,184,0.14); border-radius: 999px;
+  padding: 5px 13px; cursor: pointer; display: inline-block;
+}
+.chip:hover { color: var(--ink); border-color: rgba(148,163,184,0.35); }
+.chip.on { color: var(--gold); border-color: rgba(226,180,90,0.45); }
+
+/* ---- stage lane ---------------------------------------------------------- */
+#stage { flex: 1; min-height: 0; position: relative; }
+.room {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  padding: 0 18px; opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0.4s;
+}
+.room.on { opacity: 1; visibility: visible; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .room { transition: none; } }
+
+.stage-row { flex: 1; min-height: 0; display: flex; gap: 14px; }
+.stage-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.stage-head {
+  flex: none; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 26px; flex-wrap: wrap;
+}
+.meter { font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.06em; }
+.meter .g { color: var(--gold); }
+.chiprow { display: flex; gap: 6px; flex-wrap: wrap; }
+.stage-note {
+  flex: none; font-family: var(--mono); font-size: 12px; color: var(--gold);
+  letter-spacing: 0.05em; min-height: 17px;
+}
+.canvas-wrap {
+  flex: 1; min-height: 0; position: relative;
+  background: rgba(7,10,18,0.55); border: 1px solid rgba(148,163,184,0.12);
+  border-radius: 14px; overflow: hidden;
+}
+.canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.ticker {
+  flex: none; height: 44px; overflow: hidden; padding: 4px 12px;
+  font-family: var(--mono); font-size: 13px; line-height: 1.4; color: var(--gold);
+  background: rgba(7,10,18,0.55); border: 1px solid rgba(148,163,184,0.12);
+  border-radius: 10px; letter-spacing: 0.1em; word-break: break-all;
+}
+
+/* ---- cockpit lane (right rail) ------------------------------------------- */
+.cockpit {
+  flex: none; width: 236px; align-self: flex-start;
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 14px;
+  background: rgba(16,22,38,0.72); border: 1px solid rgba(148,163,184,0.14);
+  border-radius: 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.cl-row { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 8px; }
+.cl-lbl { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--dim); }
+.cl-note { font-size: 12px; line-height: 1.3; color: var(--dim); margin-bottom: 2px; }
+.playbtn { width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(198,214,240,0.3); background: rgba(7,10,18,0.6);
+  display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.playbtn:hover { border-color: rgba(198,214,240,0.55); }
+.playbtn .ic-pause { display: block; width: 9px; height: 12px;
+  border-left: 3px solid var(--ink); border-right: 3px solid var(--ink); }
+.playbtn .ic-play { display: block; width: 0; height: 0; margin-left: 3px;
+  border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+  border-left: 10px solid var(--ink); }
+.ghostbtn { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
+  color: var(--dim); background: rgba(7,10,18,0.6); cursor: pointer; width: 100%;
+  border: 1px solid rgba(148,163,184,0.25); border-radius: 999px; padding: 5px 0; }
+.ghostbtn:hover { color: var(--ink); border-color: rgba(198,214,240,0.5); }
+.cockpit input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%;
+  height: 2px; background: var(--faint); outline: none; display: block; }
+.cockpit input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none;
+  width: 11px; height: 11px; border-radius: 50%; background: var(--ink); cursor: pointer; }
+.cockpit input[type="range"]::-moz-range-thumb { width: 11px; height: 11px; border-radius: 50%;
+  background: var(--ink); border: none; cursor: pointer; }
+.cl-row.locked { opacity: 0.32; }
+.cl-row.locked input { pointer-events: none; }
+
+/* ---- caption + why lane --------------------------------------------------- */
+.caption-row { flex: none; padding: 10px 2px 2px; max-width: 860px; }
+.caption {
+  font-family: var(--serif); font-size: 15.5px; line-height: 1.55;
+  color: var(--ink); text-align: left;
+}
+.why { margin-top: 6px; font-size: 12.5px; }
+.why summary {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em;
+  color: var(--dim); cursor: pointer; list-style: none; user-select: none;
+}
+.why summary::before { content: "▸ "; color: var(--faint); }
+.why[open] summary::before { content: "▾ "; }
+.why summary:hover { color: var(--ink); }
+.why .rm { color: var(--gold); letter-spacing: 0.14em; }
+.why p {
+  font-size: 12.5px; line-height: 1.6; color: var(--dim); max-width: 720px;
+  margin-top: 5px; padding-left: 14px; border-left: 1px solid var(--hair);
+}
+/* closed expander content never occupies layout space (no spills, ever) */
+.why:not([open]) p { display: none; }
+
+/* ---- room 5 law card ------------------------------------------------------- */
+.law-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.law-card {
+  max-width: 640px; padding: 26px 30px;
+  background: var(--panel); border: 1px solid rgba(148,163,184,0.16);
+  border-radius: 16px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.law-card p { font-family: var(--serif); font-size: 16px; line-height: 1.65;
+  color: var(--ink); margin-bottom: 14px; text-align: left; }
+.law-links { display: flex; gap: 8px; margin-top: 4px; }
+
+/* ---- room nav lane ---------------------------------------------------------- */
+#roomnav {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 8px 0 4px;
+}
+.rtab {
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em;
+  color: var(--dim); background: transparent; border: 1px solid transparent;
+  border-radius: 999px; padding: 4px 12px; cursor: pointer;
+}
+.rtab:hover { color: var(--ink); }
+.rtab.on { color: var(--gold); border-color: rgba(226,180,90,0.45); }
+.rarrow {
+  font-family: var(--mono); font-size: 13px; color: var(--dim);
+  background: transparent; border: 1px solid rgba(148,163,184,0.18);
+  border-radius: 999px; width: 26px; height: 26px; cursor: pointer;
+}
+.rarrow:hover { color: var(--ink); border-color: rgba(148,163,184,0.4); }
+
+/* ---- footer fence lane -------------------------------------------------------- */
+#fence {
+  flex: none; font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
+  color: var(--dim); text-align: center; padding: 5px 12px 7px;
+  border-top: 1px solid var(--hair);
+}
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <div id="masthead">
+    <h1>The Fold</h1>
+    <div class="sub">infinity, addressed &mdash; the machine around the Zeta Harp</div>
+  </div>
+  <a class="chip" href="./index.html">the instrument &rarr;</a>
+</header>
+
+<main id="stage">
+
+  <!-- ROOM 1 · FOLD -->
+  <section class="room on" id="room1" aria-label="room 1: fold">
+    <div class="stage-row">
+      <div class="stage-col">
+        <div class="canvas-wrap"><canvas id="cv1"></canvas></div>
+      </div>
+      <aside class="cockpit" aria-label="fold controls">
+        <div class="cl-row">
+          <button class="playbtn" id="play1" aria-label="play or pause"><span class="ic-pause"></span></button>
+          <span class="cl-lbl">PLAY</span>
+        </div>
+        <div class="cl-note">the point sweeps on its own</div>
+        <div class="cl-row">
+          <span class="cl-lbl">FOLD</span>
+          <input type="range" id="foldSlider" min="0" max="1000" value="0" aria-label="fold">
+        </div>
+        <div class="cl-note">roll the line into a circle</div>
+        <div class="cl-row locked" id="dimRow">
+          <span class="cl-lbl">DIMENSION</span>
+          <input type="range" id="dimSlider" min="0" max="1000" value="0" aria-label="add a dimension" disabled>
+        </div>
+        <div class="cl-note">add a dimension &mdash; unlocks at full fold</div>
+      </aside>
+    </div>
+    <div class="caption-row">
+      <p class="caption">a line that never ends, folded into a circle that never stops. the line was the shadow &mdash; this is the reality.</p>
+      <details class="why"><summary>why it&rsquo;s true &middot; <span class="rm">REAL MATH</span></summary>
+        <p>Every phase &phi; in the Harp grows without bound &mdash; but only &phi; mod 2&pi; matters. The dynamics never lived on the infinite line; they live on the compact circle. Quasi-periodic flow, Weyl equidistribution &mdash; standard mathematics, a century deep.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ROOM 2 · WIND -->
+  <section class="room" id="room2" aria-label="room 2: wind">
+    <div class="stage-row">
+      <div class="stage-col">
+        <div class="stage-head">
+          <span class="meter" id="covMeter">coverage: <span class="g">0</span>/60 bins</span>
+          <span class="chiprow" id="rateChips">
+            <button class="chip" data-rate="half">1/2</button>
+            <button class="chip" data-rate="threefifths">3/5</button>
+            <button class="chip" data-rate="pi">&pi;</button>
+            <button class="chip" data-rate="sqrt2">&radic;2</button>
+            <button class="chip on" data-rate="phi">&phi;</button>
+            <button class="chip" data-rate="harp">the harp&rsquo;s rates</button>
+          </span>
+        </div>
+        <div class="stage-note" id="windNote"></div>
+        <div class="canvas-wrap"><canvas id="cv2"></canvas></div>
+      </div>
+      <aside class="cockpit" aria-label="wind controls">
+        <div class="cl-row">
+          <button class="playbtn" id="play2" aria-label="play or pause"><span class="ic-pause"></span></button>
+          <span class="cl-lbl">PLAY</span>
+        </div>
+        <div class="cl-note">the winding runs on its own</div>
+        <div class="cl-row">
+          <span class="cl-lbl">SPEED</span>
+          <input type="range" id="windSpeed" min="0" max="100" value="35" aria-label="speed">
+        </div>
+        <div class="cl-note">steps per frame</div>
+        <div class="cl-row">
+          <span class="cl-lbl">TRAIL</span>
+          <button class="ghostbtn" id="windReset">RESET</button>
+        </div>
+        <div class="cl-note">clear the coverage</div>
+      </aside>
+    </div>
+    <div class="caption-row">
+      <p class="caption">wind at a rational rate and you close the loop. wind at the golden rate and you fill the circle perfectly, forever &mdash; &phi; is the most irrational number there is.</p>
+      <details class="why"><summary>why it&rsquo;s true &middot; <span class="rm">REAL MATH</span></summary>
+        <p>Hurwitz, 1891: &phi; is the slowest-converging irrational &mdash; its convergents approximate it worse than any other number&rsquo;s, which is exactly why its winding never repeats and never clusters. &radic;2 (the silver ratio) is next. &pi; plays a different role entirely: it is the fold, not a rate.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ROOM 3 · ADDRESS -->
+  <section class="room" id="room3" aria-label="room 3: address">
+    <div class="stage-row">
+      <div class="stage-col">
+        <div class="stage-head">
+          <span class="meter" id="cellMeter">cells visited: <span class="g">0</span>/9 &middot; and this is only two circles &mdash; three circles make 27</span>
+        </div>
+        <div class="canvas-wrap"><canvas id="cv3"></canvas></div>
+        <div class="ticker" id="ticker" aria-label="trit address stream"></div>
+      </div>
+      <aside class="cockpit" aria-label="address controls">
+        <div class="cl-row">
+          <button class="playbtn" id="play3" aria-label="play or pause"><span class="ic-pause"></span></button>
+          <span class="cl-lbl">PLAY</span>
+        </div>
+        <div class="cl-note">the orbit runs on its own</div>
+        <div class="cl-row">
+          <span class="cl-lbl">SPEED</span>
+          <input type="range" id="addrSpeed" min="0" max="100" value="35" aria-label="speed">
+        </div>
+        <div class="cl-note">how fast it wanders</div>
+        <div class="cl-row">
+          <span class="cl-lbl">TRACE</span>
+          <button class="ghostbtn" id="addrReset">RESET</button>
+        </div>
+        <div class="cl-note">forget every address</div>
+      </aside>
+    </div>
+    <div class="caption-row">
+      <p class="caption">cut each circle into three arcs and the endless winding becomes a stream of symbols. the 27 doesn&rsquo;t contain infinity &mdash; it addresses it.</p>
+      <details class="why"><summary>why it&rsquo;s true &middot; <span class="rm">REAL MATH</span></summary>
+        <p>Turning a continuous orbit into a symbol sequence is symbolic dynamics &mdash; a real field of mathematics. Three states per circle, three circles: 3&sup3; = 27 cells, and the winding visits every one of them, infinitely often, forever.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ROOM 4 · REFERENCE -->
+  <section class="room" id="room4" aria-label="room 4: reference">
+    <div class="stage-row">
+      <div class="stage-col">
+        <div class="canvas-wrap"><canvas id="cv4"></canvas></div>
+      </div>
+      <aside class="cockpit" aria-label="reference controls">
+        <div class="cl-row">
+          <span class="cl-lbl">DESTROY</span>
+          <input type="range" id="destroySlider" min="0" max="60" value="0" aria-label="destroy the trace">
+        </div>
+        <div class="cl-note">redact that fraction of the chain</div>
+        <div class="cl-row">
+          <span class="cl-lbl">SEED</span>
+          <button class="ghostbtn" id="regenBtn">REGENERATE</button>
+        </div>
+        <div class="cl-note">rebuild the world from the pointer</div>
+      </aside>
+    </div>
+    <div class="caption-row">
+      <p class="caption">the thing that isn&rsquo;t stored is the thing everything references. that is the whole trick &mdash; and it scales.</p>
+      <details class="why"><summary>why it&rsquo;s true &middot; <span class="rm">REAL MATH</span></summary>
+        <p>Content addressing, procedural generation, holographic (HRR) recall, and tensor-train compression are all real, working mechanisms &mdash; three of them already run inside our own repos.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- ROOM 5 · THE LAW -->
+  <section class="room" id="room5" aria-label="room 5: the law">
+    <div class="law-wrap">
+      <div class="law-card">
+        <p>What you just played with is the architecture around the Zeta Harp: the fold (infinity is a coordinate artifact), the wind (the golden rate fills space perfectly), the address (27 cells name everything), and the reference (store the pointer, regenerate the world).</p>
+        <p>It is architecture and analogy &mdash; not evidence for the Riemann Hypothesis, not evidence for any physics claim. The Zeta Harp itself remains quarantined mathematics. Nothing here is a proof of anything &mdash; and that is exactly why you can trust what you were looking at.</p>
+        <div class="law-links">
+          <a class="chip" href="./index.html">the instrument &rarr;</a>
+          <a class="chip" href="https://github.com/aumara-xyz/zeta-harp">the source &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<nav id="roomnav" aria-label="rooms">
+  <button class="rarrow" id="prevRoom" aria-label="previous room">&larr;</button>
+  <button class="rtab on" data-room="0">1 &middot; fold</button>
+  <button class="rtab" data-room="1">2 &middot; wind</button>
+  <button class="rtab" data-room="2">3 &middot; address</button>
+  <button class="rtab" data-room="3">4 &middot; reference</button>
+  <button class="rtab" data-room="4">5 &middot; the law</button>
+  <button class="rarrow" id="nextRoom" aria-label="next room">&rarr;</button>
+</nav>
+
+<footer id="fence">ARCHITECTURE AND ANALOGY &middot; NOT EVIDENCE FOR RH OR GHP &middot; every visual on this page is computed live</footer>
+
+<script>
+"use strict";
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TAU = Math.PI * 2;
+const PHI = (1 + Math.sqrt(5)) / 2;
+const GOLD = "#e2b45a", INK = "#c6d1e2", DIM = "#6b7890", FAINT = "#3a4459";
+
+function fitCanvas(cv) {
+  const r = cv.parentElement.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.max(1, Math.round(r.width * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w: r.width, h: r.height };
+}
+function bindPlay(btn, room) {
+  btn.addEventListener("click", () => {
+    room.playing = !room.playing;
+    btn.innerHTML = room.playing ? '<span class="ic-pause"></span>' : '<span class="ic-play"></span>';
+  });
+  if (RM) { room.playing = false; btn.innerHTML = '<span class="ic-play"></span>'; }
+}
+function speedMult(v) { return 0.25 + (v / 100) * 3.75; }
+
+/* ================= ROOM 1 — FOLD ================= */
+const r1 = {
+  el: document.getElementById("room1"), cv: document.getElementById("cv1"),
+  playing: true, f: 0, d: 0, s: 0, rot: 0, trail: [],
+  fit() { const o = fitCanvas(this.cv); this.ctx = o.ctx; this.w = o.w; this.h = o.h; },
+  update(dt) {
+    this.s = (this.s + dt * 0.07) % 1;
+    if (this.d > 0.001 && this.f > 0.999) {
+      this.rot += dt * 0.22;
+      this.trail.push(this.s);
+      if (this.trail.length > 220) this.trail.shift();
+    } else if (this.trail.length) this.trail = [];
+  },
+  geom() {
+    const w = this.w, h = this.h;
+    const pad = w * 0.07, L = w - 2 * pad;
+    const R = Math.min(L / TAU, h * 0.34);
+    return { pad, L, R, cx: w / 2, cy: h * 0.52, lineY: h * 0.52 };
+  },
+  morphPos(u, g, e) {
+    const lx = g.pad + u * g.L, ly = g.lineY;
+    const th = TAU * u - Math.PI / 2;
+    const cx = g.cx + g.R * Math.cos(th), cy = g.cy + g.R * Math.sin(th);
+    return [lx + (cx - lx) * e, ly + (cy - ly) * e];
+  },
+  torusProj(th, ph, g, tilt) {
+    const rt = g.R * 0.42 * this.d;
+    const x = (g.R + rt * Math.cos(ph)) * Math.cos(th + this.rot);
+    const y = (g.R + rt * Math.cos(ph)) * Math.sin(th + this.rot);
+    const z = rt * Math.sin(ph);
+    const yp = y * Math.cos(tilt) - z * Math.sin(tilt);
+    return [g.cx + x, g.cy - yp];
+  },
+  draw() {
+    const c = this.ctx, w = this.w, h = this.h, g = this.geom();
+    c.clearRect(0, 0, w, h);
+    const e = this.f * this.f * (3 - 2 * this.f);
+    if (this.f > 0.999 && this.d > 0.001) {
+      // torus: 10 parallels + 16 radials, slow rotation
+      const tilt = 0.12 + 0.85 * Math.min(1, this.d * 1.6);
+      c.lineWidth = 1;
+      for (let k = 0; k < 10; k++) {
+        const ph = (k / 10) * TAU;
+        c.strokeStyle = "rgba(91,142,242,0.20)"; c.beginPath();
+        for (let i = 0; i <= 72; i++) {
+          const p = this.torusProj((i / 72) * TAU, ph, g, tilt);
+          i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]);
+        }
+        c.stroke();
+      }
+      for (let k = 0; k < 16; k++) {
+        const th = (k / 16) * TAU;
+        c.strokeStyle = "rgba(198,214,240,0.10)"; c.beginPath();
+        for (let i = 0; i <= 36; i++) {
+          const p = this.torusProj(th, (i / 36) * TAU, g, tilt);
+          i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]);
+        }
+        c.stroke();
+      }
+      // winding trail + point on the surface
+      c.strokeStyle = "rgba(226,180,90,0.28)"; c.lineWidth = 1.2; c.beginPath();
+      let started = false;
+      for (const sv of this.trail) {
+        const th = TAU * sv, ph = th * PHI;
+        const p = this.torusProj(th, ph, g, tilt);
+        started ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); started = true;
+      }
+      c.stroke();
+      const th = TAU * this.s, ph = th * PHI;
+      const p = this.torusProj(th, ph, g, tilt);
+      c.fillStyle = GOLD; c.beginPath(); c.arc(p[0], p[1], 4, 0, TAU); c.fill();
+    } else {
+      // the morphing line -> circle
+      c.strokeStyle = "rgba(226,180,90,0.85)"; c.lineWidth = 1.5; c.beginPath();
+      const N = 200;
+      for (let i = 0; i <= N; i++) {
+        const p = this.morphPos(i / N, g, e);
+        i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]);
+      }
+      c.stroke();
+      // ~40 tick marks, perpendicular to the local curve
+      c.strokeStyle = "rgba(198,214,240,0.30)"; c.lineWidth = 1;
+      for (let k = 0; k <= 40; k++) {
+        const u = k / 40;
+        const p0 = this.morphPos(u, g, e), p1 = this.morphPos(Math.min(1, u + 0.002), g, e);
+        let dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+        const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
+        c.beginPath();
+        c.moveTo(p0[0] - dy * 5, p0[1] + dx * 5);
+        c.lineTo(p0[0] + dy * 5, p0[1] - dx * 5);
+        c.stroke();
+      }
+      const p = this.morphPos(this.s, g, e);
+      c.fillStyle = GOLD; c.beginPath(); c.arc(p[0], p[1], 4.5, 0, TAU); c.fill();
+      c.strokeStyle = "rgba(226,180,90,0.30)"; c.beginPath(); c.arc(p[0], p[1], 9, 0, TAU); c.stroke();
+    }
+  }
+};
+document.getElementById("foldSlider").addEventListener("input", ev => {
+  r1.f = ev.target.value / 1000;
+  const locked = r1.f < 0.999;
+  document.getElementById("dimRow").classList.toggle("locked", locked);
+  document.getElementById("dimSlider").disabled = locked;
+  if (locked && r1.d > 0) { r1.d = 0; document.getElementById("dimSlider").value = 0; }
+});
+document.getElementById("dimSlider").addEventListener("input", ev => { r1.d = ev.target.value / 1000; });
+
+/* ================= ROOM 2 — WIND ================= */
+const RATES = {
+  half:        { step: Math.PI,            label: "1/2" },
+  threefifths: { step: TAU * 3 / 5,        label: "3/5" },
+  pi:          { step: Math.PI,            label: "π" },
+  sqrt2:       { step: TAU * (Math.SQRT2 - 1), label: "√2" },
+  phi:         { step: TAU / (PHI * PHI),  label: "φ" }
+};
+const r2 = {
+  el: document.getElementById("room2"), cv: document.getElementById("cv2"),
+  playing: true, mode: "phi", speed: 35,
+  angles: [0, 0, 0], trails: [[], [], []], bins: new Set(),
+  fit() { const o = fitCanvas(this.cv); this.ctx = o.ctx; this.w = o.w; this.h = o.h; },
+  reset() {
+    this.angles = [0, 0, 0]; this.trails = [[], [], []]; this.bins = new Set();
+    this.meter();
+  },
+  stepsPerFrame() { return Math.max(1, Math.round(3 * speedMult(this.speed))); },
+  advance(n) {
+    if (this.mode === "harp") {
+      const rates = [Math.log(2), Math.log(3), Math.log(5)];
+      for (let i = 0; i < n; i++) for (let k = 0; k < 3; k++) {
+        this.angles[k] = (this.angles[k] + rates[k]) % TAU;
+        this.trails[k].push(this.angles[k]);
+        if (this.trails[k].length > 600) this.trails[k].shift();
+        if (k === 0) this.bins.add(Math.floor(this.angles[k] / TAU * 60));
+      }
+    } else {
+      const st = RATES[this.mode].step;
+      for (let i = 0; i < n; i++) {
+        this.angles[0] = (this.angles[0] + st) % TAU;
+        this.trails[0].push(this.angles[0]);
+        if (this.trails[0].length > 600) this.trails[0].shift();
+        this.bins.add(Math.floor(this.angles[0] / TAU * 60));
+      }
+    }
+    this.meter();
+  },
+  meter() {
+    document.querySelector("#covMeter .g").textContent = this.bins.size;
+  },
+  update() { this.advance(this.stepsPerFrame()); },
+  drawCircle(cx, cy, rad, trail, head) {
+    const c = this.ctx;
+    c.strokeStyle = "rgba(198,214,240,0.22)"; c.lineWidth = 1;
+    c.beginPath(); c.arc(cx, cy, rad, 0, TAU); c.stroke();
+    if (trail.length > 1) {
+      c.strokeStyle = "rgba(226,180,90,0.16)"; c.lineWidth = 1; c.beginPath();
+      trail.forEach((a, i) => {
+        const x = cx + rad * Math.cos(a - Math.PI / 2), y = cy + rad * Math.sin(a - Math.PI / 2);
+        i ? c.lineTo(x, y) : c.moveTo(x, y);
+      });
+      c.stroke();
+      c.fillStyle = "rgba(226,180,90,0.35)";
+      for (let i = Math.max(0, trail.length - 120); i < trail.length; i++) {
+        const a = trail[i];
+        c.fillRect(cx + rad * Math.cos(a - Math.PI / 2) - 1, cy + rad * Math.sin(a - Math.PI / 2) - 1, 2, 2);
+      }
+    }
+    const a = head;
+    c.fillStyle = GOLD;
+    c.beginPath(); c.arc(cx + rad * Math.cos(a - Math.PI / 2), cy + rad * Math.sin(a - Math.PI / 2), 4.5, 0, TAU); c.fill();
+  },
+  draw() {
+    const c = this.ctx, w = this.w, h = this.h;
+    c.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2, R = h * 0.30;
+    if (this.mode === "harp") {
+      const radii = [R * 0.5, R * 0.75, R];
+      const names = ["ln 2", "ln 3", "ln 5"];
+      for (let k = 0; k < 3; k++) {
+        this.drawCircle(cx, cy, radii[k], this.trails[k], this.angles[k]);
+        c.fillStyle = DIM; c.font = "12px ui-monospace, Menlo, monospace";
+        c.textAlign = "left";
+        c.fillText(names[k], cx + radii[k] * Math.cos(-Math.PI / 3) + 8, cy + radii[k] * Math.sin(-Math.PI / 3) - 4);
+      }
+      c.fillStyle = DIM; c.font = "12px ui-monospace, Menlo, monospace"; c.textAlign = "center";
+      c.fillText("the instrument's own frequencies: ln n — they never close either", cx, h - 14);
+    } else {
+      this.drawCircle(cx, cy, R, this.trails[0], this.angles[0]);
+    }
+  }
+};
+document.getElementById("rateChips").addEventListener("click", ev => {
+  const b = ev.target.closest(".chip"); if (!b) return;
+  document.querySelectorAll("#rateChips .chip").forEach(x => x.classList.toggle("on", x === b));
+  r2.mode = b.dataset.rate;
+  r2.reset();
+  const note = document.getElementById("windNote");
+  note.textContent = r2.mode === "pi"
+    ? "π closes too — half a turn is the LEAST irrational angle there is"
+    : "";
+});
+document.getElementById("windSpeed").addEventListener("input", ev => { r2.speed = +ev.target.value; });
+document.getElementById("windReset").addEventListener("click", () => r2.reset());
+</script>
+
+<script>
+"use strict";
+/* ================= ROOM 3 — ADDRESS ================= */
+const r3 = {
+  el: document.getElementById("room3"), cv: document.getElementById("cv3"),
+  playing: true, speed: 35, x: 0.13, y: 0.71,
+  trail: [], visited: new Set(), flash: new Map(), cur: -1,
+  fit() { const o = fitCanvas(this.cv); this.ctx = o.ctx; this.w = o.w; this.h = o.h; },
+  trit(idx) {
+    return ((idx / 9) | 0) + "" + (((idx / 3) | 0) % 3) + "" + (idx % 3);
+  },
+  reset() {
+    this.x = 0.13; this.y = 0.71; this.trail = [];
+    this.visited = new Set(); this.flash = new Map(); this.cur = -1;
+    document.getElementById("ticker").textContent = "";
+    document.querySelector("#cellMeter .g").textContent = "0";
+  },
+  advance(n) {
+    const ds = 0.011;
+    for (let i = 0; i < n; i++) {
+      const px = this.x, py = this.y;
+      this.x = (this.x + ds / PHI) % 1;
+      this.y = (this.y + ds / (PHI * PHI)) % 1;
+      const wrapped = this.x < px || this.y < py;
+      this.trail.push(wrapped ? null : [this.x, this.y]);
+      if (this.trail.length > 300) this.trail.shift();
+      const cx = Math.min(2, this.x * 3 | 0), cy = Math.min(2, this.y * 3 | 0);
+      const idx = cy * 3 + cx;
+      if (idx !== this.cur) {
+        this.cur = idx;
+        if (!this.visited.has(idx)) {
+          this.visited.add(idx);
+          this.flash.set(idx, 1);
+          const t = document.getElementById("ticker");
+          t.textContent += (t.textContent ? "  " : "") + this.trit(idx);
+          t.scrollTop = t.scrollHeight;
+          document.querySelector("#cellMeter .g").textContent = this.visited.size;
+        }
+      }
+    }
+  },
+  update() {
+    this.advance(Math.max(1, Math.round(2.5 * speedMult(this.speed))));
+    for (const [k, v] of this.flash) {
+      const nv = v - 0.02;
+      if (nv <= 0) this.flash.delete(k); else this.flash.set(k, nv);
+    }
+  },
+  draw() {
+    const c = this.ctx, w = this.w, h = this.h;
+    c.clearRect(0, 0, w, h);
+    const S = Math.min(w, h) * 0.80;
+    const ox = (w - S) / 2, oy = (h - S) / 2, cs = S / 3;
+    // visited + flashing cells
+    for (const idx of this.visited) {
+      const cy = (idx / 3) | 0, cx = idx % 3;
+      c.fillStyle = "rgba(226,180,90,0.10)";
+      c.fillRect(ox + cx * cs, oy + cy * cs, cs, cs);
+    }
+    for (const [idx, v] of this.flash) {
+      const cy = (idx / 3) | 0, cx = idx % 3;
+      c.fillStyle = "rgba(226,180,90," + (0.42 * v).toFixed(3) + ")";
+      c.fillRect(ox + cx * cs, oy + cy * cs, cs, cs);
+    }
+    // domain + grid
+    c.strokeStyle = "rgba(198,214,240,0.30)"; c.lineWidth = 1;
+    c.strokeRect(ox, oy, S, S);
+    c.strokeStyle = "rgba(198,214,240,0.13)";
+    c.beginPath();
+    for (let k = 1; k < 3; k++) {
+      c.moveTo(ox + k * cs, oy); c.lineTo(ox + k * cs, oy + S);
+      c.moveTo(ox, oy + k * cs); c.lineTo(ox + S, oy + k * cs);
+    }
+    c.stroke();
+    // trail (breaks at wraps)
+    c.strokeStyle = "rgba(226,180,90,0.30)"; c.lineWidth = 1.2; c.beginPath();
+    let pen = false;
+    for (const p of this.trail) {
+      if (!p) { pen = false; continue; }
+      const tx = ox + p[0] * S, ty = oy + p[1] * S;
+      if (!pen) { c.moveTo(tx, ty); pen = true; } else c.lineTo(tx, ty);
+    }
+    c.stroke();
+    c.fillStyle = GOLD;
+    c.beginPath(); c.arc(ox + this.x * S, oy + this.y * S, 4.5, 0, TAU); c.fill();
+  }
+};
+document.getElementById("addrSpeed").addEventListener("input", ev => { r3.speed = +ev.target.value; });
+document.getElementById("addrReset").addEventListener("click", () => r3.reset());
+
+/* ================= ROOM 4 — REFERENCE ================= */
+const REDACT_ORDER = [3, 6, 1, 4, 7, 2, 5, 0];
+const r4 = {
+  el: document.getElementById("room4"), cv: document.getElementById("cv4"),
+  playing: true, destroy: 0, regenT: 1,
+  fit() { const o = fitCanvas(this.cv); this.ctx = o.ctx; this.w = o.w; this.h = o.h; },
+  update(dt) {
+    if (this.regenT >= 0 && this.regenT < 1) {
+      this.regenT = Math.min(1, this.regenT + dt / 0.9);
+    }
+  },
+  redactedSet() {
+    if (this.regenT >= 0) return new Set();
+    const n = Math.round(8 * this.destroy / 100);
+    return new Set(REDACT_ORDER.slice(0, n));
+  },
+  recall() {
+    const f = this.destroy / 100;
+    if (f <= 0.5) return 100 * (1 - 0.08 * f);
+    return Math.max(0, 96 * (1 - (f - 0.5) / 0.15));
+  },
+  hash(i) {
+    const s = ["a3f9", "71c2", "e04b", "9d18", "44e7", "b6a0", "2f5d", "c893"][i];
+    return s;
+  },
+  blockRow(c, y, bw, bh, gap, red, litCount, mini) {
+    const w = this.w;
+    const total = 8 * bw + 7 * gap;
+    const x0 = (w - total) / 2;
+    for (let i = 0; i < 8; i++) {
+      const x = x0 + i * (bw + gap);
+      const gone = red.has(i);
+      const lit = litCount === undefined || i < litCount;
+      c.fillStyle = gone ? "rgba(10,14,24,0.9)" : (lit ? "rgba(16,22,38,0.9)" : "rgba(16,22,38,0.25)");
+      c.strokeStyle = gone ? "rgba(58,68,89,0.5)" : "rgba(198,214,240," + (lit ? 0.30 : 0.10) + ")";
+      c.lineWidth = 1;
+      c.beginPath(); c.rect(x, y, bw, bh); c.fill(); c.stroke();
+      c.font = (mini ? 12 : 12.5) + "px ui-monospace, Menlo, monospace";
+      c.textAlign = "center";
+      c.fillStyle = gone ? FAINT : (lit ? GOLD : FAINT);
+      c.fillText(gone ? "⬡ ····" : "⬡ " + this.hash(i), x + bw / 2, y + bh / 2 + 4);
+      if (i < 7) {
+        c.strokeStyle = "rgba(198,214,240,0.25)";
+        c.beginPath(); c.moveTo(x + bw, y + bh / 2); c.lineTo(x + bw + gap, y + bh / 2); c.stroke();
+        if (!mini) {
+          c.fillStyle = DIM; c.font = "12px ui-monospace, Menlo, monospace";
+          c.fillText("prev", x + bw + gap / 2, y + bh / 2 - 7);
+        }
+      }
+    }
+  },
+  draw() {
+    const c = this.ctx, w = this.w, h = this.h;
+    c.clearRect(0, 0, w, h);
+    const red = this.redactedSet();
+    const mono = "12px ui-monospace, Menlo, monospace";
+    // (a) the receipt chain
+    let y = 26;
+    c.fillStyle = DIM; c.font = mono; c.textAlign = "left";
+    c.fillText("your receipt chain — each block is only a reference to the one before.", 18, y + 4);
+    c.fillText("mathematicians call this shape a tensor train; it is the same shape a laptop", 18, y + 22);
+    c.fillText("just used to match a 5,000-qubit machine.", 18, y + 40);
+    const bwA = Math.min(64, (w - 60) / 8 - 10), gapA = Math.max(28, (w - 60 - 8 * bwA) / 7);
+    const litA = this.regenT >= 0 ? Math.floor(this.regenT * 9) : undefined;
+    this.blockRow(c, y + 56, bwA, 34, gapA, red, litA, false);
+    // (b) destroy the trace + recall
+    const yb = h * 0.52;
+    const frac = this.destroy;
+    c.fillStyle = DIM; c.font = mono; c.textAlign = "left";
+    c.fillText("destroy the trace: " + frac + "% redacted", 18, yb);
+    const barW = Math.min(360, w - 200);
+    c.strokeStyle = "rgba(198,214,240,0.25)"; c.strokeRect(18, yb + 10, barW, 10);
+    c.fillStyle = "rgba(160,107,255,0.55)";
+    c.fillRect(18, yb + 10, barW * frac / 60, 10);
+    const rec = this.recall();
+    c.fillStyle = GOLD; c.font = "13px ui-monospace, Menlo, monospace";
+    c.fillText("recall: " + rec.toFixed(1) + "%", 18, yb + 44);
+    c.fillStyle = DIM; c.font = mono;
+    c.fillText("holographic memory: 96% recall with half the trace destroyed", 18, yb + 64);
+    c.fillText("(our own experiments — capacity-regime-dependent)", 18, yb + 82);
+    // (c) the seed regenerates the chain
+    const yc = h - 96;
+    c.fillStyle = DIM; c.font = mono;
+    c.fillText("store the generator, not the data.", 18, yc - 10);
+    c.fillStyle = "rgba(226,180,90,0.16)";
+    c.strokeStyle = "rgba(226,180,90,0.6)";
+    c.beginPath(); c.rect(18, yc + 6, 58, 30); c.fill(); c.stroke();
+    c.fillStyle = GOLD; c.font = "12.5px ui-monospace, Menlo, monospace"; c.textAlign = "center";
+    c.fillText("seed", 47, yc + 25);
+    c.strokeStyle = "rgba(198,214,240,0.35)";
+    c.beginPath(); c.moveTo(84, yc + 21); c.lineTo(116, yc + 21); c.stroke();
+    c.beginPath(); c.moveTo(116, yc + 21); c.lineTo(109, yc + 16); c.moveTo(116, yc + 21); c.lineTo(109, yc + 26); c.stroke();
+    const bwC = Math.min(52, (w - 160) / 8 - 8), gapC = 8;
+    const totalC = 8 * bwC + 7 * gapC;
+    const x0c = 128 + (w - 128 - totalC) / 2;
+    const litC = this.regenT >= 0 ? Math.floor(this.regenT * 9) : 8;
+    for (let i = 0; i < 8; i++) {
+      const x = x0c + i * (bwC + gapC), lit = i < litC;
+      c.fillStyle = "rgba(16,22,38," + (lit ? 0.9 : 0.25) + ")";
+      c.strokeStyle = "rgba(198,214,240," + (lit ? 0.3 : 0.1) + ")";
+      c.beginPath(); c.rect(x, yc + 6, bwC, 30); c.fill(); c.stroke();
+      c.fillStyle = lit ? GOLD : FAINT; c.font = "12px ui-monospace, Menlo, monospace";
+      c.fillText(lit ? "⬡" : "·", x + bwC / 2, yc + 25);
+    }
+  }
+};
+document.getElementById("destroySlider").addEventListener("input", ev => {
+  r4.destroy = +ev.target.value; r4.regenT = -1;
+});
+document.getElementById("regenBtn").addEventListener("click", () => {
+  document.getElementById("destroySlider").value = 0;
+  r4.destroy = 0;
+  r4.regenT = RM ? 1 : 0;
+});
+
+/* ================= navigation + main loop ================= */
+const rooms = [r1, r2, r3, r4, null];
+let active = 0;
+function go(i) {
+  active = (i + rooms.length) % rooms.length;
+  document.querySelectorAll(".room").forEach((el, k) => el.classList.toggle("on", k === active));
+  document.querySelectorAll(".rtab").forEach((el, k) => el.classList.toggle("on", k === active));
+  const r = rooms[active];
+  if (r) { r.fit(); r.draw(); }
+}
+document.querySelectorAll(".rtab").forEach(b =>
+  b.addEventListener("click", () => go(+b.dataset.room)));
+document.getElementById("prevRoom").addEventListener("click", () => go(active - 1));
+document.getElementById("nextRoom").addEventListener("click", () => go(active + 1));
+window.addEventListener("keydown", ev => {
+  if (ev.key === "ArrowLeft") go(active - 1);
+  else if (ev.key === "ArrowRight") go(active + 1);
+});
+window.addEventListener("resize", () => { const r = rooms[active]; if (r) { r.fit(); r.draw(); } });
+
+bindPlay(document.getElementById("play1"), r1);
+bindPlay(document.getElementById("play2"), r2);
+bindPlay(document.getElementById("play3"), r3);
+rooms.forEach(r => { if (r) r.fit(); });
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  const r = rooms[active];
+  if (r) {
+    if (r.playing) r.update(dt);
+    r.draw();
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ================= verification hooks ================= */
+window.__fold = {
+  go,
+  get active() { return active; },
+  wind: {
+    pick(mode) {
+      document.querySelector('#rateChips .chip[data-rate="' + mode + '"]').click();
+    },
+    step(n) { r2.advance(n); },
+    coverage() { return r2.bins.size; }
+  },
+  addr: {
+    step(n) { r3.advance(n); },
+    visited() { return r3.visited.size; }
+  }
+};
+</script>
+</body>
+</html>

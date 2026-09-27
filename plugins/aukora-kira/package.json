@@ -1,0 +1,33 @@
+{
+  "name": "@aukora/dsh-plugin-kira",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AUKORA Kira: deterministic KIRA memory staging and cited, bounded conversational retrieval through an injected read owner.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./record": {
+      "default": "./lib/record.mjs"
+    },
+    "./retrieval": {
+      "default": "./lib/retrieval.mjs"
+    },
+    "./read-owner": {
+      "default": "./lib/read-owner.mjs"
+    },
+    "./conversation": {
+      "default": "./lib/conversation.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib"
+  ],
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "license": "AGPL-3.0-or-later"
+}

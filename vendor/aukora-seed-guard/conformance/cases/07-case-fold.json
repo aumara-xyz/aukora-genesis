@@ -1,0 +1,18 @@
+{
+  "id": "case-fold",
+  "why": "APFS is case-insensitive by default, so LAW.JS and law.js are one file. A case-sensitive comparison lets the second name through to the first file.",
+  "incident": "aukora-seed src/paths.mjs folds case for this reason. Issue #37 records that the pinned law's touchesMain is still case-SENSITIVE here.",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "law.js": "ORIGINAL\n"
+    }
+  },
+  "attempt": {
+    "path": "LAW.JS",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

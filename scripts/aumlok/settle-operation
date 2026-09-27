@@ -1,0 +1,180 @@
+#!/usr/bin/env node
+/**
+ * Present one approval artifact against one operation, and decide whether the gate opens.
+ *
+ *   scripts/aumlok/settle-operation \
+ *     --controller <private dir> --expect-subject <aukora:1:…> --expect-control-digest <64 hex> \
+ *     --operation <content file> --state <disposable dir> \
+ *     [--artifact <approval artifact>] [--now <unix seconds> (TEST-ONLY)]
+ *
+ * THIS IS THE CONSUMING END OF THE INTERFACE. `scripts/aumlok/approve-operation` produces the
+ * artifact; this command decides whether that artifact permits THIS operation, on THIS identity,
+ * at THIS moment, exactly once. It performs no operation and holds no key: it returns a verdict and
+ * writes the record of that verdict into disposable settlement state.
+ *
+ * NO APPROVAL IS NOT A PASS, AND AN IDENTITY IS NOT AN APPROVAL. The identity facts are printed
+ * first, before the verdict, for exactly that reason: a reader can see a bound subject, an
+ * admitted control head and a custody class, and then see the refusal
+ * `aumlok:settlement-no-approval` when no artifact was presented. Nothing about an identity — not
+ * its binding, not its keys corresponding, not its control digest matching its pin — settles
+ * anything here. The approval is a separate act by a separate key, and its absence is refused by
+ * name rather than treated as an empty-but-acceptable case.
+ *
+ * THE CHECKS, IN ORDER, EACH WITH ITS OWN NAME. Every rule decidable without the signature is
+ * decided before it, so an artifact that names the wrong key is refused for naming the wrong key
+ * rather than for failing a signature it should never have been asked to produce:
+ *
+ *   aumlok:settlement-no-approval        no artifact was presented
+ *   aumlok:approval-malformed            the artifact is not a closed receipt record
+ *   aumlok:approval-unavailable          the identity is not the pinned one, or is not admitted
+ *   aumlok:approval-unavailable          the artifact names a different identity or control head
+ *   aumlok:approval-expired              the window closed before the artifact was presented
+ *   aumlok:approval-key-mismatch         the artifact names a key this identity does not register
+ *   aumlok:approval-operation-mismatch   the operation presented is not the one the approval covers
+ *   aumlok:approval-signature-invalid    the signature does not verify under the registered key
+ *   aumlok:approval-replayed             this challenge has already been consumed once
+ *
+ * REPLAY IS A DURABLE, ATOMIC DECISION. The challenge is consumed by an exclusive create
+ * (`O_EXCL`) of one file in the state directory, so two processes racing the same artifact cannot
+ * both open the gate, and a second INVOCATION is refused exactly as a second call inside one
+ * process would be. The marker is written only AFTER the signature verified, so a forged artifact
+ * cannot burn a legitimate approval. Stated ceiling: atomicity on a local filesystem is what is
+ * measured; NFS, multi-host and a writer that rewrites the state directory are not.
+ *
+ * WHAT AN OPEN GATE MEANS. One signature verified, under the registered key, over the exact bytes
+ * that name this operation digest, inside the window, for the pinned identity, and the challenge
+ * consumed once. It does NOT mean a person attended, that the device is trusted, that any identity
+ * is bound, or that anything in the world changed. `ATTENDANCE: reported-not-proven` and
+ * `IDENTITY_BOUND: false` are printed on the accepting path too, and they are not decoration.
+ *
+ * Exit 0 when the gate opens, 1 on a named refusal, 2 on usage.
+ */
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const adapter = await import(pathToFileURL(`${ROOT}/plugins/aukora-aumlok/lib/index.mjs`).href)
+
+/** Read one `--flag value` argument, or undefined. */
+function option(flag) {
+  const index = process.argv.indexOf(flag)
+  return index === -1 ? undefined : process.argv[index + 1]
+}
+
+/** Usage failure: 2, so a caller can tell "you called it wrong" from "it said no". */
+function usage(message) {
+  process.stderr.write(`settle-operation: ${message}\n`)
+  process.stderr.write('usage: scripts/aumlok/settle-operation --controller <dir> --expect-subject <id> '
+    + '--expect-control-digest <hex> --operation <file> --state <dir> [--artifact <file>]\n')
+  process.exit(2)
+}
+
+/** Print every result collected so far, then the named refusal and the ceilings. */
+function reportAndClose(verdict, code) {
+  for (const result of verdict.results ?? []) {
+    process.stdout.write(`RESULT ${result.item}: ${result.state}\n`)
+    process.stdout.write(`  ${result.detail}\n`)
+  }
+  if (code === 0) {
+    process.stdout.write(`SETTLEMENT_GATE: ${verdict.settlement.gate}\n`)
+    process.stdout.write(`SETTLEMENT_RECORD: ${verdict.markerPath}\n`)
+    process.stdout.write(`SETTLED_AT: ${String(verdict.settlement.settledAt)}\n`)
+    process.stdout.write(`WHAT_OPENED: one approval verified against one pinned identity, one control\n`)
+    process.stdout.write('             head and one operation digest — a decision that a caller MAY\n')
+    process.stdout.write('             proceed. Nothing in the world was performed by this command.\n')
+    process.stdout.write('WHAT_CLOSED: the operation digest is not reusable — the next presentation is\n')
+    process.stdout.write('             aumlok:approval-replayed. A new operation needs a new approval.\n')
+    process.stdout.write(`ATTENDANCE: ${verdict.settlement.attendance} — the artifact reports an approval\n`)
+    process.stdout.write('            class; no person is claimed to have attended\n')
+    process.stdout.write(`IDENTITY_BOUND: ${String(verdict.settlement.identityBound)}\n`)
+    process.stdout.write('REPLAY_LEDGER: an exclusive-create marker on this host. Atomicity across hosts or\n')
+    process.stdout.write('               on a network filesystem is NOT measured.\n')
+    adapter.printCeilings()
+    process.exit(0)
+  }
+  process.stdout.write(`SETTLEMENT_GATE: CLOSED\n`)
+  process.stdout.write(`REFUSED: ${verdict.reason}\n`)
+  process.stdout.write(`DETAIL: ${verdict.detail}\n`)
+  process.stdout.write('REPLAY_LEDGER_UNCHANGED: a refusal consumes no challenge — the marker is written\n')
+  process.stdout.write('                        only after the signature verifies.\n')
+  process.stdout.write('IDENTITY_BOUND: false\n')
+  adapter.printCeilings()
+  process.exit(1)
+}
+
+const controller = option('--controller')
+const expectSubject = option('--expect-subject')
+const expectControlDigest = option('--expect-control-digest')
+const operationPath = option('--operation')
+const stateDirectory = option('--state')
+const artifactPath = option('--artifact')
+const nowInjected = option('--now')
+
+if (controller === undefined) usage('--controller is required')
+if (expectSubject === undefined || expectControlDigest === undefined) {
+  usage('--expect-subject and --expect-control-digest are required: without a pin there is no identity '
+    + 'for the approval to be bound to')
+}
+if (operationPath === undefined) usage('--operation is required (the exact content presented)')
+if (stateDirectory === undefined) usage('--state is required; without it there is no replay ledger')
+if (nowInjected !== undefined && !/^[0-9]+$/u.test(nowInjected)) usage('--now must be unix seconds')
+
+const expectation = { subject: expectSubject, activeControlDigest: expectControlDigest }
+
+process.stdout.write('AUMLOK settlement gate — one approval, one operation, decided once\n')
+process.stdout.write(`repository: ${ROOT}\n`)
+process.stdout.write(`OPERATION_FILE: ${resolve(operationPath)}\n`)
+process.stdout.write(`STATE: ${resolve(stateDirectory)}\n`)
+if (nowInjected !== undefined) {
+  process.stdout.write(`CLOCK_INJECTED: ${String(nowInjected)} (TEST-ONLY — the wall clock was not consulted)\n`)
+}
+
+// ── the identity, printed before the verdict ─────────────────────────────────────────────────
+// A read, not a decision: this is here so the "bound identity with no approval" case is legible
+// in one screenful. It cannot make the gate open, and a failure here is not a verdict of its own —
+// the decision below re-reads the same record and refuses by name if it is unusable.
+try {
+  const loaded = adapter.loadLocalAumlokPublicControl(resolve(controller), expectation)
+  process.stdout.write(`IDENTITY: ${loaded.projection.subject} at control digest `
+    + `${loaded.projection.activeControlDigest}\n`)
+  process.stdout.write(`IDENTITY_ADMITTED_AGAINST_PIN: yes — epoch ${String(loaded.projection.epoch)}, `
+    + `revoked ${String(loaded.projection.revoked)}\n`)
+  process.stdout.write(`CUSTODY_CLASS: ${loaded.projection.custodyClass}\n`)
+} catch (cause) {
+  process.stdout.write(`IDENTITY: not usable as pinned (${String(cause?.code ?? cause)})\n`)
+}
+process.stdout.write(`APPROVAL_ARTIFACT: ${artifactPath === undefined
+  ? 'none presented — this run MUST refuse'
+  : resolve(artifactPath)}\n`)
+process.stdout.write('IDENTITY_ALONE_AUTHORIZES_NOTHING: a bound identity, with keys that correspond\n')
+process.stdout.write('  and a control head that matches its pin, is NOT an approval. Watch the verdict.\n\n')
+
+let content
+try {
+  content = readFileSync(resolve(operationPath))
+} catch (cause) {
+  process.stdout.write('SETTLEMENT_GATE: CLOSED\n')
+  process.stdout.write(`REFUSED: ${adapter.APPROVAL_PATH_REFUSE.MALFORMED}\n`)
+  process.stdout.write(`DETAIL: cannot read --operation ${resolve(operationPath)}: ${cause?.code ?? String(cause)}\n`)
+  process.stdout.write('IDENTITY_BOUND: false\n')
+  adapter.printCeilings()
+  process.exit(1)
+}
+
+let artifact
+if (artifactPath !== undefined) {
+  const read = adapter.readApprovalArtifact(resolve(artifactPath), path => readFileSync(path, 'utf8'))
+  if (read.ok !== true) reportAndClose(read, 1)
+  artifact = read.artifact
+}
+
+const verdict = adapter.settleOperation({
+  directory: resolve(controller),
+  expectation,
+  artifact,
+  content,
+  stateDirectory: resolve(stateDirectory),
+  ...(nowInjected === undefined ? {} : { now: () => Number(nowInjected) }),
+})
+reportAndClose(verdict, verdict.ok === true ? 0 : 1)

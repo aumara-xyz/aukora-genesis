@@ -1,0 +1,56 @@
+{
+  "domain": "aukora:noble-ciphers-pin:v1",
+  "formatVersion": 1,
+  "entry": "chacha.js",
+  "packages": [
+    {
+      "name": "@noble/ciphers",
+      "version": "2.1.1",
+      "license": "MIT",
+      "licenseFile": "licenses/noble-ciphers.LICENSE",
+      "tarball": "noble-ciphers-2.1.1.tgz",
+      "tarballSha256": "1704cc39be04737a17f17c37b8556b195e2b6ed442ecc2b7be6230b2e26f0d82",
+      "dependencies": "none"
+    }
+  ],
+  "closure": {
+    "modules": 4,
+    "bytes": 49434,
+    "digest": "e357db14e6f16d9f0867e168e71914b32b5b8ecd906662437b10def5fdde2298"
+  },
+  "files": [
+    {
+      "path": "_arx.js",
+      "upstreamPackage": "@noble/ciphers",
+      "upstreamPath": "node_modules/@noble/ciphers/_arx.js",
+      "bytes": 9728,
+      "sha256": "2fc64a1d8379549ab64a9dabdd18032175df71fb638da643dc060bbf339c12f4"
+    },
+    {
+      "path": "_poly1305.js",
+      "upstreamPackage": "@noble/ciphers",
+      "upstreamPath": "node_modules/@noble/ciphers/_poly1305.js",
+      "bytes": 12035,
+      "sha256": "1a01e558e8cbd5bcff144416c05fe1b870d12535185aa35dda7d287f1da036f1"
+    },
+    {
+      "path": "chacha.js",
+      "upstreamPackage": "@noble/ciphers",
+      "upstreamPath": "node_modules/@noble/ciphers/chacha.js",
+      "bytes": 14213,
+      "sha256": "66d7c7d6dd9187a96f52aa2054534bac02a076b2e6e397e8e8fa8f2c17b74870"
+    },
+    {
+      "path": "utils.js",
+      "upstreamPackage": "@noble/ciphers",
+      "upstreamPath": "node_modules/@noble/ciphers/utils.js",
+      "bytes": 13458,
+      "sha256": "e6b93ca8d3f07568c3f1eceb1c6cb6b0ba7bbce0641958116c7b0d115ff0fa34"
+    }
+  ],
+  "checks": {
+    "pin": "tests/aukora-nostr-vendor-pin.test.mjs re-hashes every file against this manifest",
+    "vector": "the vendored chacha20 reproduces RFC 8439 2.4.2 byte-for-byte at counter 1"
+  },
+  "note": "Zero dependencies, so the closure is four files. Vendored because NODE CANNOT DO THIS: its chacha20 is the OpenSSL ORIGINAL (128-bit IV), not the IETF construction NIP-44 specifies."
+}

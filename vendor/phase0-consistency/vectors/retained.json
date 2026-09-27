@@ -1,0 +1,7 @@
+{
+  "treeSize": 5,
+  "root": "6f7f213a4c7fe7c7b034c3879840a49918481b4796c7f8583d3604e09158fa4b",
+  "atGeneration": 1,
+  "hashAlgorithm": "SHA-256",
+  "leafConvention": "sha256(0x00 || payload)"
+}

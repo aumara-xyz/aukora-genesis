@@ -1,0 +1,7 @@
+# 8088 socket configuration status
+
+The repository does not implement `--broker-socket` or `--issuer-socket` CLI arguments. The 8088 profile carries only the literal broker path `/run/aukora/broker.sock` in `cordis.patch.yml`; it does not carry an issuer path. `AUKORA_BROKER_SOCKET` does not override that plugin configuration. The parent that starts the broker owns its separate issuer route.
+
+The source-only parent launcher in [`aukora/supervisor/`](../../aukora/supervisor/README.md) creates a private runtime tree, copies this profile, replaces its one literal broker route before guest launch, and runs the guest with governed Loader semantics. It never uses guest-controlled `--patch` overlays. The rendered profile is not immutable against the shared UID, so this development mechanism does not establish external activation or custody.
+
+The governed composition carries no executable configuration nodes. A `!!js` expression in a governed profile is refused before the Loader ever evaluates the composition (`profile-boot:governed-composition-refuses-executable-config`), and independently refused again if that static check is bypassed and the Loader does evaluate it (`loader:governed-composition-refuses-executable-config`). `reviewLimitBytes: 8192` remains a literal profile value. The source launcher hashes the staged bytes but does not bind that hash at check-at-use, and the shared UID can rewrite them.

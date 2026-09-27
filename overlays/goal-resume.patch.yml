@@ -1,0 +1,27 @@
+# GOAL-RESUME, MOUNTED AND GIVEN THE ONE THING IT NEEDS. Fable's row 9, the other half.
+#
+# MEASURED 2026-09-27: `aukora-goal-resume` appears ZERO times in the live `aukora-composition.patch.yml` and ZERO
+# times in the live patch files — the plugin is in the tree and NOT in the running deployment (the cohesion plan's row
+# 30: "the live composition lags HEAD", naming goal-resume first). So this is an INSERT, not an override.
+#
+# AND IT MUST CARRY `config.stateDir`, because the mount was fixed to require it: the plugin previously read
+# `ctx.goalsStateDir ?? ctx.stateDir`, NEITHER OF WHICH IS A REAL CORDIS SERVICE, so it mounted and silently did
+# nothing. It now reads `config.stateDir` — the way `aukora-eye` (:38) and `aukora-board` (:135) do — and REFUSES BY
+# NAME when it is absent. A row without this key would therefore warn and stay inert, which is the failure the fix
+# exists to end.
+#
+# THE PATH FOLLOWS THIS DEPLOYMENT'S OWN CONVENTION for organ state: `dshHomePath('<name>')`, as `kira-memory`,
+# `board-state`, `eye-state` and `gate-state` all do. The plugin derives its marker from it
+# (`markerFor(dir) = <dir>/goal-resume.clean`), so the directory is the plugin's own and nothing else reads it.
+# THE name: IS AN ABSOLUTE PATH INTO THE RELEASE, WHICH IS THIS DEPLOYMENT'S OWN FORM FOR ITS ORGANS. MEASURED in
+# aukora-composition.patch.yml:125-132, where aukora-board and aukora-eye are mounted as
+#   name: /Users/.../aukora-release-fbcc1f20a1cf/plugins/<organ>/lib/index.js
+#   config: { stateDir: !!js dshHomePath('<organ>-state') }
+# My first version of this row invented a package name (@aukora/dsh-plugin-goal-resume); this plugin has NO
+# package.json, so that name would have failed at mount. The path must be re-pointed if the release moves, exactly as
+# every organ row the materializer writes must be.
+- insert:
+    - id: aukora-goal-resume
+      name: ./plugins/aukora-goal-resume/lib/index.mjs
+      config:
+        stateDir: !!js dshHomePath('goal-resume-state')

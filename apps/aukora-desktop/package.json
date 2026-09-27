@@ -1,0 +1,83 @@
+{
+  "name": "aukora-desktop",
+  "productName": "AUKORA",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "main.mjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test --test-timeout=180000 ../../tests/aukora-approval-roundtrip.test.mjs ../../tests/aukora-aumlok-verify.test.mjs",
+    "dist": "electron-builder --mac dir"
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "xyz.aukora.desktop",
+    "productName": "AUKORA",
+    "icon": "icons/icon.icns",
+    "files": [
+      "aumlok-approval-preload.cjs",
+      "aumlok-approval.html",
+      "aumlok-bridge-preload.cjs",
+      "aumlok-bridge.mjs",
+      "aumlok-draw.mjs",
+      "aumlok-signer.mjs",
+      "backend-status.mjs",
+      "card-chain.mjs",
+      "desktop-log.mjs",
+      "eye.mjs",
+      "footprint-watch.mjs",
+      "icons/**",
+      "install-settings.mjs",
+      "lane-card-preload.cjs",
+      "lane-card-view.mjs",
+      "lane-card-window.mjs",
+      "lane-card.html",
+      "lane-dispatch.mjs",
+      "lane-door.mjs",
+      "main.mjs",
+      "resolve.mjs",
+      "supervisor.mjs",
+      "url-policy.mjs"
+    ],
+    "mac": {
+      "identity": null,
+      "target": "dir",
+      "category": "public.app-category.productivity",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "AUKORA uses the microphone only while you open the voice channel in Auma Live, and the audio goes to the local voice process on this machine."
+      }
+    },
+    "extraFiles": [
+      {
+        "from": "../../plugins/aukora-owner-daemon/lib",
+        "to": "plugins/aukora-owner-daemon/lib",
+        "filter": [
+          "detect.mjs",
+          "client.mjs",
+          "visible.mjs"
+        ]
+      },
+      {
+        "from": "../../plugins/aukora-aumlok/lib",
+        "to": "plugins/aukora-aumlok/lib",
+        "filter": [
+          "repo-advance.mjs",
+          "release-activate.mjs"
+        ]
+      },
+      {
+        "from": "../../plugins/aukora-kira/lib",
+        "to": "plugins/aukora-kira/lib",
+        "filter": [
+          "strict-read.mjs",
+          "record.mjs",
+          "lane-door-messages.mjs"
+        ]
+      }
+    ]
+  }
+}

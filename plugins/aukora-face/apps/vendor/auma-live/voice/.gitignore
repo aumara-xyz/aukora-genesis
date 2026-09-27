@@ -1,0 +1,15 @@
+# What setup.sh creates here, and what must never enter the repository.
+#
+# This is the voice directory the host actually runs (vendor-paths.ts points the
+# sidecar at it). setup.sh builds a ~1.2 GB virtual environment in .venv/ and
+# downloads ~711 MB of open-source engine weights into models/. Both are
+# reproducible — from requirements.txt and from MODELS.md — and both would
+# otherwise be staged by a plain `git add -A`.
+#
+# models/aurora-prompt.wav, the clone prompt the sidecar reads, is generated
+# too: setup.sh synthesizes it when it is absent, so it is not committed either.
+.venv/
+__pycache__/
+*.pyc
+models/*
+

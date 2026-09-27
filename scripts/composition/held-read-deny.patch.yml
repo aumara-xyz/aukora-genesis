@@ -1,0 +1,18 @@
+# held until read-deny constructs fs in a release; see aura-95, aumlok-128, aumlok-129
+#
+# *** THE ONE-LINE REASON IS ABOVE, AND THIS FILE IS THE WHOLE OF THE HOLD. ***
+# *The live release Peter runs (`fbcc1f20a1cf`) carries ZERO `aukora-core-read-deny` rows and serves the face. A
+# candidate that matches it must therefore UN-DISABLE the base provider and DISABLE the guard, which is what these
+# two rows do.* *** It replaces an earlier attempt that removed the guard's rows from the generated composition in
+# `materialize-aukora-release.py` and left a `providerModule` key orphaned at top level -- the launcher refused the
+# whole file (`parsePatchList`), because cutting a YAML section in half is not the same as holding it out. ***
+#
+# WHY TWO ROWS AND NOT ONE: `materialize-aukora-release.py`'s `core_mount_rows` emits BOTH
+# `- id: fs-sandbox / disabled: true` AND the `aukora-core-read-deny` insert, and `ctx.provide` refuses a second
+# registration of `fs`. Disabling only the guard would leave `fs` provided by nobody; enabling only the base would
+# collide with the guard. The pair moves together or not at all.
+- id: fs-sandbox
+  disabled: false
+
+- id: aukora-core-read-deny
+  disabled: true

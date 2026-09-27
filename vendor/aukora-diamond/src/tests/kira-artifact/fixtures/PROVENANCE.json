@@ -1,0 +1,92 @@
+{
+  "what": "CURRENT-PRODUCER approval fixtures: the flat aukora:approval-receipt:v1 artifact, the exact content bytes it binds, the approver public key, and the Kira receipts whose approval block names it. Produced by the PINNED Genesis producer at the commit below, not by hand and not by the Diamond consumer.",
+  "genesisCheckout": "/tmp/gen3",
+  "genesisCommit": "20af274abd6fd70f7d44067a72965e9672dd0fdd",
+  "genesisDescribe": "20af274",
+  "mintedAt": "2026-09-20T06:06:02.005Z",
+  "clockInjected": 1790000000,
+  "clockNote": "approve-operation --now <TEST-ONLY> so issuedAt/verifiedAt are stable; the challenge and signature are NOT stable, so a re-mint produces an equally valid but different artifact.",
+  "expiresAt": 4102444800,
+  "seed": "a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7 (TEST-ONLY, disposable; the private half is deleted with the temporary tree)",
+  "signer": "scripts/aumlok/signer.mjs --approve test-all — a LABELLED procedure that approves every request it is shown. Scripted, not a person; nothing here is a human yes and no person attended.",
+  "subject": "aukora:1:3c48a2d3031422ff7c88cb4e0f50629aebbf42dcc8a7b03b9f043e620b0bfd3e",
+  "activeControlDigest": "4c9d7fd0fefeeacb7b78807dcc9ef37c1e1cd50b99c74d582b905790e22b4057",
+  "approverDid": "did:key:z6Mkt1D3SBuwjDpBMaB5YJerofTgcPVPMQBZ1Zae17N7rGf1",
+  "approverRawPublicKeyHex": "c9571eeb4aa9de1159858bc6a3d4a626c4f4845e8eebd5f554b2ec0f50c68860",
+  "operationContentDomain": "aukora:operation-content:v1",
+  "digestRule": "sha256(utf8(\"aukora:operation-content:v1\") || 0x00 || contentBytes), where contentBytes = canonicalJSON({key: recordId, value: record}) || \"\\n\"",
+  "digestDerivedBy": "make-fixtures.mjs thirdPartyDigest (a literal restatement), confirmed by approve-operation, which recomputes and refuses a mismatch",
+  "records": [
+    {
+      "index": 1,
+      "note": "Cedar endpoint listens on port 8098",
+      "recordId": "kira:00936cbeffe741e462897fa9621fceeab46fe952f40a00e8991523751e6e97af",
+      "contentFile": "content-1.txt",
+      "contentSha256": "83689c20bb6211f0bdaf3c46391e5c09a8ef9f1377f5ff4ba4e4293e8dbb4fd0",
+      "contentBytes": 477,
+      "operationDigest": "0d00865d5b044dbcfad1b4086113fec1e34f21e5ee469f08d1842aaefa54c61b",
+      "artifactFile": "artifact-1.json",
+      "artifactSha256": "b9f57e0641e91f1becde5df3c6a9a5eede226e1a41c0fb6f2a5fb81564dc2e73",
+      "approvalId": "0f04153f9d99d2a2e3f6e61e2b598ebb13a48564982cff5f14ce89335724326c",
+      "signedBytesDigest": "0872b932769a1c5568165d9a4b22183489fbf9b77622f6170798a934c7c64b72",
+      "receiptFile": "receipt-1.json",
+      "receiptSha256": "0eb51d5d1352d711a7a2c15e52f50663b8588a9e0f34eb6406bf23d37126b87e",
+      "auraSequence": 1
+    },
+    {
+      "index": 2,
+      "note": "Rollback runbook lives in ops/rollback.md",
+      "recordId": "kira:a4271a93b37dbe821d3db8c1291117ef5e5ecdf878f87baf83df4fb5a6d64706",
+      "contentFile": "content-2.txt",
+      "contentSha256": "21a7a918c1bf6d835beece6a87daa2bb50ec5e9f167b613a831b2f21f8258a81",
+      "contentBytes": 483,
+      "operationDigest": "40ec9188a60dd4d799b48ef0bf8d9613c34e8649af5a4087251249f09243906a",
+      "artifactFile": "artifact-2.json",
+      "artifactSha256": "3035332251a849d8d1ce181d93e7ff2308869eeb0d0380c6138bf26b670a24bc",
+      "approvalId": "888b158e79641bdc73e4353d45c5a117b7485884bcc42a08f3d654340e5ce909",
+      "signedBytesDigest": "40307b4e043b448f63c599b7e1bc4c3d5f31b4383ada5d16fd6274c0f1420600",
+      "receiptFile": "receipt-2.json",
+      "receiptSha256": "cd179d9dfc2abbf94812a3684d893bfc2090337abb7b1293c10068c0158f5c90",
+      "auraSequence": 2
+    }
+  ],
+  "files": [
+    "approver-did.txt:b9ca1b3f824ec2b9febb35f54c6ff3715926e2bab93957ca98d6a83884e873f6",
+    "approver.pem:bd4e0a54111c69f446642d97347dc03699c1f1a78d6d260a3d8aef262f6081ad",
+    "approver.pk:ae9f48d4175334b5b74f3fc5eec22e58fb52446ea8ac7edbcac98e12b4234a97",
+    "artifact-1.json:b9f57e0641e91f1becde5df3c6a9a5eede226e1a41c0fb6f2a5fb81564dc2e73",
+    "artifact-1b.json:a258bcaef218e49d31c6fdd85123fbf3de3593a7821fe43d348b9169531e5a5a",
+    "artifact-2.json:3035332251a849d8d1ce181d93e7ff2308869eeb0d0380c6138bf26b670a24bc",
+    "aura.jsonl:b0c34bb642e0e28870ea3f5ea80fe649328b8c3f0709c975e5aa6c9e834918eb",
+    "content-1.txt:83689c20bb6211f0bdaf3c46391e5c09a8ef9f1377f5ff4ba4e4293e8dbb4fd0",
+    "content-2.txt:21a7a918c1bf6d835beece6a87daa2bb50ec5e9f167b613a831b2f21f8258a81",
+    "issuer.pem:5e7bdc3fff5ec5cb05ce01f4947e066ac3c8bd3eb5c0c0a13a2a5c9ca842ba1c",
+    "objects/",
+    "receipt-1.json:0eb51d5d1352d711a7a2c15e52f50663b8588a9e0f34eb6406bf23d37126b87e",
+    "receipt-2.json:cd179d9dfc2abbf94812a3684d893bfc2090337abb7b1293c10068c0158f5c90"
+  ],
+  "commands": [
+    {
+      "command": "scripts/aumlok/make-disposable-identity.mjs --directory /tmp/kafx-1SUFgB/identity-a --ed25519-seed-hex a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7",
+      "status": 0
+    },
+    {
+      "command": "scripts/aumlok/approve-operation --controller /tmp/kafx-1SUFgB/identity-a --expect-subject aukora:1:3c48a2d3031422ff7c88cb4e0f50629aebbf42dcc8a7b03b9f043e620b0bfd3e --expect-control-digest 4c9d7fd0fefeeacb7b78807dcc9ef37c1e1cd50b99c74d582b905790e22b4057 --operation /tmp/kafx-1SUFgB/content-1.txt --operation-digest 0d00865d5b044dbcfad1b4086113fec1e34f21e5ee469f08d1842aaefa54c61b --signer-socket /tmp/kafx-1SUFgB/signer-approves/signer.sock --artifact-out /tmp/kafx-1SUFgB/artifact-1.json --expires-at 4102444800 --approval-class scripted --now 1790000000",
+      "status": 0
+    },
+    {
+      "command": "scripts/aumlok/approve-operation --controller /tmp/kafx-1SUFgB/identity-a --expect-subject aukora:1:3c48a2d3031422ff7c88cb4e0f50629aebbf42dcc8a7b03b9f043e620b0bfd3e --expect-control-digest 4c9d7fd0fefeeacb7b78807dcc9ef37c1e1cd50b99c74d582b905790e22b4057 --operation /tmp/kafx-1SUFgB/content-2.txt --operation-digest 40ec9188a60dd4d799b48ef0bf8d9613c34e8649af5a4087251249f09243906a --signer-socket /tmp/kafx-1SUFgB/signer-approves/signer.sock --artifact-out /tmp/kafx-1SUFgB/artifact-2.json --expires-at 4102444800 --approval-class scripted --now 1790000000",
+      "status": 0
+    },
+    {
+      "command": "scripts/aumlok/approve-operation --controller /tmp/kafx-1SUFgB/identity-a --expect-subject aukora:1:3c48a2d3031422ff7c88cb4e0f50629aebbf42dcc8a7b03b9f043e620b0bfd3e --expect-control-digest 4c9d7fd0fefeeacb7b78807dcc9ef37c1e1cd50b99c74d582b905790e22b4057 --operation /tmp/kafx-1SUFgB/content-1.txt --operation-digest 0d00865d5b044dbcfad1b4086113fec1e34f21e5ee469f08d1842aaefa54c61b --signer-socket /tmp/kafx-1SUFgB/signer-approves/signer.sock --artifact-out /tmp/kafx-1SUFgB/artifact-1b.json --expires-at 4102444800 --approval-class scripted --now 1790000060",
+      "status": 0
+    }
+  ],
+  "signerCommand": "scripts/aumlok/signer.mjs --socket /tmp/kafx-1SUFgB/signer-approves/signer.sock --key-file /tmp/kafx-1SUFgB/identity-a/test-key.pem --registered-key-hex c9571eeb4aa9de1159858bc6a3d4a626c4f4845e8eebd5f554b2ec0f50c68860 --approve test-all",
+  "secondApprovalOverContentOne": {
+    "artifactFile": "artifact-1b.json",
+    "what": "a SECOND genuine approval over content-1: the same operation digest, a different challenge and signature. Nothing settles against it. It exists so a court can isolate the receipt linkage check: a digest does not identify an approval.",
+    "artifactSha256": "a258bcaef218e49d31c6fdd85123fbf3de3593a7821fe43d348b9169531e5a5a"
+  }
+}

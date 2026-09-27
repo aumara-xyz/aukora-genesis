@@ -1,0 +1,23 @@
+{
+  "aura": {
+    "entryHash": "9104c2bc96f426e43252fa94ef089e7880f3385a1b6ec15897f61a70cfe8b8c0",
+    "head": "9104c2bc96f426e43252fa94ef089e7880f3385a1b6ec15897f61a70cfe8b8c0",
+    "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "priorHead": "0000000000000000000000000000000000000000000000000000000000000000",
+    "root": "506d1488d85443089207e3b15c30a64a94ae62c3c18e060f7f963b50653b2b99",
+    "seq": 1,
+    "size": 1
+  },
+  "composition": {
+    "coeffectEnvelopeDigest": "ad5fc4a0c7023abd37193426e393fb5df615fa8e12d90ea949c31857c071baf0",
+    "operation": "load",
+    "pluginDigest": "0f5e4796d8e0626d6620ce0a8c207a0a01a24124f078edef5ad98d57506dde0d",
+    "pluginId": "plugin-0f5e4796d8e0626d",
+    "revertOf": ""
+  },
+  "issuedAt": 1789551177,
+  "issuerPk": "b2b20cf13f9fc9d271957f1966eb66a93ae8062760883b6cf3c5cacba8ea5cea",
+  "kind": "aukora-receipt/v3-genesis",
+  "nonce": "5ded2bcc6e6cdbaaa6d59103f4c195232ea53d15aa86919c3664f95a3578bbd3",
+  "sig": "98b4191883ce922fd4549dd8d8e52f1232dc50dc25364e53ca3cedda4c7e2b72d19773a9abd5896fb9851aa932e3fe0f1f9d98d4279c9c56b750fc8d151af307"
+}

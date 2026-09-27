@@ -1,0 +1,24 @@
+/* THE FIRST RUN: one narrow column, plain type, and no decoration that could read as a promise. */
+.firstRun {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.firstRunTitle { font-size: 20px; font-weight: 600; margin: 0; }
+.firstRunLead { margin: 0; opacity: 0.85; }
+.firstRunField { display: flex; flex-direction: column; gap: 6px; }
+.firstRunField input { font: inherit; padding: 7px 9px; }
+.firstRunVoice { display: flex; flex-direction: column; gap: 6px; border: 1px solid currentColor; border-radius: 6px; padding: 10px 12px; }
+.firstRunVoice label { display: flex; gap: 8px; align-items: center; }
+.firstRunNote, .firstRunQuiet { margin: 0; font-size: 13px; opacity: 0.7; }
+.firstRunTrouble { font-size: 13px; }
+.firstRunStored { font-family: var(--dsw-font-family-mono); }
+.firstRunStatus { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; opacity: 0.85; }
+.firstRunTopic { opacity: 0.75; }
+.firstRunGo { display: flex; align-items: center; gap: 10px; }
+.firstRunGo button { font: inherit; padding: 7px 14px; }

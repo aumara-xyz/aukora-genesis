@@ -1,0 +1,48 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
+  },
+  "files": [
+    "src/approvals-log.ts",
+    "src/client/health-model.ts",
+    "src/client/why-model.ts",
+    "src/css-modules.d.ts",
+    "src/first-run-host.ts",
+    "src/health-sample.ts",
+    "src/index.ts",
+    "src/watchdog-limit.ts",
+    "src/why-store.ts"
+  ],
+  "references": [
+    {
+      "path": "../ui-session"
+    },
+    {
+      "path": "../ui-renderer"
+    },
+    {
+      "path": "../../../vendor/cordis"
+    },
+    {
+      "path": "../locale"
+    },
+    {
+      "path": "../ui-slots"
+    },
+    {
+      "path": "../ui-theme"
+    },
+    {
+      "path": "../ui-primitives"
+    },
+    {
+      "path": "../../runtime-diagnostics/invariants"
+    },
+    {
+      "path": "../../host/webserver"
+    }
+  ]
+}

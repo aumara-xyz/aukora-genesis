@@ -1,0 +1,21 @@
+{
+  "extends": "../../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "lib/types",
+    "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
+  },
+  "files": [
+    "src/add-contact-route.ts",
+    "src/confirm-contact-route.ts",
+    "src/contacts-store.ts",
+    "src/index.ts",
+    "src/invariant.ts",
+    "src/messages-route.ts"
+  ],
+  "references": [
+    { "path": "../../../vendor/cordis" },
+    { "path": "../../host/webserver" },
+    { "path": "../../runtime-diagnostics/invariants" }
+  ]
+}

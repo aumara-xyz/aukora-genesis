@@ -1,0 +1,8 @@
+# Aukora voice sidecar — top-level deps (Python 3.12, Apple Silicon)
+# installed by setup.sh via uv into spatial/voice/.venv
+aiohttp==3.14.1
+faster-whisper==1.2.1
+kokoro-onnx==0.5.0
+mlx-whisper==0.4.3
+pocket-tts==2.1.0
+soundfile==0.14.0

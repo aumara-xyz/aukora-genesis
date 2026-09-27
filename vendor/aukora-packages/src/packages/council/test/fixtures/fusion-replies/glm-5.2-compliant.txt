@@ -1,0 +1,1 @@
+STANCE:⊖ CONFIDENCE:⇈ STRATEGY:↘ FRAMEWORK:symbolic DIST:(explore=0.10,exploit=0.20,verify=0.60,abstain=0.10) HYP:"The clarifying comment already exists as a three-line block directly above terminalState; adding a one-line comment duplicates intent and risks drift between two explanations of the same rationale."

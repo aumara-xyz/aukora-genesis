@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  THE CARD SURFACE — one pending card, and two buttons.
+
+  WHY IT IS A PAGE AND NOT A NATIVE DIALOG. The same shape as `aumlok-approval.html`: the shell loads it
+  into a view, and the preload bridge is the only channel out. This page NEVER talks to the network and
+  never mints anything — it renders a card the door issued and reports a press.
+
+  WHAT IT SHOWS, AND WHY EACH PART IS THERE:
+    the lane      who is asking
+    the text      THE EXACT BYTES, escaped so the string cannot lie about itself. Full, scrollable,
+                  truncated NOWHERE — a card that hides its tail is a card Peter did not read.
+    the kind      prompt or command, because those reach different code
+    the digest    the first twelve hex characters, so a stranger can match what was SHOWN against what
+                  the ledger recorded as SENT
+    the expiry    when the confirmation stops being a decision
+
+  NOTHING SENDS ON FOCUS. The buttons listen for `click` and nothing else: no keydown, no keyup, no
+  autofocus-driven submit. A surface that sent when Peter tabbed past it would make the card a formality.
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<title>A card is waiting</title>
+<style>
+  /* ── EVERY PAINT COMES FROM A TOKEN, AND THE LITERAL IS ONLY THE FALLBACK ──────────────────────
+     TWELVE FINDINGS ON THE TOKEN AUDIT SAID OTHERWISE, and the defect they name is not cosmetic: **a
+     surface that paints literals is a surface that does not follow the site**, so the card looked like a
+     different application from the one it interrupts. The pattern is the approval sheet's: a LOCAL token
+     whose value is the SITE token with the literal as its fallback, so the site wins when it is present
+     and the surface degrades to exactly what it painted before when it is not.
+
+     **AND THE FALLBACK IS DELIBERATELY THE OLD LITERAL** — that is what makes this a tokenisation rather
+     than a redesign: the appearance is unchanged when the site is absent, and correct when it is there. */
+  :root {
+    color-scheme: dark;
+    --card-surface: var(--dsw-alias-bg-layer-1, #14161a);
+    --card-well: var(--dsw-static-spatial-night-900, #0d0f12);
+    --card-raised: var(--dsw-alias-bg-layer-2, #1c2027);
+    --card-border: var(--dsw-alias-border-l2, #242932);
+    --card-border-strong: var(--dsw-alias-border-l2, #2f3641);
+    --card-label: var(--dsw-alias-label-primary, #e8e6e3);
+    --card-muted: var(--dsw-alias-label-secondary, #9aa4b2);
+    --card-dim: var(--dsw-alias-label-secondary, #7f8a99);
+    --card-accent: var(--dsw-alias-label-secondary, #b9a06a);
+    --card-send: var(--dsw-alias-bg-layer-2, #1f3a2a);
+    --card-send-border: var(--dsw-alias-border-l2, #2f5a3f);
+    --card-font: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  }
+  body { margin: 0; padding: 18px 20px 16px; font: 13px/1.5 var(--card-font);
+         background: var(--card-surface); color: var(--card-label); }
+  h1 { font-size: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+       color: var(--card-muted); margin: 0 0 14px; }
+  .row { display: flex; gap: 10px; margin-bottom: 8px; }
+  .k { color: var(--card-dim); min-width: 68px; }
+  .v { color: var(--card-label); }
+  /* THE TEXT IS FULL AND SCROLLABLE, AND TRUNCATION IS THE ONE THING IT MUST NOT DO. A max-height with
+     a scroll is a reading aid; `text-overflow: ellipsis` would be a card that hides its own tail. */
+  pre#text { margin: 6px 0 12px; padding: 10px 12px; background: var(--card-well); border: 1px solid var(--card-border);
+             border-radius: 4px; white-space: pre-wrap; word-break: break-word; max-height: 46vh;
+             overflow: auto; font: inherit; }
+  #digest { letter-spacing: .08em; }
+  #expiry { color: var(--card-accent); }
+  .acts { display: flex; gap: 10px; margin-top: 14px; }
+  button { font: inherit; padding: 7px 16px; border-radius: 4px; border: 1px solid var(--card-border-strong);
+           background: var(--card-raised); color: var(--card-label); cursor: pointer; }
+  button#send { background: var(--card-send); border-color: var(--card-send-border); }
+  button:disabled { opacity: .45; cursor: default; }
+  #state { margin-top: 10px; color: var(--card-muted); min-height: 1.4em; }
+</style>
+</head>
+<body>
+  <h1>A card is waiting</h1>
+  <div class="row"><span class="k">lane</span><span class="v" id="lane"></span></div>
+  <pre id="text"></pre>
+  <div class="row"><span class="k">kind</span><span class="v" id="kind"></span></div>
+  <div class="row"><span class="k">digest</span><span class="v" id="digest"></span></div>
+  <div class="row"><span class="k">expires</span><span class="v" id="expiry"></span></div>
+  <div class="acts">
+    <button id="send" type="button">Send</button>
+    <button id="decline" type="button">Decline</button>
+  </div>
+  <div id="state"></div>
+<script>
+  (function () {
+    var bridge = window.laneCard
+    var lane = document.getElementById('lane')
+    var text = document.getElementById('text')
+    var kind = document.getElementById('kind')
+    var digest = document.getElementById('digest')
+    var expiry = document.getElementById('expiry')
+    var send = document.getElementById('send')
+    var decline = document.getElementById('decline')
+    var state = document.getElementById('state')
+
+    function say(message) { state.textContent = message }
+
+    // THE VIEW IS BUILT BY THE SHELL, NOT HERE. This page renders a model; it never computes a digest and
+    // never sees a card it was not handed. `view.display` is the escaped text and `view.source` is the
+    // exact bytes — the page shows the first and never substitutes the second.
+    bridge.pending().then(function (view) {
+      if (view === null) { say('No card is waiting.'); send.disabled = true; decline.disabled = true; return }
+      current = view
+      lane.textContent = view.lane
+      text.textContent = view.display
+      kind.textContent = view.kind
+      digest.textContent = view.digestPrefix
+      expiry.textContent = new Date(view.expiresAt).toISOString()
+      say('')
+    }).catch(function (error) { say('The card could not be read: ' + error.message) })
+
+    // A REAL CLICK IS REQUIRED. `click` fires for a mouse press and for an assistive-technology
+    // activation, and for nothing else — no focus, no hover, no key. Both buttons disable after one
+    // press, so a double click cannot be two acts.
+    // THE PRESS CARRIES THE NONCE, NOT JUST THE BUTTON. A bare `'send'` names no card, so a press that
+    // arrived after its card was replaced could be applied to the new one — `nonce` is what makes a press
+    // attributable to ONE card. The nonce comes from the VIEW the shell built; the page never invents one,
+    // and it never passes text: the door re-reads the text from where the request is held.
+    var current = null
+
+    function press(action) {
+      if (current === null) { say('No card is waiting.'); return }
+      send.disabled = true; decline.disabled = true
+      say(action === 'send' ? 'Sending…' : 'Declining…')
+      bridge.act({ action: action, nonce: current.nonce }).then(function (r) {
+        if (action === 'decline') { say('Declined. Nothing was sent.'); return }
+        say(r && r.ok ? 'Sent.' : 'Refused: ' + (r && r.reason))
+      }).catch(function (e) {
+        say((action === 'send' ? 'Refused: ' : 'Decline failed: ') + e.message)
+      })
+    }
+
+    send.addEventListener('click', function () { press('send') })
+    decline.addEventListener('click', function () { press('decline') })
+  })()
+</script>
+</body>
+</html>

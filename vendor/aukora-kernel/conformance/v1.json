@@ -1,0 +1,78 @@
+{
+  "schema": "aukora-kernel-conformance-v1",
+  "packageVersion": "0.1.0",
+  "reducerVectors": [
+    {
+      "name": "observe-allowed-empty-state",
+      "nowMs": 1735689600000,
+      "policyCanonicalJson": "{\"rules\":[{\"action\":{\"kind\":\"record\",\"namespace\":\"example\",\"verb\":\"observe\"},\"maxRing\":\"observe\",\"requiresAuthorization\":false,\"resourceNamespace\":\"artifact\"}],\"sacred\":[],\"schema\":\"aukora-policy-v1\"}",
+      "request": {
+        "schema": "aukora-kernel-request-v1",
+        "requestId": "vector-observe-1",
+        "action": { "namespace": "example", "kind": "record", "verb": "observe" },
+        "resource": { "namespace": "artifact", "id": "sample" },
+        "ring": "observe",
+        "payloadHash": null,
+        "consumptionId": null,
+        "humanClearance": false,
+        "authorization": null,
+        "evidenceRefs": []
+      },
+      "trustedState": {
+        "schema": "aukora-trusted-state-v1",
+        "salama": { "active": false, "reason": null },
+        "trustedRoots": [],
+        "consumedIds": [],
+        "receiptHead": { "count": 0, "headHash": null }
+      },
+      "expected": {
+        "schema": "aukora-kernel-result-v1",
+        "decision": { "status": "allowed", "code": "allowed", "ring": "observe", "authorizedRootId": null },
+        "nextState": {
+          "schema": "aukora-trusted-state-v1",
+          "salama": { "active": false, "reason": null },
+          "trustedRoots": [],
+          "consumedIds": [],
+          "receiptHead": { "count": 1, "headHash": "98208d936f65135cf93879fab5fcd275c31141c95eb635c9853654e543e562ec" }
+        },
+        "receiptDraft": {
+          "schema": "aukora-receipt-draft-v1",
+          "requestId": "vector-observe-1",
+          "requestHash": "e3529f68b2b17f99ded81cb1d0687d6d96c3b4edd71025d52e5ddafe9e3afac7",
+          "priorStateHash": "ac511daf3c33beb00fe27a9956c19cbdf99a45cb32c2e9e3618ee28aba2b6108",
+          "policyHash": "c88e7f1fcb30de0193a03c4cfaa80a116c7a529a8bfaa8fd20f9acc838e7fc56",
+          "decision": { "status": "allowed", "code": "allowed", "ring": "observe", "authorizedRootId": null },
+          "transitionStateHash": "9d97552e0cc59aa3b1ea22c6fd8bb281faf6abe890d0bb7c93424829f719a01e",
+          "previousReceiptHash": null,
+          "sequence": 1,
+          "evidenceRefs": [],
+          "nowMs": 1735689600000,
+          "draftHash": "98208d936f65135cf93879fab5fcd275c31141c95eb635c9853654e543e562ec"
+        }
+      }
+    }
+  ],
+  "merkle": {
+    "profile": "rfc6962",
+    "leafInputsHex": ["", "00", "10", "2021", "3031", "40414243", "5051525354555657", "606162636465666768696a6b6c6d6e6f"],
+    "rootHashesBySize": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "6e340b9cffb37a989ca544e6bb780a2c78901d3fb33738768511a30617afa01d",
+      "fac54203e7cc696cf0dfcb42c92a1d9dbaf70ad9e621f4bd8d98662f00e3c125",
+      "aeb6bcfe274b70a14fb067a5e5578264db0fa9b51af5e0ba159158f329e06e77",
+      "d37ee418976dd95753c1c73862b9398fa2a2cf9b4ff0fdfe8b30cd95209614b7",
+      "4e3bbb1f7b478dcfe71fb631631519a3bca12c9aefca1612bfce4c13a86264d4",
+      "76e67dadbcdf1e10e1b74ddc608abd2f98dfb16fbce75277b5232a127f2087ef",
+      "ddb89be403809e325750d3d263cd78929c2942b7942a34b77e122c9594a74c8c",
+      "5dc9da79a70659a9ad559cb701ded9a2ab9d823aad2f4960cfe370eff4604328"
+    ]
+  },
+  "requiredNegativeProfiles": [
+    "aumlok-ed25519-ml-dsa-65-v1-refuses-ed25519-only",
+    "aumlok-ed25519-ml-dsa-65-v1-refuses-ml-dsa-65-only",
+    "aukora-receipt-head-ml-dsa-65-v4-refuses-wrong-domain",
+    "single-consumption-refuses-replay",
+    "canonical-policy-refuses-noncanonical-bytes",
+    "artifact-chain-refuses-reorder-and-tamper"
+  ]
+}

@@ -1,0 +1,153 @@
+#!/usr/bin/env node
+/**
+ * AUKORA SEATBELT, THROUGH THE HARNESS'S OWN BASH EXECUTOR, WITH NO LIVE APP.
+ *
+ *   DSH_ROOT=<a built vendor/dsh> node plugins/aukora-seatbelt/check.mjs
+ *
+ * It builds a Cordis context with the harness's real `@deepseek-ai/dsh-subprocess-local`, a fixed sandbox policy
+ * (`workspace-write`, the deployment default) and the real `@deepseek-ai/dsh-bash-sandbox` executor — the `shell` the
+ * `bash` tool calls — and mounts `sandbox` two ways: through this plugin (the arm) and as the stock
+ * `@deepseek-ai/dsh-sandbox-local` row (the red arm). Each command runs through `ctx.shell.run()`, so the argv that
+ * reaches the kernel is exactly the one the harness would spawn.
+ *
+ * Everything lives in one scratch root (scripts/lib/run-root.mjs `openScratch`), holds FAKE contents only, and is
+ * removed at exit. The roots it hands the plugin are that scratch tree's, so no live path is named in any rule.
+ */
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:net'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+import { openScratch } from '../../scripts/lib/run-root.mjs'
+import * as seatbelt from './lib/index.mjs'
+
+const HERE = dirname(fileURLToPath(import.meta.url))
+const DSH = resolve(process.env.DSH_ROOT ?? join(HERE, '..', '..', 'vendor', 'dsh'))
+const lib = (...parts) => join(DSH, 'packages', ...parts, 'lib', 'index.js')
+if (process.platform !== 'darwin') {
+  process.stderr.write('NOT RUN: Seatbelt is macOS only\n')
+  process.exit(2)
+}
+if (!existsSync(lib('shell', 'bash-sandbox'))) {
+  process.stderr.write(`NOT RUN: no built DeepSeek Harness at ${DSH} (run scripts/build-dsh.py, or set DSH_ROOT)\n`)
+  process.exit(2)
+}
+const load = async (path) => import(pathToFileURL(path).href)
+const { Context } = await load(join(DSH, 'vendor', 'cordis', 'lib', 'index.js'))
+const LocalSubprocessRuntime = (await load(lib('subprocess', 'subprocess-local'))).default
+const SandboxBashExecutor = (await load(lib('shell', 'bash-sandbox'))).default
+const providerModule = lib('sandbox', 'sandbox-local')
+const LocalSandboxProvider = (await load(providerModule)).default
+
+// ── A disposable deployment. Short paths: a unix socket path must fit in 104 bytes. ────────────────────────────────
+const scratch = openScratch({ owner: 'aukora-seatbelt-check', label: 'seatbelt' })
+const S = scratch.root
+const home = join(S, 'h')
+const supportRoot = join(S, 'sup')
+const dshHome = join(supportRoot, 'state', 'home')
+const ws = join(home, 'aukora-worktrees', 'wt')
+const seed = join(supportRoot, 'state', 'aumlok', 'machine-seed-v3.json')
+const socket = join(supportRoot, 'state', 'aumlok-signer.sock')
+const auraLog = join(dshHome, 'aura-code', 'aura.jsonl')
+const spentSet = join(dshHome, 'aura-code', 'consumed-ids.json')
+const gateLog = join(dshHome, 'aura-actions', 'aura.jsonl')
+const fake = {
+  [seed]: 'FAKE-SEED-not-a-key\n',
+  [join(supportRoot, 'state', 'aumlok', 'record-v3.json')]: 'FAKE-RECORD\n',
+  [join(dshHome, 'kira-memory', 'issuer.json')]: 'FAKE-KIRA-ISSUER\n',
+  [join(dshHome, 'kira-memory', 'keys', 'r1.json')]: 'FAKE-KIRA-KEY\n',
+  [join(home, '.ssh', 'id_ed25519')]: 'FAKE-SSH-KEY\n',
+  [join(home, '.config', 'gh', 'hosts.yml')]: 'FAKE-GH-TOKEN\n',
+  [join(home, '.aukora', 'signer', 'daemon-ed25519.pem')]: 'FAKE-SIGNER-KEY\n',
+  [auraLog]: '{"seq":1}\n',
+  [spentSet]: '{"consumedIds":[]}\n',
+  [gateLog]: '{"seq":1}\n',
+}
+for (const [path, text] of Object.entries(fake)) {
+  mkdirSync(dirname(path), { recursive: true })
+  writeFileSync(path, text)
+}
+mkdirSync(ws, { recursive: true })
+if (Buffer.byteLength(socket) > 103) throw new Error(`socket path too long for sun_path: ${socket}`)
+const signer = createServer(connection => connection.end('FAKE-SIGNER-REPLY\n'))
+await new Promise(ok => signer.listen(socket, ok))
+
+// ── The harness, with `sandbox` mounted by the caller. ─────────────────────────────────────────────────────────────
+async function harness(mountSandbox) {
+  const ctx = new Context()
+  await ctx.plugin(LocalSubprocessRuntime)
+  await ctx.plugin((inner) => {
+    // The deployment default (base cordis.patch.yml: DSH_PERMISSION_MODE ?? 'workspace-write'); calls pass their own.
+    inner.provide('sandboxPolicy', { defaultMode: 'workspace-write', resolve: () => ({ mode: 'workspace-write', workspaceRoot: ws }) })
+  })
+  await mountSandbox(ctx)
+  await ctx.plugin(SandboxBashExecutor, { cwd: ws, timeoutMs: 20_000 })
+  return async (command, workspaceRoot = ws) => {
+    const result = await ctx.shell.run(ctx.shell.resolve({
+      command, workdir: workspaceRoot, sandboxPolicy: { mode: 'workspace-write', workspaceRoot },
+    }))
+    return { exit: result.exitCode, out: result.stdout.text.trim(), err: result.stderr.text.trim(), denied: result.sandbox?.denied }
+  }
+}
+const aukora = await harness(ctx => ctx.plugin(seatbelt, { home, supportRoot, dshHome, providerModule }))
+const stock = await harness(ctx => ctx.plugin(LocalSandboxProvider))
+
+// ── The arms. ──────────────────────────────────────────────────────────────────────────────────────────────────────
+const q = path => `'${path}'`
+const node = q(process.execPath)
+const ARMS = [
+  ['(a) read the fake seed', `cat ${q(seed)}`, 'denied'],
+  ['(a2) read the Kira issuer', `cat ${q(join(dshHome, 'kira-memory', 'issuer.json'))}`, 'denied'],
+  ['(a3) read ~/.ssh', `cat ${q(join(home, '.ssh', 'id_ed25519'))}`, 'denied'],
+  ['(a4) read ~/.config/gh', `cat ${q(join(home, '.config', 'gh', 'hosts.yml'))}`, 'denied'],
+  ['(a5) read ~/.aukora/signer', `cat ${q(join(home, '.aukora', 'signer', 'daemon-ed25519.pem'))}`, 'denied'],
+  ['(a6) list the Aumlok state', `ls ${q(join(supportRoot, 'state', 'aumlok'))}`, 'denied'],
+  ['(b) write in the workspace (~/aukora-worktrees/wt), git init', `echo work > out.txt && cat out.txt && git init -q repo && echo git-ok`, 'allowed'],
+  ['(b2) write in TMPDIR', `f=$(mktemp) && echo tmp-ok > "$f" && cat "$f" && rm "$f"`, 'allowed'],
+  ['(b3) run node in the workspace', `${node} -e 'require("fs").writeFileSync("n.txt","node-ok"); console.log(require("fs").readFileSync("n.txt","utf8"))'`, 'allowed'],
+  ['(c) a script the command writes, then runs, reads the seed',
+    `printf '#!/bin/sh\\ncat "%s"\\n' ${q(seed)} > peek.sh && chmod +x peek.sh && ./peek.sh`, 'denied'],
+  ['(c2) the same, as a node script',
+    `printf 'process.stdout.write(require("fs").readFileSync(process.argv[2], "utf8"))' > peek.cjs && ${node} peek.cjs ${q(seed)}`, 'denied'],
+  ['(d) connect to the signer socket',
+    `${node} -e 'require("net").connect(process.argv[1]).on("data",d=>{process.stdout.write(d);process.exit(0)}).on("error",e=>{console.error(e.message);process.exit(1)})' ${q(socket)}`, 'denied'],
+  ['(e) append to the code Aura chain', `echo '{"seq":2,"forged":true}' >> ${q(auraLog)}`, 'denied'],
+  ['(e2) rewrite the kernel spent set', `echo '{"consumedIds":[]}' > ${q(spentSet)}`, 'denied'],
+  ['(e3) append to the action receipts', `echo '{"forged":true}' >> ${q(gateLog)}`, 'denied'],
+  ['(e4) read the code Aura chain', `cat ${q(auraLog)}`, 'allowed'],
+]
+// The session's workspace is an ANCESTOR of every protected path: the stock write grant then covers them all.
+const ANCESTOR_ARMS = [
+  ['(f) rename an ancestor, then read the seed', `mv ${q(join(supportRoot, 'state'))} ${q(join(S, 'moved'))} && cat ${q(join(S, 'moved', 'aumlok', 'machine-seed-v3.json'))}`, 'denied'],
+  ['(f2) rename an ancestor, then append to the chain', `mv ${q(dshHome)} ${q(join(S, 'moved-home'))} && echo forged >> ${q(join(S, 'moved-home', 'aura-code', 'aura.jsonl'))}`, 'denied'],
+  ['(f3) ordinary work under that ancestor', `mkdir -p ${q(join(supportRoot, 'new', 'deep'))} && echo ok > ${q(join(supportRoot, 'new', 'deep', 'f'))} && cat ${q(join(supportRoot, 'new', 'deep', 'f'))}`, 'allowed'],
+]
+
+// The kernel's EPERM, as cat/bash print it ("Operation not permitted") or as node prints it ("connect EPERM").
+const verdict = r => (r.exit === 0 ? 'allowed' : /operation not permitted|\bEPERM\b/iu.test(r.err) ? 'denied' : `failed(${String(r.exit)})`)
+const failures = []
+async function section(title, run, arms, expectFor, workspaceRoot) {
+  process.stdout.write(`\n== ${title}\n`)
+  for (const [label, command, expected] of arms) {
+    const r = await run(command, workspaceRoot)
+    const got = verdict(r)
+    const want = expectFor(expected)
+    const mark = want === null ? 'INFO' : got === want ? 'PASS' : 'FAIL'
+    if (mark === 'FAIL') failures.push(`${title}: ${label}: want ${want}, got ${got}`)
+    process.stdout.write(`${mark} ${label}\n  exit=${String(r.exit)} denied=${String(r.denied)} out=${JSON.stringify(r.out)} err=${JSON.stringify(r.err)}\n`)
+  }
+}
+await section('WITH aukora-seatbelt', aukora, ARMS, e => e, ws)
+await section('WITH aukora-seatbelt, workspace = the scratch root (an ancestor of every protected path)', aukora, ANCESTOR_ARMS, e => e, S)
+// The red arm: the protection removed. Every arm this plugin exists for must now SUCCEED.
+const RED = new Set(['(a) read the fake seed', '(c) a script the command writes, then runs, reads the seed',
+  '(c2) the same, as a node script', '(d) connect to the signer socket', '(e) append to the code Aura chain'])
+await section('RED ARM: the stock sandbox-local profile only', stock, ARMS.filter(([label]) => RED.has(label)), () => 'allowed', ws)
+process.stdout.write(`\nfake chain after the red arm: ${JSON.stringify(readFileSync(auraLog, 'utf8'))}\n`)
+await section('RED ARM, ancestor workspace', stock, ANCESTOR_ARMS.slice(0, 1), () => 'allowed', S)
+
+signer.close()
+process.stdout.write(failures.length === 0 ? '\nSEATBELT CHECK: all arms as expected\n' : `\nSEATBELT CHECK FAILED:\n  ${failures.join('\n  ')}\n`)
+process.stdout.write(`(TMPDIR for this run: ${tmpdir()})\n`)
+process.exit(failures.length === 0 ? 0 : 1)

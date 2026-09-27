@@ -1,0 +1,13 @@
+{
+  "advisoryOnly": true,
+  "body": "baseline: the pump ran warm on Tuesday",
+  "grantsAuthority": false,
+  "id": "exp-0001",
+  "kind": "aukora-experience/v1",
+  "source": {
+    "grantsAuthority": false,
+    "kind": "aukora-experience-source/v0",
+    "sha256": "c4a81ee0721b002e84c297962091b9057e055c99a9ab932efe351e9863e03897",
+    "size": 12
+  }
+}

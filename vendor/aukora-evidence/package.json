@@ -1,0 +1,14 @@
+{
+  "name": "@aukora/evidence",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vendored evidence package (closed schema, canonical JSON, domain-separated digest, secret-shape catalogue) from aumara-xyz/aukora packages/evidence at def297f. Genesis-authored manifest: marks lib/ and lib-test/ as ES modules. See PROVENANCE.json.",
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "exports": {
+    ".": "./lib/index.js",
+    "./providerTokenShapes": "./lib/providerTokenShapes.js",
+    "./swarmRunEvidenceV1": "./lib/swarmRunEvidenceV1.js",
+    "./agreEvidenceAdapterV1": "./lib/agreEvidenceAdapterV1.js"
+  }
+}

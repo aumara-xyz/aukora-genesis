@@ -1,0 +1,31 @@
+# THE LAYER THAT WAS MISSING: the session-query provider, pointed at the real store.
+#
+# WHY THIS FILE EXISTS (alpha-16 item 3, measured 2026-09-27). Every lane calling `session_search` is told
+# "session history storage is unavailable" — the undetermined state — and cannot verify prior-session claims. The
+# store itself is HEALTHY: 158 sessions, 45,905 documents, 8 tables, 120MB, with live -wal/-shm, at
+# `state/home/storages/session_search.db`. The tool is mounted. So the failure is neither.
+#
+# `packages/bundle/web-app/cordis.patch.yml` — the profile actually served — mounts this provider with an INERT
+# default, in its own words "so Node 22 startup stays quiet":
+#
+#     - id: session-query-sqlite
+#       config:
+#         path: ':memory:'
+#         openAt: never
+#
+# and its comment says a "later patch layer" is expected to defer the real handle to the first search. In this
+# deployment NO LATER LAYER DOES, so the effective provider is an in-memory database that is never opened, and the
+# real index is never reached. The AUKORA overlay asks for the real store, but it is applied BEFORE the profile and
+# loses.
+#
+# SO THIS IS THAT LATER LAYER. Mount it AFTER `packages/bundle/web-app/cordis.patch.yml` in the deployment's patch
+# list. It is an override: it names the row by `id` and assigns only the keys below — and BOTH keys must be restated,
+# because an override REPLACES `config` wholesale rather than merging it (the same note the AUKORA composition makes
+# about this very row), so supplying only `path` would leave `openAt` unset.
+#
+# `!!js dshHomePath(...)` keeps the path the launcher's input rather than baking one machine's home into the
+# artifact — the same form the AUKORA composition uses for this row.
+- id: session-query-sqlite
+  config:
+    path: !!js dshHomePath('storages/session_search.db')
+    openAt: startup

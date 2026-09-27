@@ -1,0 +1,20 @@
+/* THE APPROVAL HISTORY: one calm column, a row per approval, nothing shouting. */
+.approvals { max-width: 40rem; margin: 0 auto; padding: 20px 18px 40px; display: flex; flex-direction: column; gap: 14px; font-size: 15px; line-height: 1.5; }
+.approvalsTitle { font-size: 19px; font-weight: 600; margin: 0; }
+.approvalsLead { margin: 0; opacity: 0.85; }
+.approvalsNoProof { margin: 0; padding: 8px 10px; border: 1px solid currentColor; border-radius: 6px; font-size: 13px; opacity: 0.9; }
+.approvalsSource { margin: 0; font-size: 12px; opacity: 0.6; }
+.approvalsRows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.approvalRow { border: 1px solid currentColor; border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.approvalHead { display: flex; align-items: baseline; gap: 8px; justify-content: space-between; }
+.approvalKind { font-weight: 600; }
+.approvalWhen { font-size: 12px; opacity: 0.6; }
+.approvalSubject { margin: 0; }
+.approvalFacts { display: flex; flex-wrap: wrap; gap: 10px; font-size: 13px; opacity: 0.85; }
+.approvalBadge { font-family: var(--dsw-font-family-mono); }
+.approvalOpen { font: inherit; font-size: 13px; padding: 3px 8px; align-self: flex-start; }
+.approvalRaw { margin: 0; padding: 8px 10px; font-family: var(--dsw-font-family-mono); font-size: 13px; white-space: pre-wrap; border-left: 2px solid currentColor; opacity: 0.9; }
+.approvalsEmpty { margin: 0; opacity: 0.7; }
+.approvalsTrouble { margin: 0; font-size: 13px; }
+.firstRunMenuItem { font: inherit; padding: 4px 8px; text-align: start; background: none; border: 0; cursor: pointer; }
+.firstRunMenuItemActive { font-weight: 600; }

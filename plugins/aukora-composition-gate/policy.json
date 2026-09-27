@@ -1,0 +1,26 @@
+{
+  "governed": ["hello-governed"],
+  "pluginSet": [
+    "aukora-action-gate",
+    "aukora-aumlok",
+    "aukora-aura-association",
+    "aukora-board",
+    "aukora-composition-gate",
+    "aukora-core-read-deny",
+    "aukora-eye",
+    "aukora-face-apps",
+    "aukora-face-aumlok",
+    "aukora-face-documents",
+    "aukora-face-layout",
+    "aukora-face-memory",
+    "aukora-face-messages",
+    "aukora-face-settings",
+    "aukora-face-sidebar",
+    "aukora-face-threads",
+    "aukora-foundation",
+    "aukora-goal-resume",
+    "aukora-kira",
+    "aukora-seatbelt"
+  ],
+  "note": "Two lists. `governed`: ids admitted one load at a time by a one-use grant bound to the entry's bytes, its release-relative path and its import closure (the demonstration module hello-governed). `pluginSet`: every AUKORA plugin a patch at the release root mounts (demo-governed excepted), whether or not a deployment lists that patch. The materializer records each one's files (scripts/aukora/plugin-set.mjs record) and refuses if the mounted rows and this list differ; the gate admits them only by the owner's Aumlok approval of exactly that record, and refuses a changed or unrecorded file at import. Upstream stock plugins and node_modules are NOT governed; see GOVERNED.md."
+}

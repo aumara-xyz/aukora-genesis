@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "kind": "aukora-plugin-artifact-pilot",
+  "note": "ONE opt-in artifact. Every stock plugin still loads ungoverned; STOCK_PLUGINS_NOT_YET_UNDER_POLICY still holds.",
+  "artifacts": {
+    "aukora-aumlok-subject": {
+      "id": "aukora-aumlok-subject",
+      "entry": "plugins/aukora-aumlok/lib/subject.mjs",
+      "files": {
+        "plugins/aukora-aumlok/lib/subject.mjs": "32359e9a896c5bacfbdcc87d3d29c04faaf7ae6de955b275a68692fe50a3df83",
+        "plugins/aukora-aumlok/lib/genesis.mjs": "650018da0c2e5a59e6a1e66f16f91faeeb75f9818e3ccb1959e10aee87de750d",
+        "plugins/aukora-aumlok/lib/canonical.mjs": "6da5529b77b8e6d4ba223e3d05f770dda70935ed6d2ec4ba6026513480f64f2d",
+        "plugins/aukora-aumlok/lib/validation.mjs": "ad70f5bb4679ab61d07a91a5ae56a12a70c59c99913cf26053c3655ae13a7948"
+      },
+      "digest": "bd7d3bf36d658a639d2d94179fd7468509c43879e8261f8dbcfbe57ca0ad9b9b",
+      "approval": {
+        "state": "unimplemented",
+        "requires": "owner signature via the owner daemon (U1)",
+        "ceiling": "ARTIFACT_APPROVAL_UNIMPLEMENTED"
+      }
+    }
+  }
+}

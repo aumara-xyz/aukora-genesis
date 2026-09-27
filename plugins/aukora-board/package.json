@@ -1,0 +1,13 @@
+{
+  "name": "@aukora/dsh-plugin-board",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "A bounded board of the other conversations, injected as data before every step.",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./board": "./lib/board.mjs"
+  },
+  "license": "AGPL-3.0-or-later"
+}

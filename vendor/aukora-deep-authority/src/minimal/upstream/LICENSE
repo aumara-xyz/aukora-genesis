@@ -1,0 +1,110 @@
+GNU AFFERO GENERAL PUBLIC LICENSE
+Version 3, 19 November 2007
+
+Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+Everyone is permitted to copy and distribute verbatim copies
+of this license document, but changing it is not allowed.
+
+Preamble
+
+The GNU Affero General Public License is a free, copyleft license for
+software and other kinds of works, specifically designed to ensure
+cooperation with the community in the case of network server software.
+
+The licenses for most software and other practical works are designed
+to take away your freedom to share and change the works. By contrast,
+our General Public Licenses are intended to guarantee your freedom to
+share and change all versions of a work--to make sure it remains free
+software for all its users.
+
+When we speak of free software, we are referring to freedom, not
+price. Our General Public Licenses are designed to make sure that you
+have the freedom to distribute copies of all versions of a work, and
+to change it. Our General Public Licenses assure this freedom by
+requiring that any derivative works also be licensed under the same
+terms.
+
+The GNU Affero General Public License is designed specifically to
+ensure that, in the case of network server software, the modified
+source code becomes available to the community. It requires the
+operator of a network server to provide the source code of the
+modified version running there to the users of that server. Therefore,
+public use of a modified version on a publicly accessible server gives
+the public access to the source code of the modified version.
+
+TERMS AND CONDITIONS
+
+0. Definitions.
+
+"This License" refers to version 3 of the GNU Affero General Public License.
+
+"Copyright" also includes copyright-like laws that protect other kinds
+of works, such as semiconductor masks.
+
+"The Program" refers to any copyrightable work licensed under this
+License. Each licensee is a "licensee". "You" and "licensees" refer to
+individuals or organizations that receive the License.
+
+"Modify" means to copy from and adapt a work, making a different work,
+based on the original work. "Adapted" is the past participle of
+Modify, with the same meaning.
+
+"Licensee" means any person who has received a copy of the Program
+subject to this License.
+
+"Propagate" means to do anything with the Program that would make it
+available to others, including distribution (with or without a charge)
+and making it available to the public. "Convey" means to propagate
+the Program in a way that enables others to make or receive copies of
+the Program. "Interactive User Interface" is a user interface that
+allows users to enter commands and view the output on a screen.
+
+1. Source Code.
+
+The "source code" for a work means the preferred form of the work for
+making copies of it. "Object code" means any non-source coded form of
+a work.
+
+2. Basic Permissions.
+
+Subject to the terms of this License, you are granted the freedom to
+use, modify, and distribute the Program, with or without a fee, and
+you may convey the Program to others. You may not impose any further
+restrictions on the exercise of these freedoms by anyone else. If you
+convey the Program, you must give the recipients the same freedoms that
+you received, and you must prominently offer them a copy of this
+License, together with a copy of the Program or an indication of where
+it may be obtained at no cost. You must not impose any further
+restrictions on the exercise of the freedoms granted by this License.
+
+3. Corresponding Source.
+
+"Corresponding Source" for an object form of the Program means the
+source code of the work, including the interface definitions and the
+source code of any custom programming or embedded software.
+
+2. Protecting Users' Legal Rights From Anti-Circumvention Law.
+
+No licensee may restrict the rights of others under this License.
+
+3. Warranty Disclaimer.
+
+THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY
+APPLICABLE LAW. EXCEPT AS PROVIDED IN WRITING BY THE COPYRIGHT
+HOLDERS, THE PROGRAM IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF
+MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+4. Limitation of Liability.
+
+NEITHER THE COPYRIGHT HOLDERS NOR ANY ONE WHO MODIFIES OR DISTRIBUTES
+THE PROGRAM WILL BE LIABLE TO ANY CLAIM, DAMAGES, OR OTHER
+CONSEQUENCES ARISING FROM THE USE OR MODIFICATION OF THE PROGRAM,
+EXCEPT AS PROVIDED IN WRITING BY THE COPYRIGHT HOLDERS.
+
+5. Interpretation of Sections 14 and 15.
+
+If this License is interpreted in a way that would make it unenforceable,
+the parties may nevertheless reach agreement to enforce it.
+
+END OF TERMS AND CONDITIONS

@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.aukora.xyz/swarm/SandboxProfileV1.json",
+  "title": "SandboxProfileV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "profileId",
+    "readablePaths",
+    "writablePaths",
+    "deniedPaths",
+    "networkPolicy",
+    "environmentAllowlist",
+    "limits",
+    "enforcementBackend",
+    "enforcementStatus"
+  ],
+  "properties": {
+    "schema": { "const": "aukora-swarm-sandbox-profile-v1" },
+    "profileId": { "type": "string", "minLength": 1 },
+    "readablePaths": { "type": "array", "items": { "type": "string" } },
+    "writablePaths": { "type": "array", "items": { "type": "string" } },
+    "deniedPaths": { "type": "array", "items": { "type": "string" } },
+    "networkPolicy": { "enum": ["deny", "local-only", "allow-egress"] },
+    "environmentAllowlist": { "type": "array", "items": { "type": "string" } },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxOutputBytes", "timeoutMs", "maxProcesses"],
+      "properties": {
+        "maxOutputBytes": { "type": "integer", "minimum": 1 },
+        "timeoutMs": { "type": "integer", "minimum": 1 },
+        "maxProcesses": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "enforcementBackend": { "enum": ["macos-sandbox-exec", "posix-permissions", "process-group-kill", "simulated"] },
+    "enforcementStatus": { "enum": ["PROVEN", "PARTIAL", "SIMULATED"] }
+  }
+}

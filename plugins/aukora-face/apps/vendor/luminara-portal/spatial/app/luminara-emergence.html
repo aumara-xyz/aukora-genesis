@@ -1,0 +1,264 @@
+<!doctype html>
+<!-- AUMA LUMINARA — THE EMERGENCE (prototype, the motion door).
+     The architect's question, 2026-07-16: "what if when the cards are drawn
+     they emerge out of the cymatics sand?" — this is that, offered for the
+     eye. It opens the one door the instrument guide held (III.3, the study
+     of motion): the cymatic enters the READING only as the card's BIRTH,
+     never as its face. The rite: each position is a plate of restless sand,
+     all twenty-seven possibilities churning beneath it. One click sets the
+     deck running through the field; the next click commits — the entropy is
+     taken through the sealed canon draw, the sand settles into the drawn
+     card's figure, and the knot condenses out of it as the sand exits.
+     What remains is the bare knot card: the faces-stay-knots ruling holds,
+     because the figure exists only in the becoming. Awaits the ruling
+     before it touches the portal. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMINARA — the emergence</title>
+<style>
+  :root { --text:#e9e6dc; --dim:rgba(233,230,220,0.62); --faint:rgba(233,230,220,0.34); --line:rgba(255,255,255,0.08); }
+  html,body { margin:0; background:#0a0b0e; color:var(--text); font:14px/1.65 system-ui, sans-serif; }
+  .wrap { max-width:880px; margin:0 auto; padding:26px 18px 80px; }
+  header { text-align:center; margin-bottom:10px; }
+  h1 { font-size:15px; letter-spacing:0.34em; margin:0 0 3px;
+    background:linear-gradient(100deg,#C9D3E2,#EFE7CF 55%,#F0C25E);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:10px; letter-spacing:0.2em; color:var(--faint); }
+  .lnav { display:flex; gap:18px; justify-content:center; margin:9px 0 2px; }
+  .lnav a { font-size:10px; letter-spacing:0.22em; color:var(--faint); text-decoration:none; padding:3px 2px; border-bottom:1px solid transparent; }
+  .lnav a:hover { color:var(--dim); }
+  .lnav a.on { color:#EFE7CF; border-bottom-color:rgba(240,194,94,0.4); }
+  .hint { text-align:center; font-size:11.5px; color:var(--dim); margin:12px 0; min-height:1.4em; }
+  .cards { display:flex; gap:18px; justify-content:center; margin:20px 0 6px; cursor:pointer; }
+  .slot { width:min(32%, 270px); }
+  .slot .plabel { text-align:center; font-size:9px; letter-spacing:0.22em; color:rgba(233,230,220,0.5); margin-bottom:6px; }
+  .well { position:relative; aspect-ratio:118/156; }
+  .well canvas { position:absolute; inset:0; width:100%; height:100%; transition:opacity 1s ease; }
+  .well .card-ov { position:absolute; inset:0; opacity:0; transition:opacity 1s ease; }
+  .well .card-ov svg { width:100%; height:100%; display:block; }
+  .seed { text-align:center; font:10px ui-monospace,monospace; color:var(--faint); word-break:break-all; margin:8px 0 0; }
+  .whole { text-align:center; font-style:italic; font-size:13px; color:rgba(238,242,255,0.85); margin:12px 0 2px; }
+  .threads { margin:14px auto 2px; max-width:600px; }
+  .threads .t { font-size:12px; color:var(--dim); padding:6px 10px; border-left:2px solid rgba(240,194,94,0.35); margin:6px 0; }
+  #reading { max-width:640px; margin:0 auto; }
+  section.pos { border-top:1px solid var(--line); margin-top:22px; padding-top:14px; }
+  .poshead { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+  .poshead .pname { font-size:12px; letter-spacing:0.22em; color:#EFE7CF; }
+  .poshead .cname { font-size:14px; letter-spacing:0.12em; }
+  .poshead .meta { font:10.5px ui-monospace,monospace; color:var(--faint); }
+  .silent-flag { font-size:10px; letter-spacing:0.18em; color:rgba(240,194,94,0.8); border:1px solid rgba(240,194,94,0.3);
+    padding:2px 8px; border-radius:10px; }
+  .voice { margin:12px 0; }
+  .voice .vname { font-size:10px; letter-spacing:0.22em; color:var(--faint); margin-bottom:3px; }
+  .voice .vtext { font-size:13px; color:rgba(238,242,255,0.86); }
+  .voice.q .vtext { font-style:italic; color:#EFE7CF; font-size:13.5px; }
+  .seedrow { display:flex; gap:6px; justify-content:center; align-items:center; margin:18px 0 2px; flex-wrap:wrap; }
+  .seedrow button { background:none; border:1px solid var(--line); color:var(--dim); font:10.5px system-ui;
+    padding:6px 11px; border-radius:8px; cursor:pointer; }
+  .register { text-align:center; font-size:10px; letter-spacing:0.14em; color:var(--faint); margin-top:26px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>THE EMERGENCE</h1>
+    <div class="sub">FORM BORN FROM THE FIELD, A PROTOTYPE</div>
+    <nav class="lnav">
+      <a href="/app/luminara-read.html">THE WAYFINDER</a>
+      <a href="/app/luminara-map-room.html">THE MAP ROOM</a>
+      <a href="/app/luminara-ring.html">THE RING</a>
+      <a href="/app/luminara-resonance.html">THE RESONANCE</a>
+      <a href="/app/luminara-instrument.html">THE INSTRUMENT</a>
+      <a href="/app/luminara-harmonic-language.html">THE LANGUAGE</a>
+      <a href="/app/luminara-astrolabe.html">THE ASTROLABE</a>
+      <a href="/app/luminara-rosette.html">THE ROSETTE</a>
+      <a href="/app/luminara-spectrum.html">THE SPECTRUM</a>
+      <a href="/app/luminara-workshop.html">THE WORKSHOP</a>
+    </nav>
+  </header>
+  <div class="hint" id="hint"></div>
+  <div class="cards" id="cards">
+    <div class="slot"><div class="plabel">TREFOIL</div><div class="well" data-i="0"><canvas id="c0"></canvas><div class="card-ov" id="o0"></div></div></div>
+    <div class="slot"><div class="plabel">GENUS</div><div class="well" data-i="1"><canvas id="c1"></canvas><div class="card-ov" id="o1"></div></div></div>
+    <div class="slot"><div class="plabel">PHI</div><div class="well" data-i="2"><canvas id="c2"></canvas><div class="card-ov" id="o2"></div></div></div>
+  </div>
+  <div class="seed" id="seedOut"></div>
+  <div class="whole" id="whole"></div>
+  <div class="threads" id="threads"></div>
+  <div id="reading"></div>
+  <div class="seedrow"><button id="clear">clear · new cast</button></div>
+  <div class="register">WHAT LANDS IS A MIRROR, NOT A VERDICT · CAST BY RANDOMISATION, DECLARED · THE FACE THAT REMAINS IS THE KNOT</div>
+</div>
+
+<script type="module">
+import { POSITIONS, drawOne, cardOf, codeOf, isSilent, knotOf, counterOf } from '/app/luminara-canon.js';
+import { metalOf, knotPaths } from '/app/luminara-knots.js';
+import { VOICES, readingOf } from '/app/luminara-81.js';
+import { spectrumOf } from '/app/luminara-cymatics.js';
+import { createSandPlate } from '/app/luminara-sand.js';
+
+const $ = (id) => document.getElementById(id);
+const rgbOf = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+const SPECTRA = Array.from({ length: 27 }, (_, i) => spectrumOf(i + 1, 'A'));
+
+// ---- the card face (the bare knot — what remains after the birth) ----
+function markSvg(st, y, metal, cx, sc = 1) {
+  if (st === 0) return '<circle cx="' + cx + '" cy="' + y + '" r="' + (1.8 * sc) + '" fill="' + metal + '" fill-opacity="0.85"/>';
+  if (st === 1) return '<rect x="' + (cx - 6 * sc) + '" y="' + (y - 1 * sc) + '" width="' + (12 * sc) + '" height="' + (2 * sc) + '" rx="1" fill="' + metal + '" fill-opacity="0.85"/>';
+  return '<path d="M' + (cx - 6 * sc) + ' ' + y + ' q' + (1.5 * sc) + ' ' + (-2.4 * sc) + ' ' + (3 * sc) + ' 0 t' + (3 * sc) + ' 0 t' + (3 * sc) + ' 0" stroke="' + metal + '" stroke-opacity="0.85" stroke-width="' + (1.3 * sc) + '" fill="none" stroke-linecap="round"/>';
+}
+function cardSvg(n) {
+  const k = knotOf(n), metal = metalOf(n), cn = counterOf(n), cmetal = metalOf(cn);
+  const colors = k.kind === 'link' ? [metal, cmetal] : [metal];
+  const d = codeOf(n), moving = d.filter((s) => s !== 0).length;
+  const qL = k.q > 0 ? '+' + k.q : String(k.q);
+  const cqL = k.q === 0 ? '0' : k.q < 0 ? '+' + (-k.q) : String(-k.q);
+  const W = 118, H = 156, cx = W / 2, cy = H / 2;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">';
+  s += '<rect x="0.5" y="0.5" width="' + (W - 1) + '" height="' + (H - 1) + '" rx="12" fill="#070709" stroke="' + metal + '" stroke-opacity="0.42" stroke-width="1"/>';
+  const mono = 'font-family="ui-monospace,monospace" font-size="8"';
+  s += '<text x="8" y="14" ' + mono + ' fill="' + metal + '" fill-opacity="0.85">' + n + '</text>';
+  s += '<text x="' + (W - 8) + '" y="14" text-anchor="end" ' + mono + ' fill="rgba(233,230,220,0.45)">' + qL + '</text>';
+  s += '<text x="8" y="' + (H - 6) + '" ' + mono + ' fill="rgba(233,230,220,0.45)">' + cqL + '</text>';
+  s += '<text x="' + (W - 8) + '" y="' + (H - 6) + '" text-anchor="end" ' + mono + ' fill="' + cmetal + '" fill-opacity="0.85">' + cn + '</text>';
+  s += '<g transform="translate(' + cx + ' ' + (cy - 22) + ') scale(15.5)" style="filter:drop-shadow(0 0 0.18px ' + metal + '66)">'
+    + knotPaths(k.p, k.q, colors, 0.16 + 0.11 * moving, 0.62) + '</g>';
+  s += markSvg(d[0], cy + 44, metal, cx - 13) + markSvg(d[1], cy + 44, metal, cx) + markSvg(d[2], cy + 44, metal, cx + 13);
+  s += '<text x="' + cx + '" y="' + (cy + 62) + '" text-anchor="middle" font-size="10.5" letter-spacing="1.2" fill="#f2efe6">' + cardOf(n).name.toUpperCase() + '</text>';
+  s += '<text x="' + cx + '" y="' + (cy + 74) + '" text-anchor="middle" font-size="7.5" font-style="italic" fill="rgba(233,230,220,0.6)">' + k.interval + '</text>';
+  return s + '</svg>';
+}
+
+// ---- the five voices (the read bench's section renderer) ----
+function voicesHtml(section) {
+  const v = section.voices;
+  const head =
+    '<div class="poshead">' +
+      '<span class="pname">' + section.position.name.toUpperCase() + '</span>' +
+      '<span class="cname">' + section.name + '</span>' +
+      '<span class="meta">' + section.marks + ' · ' + section.interval + ' · ' + section.house +
+        ' · answers ' + section.counter.name +
+        (section.becoming.settled ? ' · settled' : ' · becoming ' + section.becoming.name) + '</span>' +
+      (section.silent ? '<span class="silent-flag">A SILENCE · ASKS FOR ' + section.ask.toUpperCase() + '</span>' : '') +
+    '</div>';
+  const body = VOICES.map((voice) =>
+    '<div class="voice ' + (voice.key === 'q' ? 'q' : '') + '">' +
+      '<div class="vname">' + voice.name.toUpperCase() + ' · <span style="letter-spacing:0.05em">' + voice.register + '</span></div>' +
+      '<div class="vtext">' + v[voice.key] + '</div>' +
+    '</div>').join('');
+  return '<section class="pos">' + head + body + '</section>';
+}
+
+// ---------------------------------------------------------------------------
+// THE EMERGENCE — per slot: a plate of restless sand (the whole deck churning
+// beneath), the run, the commitment, the settling, and the knot condensing
+// out as the sand exits. The entropy is the commit click's timing, through
+// the sealed canon draw; the seed is declared and cumulative.
+// ---------------------------------------------------------------------------
+const slots = [0, 1, 2].map((i) => ({
+  canvas: $('c' + i), overlay: $('o' + i),
+  plate: null, churn: null, ramp: null, coh: 0.12, spec: null,
+}));
+let parts = [], drawn = [], current = 0, phase = 'wait', timers = [];
+
+const HINTS = {
+  wait: 'Hold your question. Touch the first plate.',
+  run: 'The deck runs beneath the sand — touch again to commit.',
+  settling: 'The sand settles. The card is emerging…',
+  next: 'Touch the next plate.',
+  done: 'Cast. The figures have gone; the knots remain. · clear to cast anew',
+};
+const later = (fn, ms) => { timers.push(setTimeout(fn, ms)); };
+
+function mountPlate(s, gentle) {
+  destroyPlate(s);
+  s.coh = 0.12;
+  s.spec = SPECTRA[Math.floor(Math.random() * 27)];
+  s.plate = createSandPlate(s.canvas, {
+    spectrum: s.spec.modes, coherence: () => s.coh, gain: gentle ? 0.4 : 1,
+    tint: [233, 230, 220], alpha: 0.8,
+  });
+  s.canvas.style.opacity = '1';
+  s.overlay.style.opacity = '0';
+  // the churn: the twenty-seven pulling at the sand in turn
+  const step = gentle ? 320 : 95;
+  let at = Math.floor(Math.random() * 27);
+  s.churn = setInterval(() => {
+    at = (at + 1 + Math.floor(Math.random() * 3)) % 27;
+    if (SPECTRA[at].struck) s.plate.setSpectrum(SPECTRA[at].modes);
+  }, step);
+}
+function destroyPlate(s) {
+  if (s.churn) { clearInterval(s.churn); s.churn = null; }
+  if (s.ramp) { clearInterval(s.ramp); s.ramp = null; }
+  if (s.plate) { s.plate.destroy(); s.plate = null; }
+}
+
+function commit(s) {
+  clearInterval(s.churn); s.churn = null;
+  parts.push(Math.round(performance.now() * 1000) + '.' + Date.now());
+  const n = drawOne('emerge3|' + parts.join('|'), drawn);
+  drawn.push(n);
+  const spec = spectrumOf(n, 'A');
+  // the field snaps to the drawn card; the sand settles into its figure
+  if (spec.struck) s.plate.setSpectrum(spec.modes);
+  const target = spec.struck ? spec.clarity : 1;
+  s.ramp = setInterval(() => {
+    s.coh = Math.min(target, s.coh + 0.06);
+    if (s.coh >= target && s.ramp) { clearInterval(s.ramp); s.ramp = null; }
+  }, 60);
+  phase = 'settling';
+  $('hint').textContent = HINTS.settling;
+  // the knot condenses out; the sand exits — the face that remains is the knot
+  later(() => { if (s.plate) s.plate.setGain(0); }, 1500);
+  later(() => {
+    s.overlay.innerHTML = cardSvg(n);
+    s.overlay.style.opacity = '1';
+    s.canvas.style.opacity = '0';
+  }, 1700);
+  later(() => {
+    destroyPlate(s);
+    current++;
+    if (current === 3) complete();
+    else { phase = 'wait'; $('hint').textContent = HINTS.next; }
+  }, 2800);
+}
+
+function complete() {
+  phase = 'done';
+  const seed = 'emerge3|' + parts.join('|');
+  $('seedOut').textContent = 'seed · ' + seed;
+  const r = readingOf(drawn);
+  $('whole').textContent = r.whole;
+  $('threads').innerHTML = r.threads.map((t) => '<div class="t">' + t.line + '</div>').join('');
+  $('reading').innerHTML = r.sections.map(voicesHtml).join('');
+  $('hint').textContent = HINTS.done;
+}
+
+function reset() {
+  timers.forEach(clearTimeout); timers = [];
+  parts = []; drawn = []; current = 0; phase = 'wait';
+  ['seedOut', 'whole', 'threads', 'reading'].forEach((id) => { $(id).innerHTML = ''; });
+  slots.forEach((s) => { s.overlay.innerHTML = ''; s.overlay.style.opacity = '0'; mountPlate(s, true); });
+  $('hint').textContent = HINTS.wait;
+}
+
+$('cards').addEventListener('pointerdown', () => {
+  if (phase === 'done') { reset(); return; }
+  if (phase === 'settling' || current >= 3) return;
+  const s = slots[current];
+  if (phase === 'wait') {
+    destroyPlate(s); mountPlate(s, false);
+    phase = 'run';
+    $('hint').textContent = HINTS.run;
+  } else if (phase === 'run') {
+    commit(s);
+  }
+});
+$('clear').addEventListener('click', reset);
+reset();
+</script>
+</body>
+</html>

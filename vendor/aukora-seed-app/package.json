@@ -1,0 +1,5 @@
+{
+  "name": "@genesis/vendored-aukora-seed-app",
+  "private": true,
+  "type": "module"
+}

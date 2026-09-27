@@ -1,0 +1,56 @@
+{
+ "v": "aumlok-source-pins-v1",
+ "what": "The two sources X2 authorises, pinned by content so the harvest runs offline and reproduces.",
+ "eff": {
+  "publishedFile": {
+   "url": "https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt",
+   "recoveredFrom": "this repository's own git history at efd97b44 (scripts/aumlok/eff_large_wordlist.txt)",
+   "sha256": "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e",
+   "words": 7776,
+   "license": "CC BY 3.0 US (Electronic Frontier Foundation)",
+   "licenseUrl": "https://www.eff.org/copyright"
+  },
+  "shippedFixture": {
+   "wordColumn": "plugins/aukora-aumlok/data/safety/eff_large_words.txt",
+   "codes": "plugins/aukora-aumlok/data/safety/eff_large_wordlist.codes.txt",
+   "note": "The published file, word column only, minus the entries that carry a retired-custody stem. The codes file pairs a dice number with each surviving word. A reviewer rebuilds the published column by re-inserting each dropped entry at its line and checking the digests."
+  },
+  "effFixture": {
+   "publishedWords": 7776,
+   "publishedSha256": "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e",
+   "publishedWordsSha256": "6d557f0693958fb5e650b68b5bee585eb82cf4da32965505c789e924743bc522",
+   "derivedWords": 7773,
+   "derivedSha256": "e1eebc11e80b20e6a0850032778a9b3ac7a1c11f0a3864886857e8f8f71fb12b",
+   "derivedCodesSha256": "8810dec51b380ea2bbddd36562c820e828734dde149e0db67c6669f819fca7c7",
+   "dropped": [
+    {
+     "line": 2276,
+     "code": "25422",
+     "wordSha256": "53bcbb91525547bf679e9d4f85ea97148fa49ff2b46ef7af8fd4b4a1ec5af13b"
+    },
+    {
+     "line": 7188,
+     "code": "64246",
+     "wordSha256": "fd5b396c4c1877ab875884fa183f469f87bcc136bf2cc76a4c97c4c7cd48a7b8"
+    },
+    {
+     "line": 7189,
+     "code": "64251",
+     "wordSha256": "080c4b7cac425c6fd7ea22ca6065ddc21a19a5fc89e78f27cf8b82a960266445"
+    }
+   ],
+   "why": "The v3 custody ban (tests/aukora-aumlok-v3-no-v2.test.mjs) scans this organ for its stems as a SUBSTRING. The published EFF list contains three ordinary inflections built on one of them. They buy nothing, so they are dropped at the fixture instead of widening the ban's carve-out or narrowing its scope. Each is identified by line, dice code and the sha256 of its word: spelling them here would re-trip the very ban the record exists to explain.",
+   "reconstruct": "interleave eff_large_words.txt with the dropped records placed at their published line numbers (the word columns alone), and the result is the published word column: sha256 6d557f0693958fb5e650b68b5bee585eb82cf4da32965505c789e924743bc522"
+  }
+ },
+ "frequency": {
+  "package": "wordfreq",
+  "version": "3.1.1",
+  "language": "en",
+  "metric": "zipf_frequency",
+  "min": 3.5,
+  "install": "experiments/laya/.venv (the one install item X2 authorises)",
+  "python": "3.9.6",
+  "note": "wordfreq is read from the venv at harvest time; the measured zipf of every shipped word is written into the data so the court re-checks the rule without the venv."
+ }
+}

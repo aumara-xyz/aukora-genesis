@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "subject": "Deep pinned zero-WASI memory.put proposal cell, vendored into plugins/aukora-kira/lib/wasm-cell",
+  "upstream": {
+    "repository": "aukora-deep",
+    "commit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+    "note": "every closure blob id is identical at f1e0cd4b, c417f7c5 and 7be3a614; this commit is the pin"
+  },
+  "license": "AGPL-3.0-or-later",
+  "licenseSource": "aukora-deep LICENSING.md: files under aukora/ and courts/ are AGPL-3.0-or-later",
+  "layout": "paths are preserved verbatim below plugins/aukora-kira/lib/wasm-cell/ so the vendored court resolves ROOT = resolve(run.mjs, ../../..) to the wasm-cell directory and nothing else",
+  "provenance": "git -C ~/aukora-deep archive c417f7c5 <paths> | tar -x -C plugins/aukora-kira/lib/wasm-cell; no byte was edited after extraction",
+  "embeddedModule": {
+    "note": "TWO DIFFERENT THINGS. The module is a 101-byte binary embedded as base64 in the wrapper. Its .wat source is separate text. Neither is derivable from the other here.",
+    "base64ConstantIn": "aukora/guest/wasm-proposal-cell.mjs:22",
+    "binarySha256": "34ce6cab618b626243e876befb49ccf8a6780dc836e757484886b34ae977a438",
+    "binaryBytes": 101,
+    "watSourcePath": "aukora/guest/wasm/memory-put-proposal.wat",
+    "watSourceSha256": "d73e8d223973e03d24a48c4ab3b035e9505375b0cc2a29e65a233af20cc807d8",
+    "watSourceCrossCheck": "deep courts/harness/wasm-proposal-cell/run.mjs pins the same .wat sha256",
+    "declaredConstantInWrapper": "34ce6cab618b626243e876befb49ccf8a6780dc836e757484886b34ae977a438"
+  },
+  "imports": {
+    "importedByRuntimeCode": [
+      "aukora/broker/memory-put-args.mjs",
+      "aukora/guest/wasm-proposal-cell.mjs",
+      "aukora/kernel-seed/canonical-json.mjs"
+    ],
+    "pinnedArtifactsNeverImported": [
+      "aukora/guest/wasm-proposal-cell.d.mts",
+      "aukora/guest/wasm/ambient-import-mutation.wat",
+      "aukora/guest/wasm/ambient-write-probe.wat",
+      "aukora/guest/wasm/invalid-json-probe.wat",
+      "aukora/guest/wasm/invalid-range-probe.wat",
+      "aukora/guest/wasm/invalid-utf8-probe.wat",
+      "aukora/guest/wasm/memory-put-proposal.wat",
+      "aukora/guest/wasm/noncanonical-json-probe.wat",
+      "courts/harness/wasm-proposal-cell/run.mjs"
+    ]
+  },
+  "pinnedArtifactsNote": "PINNED ARTIFACTS are the files the composition never imports and never runs: the .wat court mutation targets (7), the .d.mts type surface, and courts/harness/.../run.mjs, which is the upstream court itself. None is loaded on the runtime path; each is checked by sha256 and byte count against this manifest, and no runtime module may name one. The court writes only under the operating system temporary directory.",
+  "runtimeFiles": [
+    {
+      "path": "aukora/broker/memory-put-args.mjs",
+      "deepPath": "aukora/broker/memory-put-args.mjs",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "69c49bf8d17e667c02efeff889a86618c280aba2",
+      "sha256": "360892f2c912de23c7df3e98b4c958eabbc3e98bf0ed578e701ac2e800aaf4ce",
+      "bytes": 1685,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm-proposal-cell.mjs",
+      "deepPath": "aukora/guest/wasm-proposal-cell.mjs",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "26e677713913c4890abcfc4f563115aeeec7f00e",
+      "sha256": "379d1a0514dd83cc6d23880f3509aa1438d55a10977ac95edbde9bd65f975197",
+      "bytes": 5484,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/kernel-seed/canonical-json.mjs",
+      "deepPath": "aukora/kernel-seed/canonical-json.mjs",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "cd8f0c221deed243a4a3f015a9af711e53b87b57",
+      "sha256": "5cbfef67053f1154a589a124eea2996a9b9333e7c2ef270d16aec6cd5c91f5d4",
+      "bytes": 1133,
+      "license": "AGPL-3.0-or-later"
+    }
+  ],
+  "pinnedArtifacts": [
+    {
+      "path": "aukora/guest/wasm-proposal-cell.d.mts",
+      "deepPath": "aukora/guest/wasm-proposal-cell.d.mts",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "c8dfbcf5336ecdafe63bee27adc3de7bab1c065c",
+      "sha256": "befcf97210e4a811d7adde8bed7d1741fa849df5a52777210e0d898b300d6e47",
+      "bytes": 357,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/ambient-import-mutation.wat",
+      "deepPath": "aukora/guest/wasm/ambient-import-mutation.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "00b32b94aaf726f1cbb29cc2c2327667dbac5e47",
+      "sha256": "84b83c345ffa9c4e4b95387bec2903d3fca06399b43e473a0c03c81332ba2faa",
+      "bytes": 649,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/ambient-write-probe.wat",
+      "deepPath": "aukora/guest/wasm/ambient-write-probe.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "1da4b182d6566b3b180a6a5010c9c78da6f65465",
+      "sha256": "f22436c88ad9259993a2b168d8e3426a640d2c6391b95b58103f2efe0983cef4",
+      "bytes": 240,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/invalid-json-probe.wat",
+      "deepPath": "aukora/guest/wasm/invalid-json-probe.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "0ee7348e288fe494fdd57d0c330f03a3f9a9bf96",
+      "sha256": "e6457e5e90c2aa49f636500528d77db8b81bb280a072a8d424fa71f6ab2946ca",
+      "bytes": 461,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/invalid-range-probe.wat",
+      "deepPath": "aukora/guest/wasm/invalid-range-probe.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "3365d16bdaeb792ea61187f5362e2eda6ab15316",
+      "sha256": "6349169fd8fca6a9d8dc2a1d5cf7b39dd6974ffcb2662ad7cb785fcfd96af40b",
+      "bytes": 436,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/invalid-utf8-probe.wat",
+      "deepPath": "aukora/guest/wasm/invalid-utf8-probe.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "547b546c664a6c82534e677ec8ae536e506631cc",
+      "sha256": "18c39e42bacc0a27eae549cbf07f50308cafb8799634f9388606a40a727c3948",
+      "bytes": 469,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/memory-put-proposal.wat",
+      "deepPath": "aukora/guest/wasm/memory-put-proposal.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "250d4bd74a554095ef154ce0557fdfb65b162512",
+      "sha256": "d73e8d223973e03d24a48c4ab3b035e9505375b0cc2a29e65a233af20cc807d8",
+      "bytes": 452,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "aukora/guest/wasm/noncanonical-json-probe.wat",
+      "deepPath": "aukora/guest/wasm/noncanonical-json-probe.wat",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "75e77f9d9fcfb001b29caa270daf8d1eabb28632",
+      "sha256": "6a0207c3755797174cabe3637a9977bf46d7a2e1ba7ca02835d62aca44a0067d",
+      "bytes": 465,
+      "license": "AGPL-3.0-or-later"
+    },
+    {
+      "path": "courts/harness/wasm-proposal-cell/run.mjs",
+      "deepPath": "courts/harness/wasm-proposal-cell/run.mjs",
+      "deepCommit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
+      "deepBlobSha1": "83139700ecaf6227d4e791ca218e972c16a2a9a1",
+      "sha256": "f215701ba0347f46e4bed76e336bb7034552cb4ce9f047fdacf29d3aad9998a7",
+      "bytes": 20314,
+      "license": "AGPL-3.0-or-later"
+    }
+  ]
+}

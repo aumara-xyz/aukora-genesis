@@ -1,0 +1,167 @@
+#!/usr/bin/env python3
+"""verify — run the vendored Phase 0 court over a retained/presented pair.
+
+    python3 scripts/phase0/verify <retained.json> <presented.json>
+    python3 scripts/phase0/verify <retained.json> <presented.json> --mutate [--out <file>]
+    python3 scripts/phase0/verify --retainer <dir-or-git-url> <presented.json> [--chain-key K]
+    python3 scripts/phase0/verify --retainer <url> <presented.json> --publish <dir>
+
+This script computes no verdict. It runs `vendor/phase0-consistency/verify.py` as a
+separate process against the exact bytes on disk and prints the command it ran, so a
+reader who trusts this program for nothing can run the second line themselves and get
+the same answer. The exit status is the court's own.
+
+With `--retainer`, the retained observation is read from the retainer and nowhere else.
+There is no fallback to a local copy: a silent fallback would make the custody claim
+false while still printing a verdict, which is worse than a refusal. The retained size
+comes from the presented document, so the pair is the observation the presented head
+actually claims to extend. Verdicts that used the retainer carry
+`RETAINER_SAME_OWNER`, because the retainer belongs to the same principal as this host —
+evidence that this host did not silently rewrite its own history, and not evidence that
+an independent party agrees.
+
+`--publish <dir>` writes the retained bytes the court used into <dir>, so a reader who
+distrusts this program can verify the very bytes the verdict was computed from instead of
+taking a copy on trust.
+
+`--mutate` flips one retained root — the root digest in the retained observation,
+nothing else, leaving the presented document and its proof untouched — and runs the
+court over the altered pair. At a retained size that is not a power of two this earns
+`OBSERVATION_CONFLICT`; at a power of two the court cannot separate a rewritten prefix
+from a damaged proof and answers `UNDETERMINED` with its reason. Both are correct
+answers to different questions, and this script does not pretend otherwise.
+
+Named with one file, or with a presented document and no retained observation, this
+prints `CONSISTENCY_UNCHECKED`: an export that names a head without a retained/presented
+pair may not claim stranger-complete verification.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+import tempfile
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(HERE))
+sys.path.insert(0, HERE)
+import retainer as retainer_mod  # noqa: E402
+
+COURT = os.path.join(ROOT, "vendor", "phase0-consistency", "verify.py")
+UNCHECKED_EXIT = 3
+DEFAULT_CHAIN_KEY = "genesis-phase0:aura-chain"
+
+
+def unchecked(reason: str) -> int:
+    print("CONSISTENCY_UNCHECKED")
+    print(f"REASON: {reason}")
+    return UNCHECKED_EXIT
+
+
+def flip_retained_root(retained_path: str, out_path: str | None) -> tuple[str, str, str]:
+    """Return (path, original_root, flipped_root). The presented document is untouched."""
+    with open(retained_path, "rb") as fh:
+        document = json.loads(fh.read().decode("utf-8"))
+    original = document.get("root")
+    if not isinstance(original, str) or len(original) != 64:
+        raise ValueError(f"retained observation has no 64-hex root to flip: {retained_path}")
+    # Not a random digest: the digest a rewritten prefix would produce, computed the
+    # same way as any other, so the mutated document is a well-formed observation of a
+    # log that says something different. A malformed value would test the parser
+    # instead of the arithmetic.
+    flipped = os.urandom(32).hex()
+    document["root"] = flipped
+    if out_path:
+        target = out_path
+    else:
+        import tempfile
+        handle, target = tempfile.mkstemp(prefix="retained-mutated-", suffix=".json")
+        os.close(handle)
+    with open(target, "w", encoding="utf-8") as fh:
+        json.dump(document, fh, sort_keys=True)
+    return target, original, flipped
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description="run the Phase 0 consistency court")
+    parser.add_argument("retained", nargs="?", help="retained observation")
+    parser.add_argument("presented", nargs="?", help="presented observation")
+    parser.add_argument("--mutate", action="store_true", help="flip one retained root before verifying")
+    parser.add_argument("--out", help="where to write the mutated retained document")
+    parser.add_argument("--retainer", help="read the retained observation from this retainer and nowhere else")
+    parser.add_argument("--chain-key", default=DEFAULT_CHAIN_KEY)
+    parser.add_argument("--publish", help="copy the retained bytes the court used into this directory")
+    args = parser.parse_args(argv[1:])
+
+    if args.retainer:
+        # With --retainer there is only one positional document, and argparse fills the
+        # first slot with it. Take whichever slot carries it rather than insisting on the
+        # second, so `verify --retainer <r> presented.json` means what it reads as.
+        presented_arg = args.presented or args.retained
+        if not presented_arg:
+            return unchecked(
+                "no_presented_document: a retainer holds an observation, and an observation alone is not a pair")
+        presented_path = presented_arg
+        if not os.path.exists(presented_path):
+            return unchecked(f"presented_document_absent: {presented_path}")
+        try:
+            presented = json.load(open(presented_path, encoding="utf-8"))
+        except ValueError as exc:
+            return unchecked(f"presented_document_is_not_admissible_json: {presented_path}: {exc}")
+        # The retained size is the one the PRESENTED document says it extends, not its own
+        # size: a presented head at size 21 extends the observation retained at size 13, and
+        # asking the retainer for 21 would be asking it for a different question's answer.
+        # `retainedTreeSize` is written by present-head; an unchanged size (no growth) falls
+        # back to the document's own size, which names the same observation either way.
+        size = presented.get("retainedTreeSize", presented.get("treeSize"))
+        if not isinstance(size, int) or size < 1:
+            return unchecked(f"presented_document_names_no_usable_retained_size: {presented_path}")
+
+        try:
+            observation, provenance = retainer_mod.read_observation(args.retainer, args.chain_key, size)
+        except retainer_mod.RetainerError as exc:
+            # The whole point of the retainer is that there is no local fallback.
+            return unchecked(f"retainer_holds_no_observation_for_size_{size}: {exc}")
+
+        workdir = args.publish or tempfile.mkdtemp(prefix="retained-from-retainer-")
+        os.makedirs(workdir, exist_ok=True)
+        retained = retainer_mod.write_observation_for_court(observation, workdir)
+        print(f"RETAINER      : {provenance['retainer']} ({provenance['kind']})")
+        print(f"  retained size {size} root {observation.get('root')}")
+        print(f"  retained at   {provenance.get('retainedAt')} by {provenance.get('retainedBy')}")
+        print(f"  CUSTODY       : {provenance['custody']} — same principal as this host")
+        print(f"  retained bytes: {retained}")
+        print("  the court reads these bytes and no local copy")
+    else:
+        if not args.retained:
+            return unchecked("no_documents_named: pass a retained observation and a presented observation")
+        if not args.presented:
+            return unchecked(
+                f"only_one_document_named: {args.retained} names a head, and a head alone is not a pair")
+        if not os.path.exists(args.presented):
+            return unchecked(f"presented_document_absent: {args.presented}")
+        if not os.path.exists(args.retained):
+            return unchecked(f"retained_document_absent: {args.retained}")
+        retained = args.retained
+        presented_path = args.presented
+
+    if args.mutate:
+        try:
+            retained, original, flipped = flip_retained_root(retained, args.out)
+        except ValueError as exc:
+            print(f"MUTATION REFUSED: {exc}", file=sys.stderr)
+            return 1
+        print(f"MUTATED: one retained root flipped in {retained}")
+        print(f"  was {original}")
+        print(f"  now {flipped}")
+
+    command = [sys.executable, COURT, retained, presented_path]
+    print(f"$ {' '.join(command)}", flush=True)
+    completed = subprocess.run(command)
+    return completed.returncode
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))

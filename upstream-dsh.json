@@ -1,0 +1,28 @@
+{
+  "repository": "https://github.com/deepseek-ai/deepseek-harness",
+  "commit": "0d1f50007f9bca3f52b06e1c3074fa14d5fb0720",
+  "archiveUrl": "https://api.github.com/repos/deepseek-ai/deepseek-harness/tarball/0d1f50007f9bca3f52b06e1c3074fa14d5fb0720",
+  "archiveSha256": "ae0968314dcd5e3c9d7e8f1f5748bbd289afc4ef5668187e0ef6524a7c64c87e",
+  "lockfileSha256": "ca131858949bd12b2acfc227b1af7dfa3c8d65e74b234824d5c741e6421010a1",
+  "packageManager": "pnpm@11.7.0",
+  "cordisVersion": "4.0.2",
+  "license": "MIT",
+  "status": "pinned base of every AUKORA release; untagged commit 5 after dsh-v0.1.6-alpha.1; not current with upstream (re-pin pending)",
+  "localPatches": [
+    {
+      "file": "patches/client-hmr-events-auth.patch.json",
+      "sha256": "ec6959e6e4e944202c20151a70a9e731362b61ce65fa2c98e044c3852754f5a1",
+      "reason": "/plugins/events answered 200 to an unauthenticated request while every other app-added route consults ctx.connection; the SSE channel gets the same browser authentication as the rest of the app, and connection becomes a declared dependency so the plugin fails closed (no channel) rather than open when the service is absent."
+    },
+    {
+      "file": "patches/host-build-heap-fits-the-rehearsal-container.patch.json",
+      "sha256": "901b5b02ac89d68ce166efa6f618c9393ff5a0fbfbd12be7e6200e5f57f88c6e",
+      "reason": "MEASURED (beta-118, beta-119): the upstream host-build heap ceiling is larger than any container this rehearsal may start, so V8 does not collect hard enough and the build is OOM-killed with 137 -- a CODE red no source change could fix. At --memory 3700m with heap 3072 the build COMPLETES, peak 3515 MiB of 3700 (a 95% fit, named in rehearsal-meeting section 16). INERT ON GITHUB'S 7 GB RUNNER: it changes how the compiler runs, never what it emits."
+    },
+    {
+      "file": "patches/subprocess-output-tail-copy.patch.json",
+      "sha256": "b116a442e173e37ae9054b6a0a8fc171c70ee408c7b99109d78f941bb4de4edf",
+      "reason": "H5, MEASURED 2026-09-27 by tests/aukora-subprocess-output-retention.test.mjs: OutputCollector.push trims its head chunk with `head.subarray(excess)`, and Buffer.subarray returns a VIEW sharing the parent's backing store. A retained window of 1024 B therefore PINS A 1048576 B ALLOCATION (x1024 amplification) while the collector's own byte counter reports 1024 B \u2014 which is why the leak is invisible in its own accounting. In the alpha-17 snapshot pair this was the ONLY one of the reviewed roots that grew: across 120 driven turns Session (H1) and projection (H2) were unchanged, `chunks` grew, and Buffer 12.66 MB / ArrayBuffer 12.30 MB were the largest retained structures in a 50 MB heap. The fix copies the trimmed tail so it stops pinning the whole parent allocation; MEASURED on a copy of the module, the same window then pins a pooled 8192 B slab \u2014 x128 less."
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+.surfaceSeat {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--dsw-specific-spatial-canvas, #111520);
+}
+
+.surfaceSeat:not([data-active]) {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.embeddedFrame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--dsw-specific-spatial-canvas, #111520);
+}
+
+.menuCopy {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.menuCopy strong {
+  font-size: var(--dsh-spatial-menu-title-size, 14px);
+  line-height: var(--dsh-spatial-menu-title-line-height, 20px);
+  font-weight: 570;
+}
+
+.menuCopy span {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: var(--dsh-spatial-menu-description-size, 12px);
+  line-height: var(--dsh-spatial-menu-description-line-height, 18px);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

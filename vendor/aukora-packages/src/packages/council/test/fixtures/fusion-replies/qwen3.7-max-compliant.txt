@@ -1,0 +1,1 @@
+STANCE:⊕ CONFIDENCE:⇈ STRATEGY:↘ FRAMEWORK:geometric DIST:(explore=0.10,exploit=0.80,verify=0.10,abstain=0.00) HYP:"The added comment perfectly captures the structural rationale for using a dynamic string over a rigid enum to prevent schema drift."

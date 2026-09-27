@@ -1,0 +1,39 @@
+{
+  "name": "@aukora/memory",
+  "version": "0.1.0",
+  "description": "KIRA memory law for Aukora: consent-scoped content-addressed memory envelope, deterministic recall with governed forgetting, staleness, and advisory-containment. Pure and portable; never grants authority.",
+  "author": "Aumara",
+  "license": "AGPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aumara-xyz/aukora.git",
+    "directory": "packages/memory"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "types": "./index.ts",
+  "module": "./index.ts",
+  "exports": {
+    ".": {
+      "types": "./index.ts",
+      "import": "./index.ts"
+    }
+  },
+  "files": [
+    "index.ts",
+    "src",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "dependencies": {
+    "@aukora/kernel": "0.1.0"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts"
+  }
+}

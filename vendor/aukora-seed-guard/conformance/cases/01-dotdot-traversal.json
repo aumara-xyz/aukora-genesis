@@ -1,0 +1,18 @@
+{
+  "id": "dotdot-traversal",
+  "why": "A lexical '..' must be collapsed and refused. This is the one alias a purely lexical check catches, and it is why the lexical form stays load-bearing.",
+  "incident": "baseline",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "world/mind.md": "x\n"
+    }
+  },
+  "attempt": {
+    "path": "../escape.txt",
+    "op": "write"
+  },
+  "expect": "REFUSE"
+}

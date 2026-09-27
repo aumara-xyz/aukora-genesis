@@ -1,0 +1,20 @@
+{
+  "publicKeyFile": "broker-public.pem",
+  "publicPemSha256": "see MANIFEST.txt",
+  "keyType": "ed25519",
+  "receiptKeyId": "04f295ecd65a81ba608da5305849a9cd255831ac840983ad1976b813cf59142b",
+  "activationReceiptKeyId": "04f295ecd65a81ba608da5305849a9cd255831ac840983ad1976b813cf59142b",
+  "activationDomain": "aukora:activation-binding:upgraded-web:v1",
+  "activationRecordSource": "live/broker-state/activation.json (owner-only, mode 0600)",
+  "keyLeafSource": "live/broker-state/keys/broker.json (owner-only, mode 0600), public half only",
+  "requiredClass": "state-owned",
+  "howEstablished": "The running assembly wrote an activation binding (domain aukora:activation-binding:upgraded-web:v1) naming the receipt key id. The broker's owner-only key leaf supplied the public half. The two agree, so the exported key is the key the recorded activation names.",
+  "pinStrength": "Local same-UID pin. It shows the signing key is the one the current activation names; it is not proof that an independent principal vouches for that key, and a reader requiring peer separation must pin the key out of band.",
+  "notIncluded": [
+    "private keys",
+    "credentials",
+    "pairing tokens",
+    "session logs",
+    "the broker store"
+  ]
+}

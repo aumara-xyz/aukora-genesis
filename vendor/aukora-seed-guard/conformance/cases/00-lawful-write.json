@@ -1,0 +1,18 @@
+{
+  "id": "lawful-write",
+  "why": "THE CONTROL. A permitted path must be ALLOWED. A fence that refuses everything passes every other case in this suite and protects nothing.",
+  "incident": "none - this case exists so the others mean something",
+  "fixture": {
+    "dirs": [
+      "world"
+    ],
+    "files": {
+      "world/mind.md": "genesis\n"
+    }
+  },
+  "attempt": {
+    "path": "world/mind.md",
+    "op": "append"
+  },
+  "expect": "ALLOW"
+}

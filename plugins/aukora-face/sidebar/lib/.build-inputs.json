@@ -1,0 +1,16 @@
+{
+  "face": "sidebar",
+  "srcDigest": "4787c8a07d4442adc5e1253ace8935917f4b367bbd8263f48e7ef0fe0662c9a6",
+  "files": [
+    "package.json",
+    "src/client/SidebarRoot.module.css",
+    "src/client/SidebarRoot.tsx",
+    "src/client/contract/slots.ts",
+    "src/client/index.ts",
+    "src/css-modules.d.ts",
+    "src/index.ts",
+    "src/invariant.ts",
+    "tsdown.config.ts"
+  ],
+  "builtAt": "2026-09-26T23:45:52Z"
+}

@@ -1,0 +1,59 @@
+{
+  "name": "aukora",
+  "description": "Aukora: a governed recursive digital-organism seed. Its constitutional spine is the AUMLOK authority kernel (verify, never mint). Pure portable packages (kernel, evidence, council, memory) plus governed organism adapters — the reactive memory brain, sandbox-only recursion seed, and read-only operator console — built outward under strict governance.",
+  "author": "Aumara",
+  "license": "AGPL-3.0-or-later",
+  "version": "0.1.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aumara-xyz/aukora.git"
+  },
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "boundary": "node scripts/check-canonical-boundary.mjs --src packages/evidence/src && node scripts/check-canonical-boundary.mjs --src packages/council/src && node scripts/check-canonical-boundary.mjs --src packages/council-node/src && node scripts/check-canonical-boundary.mjs --src packages/mind/src",
+    "verify:provenance": "node scripts/verify-provenance.mjs",
+    "test": "vitest run",
+    "test:portable-boundary": "node scripts/verify-portable-boundary.mjs",
+    "typecheck:kernel": "tsc -p packages/kernel/tsconfig.json",
+    "build:kernel": "tsc -p packages/kernel/tsconfig.build.json",
+    "verify:kernel-compatibility": "node scripts/generate-kernel-compatibility.mjs --check",
+    "verify:kernel-sbom": "node scripts/generate-kernel-sbom.mjs --check",
+    "verify:kernel-runtimes": "node scripts/verify-kernel-runtimes.mjs",
+    "verify:kernel-package": "node scripts/verify-kernel-package.mjs",
+    "test:kernel": "npm run test:portable-boundary && npm run typecheck:kernel && npm test --workspace @aukora/kernel && npm run build:kernel && npm run verify:kernel-compatibility && npm run verify:kernel-sbom && npm run verify:kernel-runtimes && npm run verify:kernel-package",
+    "test:memory": "npm test --workspace @aukora/memory",
+    "test:mind": "npm test --workspace @aukora/mind",
+    "test:brain": "npm test --workspace @aukora/brain",
+    "test:seed": "npm test --workspace @aukora/seed",
+    "test:console": "npm test --workspace @aukora/console",
+    "test:supervisor": "npm test --workspace @aukora/supervisor",
+    "fixture:console": "npm run build:kernel && npm run fixture --workspace @aukora/console && git diff --exit-code -- apps/console/public/fixture.json apps/console/public/fixture.js apps/console/docs/spatial-map.svg",
+    "test:organism": "npm run test:memory && npm run test:mind && npm run test:brain && npm run test:seed && npm run test:console && npm run test:spatial && npm run test:supervisor",
+    "test:all": "npm run verify:repo-identity && npm run verify:provenance && npm run verify:anatomy && npm run verify:continuity && npm run boundary && npm run typecheck:all && npm run verify:typecheck-coverage && npm run workbench:readiness && npm run verify:test-totals && npm run verify:no-overclaim && npm run test && npm run test:kernel && npm run test:kernel-node && npm run test:immune && npm run test:organism && npm run fixture:console",
+    "demo:organism": "npm run demo --workspace @aukora/seed",
+    "test:spatial": "npm test --workspace @aukora/spatial",
+    "verify:anatomy": "node scripts/verify-anatomy.mjs",
+    "verify:continuity": "node scripts/verify-continuity.mjs",
+    "workbench:readiness": "node scripts/workbench-readiness.mjs",
+    "test:kernel-node": "npm test --workspace @aukora/kernel-node",
+    "test:immune": "npm test --workspace @aukora/immune",
+    "typecheck:all": "npm run build:kernel && npm run typecheck --workspaces --if-present",
+    "verify:typecheck-coverage": "node scripts/verify-typecheck-coverage.mjs",
+    "measure:test-totals": "node scripts/measure-test-totals.mjs",
+    "verify:test-totals": "node scripts/verify-test-totals.mjs",
+    "verify:no-overclaim": "node scripts/verify-no-overclaim.mjs",
+    "verify:repo-identity": "node scripts/verify-repo-identity.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.7",
+    "esbuild": "0.27.0",
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/node": "^22"
+  }
+}

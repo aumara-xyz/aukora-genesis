@@ -1,0 +1,643 @@
+.frame {
+  /* Container query units resolve against the frame's content box, so only
+     the two 6px grid gaps remain to be removed from the thirds. */
+  --dsh-spatial-gap: 6px;
+  --dsh-spatial-third: calc(33.3333cqw - 4px);
+  --dsh-spatial-two-thirds: calc(66.6667cqw - 8px);
+  --dsh-hot-corner-size: 74px;
+  --dsh-hot-corner-gutter: 10px;
+  position: relative;
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--dsh-spatial-gap);
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-specific-spatial-canvas);
+  transition:
+    grid-template-columns var(--ds-transition-duration-slow) var(--ds-ease-in-out),
+    gap var(--ds-transition-duration-slow) var(--ds-ease-in-out),
+    padding var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+}
+
+/* Focus owns the full frame. The active lane's inner content keeps its
+   readable measure instead of shrinking the pane chrome away from the edge. */
+.frame[data-single-measure='two-thirds'] {
+  gap: 0;
+  padding: 0;
+}
+
+.frame[data-pane-preset='left-wide'] {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) 0fr;
+}
+
+.frame[data-pane-preset='left-menu-wide'] {
+  --dsh-spatial-gap: 3px;
+  --dsh-spatial-third: calc(33.3333cqw - 2px);
+  --dsh-spatial-two-thirds: calc(66.6667cqw - 4px);
+  grid-template-columns: minmax(0, 2fr) 0fr minmax(0, 1fr);
+}
+
+.frame[data-pane-preset='left-focus'] {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 0fr) minmax(0, 0fr);
+}
+
+.frame[data-pane-preset='center-left-wide'] {
+  grid-template-columns: 0fr minmax(0, 2fr) minmax(0, 1fr);
+  padding-left: 0;
+}
+
+.frame[data-pane-preset='center-right-wide'] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) 0fr;
+  padding-right: 0;
+}
+
+/* A zero-width outer track still owns one grid gap. Extend the center lane
+   across that ghost gap so its controlled corner lands on the frame edge. */
+.frame[data-pane-preset='center-left-wide'] .laneCenter {
+  width: calc(100% + var(--dsh-spatial-gap));
+  transform: translateX(calc(-1 * var(--dsh-spatial-gap)));
+}
+
+.frame[data-pane-preset='center-right-wide'] .laneCenter {
+  width: calc(100% + var(--dsh-spatial-gap));
+}
+
+.frame[data-pane-preset='center-focus'] {
+  grid-template-columns: minmax(0, 0fr) minmax(0, 3fr) minmax(0, 0fr);
+}
+
+.frame[data-pane-preset='right-wide'] {
+  grid-template-columns: 0fr minmax(0, 1fr) minmax(0, 2fr);
+}
+
+.frame[data-pane-preset='right-threads-wide'] {
+  --dsh-spatial-gap: 3px;
+  --dsh-spatial-third: calc(33.3333cqw - 2px);
+  --dsh-spatial-two-thirds: calc(66.6667cqw - 4px);
+  grid-template-columns: minmax(0, 1fr) 0fr minmax(0, 2fr);
+}
+
+.frame[data-pane-preset='right-focus'] {
+  grid-template-columns: minmax(0, 0fr) minmax(0, 0fr) minmax(0, 3fr);
+}
+
+.lane {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 180ms var(--ds-ease-in-out),
+    visibility 0s linear,
+    transform var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+}
+
+.threadLayer[hidden],
+.surfaceEmpty[hidden],
+.surfaceLayer[hidden],
+.rightLayer[hidden] {
+  display: none;
+}
+
+/* Zero-weight lanes remain in their fixed grid columns until the track
+   transition finishes. Removing them from layout at gesture time would make
+   the browser snap directly to the destination instead of interpolating the
+   one-third/two-thirds geometry. */
+.lane:not([data-pane-active]) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition-delay: 0s, var(--ds-transition-duration-slow);
+}
+
+.laneLeft {
+  grid-column: 1;
+  --dsw-specific-sidebar-fill: transparent;
+}
+
+.laneCenter,
+.centerCol {
+  grid-column: 2;
+}
+
+.laneRight {
+  grid-column: 3;
+}
+
+.laneShell {
+  position: relative;
+  width: var(--dsh-spatial-third);
+  max-width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--dsw-specific-spatial-border);
+  border-radius: 22px;
+  box-sizing: border-box;
+  background: var(--dsw-specific-spatial-lane);
+  transition:
+    width var(--ds-transition-duration-slow) var(--ds-ease-in-out),
+    border-radius var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+}
+
+.laneCenter .laneShell {
+  background: var(--dsw-specific-spatial-lane-bright);
+}
+
+.frame[data-pane-preset='left-wide'] .laneLeft .laneShell,
+.frame[data-pane-preset='left-menu-wide'] .laneLeft .laneShell,
+.frame[data-pane-preset='right-wide'] .laneRight .laneShell,
+.frame[data-pane-preset='right-threads-wide'] .laneRight .laneShell {
+  width: var(--dsh-spatial-two-thirds);
+}
+
+.frame[data-pane-preset='center-left-wide'] .laneCenter .laneShell,
+.frame[data-pane-preset='center-right-wide'] .laneCenter .laneShell {
+  width: 100%;
+}
+
+.frame[data-single-measure='two-thirds'] .laneShell {
+  width: 100%;
+  border-radius: 22px;
+}
+
+.laneBody,
+.threadStack,
+.threadLayer,
+.surfaceStack,
+.surfaceLayer,
+.rightStack,
+.rightLayer {
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.surfaceStack,
+.threadStack,
+.rightStack {
+  position: relative;
+  margin-inline: auto;
+  transition: width var(--ds-transition-duration-slow) var(--ds-ease-in-out);
+}
+
+.frame[data-single-measure='two-thirds'][data-focused-lane='left'] .threadStack,
+.frame[data-single-measure='two-thirds'][data-focused-lane='right'] .rightStack,
+.frame[data-single-measure='two-thirds'][data-focused-lane='center'][data-surface-presentation='contained'] .surfaceStack {
+  width: 66.6667cqw;
+}
+
+/* Website-sized applications may opt out of the centered content measure. */
+.frame[data-single-measure='two-thirds'][data-focused-lane='center'][data-surface-presentation='full-bleed'] .surfaceStack {
+  width: 100%;
+}
+
+.cornerControl {
+  position: absolute;
+  top: 0;
+  z-index: 9;
+  width: var(--dsh-hot-corner-size);
+  height: var(--dsh-hot-corner-size);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity var(--ds-transition-duration) var(--ds-ease-in-out),
+    transform var(--ds-transition-duration) var(--ds-ease-in-out);
+}
+
+.cornerControl::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: corner-pulse 3.8s ease-in-out infinite;
+}
+
+.cornerControl:hover,
+.cornerControl:focus-visible {
+  opacity: 1;
+  transform: scale(1.025);
+}
+
+.cornerControl:focus-visible {
+  outline: none;
+}
+
+.cornerControl:focus-visible::before {
+  animation: none;
+  opacity: 1;
+}
+
+.menuTab:focus-visible {
+  outline: 2px solid var(--dsw-alias-label-primary);
+  outline-offset: -6px;
+}
+
+.cornerControl[data-corner='left'],
+.cornerControl[data-corner='center-right'] {
+  right: 0;
+  border-radius: 0 22px 0 30px;
+}
+
+.cornerControl[data-corner='conversation-close'],
+.cornerControl[data-corner='center-left'],
+.cornerControl[data-corner='right'] {
+  left: 0;
+  border-radius: 22px 0 30px;
+}
+
+.cornerControl[data-corner='conversation-close']::before,
+.cornerControl[data-corner='left']::before {
+  background: radial-gradient(
+    circle at var(--dsh-corner-origin, 100%) 0%,
+    var(--dsw-specific-spatial-accent-left),
+    transparent 52%
+  );
+}
+
+.cornerControl[data-corner='conversation-close'] {
+  --dsh-corner-origin: 0%;
+}
+
+.cornerControl[data-corner='center-left']::before {
+  background: radial-gradient(
+    circle at 0% 0%,
+    var(--dsw-specific-spatial-accent-center),
+    transparent 52%
+  );
+}
+
+.cornerControl[data-corner='center-right']::before {
+  background: radial-gradient(
+    circle at 100% 0%,
+    var(--dsw-specific-spatial-accent-center),
+    transparent 52%
+  );
+}
+
+.cornerControl[data-corner='right']::before {
+  background: radial-gradient(
+    circle at 0% 0%,
+    var(--dsw-specific-spatial-accent-right),
+    transparent 52%
+  );
+}
+
+@keyframes corner-pulse {
+  0%, 100% { opacity: 0.42; }
+  50% { opacity: 0.78; }
+}
+
+.threadLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.threadLayer > :global([data-slot='sidebar']),
+.threadConversationBody > :global([data-slot='main']) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.threadLayer[data-thread-layer='conversation'] {
+  display: flex;
+  flex-direction: column;
+}
+
+.threadLayer[hidden] {
+  display: none;
+}
+
+.threadConversationBody {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.threadConversationBody :global([data-phase]) {
+  background: transparent;
+}
+
+.surfaceEmpty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--dsw-alias-label-caption);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.surfaceLayer {
+  position: absolute;
+  inset: 0;
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 10px 14px 8px calc(var(--dsh-hot-corner-size) + var(--dsh-hot-corner-gutter));
+  box-sizing: border-box;
+}
+
+.menuHeading {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--dsw-static-spatial-violet) 92%, transparent);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.menuTabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.menuTab {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 11px;
+  color: var(--dsw-alias-label-tertiary);
+  background: transparent;
+  cursor: pointer;
+  transition:
+    color var(--ds-transition-duration) var(--ds-ease-in-out),
+    background var(--ds-transition-duration) var(--ds-ease-in-out);
+}
+
+.menuTab:hover {
+  color: var(--dsw-alias-label-primary);
+}
+
+.menuTab[aria-selected='true'] {
+  color: color-mix(in srgb, var(--dsw-static-spatial-violet) 95%, transparent);
+  background: color-mix(in srgb, var(--dsw-static-spatial-violet) 12%, transparent);
+}
+
+.menuTab[data-menu-tab='system'][aria-selected='true'] {
+  color: var(--dsw-static-spatial-blue);
+  background: color-mix(in srgb, var(--dsw-static-spatial-blue) 12%, transparent);
+}
+
+.menuTab[data-menu-tab='yours'][aria-selected='true'] {
+  color: var(--dsw-static-spatial-mint);
+  background: color-mix(in srgb, var(--dsw-static-spatial-mint) 12%, transparent);
+}
+
+.rightStack[data-menu-tab='system'] .menuHeading {
+  color: var(--dsw-static-spatial-blue);
+}
+
+.rightStack[data-menu-tab='yours'] .menuHeading {
+  color: var(--dsw-static-spatial-mint);
+}
+
+.menuTabIcon {
+  width: 16px;
+  height: 16px;
+  fill: transparent;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.menuTab[aria-selected='true'] .menuTabIcon {
+  fill: color-mix(in srgb, var(--dsw-static-spatial-violet) 22%, transparent);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.menuPanel {
+  --dsh-spatial-menu-title-size: 14px;
+  --dsh-spatial-menu-title-line-height: 20px;
+  --dsh-spatial-menu-description-size: 12px;
+  --dsh-spatial-menu-description-line-height: 18px;
+  min-width: 0;
+  min-height: 0;
+  height: calc(100% - 58px);
+  overflow: auto;
+  padding: 4px 14px 18px;
+  box-sizing: border-box;
+}
+
+.menuEmpty {
+  margin: 30px 10px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: var(--dsh-spatial-menu-description-size);
+  line-height: var(--dsh-spatial-menu-description-line-height);
+  text-align: center;
+}
+
+.menuPanel > :global([data-slot^='shell.menu.']) > button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: calc(100% - 4px);
+  min-height: 53px;
+  margin: 8px 2px;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 30%, transparent);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  text-align: right;
+  cursor: pointer;
+  transition:
+    transform 200ms var(--ds-ease-in-out),
+    border-color 250ms var(--ds-ease-in-out),
+    box-shadow 250ms var(--ds-ease-in-out),
+    background 250ms var(--ds-ease-in-out);
+}
+
+.menuPanel > :global([data-slot^='shell.menu.']) > button:hover {
+  transform: translateX(-3px);
+  background: color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent);
+}
+
+.menuPanel > :global([data-slot^='shell.menu.']) > button[aria-current='page'] {
+  border-color: color-mix(in srgb, var(--dsw-static-spatial-violet) 90%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--dsw-static-spatial-violet) 22%, transparent);
+}
+
+.menuPanel > :global([data-slot^='shell.menu.']) > button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 90%, transparent);
+  outline-offset: 2px;
+}
+
+.overlayLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.overlayLayer > * {
+  pointer-events: auto;
+}
+
+/* ── Harness chrome this frame reconciles with the lane that hosts it ────────
+   `aukora-foundation` overrides `--dsw-alias-bg-base` to the CANVAS colour
+   (`#111520`), and this frame makes the conversation surface transparent so the
+   lane shows through (see the `[data-phase]` rule above). The composer seat
+   (ui-conversation, `data-composer-seat`) kept the harness's own mask, whose
+   solid stop is that base — an opaque rectangle of canvas colour painted over
+   the lane, wider than the composer and reaching the column edges: the owner's
+   "darker box behind the chat bubble". Matching it with another flat colour
+   only shrank the seam, because the lane is a translucent surface over a
+   gradient. The frame owns no opaque surface here, so the seat paints nothing
+   and the composer card carries its own fill. */
+.frame [data-phase='active'] [data-composer-seat] {
+  background: none;
+}
+
+/* The composer's ambient dock holds ui-chat's `stats` row — turn and step
+   counts, tokens per second, tokens used, cache hit — its only occupant. A
+   list-slot entry renders without a `data-slot` wrapper, so the row is
+   addressed by the hook it stamps itself. The owner does not read it. */
+.frame [data-composer-stats] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .lane,
+  .laneShell,
+  .threadStack,
+  .surfaceStack,
+  .rightStack,
+  .cornerControl,
+  .menuTab,
+  .menuPanel > :global([data-slot^='shell.menu.']) > button {
+    transition: none;
+  }
+
+  .cornerControl::before {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
+/* WHICH THREAD AUMA LIVE IS SPEAKING THROUGH — a quiet line at the top of the apps corner. It names a fact
+   rather than offering an action, so it is set like the menu's own descriptions and never competes with the
+   entries below it: the thread's name is the only part that carries the primary label colour. */
+.aumaThread {
+  margin: 2px 10px 10px;
+  color: var(--dsw-alias-label-tertiary);
+  font-size: var(--dsh-spatial-menu-description-size);
+  line-height: var(--dsh-spatial-menu-description-line-height);
+}
+
+.aumaThreadWhat {
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.aumaThreadWho {
+  color: var(--dsw-alias-label-primary);
+  overflow-wrap: anywhere;
+}
+
+/* WHAT AUMA LIVE CAN DO RIGHT NOW — one quiet read-only line above her panel. A known fact carries the primary
+   label colour and an unknown is muted, because the difference between "0" and "nobody asked" is the difference
+   this strip exists to show. */
+.aumaStatus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 4px 12px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: var(--dsh-spatial-menu-description-size);
+  line-height: var(--dsh-spatial-menu-description-line-height);
+}
+
+.aumaStatusKnown {
+  color: var(--dsw-alias-label-primary);
+}
+
+.aumaStatusUnknown {
+  color: var(--dsw-alias-label-tertiary);
+  font-style: italic;
+}
+
+/* ── WHO IS WAITING ON PETER ─────────────────────────────────────────────────────────────────────────
+   A waiting lane looks idle from the outside, so the badge has to be legible without colour alone: the text
+   carries the age, and the three states (waiting, clear, unknown) are distinguished by attribute as well as by
+   class, so a person who cannot see the tint still reads the difference. */
+.aumaWaiting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.aumaWaitingTitle {
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+}
+
+.aumaWaitingBadge,
+.aumaWaitingClear {
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+
+.aumaWaitingBadge {
+  font-weight: 600;
+}
+
+.aumaWaitingClear {
+  opacity: 0.6;
+}
+
+.aumaWaitingOpen {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://schemas.aukora.xyz/swarm/IntegrationManifestV1.json",
+  "title": "IntegrationManifestV1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "integrationId", "campaignId", "baseCommit", "baseTreeDigest", "landOrder", "patchHashes", "conflicts", "state", "createdAt"],
+  "properties": {
+    "schema": { "const": "aukora-swarm-integration-manifest-v1" },
+    "integrationId": { "type": "string", "minLength": 1 },
+    "campaignId": { "type": "string", "minLength": 1 },
+    "baseCommit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "baseTreeDigest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "landOrder": { "type": "array", "items": { "type": "string" } },
+    "patchHashes": { "type": "array", "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" } },
+    "conflicts": { "type": "array", "items": { "type": "string" } },
+    "state": { "enum": ["gathered", "composed", "landed", "conflicted", "halted"] },
+    "createdAt": { "type": "string", "minLength": 1 }
+  }
+}

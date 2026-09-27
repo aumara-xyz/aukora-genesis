@@ -1,0 +1,21 @@
+{
+  "name": "@aukora/dsh-plugin-nostr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nostr identity for AUKORA: a pinned BIP-340 secp256k1 key per node, the Aumlok-signed binding that says which subject owns its npub, the NIP-44 payload layer, NIP-17 gift-wrapped direct messages, and relay transport that reports offline as a named state.",
+  "type": "module",
+  "main": "lib/index.mjs",
+  "exports": {
+    ".": "./lib/index.mjs",
+    "./identity": "./lib/identity.mjs",
+    "./event": "./lib/event.mjs",
+    "./nip44": "./lib/nip44.mjs",
+    "./giftwrap": "./lib/giftwrap.mjs",
+    "./relay": "./lib/relay.mjs",
+    "./contact": "./lib/contact.mjs"
+  },
+  "bin": {
+    "aukora-reissue-binding": "./bin/reissue-binding.mjs"
+  },
+  "license": "AGPL-3.0-or-later"
+}

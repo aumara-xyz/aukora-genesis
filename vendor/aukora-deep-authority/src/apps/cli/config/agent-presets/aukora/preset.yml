@@ -1,0 +1,3 @@
+name: AUKORA
+description: 仅提供受治理的 KIRA 记忆、memory.put 与 workspace.patch，以及 Auma Canvas 呈现工具。
+order: 1

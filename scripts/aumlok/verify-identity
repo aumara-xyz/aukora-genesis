@@ -1,0 +1,145 @@
+#!/usr/bin/env node
+/**
+ * Do the STORED secret halves of one bound record correspond to the keys it registers?
+ *
+ *   scripts/aumlok/verify-identity --controller <private dir> --read-secret-half \
+ *        [--expect-subject <aukora:1:…> --expect-control-digest <64 hex>]
+ *
+ * WHY A SECOND COMMAND AND NOT A FLAG ON `bind`. `bind` proves a pair it has just GENERATED, in
+ * the same process, before writing. That proof says nothing about the bytes that are on disk a week
+ * later, and it says nothing about a record written by anything else. The gap is narrow and real:
+ * every reader in this lane checks the PUBLIC half, and the genesis commitment covers the public
+ * keys, so a record whose `mlDsa65SecretKeyHex` was placeholder bytes of the right LENGTH is a
+ * record that reads back perfectly. This command asks the question nothing else asked.
+ *
+ * IT READS PRIVATE KEY MATERIAL, AND SAYS SO. `--read-secret-half` is REQUIRED. Without it the
+ * command refuses, because a correspondence check cannot be performed on public bytes, and a tool
+ * that silently reads a private half while printing a reassuring word about custody would be
+ * teaching the wrong lesson. Reading the record is itself a same-uid act — a mode-0600 file owned
+ * by the running uid — so what this proves is a statement about BYTES, never about who can reach
+ * them. `SAME_UID_POSIX_MODE_ONLY` stays printed and is not retired.
+ *
+ * WHAT IT PROVES, AND WHAT IT DOES NOT — both are printed, because a proof whose limits are implied
+ * is a claim. Proven, over the stored bytes, in this process: Ed25519 correspondence (the stored
+ * private key derives the registered public key, and the `did:key` is re-derived from that key);
+ * ML-DSA-65 correspondence (`getPublicKey(storedSecretKey)` equals the registered public key);
+ * and an ML-DSA-65 sign/verify round trip WITH a negative probe, so a verifier that answered `true`
+ * unconditionally could not pass. NOT proven: that the implementation IS FIPS 204 ML-DSA-65 (no
+ * known-answer vector and no second ML-DSA implementation exist on this host, and none was
+ * fetched). `ML_DSA_65_CONFORMANCE: not-established` is printed for exactly that reason.
+ *
+ * AND IT AUTHORIZES NOTHING. `IDENTITY_BOUND: false` is printed. A proven pair is not a permission:
+ * the approval path (`scripts/aumlok/approve-operation`, `scripts/aumlok/settle-operation`) never
+ * consults this command's result, and settles nothing without a signature over one exact operation
+ * digest. This command has no `--settle`, no `--approve` and no way to change any state: it reads,
+ * measures and prints.
+ *
+ * Exit 0 when both correspondences hold, 1 on a named refusal, 2 on usage.
+ */
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const adapter = await import(pathToFileURL(`${ROOT}/plugins/aukora-aumlok/lib/index.mjs`).href)
+
+/** Read one `--flag value` argument, or undefined. */
+function option(flag) {
+  const index = process.argv.indexOf(flag)
+  return index === -1 ? undefined : process.argv[index + 1]
+}
+
+/** Refuse with a named code, printing every ceiling beside it. */
+function refuse(reason, detail) {
+  process.stdout.write(`REFUSED: ${reason}\n`)
+  process.stdout.write(`DETAIL: ${detail}\n`)
+  closeWithCeilings(1)
+}
+
+/** Print the limits every path in this lane prints, including the refusal paths. */
+function closeWithCeilings(code) {
+  process.stdout.write('IDENTITY_BOUND: false\n')
+  process.stdout.write('AUTHORITY: none — a correspondence proof is not a permission. Nothing is\n')
+  process.stdout.write('           authorized by this command; an approval is a separate act under a key\n')
+  process.stdout.write('           this command does not use (scripts/aumlok/settle-operation).\n')
+  adapter.printCeilings()
+  process.exit(code)
+}
+
+const controller = option('--controller')
+if (controller === undefined) {
+  process.stderr.write('usage: scripts/aumlok/verify-identity --controller <dir> --read-secret-half '
+    + '[--expect-subject <aukora:1:…> --expect-control-digest <64 hex>]\n')
+  process.exit(2)
+}
+if (!process.argv.includes('--read-secret-half')) {
+  // Refused rather than assumed: the flag IS the acknowledgement that this reads a private half.
+  process.stderr.write('verify-identity: --read-secret-half is required. Correspondence cannot be decided from\n')
+  process.stderr.write('  public bytes, and this command does not read a private key half while implying that it\n')
+  process.stderr.write('  did not. Passing it acknowledges that the record is read under the same-uid custody\n')
+  process.stderr.write('  ceiling printed below, which is a mode check and not isolation.\n')
+  process.exit(2)
+}
+const expectSubject = option('--expect-subject')
+const expectControlDigest = option('--expect-control-digest')
+if ((expectSubject === undefined) !== (expectControlDigest === undefined)) {
+  process.stderr.write('usage: --expect-subject and --expect-control-digest are a pin and must be given together\n')
+  process.exit(2)
+}
+const expectation = expectSubject === undefined
+  ? undefined
+  : { subject: expectSubject, activeControlDigest: expectControlDigest }
+const asJson = process.argv.includes('--json')
+
+process.stdout.write('AUMLOK identity/key correspondence — what is proven about the STORED bytes\n')
+process.stdout.write(`repository: ${ROOT}\n\n`)
+
+let measured
+try {
+  measured = await adapter.verifyIdentityCorrespondence({ directory: resolve(controller), expectation })
+} catch (error) {
+  if (error instanceof adapter.IdentityCorrespondenceError) refuse(error.code, error.message)
+  throw error
+}
+
+const { projection, ed25519, mlDsa65 } = measured
+if (asJson) {
+  // MACHINE MODE PRINTS ONE DOCUMENT AND NOTHING ELSE. A human-readable preamble mixed with JSON is
+  // a document no parser can consume, and a consumer that has to scrape a verdict out of prose will
+  // eventually scrape the wrong verdict. The ceilings travel INSIDE the document, because a
+  // consumer that receives these facts without the limits has received a claim rather than a record.
+  process.stdout.write(`${JSON.stringify({
+    ...measured,
+    identityBound: false,
+    fips204Conformance: mlDsa65.fips204Conformance,
+    ceilings: adapter.ceilingLines(),
+  }, null, 2)}\n`)
+  process.exit(0)
+}
+process.stdout.write(`CONTROLLER: ${measured.path}\n`)
+process.stdout.write(`SUBJECT: ${projection.subject}\n`)
+process.stdout.write(`EPOCH: ${String(projection.epoch)}\n`)
+process.stdout.write(`ACTIVE_CONTROL_DIGEST: ${projection.activeControlDigest}\n`)
+process.stdout.write(`REVOKED: ${String(projection.revoked)}\n`)
+process.stdout.write(`CUSTODY_CLASS: ${projection.custodyClass}\n`)
+process.stdout.write(`APPROVAL_KEY_DID: ${projection.approvalKeyDid}\n\n`)
+process.stdout.write(`ED25519_REGISTERED_PUBLIC_KEY: ${ed25519.registeredHex}\n`)
+process.stdout.write(`ED25519_DERIVED_FROM_STORED_PRIVATE_KEY: ${ed25519.derivedFromStoredPrivateHex}\n`)
+process.stdout.write(`ED25519_DID_REDERIVED_FROM_KEY: ${ed25519.derivedDid}\n`)
+process.stdout.write(`ED25519_CORRESPONDENCE: ${ed25519.correspondence} — PROVEN in this process\n\n`)
+process.stdout.write(`ML_DSA_65_PUBLIC_KEY_BYTES: ${String(mlDsa65.publicKeyBytes)}\n`)
+process.stdout.write(`ML_DSA_65_SECRET_KEY_BYTES: ${String(mlDsa65.secretKeyBytes)}\n`)
+process.stdout.write(`ML_DSA_65_SIGNATURE_BYTES: ${String(mlDsa65.signatureBytes)}\n`)
+process.stdout.write(`ML_DSA_65_CORRESPONDENCE: ${mlDsa65.correspondence} — PROVEN in this process\n`)
+process.stdout.write(`ML_DSA_65_ROUND_TRIP: ${mlDsa65.roundTrip} in context ${mlDsa65.context} — PROVEN\n`)
+process.stdout.write(`ML_DSA_65_NEGATIVE_PROBE: ${mlDsa65.negativeProbe} — PROVEN\n`)
+process.stdout.write(`ML_DSA_65_REGISTERED_PUBLIC_KEY_DIGEST: sha256=${mlDsa65.publicKeyDigest}\n`)
+process.stdout.write(`ML_DSA_65_CONFORMANCE: ${mlDsa65.fips204Conformance}\n`)
+process.stdout.write('ML_DSA_65_CEILING: correspondence and round-trip are NOT FIPS 204 conformance. This\n')
+process.stdout.write('                 command holds no known-answer vector and no second implementation, so\n')
+process.stdout.write('                 ML_DSA_65_UNMEASURED below is NOT retired by anything printed above.\n')
+process.stdout.write('SECRET_HALF_READ: this command read the record at the path above. That file is mode 0600\n')
+process.stdout.write('                  on this uid, so every process of this user can read it too: the proof\n')
+process.stdout.write('                  below is about bytes, and is not custody and not isolation.\n')
+process.stdout.write('CORRESPONDENCE_IS_NOT_PERMISSION: an identity whose keys correspond perfectly settles\n')
+process.stdout.write('                  nothing by itself; an approval is a separate act by a separate key.\n')
+closeWithCeilings(0)

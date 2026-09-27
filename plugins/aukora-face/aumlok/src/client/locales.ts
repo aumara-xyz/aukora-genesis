@@ -1,0 +1,176 @@
+/** AUMLOK launcher and the Aumlok screen's own copy: three states of one layout (plan §3). */
+
+/** Simplified Chinese dictionary (the key-set source of truth). */
+export const zh = {
+  'menu.title': 'AUMLOK',
+  'menu.description': '七词本地见证',
+  'eyebrow': '七词绑定密语',
+  'title': 'AUMLOK',
+  'unbound': '未绑定',
+  'bound': '已绑定',
+  'details': '详情',
+  'phrase.label': '这就是密语的七个词',
+  // X8: 句柄是公开的，它给密钥加盐，并且先于七个词输入。
+  'surface.handle.label': '你的句柄',
+  'surface.handle.hint': '公开。它为你的密钥加盐，并成为你的 名称@域名。请先输入它，再输入七个词。',
+  'surface.handle.invalid': '3–24 个字符：a–z、0–9、点、下划线、连字符。',
+  // Y2：绑定之后句柄是记录公布的事实，只读显示。
+  'surface.handle.locked': '这是你绑定的名字。已锁定——记录公布它，仪式不会重问。',
+  'anchor.label': '词位零 · 锚词',
+  'anchor.detail': '六个字母 · 七个词中的第一个',
+  'band.root': 'ROOT',
+  'band.root.detail': '第一对 · 与大地相系',
+  'band.unite': 'UNITE',
+  'band.unite.detail': '第二对 · 与彼此相系',
+  'band.rise': 'RISE',
+  'band.rise.detail': '第三对 · 与托举相系',
+  'token.anchorMasked': '已遮盖的六字母锚词',
+  'token.rowMasked': '已遮盖的主题词',
+  'tile.empty': '空位',
+  'tile.input': '第 {position} 个词',
+  'surface.action.give': '给我我的密语',
+  // Y2: 已绑定状态下那颗按钮上的字，就是 Peter 的原话。
+  'surface.action.newPhrase': '轮换密语',
+  'surface.action.learned': '我记住了 —— 隐藏这些词',
+  // Y3：在绑定之前，只要还在显示词，就可以随意再抽一次。
+  'surface.action.another': '再给我一个',
+  'surface.warning.lost': '这七个词就是全部密钥，只显示这一次。一旦丢失，这个实例就不存在了：新密语就是一个新实例。',
+  'surface.confirm.warning': '你再也见不到这些词了。请大声念出来。丢失它们就意味着一个新的身份。',
+  'surface.confirm.checkbox': '我已把这七个词记在心里',
+  'surface.bound.line': '你的 Aumlok 已绑定',
+  // Y5：绑定的确认是安静的一句话，不是庆祝。
+  'surface.bound.quiet': '已绑定。',
+  'receipt.root': '根',
+  'receipt.bound': '绑定时间',
+  'receipt.bound.unknown': '此记录未报告绑定时间',
+  'surface.explanation.title': 'AUMLOK 是什么',
+  'surface.explanation.install': '你不是安装 Aukora，而是绑定它。',
+  'surface.explanation.made': '密语在你的机器上生成，只向你显示一次，也只由你逐词输入。',
+  'surface.explanation.spirit': '像记住一个只回应你的灵的真名那样记住它。',
+  'runtime.status': '没有控制器状态',
+  'runtime.detail': '此界面不持有任何密钥：它只在仪式中把七个词显示一次，并且不批准任何操作。',
+  'runtime.reason.no-controller-service': '此组合中没有控制器。这里没有任何行提供 ctx.aumlokControl，因此无从询问。加入 aukora-aumlok 插件的组合行才会有一个。',
+  'runtime.reason.adapter-unbound': '控制器已挂载，但未绑定身份。插件在组合中，但其行未携带目录，因此它按名称拒绝，并继续提供一切不需要控制器的能力。目录由绑定仪式绑定，然后写入该行。',
+  'runtime.reason.control-unreadable': '控制器目录不可读。已配置的目录中存在记录，但控制器无法从中投影出公共控制。记录存在且已损坏，因此请查看它，而不是去绑定。',
+  'runtime.reason.controller-absent': '尚未绑定所有者。注册即可绑定一个。',
+  'runtime.reason.record-names-no-machine': '此记录列出了多于一台机器，而本次读取没有说明哪一台是本机。没有损坏，也没有未绑定：知道自己是谁的调用方会传入自己的机器密钥，AUKORA 外壳在读取绑定状态时正是这样做的，因此第二台设备会读到已绑定。',
+  'runtime.reason.unnamed': '状态不可用，且本次启动没有说明原因。',
+  'runtime.reason.code': '控制器拒绝：{code}',
+  'runtime.connected.status': '已从控制器读取公共控制',
+  'runtime.connected.detail': '每次刷新都从控制器重新读取。这是七个公共字段；私有部分留在此界面从不打开的 0600 记录中。读到它们既不证明签名进程可达，也不证明有人在场。',
+  'runtime.field.subject': '主体',
+  'runtime.field.epoch': '控制纪元',
+  'runtime.field.activeControl': '活动控制摘要',
+  'runtime.field.domain': '投影域',
+  'runtime.field.revoked': '活动头',
+  'runtime.revoked.no': '未吊销',
+  'runtime.revoked.yes': '已吊销 —— 此主体终止',
+  'runtime.field.approvalKey': '批准密钥',
+  'runtime.field.custody': '保管分类',
+  'runtime.field.projectionState': '控制器投影',
+  'runtime.projection.loaded': '本次请求由 ctx.aumlokControl.refresh() 读取',
+  'runtime.field.bindment': '绑定',
+  'runtime.bindment.unknown': '已绑定目录中存在记录。是否有人执行过仪式，不是此界面能读到的事实。',
+  'runtime.binding.bind': '绑定',
+  'runtime.binding.busy': '仪式进行中',
+  'runtime.binding.failed': '仪式没有返回结果。状态保持不变。',
+  'runtime.field.reviewChannel': '批准通道',
+  'runtime.reviewChannel.notReported': '在 Unix 套接字上的独立签名进程。此界面无法探测它，浏览器中的任何确认都不能替代它的签名。',
+  'runtime.origin': '读取自 {origin}。此状态只描述该后端，不描述其他任何后端。',
+  'runtime.origin.unknown': '无法确定回答此状态的后端。请把它当作出处不明的读数。',
+} satisfies Record<string, string>
+
+/** AUMLOK namespace key union. */
+export type AumlokKey = keyof typeof zh
+
+/** English dictionary, checked complete against the Chinese key set. */
+export const en = {
+  'menu.title': 'AUMLOK',
+  'menu.description': 'seven-word binding witness',
+  'eyebrow': 'SEVEN-WORD BINDING PHRASE',
+  'title': 'AUMLOK',
+  'unbound': 'UNBOUND',
+  'bound': 'BOUND',
+  // THE ONE WORD X6 ASKS FOR: a small disclosure, closed by default, holding the technical status.
+  'details': 'details',
+  'phrase.label': 'THE SEVEN WORDS OF THE PHRASE',
+  // X8'S FIELD, ABOVE THE TILES AND FIRST ON A NEW MACHINE. The handle is public — it is recorded in
+  // the public record and is the local part of a NIP-05 name@domain — so the hint says so rather than
+  // letting a person wonder whether they are typing a secret.
+  'surface.handle.label': 'Your handle',
+  'surface.handle.hint': 'Public. It salts your key and becomes your name@domain. Type it first, then the seven words.',
+  'surface.handle.invalid': '3–24 characters: a–z, 0–9, dot, underscore, hyphen.',
+  // Y2: after a binding the handle is a fact the record publishes, so it is shown and not asked for.
+  'surface.handle.locked': 'This is the name you are bound under. Locked — the record publishes it and the ceremony does not ask again.',
+  'anchor.label': 'WORD ZERO · ANCHOR',
+  'anchor.detail': 'six letters · word zero of the seven',
+  'band.root': 'ROOT',
+  'band.root.detail': 'first pair · of the earth',
+  'band.unite': 'UNITE',
+  'band.unite.detail': 'second pair · of each other',
+  'band.rise': 'RISE',
+  'band.rise.detail': 'third pair · of what lifts',
+  'token.anchorMasked': 'masked six-letter anchor word',
+  'token.rowMasked': 'masked themed word',
+  'tile.empty': 'empty',
+  'tile.input': 'word {position}',
+  'surface.action.give': 'Give me my phrase',
+  // PETER'S OWN TWO WORDS FOR THE BOUND SCREEN'S ONE BUTTON (Y2, 2026-09-23): "Rotate phrase". The key
+  // keeps its name so every arm and probe that reaches this control by key keeps working.
+  'surface.action.newPhrase': 'Rotate phrase',
+  'surface.action.learned': 'I have them — hide the words',
+  // PETER'S OWN TWO WORDS (Y3, 2026-09-23 17:02): "give me another". It is the quiet control that
+  // redraws a phrase before anything is bound, as many times as the person likes.
+  'surface.action.another': 'Give me another',
+  'surface.warning.lost': 'These seven words are the whole key and are shown once. If you lose them, this instance is gone: a new phrase is a new instance.',
+  // PETER'S SENTENCE, CHARACTER FOR CHARACTER. It is the step between typing the words back and
+  // binding with them, and the checkbox below is what arms the button.
+  'surface.confirm.warning': 'You will never see these words again. Say them out loud. Losing them means a new identity.',
+  'surface.confirm.checkbox': 'I know my seven words by heart',
+  'surface.bound.line': 'Your Aumlok is bound',
+  // PETER'S Y5 (2026-09-23 17:02), and it is deliberately the smallest sentence on the screen: "a quiet
+  // confirmation when bound. Nothing flashy." The receipt below says WHAT was bound; this is the
+  // ceremony's own acknowledgement that it finished, and it is one word and a full stop.
+  'surface.bound.quiet': 'Bound.',
+  'receipt.root': 'ROOT',
+  'receipt.bound': 'BOUND',
+  'receipt.bound.unknown': 'this record reports no bound time',
+  'surface.explanation.title': 'WHAT AUMLOK IS',
+  'surface.explanation.install': 'You do not install Aukora, you bind it.',
+  'surface.explanation.made': 'The phrase is made on your machine, shown to you exactly once, and typed back by you word by word.',
+  'surface.explanation.spirit': 'Learn it like the true name of a spirit that only answers to you.',
+  'runtime.status': 'No controller status',
+  'runtime.detail': 'This screen holds no key: it shows the seven words once, for the ceremony, and approves nothing.',
+  'runtime.reason.no-controller-service': 'No controller in this composition. Nothing provides ctx.aumlokControl here, so there is no controller to ask. A composition row for the aukora-aumlok plugin is what puts one in.',
+  'runtime.reason.adapter-unbound': 'Controller mounted, no identity bound. The plugin is in this composition but its row carries no directory, so it refuses by name and serves everything that does not need a controller. A directory is bound by the binding ceremony, then named in the row.',
+  'runtime.reason.control-unreadable': 'Controller directory unreadable. The configured directory holds a record and the controller could not project a public control from it. The record is there and is broken, so this is a thing to look at rather than a binding to run.',
+  'runtime.reason.controller-absent': 'No owner bound yet. Bind binds one.',
+  'runtime.reason.record-names-no-machine': 'This record lists more than one machine, and this read did not say which one is this laptop. Nothing is broken and nothing is unbound: a caller that knows which machine it is passes its own machine key, and the AUKORA shell does exactly that when it reads the binding state, so a second device reads BOUND.',
+  'runtime.reason.unnamed': 'Status unavailable, and this launch did not say why.',
+  'runtime.reason.code': 'Controller refusal: {code}',
+  'runtime.connected.status': 'Public control read from the controller',
+  'runtime.connected.detail': 'Re-read from the controller on every refresh. These are the seven public fields; the private half stays in a 0600 record this screen never opens. Reading them proves neither a reachable signer nor a person.',
+  'runtime.field.subject': 'SUBJECT',
+  'runtime.field.epoch': 'CONTROL EPOCH',
+  'runtime.field.activeControl': 'ACTIVE CONTROL DIGEST',
+  'runtime.field.domain': 'PROJECTION DOMAIN',
+  'runtime.field.revoked': 'ACTIVE HEAD',
+  'runtime.revoked.no': 'not revoked',
+  'runtime.revoked.yes': 'REVOKED — this subject is terminal',
+  'runtime.field.approvalKey': 'APPROVAL KEY',
+  'runtime.field.custody': 'CUSTODY CLASS',
+  'runtime.field.projectionState': 'CONTROLLER PROJECTION',
+  'runtime.projection.loaded': 'Read from ctx.aumlokControl.refresh() on this request',
+  'runtime.field.bindment': 'BINDING',
+  'runtime.bindment.unknown': 'A record exists in the bound directory. Whether a person ran the ceremony is not a fact this screen can read.',
+  'runtime.binding.bind': 'Bind',
+  'runtime.binding.busy': 'Ceremony running',
+  'runtime.binding.failed': 'The ceremony returned no result. The status is unchanged.',
+  'runtime.field.reviewChannel': 'APPROVAL CHANNEL',
+  'runtime.reviewChannel.notReported': 'A separate signer process on a Unix socket. This screen cannot probe it, and no confirmation in a browser substitutes for its signature.',
+  // WHICH BACKEND SAID THIS. The shell attaches to backends it does not own, so a status with no
+  // origin on it is a reading about an unnamed machine. It is technical, so it lives in the details
+  // disclosure with the rest of the status rather than beside the words.
+  'runtime.origin': 'Read from {origin}. This status describes that backend and no other.',
+  'runtime.origin.unknown': 'The backend that answered could not be determined. Treat this as a reading of unknown provenance.',
+} satisfies Record<AumlokKey, string>

@@ -1,0 +1,16 @@
+{
+  "kind": "aukora-kira-memory-receipt/v1",
+  "operation": "memory.put",
+  "recordId": "kira:4bf512a553eee25b492b00780ac18f617b682f5565b4e54fe308247e616f4bc1",
+  "effectDigest": "a445c546db3acdceeb98286932d8e0f06fe285532f349a88d29b022bd2590945",
+  "nonce": "9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b",
+  "issuedAt": 1789000000,
+  "aura": {
+    "entryHash": "5cfef05602fd6533faf46541122d31fc1cb4487b5322ed6070f754e4493bcf5e",
+    "seq": 2,
+    "priorHead": "b1f15fd27653098de52d733ad3038a13b0a51b121d8cd4cbbb95a3384ac610b0",
+    "head": "5cfef05602fd6533faf46541122d31fc1cb4487b5322ed6070f754e4493bcf5e"
+  },
+  "sig": "79682799e65158e2271889e5d27ddcbe4e780f99fac8698ba931ea5db068987106956fe8e289dbdd171214ca09f055f21cdf56afcd9f54d08cd3d24409bb9c00",
+  "issuerPk": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAVSb3QpQXEbO8UwukT/b22rDwq3Gvgy9Bp/47n9rtnGA=\n-----END PUBLIC KEY-----\n"
+}
