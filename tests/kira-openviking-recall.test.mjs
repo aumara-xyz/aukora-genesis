@@ -18,6 +18,11 @@ const ROOT = resolve(dirname(HERE), '..')
 const ARMS = Object.freeze({
   down: 'down: with OpenViking down the turn is remembered and lexical recall finds it, said once',
   backfill: 'backfill: once OpenViking answers, the next capture indexes every note, including one captured while it was down',
+  found: 'found: the note is tagged with its Kira id, and a question by meaning returns it from the chained store with its bodyAtCapture',
+  ledger: 'ledger: a hit the chained store does not hold is never shown, and is removed',
+  forget: 'forget: forget removes the note from OpenViking at once',
+  race: 'race: a note forgotten while a reconcile waits or writes it is not shown and not put back',
+  privacy: 'privacy: a model endpoint off this machine is refused',
 })
 let failures = 0
 let passed = 0
@@ -61,7 +66,13 @@ function standIn() {
     return reply(res, 200, { status: 'ok', result: { memories, resources: [] } })
   }
 }
-const server = createServer((req, res) => { serve(req, res).catch(error => reply(res, 502, { status: 'error', error: { message: String(error?.message) } })) })
+/** Index writes and removals wait this long first, so a forget can land while a reconcile waits or writes (the race arm). */
+const slow = { write: 0, remove: 0 }
+const pause = ms => new Promise(done => setTimeout(done, ms))
+const server = createServer((req, res) => {
+  pause(String(req.url).startsWith('/api/v1/content/write') ? slow.write : req.method === 'DELETE' ? slow.remove : 0).then(() => serve(req, res))
+    .catch(error => reply(res, 502, { status: 'error', error: { message: String(error?.message) } }))
+})
 const port = await listen(server)
 const ov = async (method, path, body) => (await fetch(`http://127.0.0.1:${String(port)}${path}`, { method, ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   headers: { 'content-type': 'application/json', 'x-api-key': KEY, 'x-openviking-account': 'aukora', 'x-openviking-user': USER } })).json()
@@ -131,6 +142,78 @@ try {
     const both = await until(async () => { const now = await indexed(); return [drink, ana].every(one => now.some(uri => uri.endsWith(`rem-${one.id.slice(4)}.md`))) && now }, wait * 5_000)
     show('OpenViking holds after the next capture', both)
     assert.ok(both, 'the note captured while OpenViking was down was not indexed after it came back')
+  })
+  await arm(ARMS.found, async () => {
+    // POLLED: on the live server a listed file can be a moment ahead of its search record.
+    const tagsOf = async () => (await ov('POST', '/api/v1/search/find', { query: DRINK, target_uri: ROOT_URI, limit: 5 })).result.memories.find(one => one.uri.endsWith(`rem-${drink.id.slice(4)}.md`))?.tags ?? []
+    const tags = await until(async () => { const now = await tagsOf(); return now.includes(`kira_id=${drink.id}`) && now }, wait * 2_500) || await tagsOf()
+    assert.ok(tags.includes(`kira_id=${drink.id}`), `the note is not tagged with its Kira id (${JSON.stringify(tags)})`)
+    const found = await recall('what do I like to drink?')
+    show('kira_recall "what do I like to drink?"', { method: found.method, notes: found.notes.map(one => ({ id: one.id, score: one.score, text: one.text, body: one.bodyAtCapture?.observationClass })) })
+    assert.equal(found.method, 'openviking-semantic')
+    const hit = found.notes.find(one => one.id === drink.id)
+    assert.equal(hit?.text, DRINK, 'the note is not among the hits with the ledger\'s words')
+    assert.deepEqual(hit.bodyAtCapture, drink.bodyAtCapture, 'the hit does not carry the note\'s bodyAtCapture')
+    assert.equal(hit.bodyAtCapture?.observationClass, 'HOST_REPORTED_CAPTURE_CONTEXT_NOT_EXECUTION_ATTESTATION')
+    assert.equal(found.grantsAuthority, false)
+  })
+  await arm(ARMS.ledger, async () => {
+    // A NOTE FILE THE CHAIN NEVER SAW, and its words in OpenViking: on disk and indexed, and still not the ledger's.
+    const foreign = `rem:${'e'.repeat(64)}`
+    const words = 'my favorite drink is a planted cold soda'
+    writeFileSync(join(stateDir, 'remembered', `${'e'.repeat(64)}.json`), JSON.stringify({ id: foreign, statement: words, aura: { entryHash: 'f'.repeat(64) } }))
+    const planted = await ov('POST', '/api/v1/content/write', { uri: `${ROOT_URI}/remembered/rem-${'e'.repeat(64)}.md`, content: words, mode: 'replace', wait: true, tags: [`kira_id=${foreign}`] })
+    assert.equal(planted.status, 'ok', 'vacuity: the foreign entry was not planted')
+    const answer = await recall('what do I like to drink?')
+    show('with an unchained entry in OpenViking', { ids: answer.notes.map(one => one.id), droppedUnmapped: answer.droppedUnmapped })
+    assert.ok(!answer.notes.some(one => one.id === foreign || one.text === words || one.text === 'unmapped'), 'a hit the chained store does not hold was shown')
+    assert.ok(answer.droppedUnmapped >= 1, 'vacuity: OpenViking did not return the planted entry')
+    assert.ok(await until(async () => !(await indexed()).some(uri => uri.includes('e'.repeat(64))), 10_000), 'the unchained entry was not removed from OpenViking')
+  })
+  await arm(ARMS.forget, async () => {
+    const forgot = await route('POST', KIRA_ROUTES.forget, { id: drink.id })
+    show('forget', { forgotten: forgot.forgotten, openviking: forgot.openviking })
+    assert.equal(forgot.forgotten, true, 'vacuity: the forget did not complete')
+    assert.ok(!(await indexed()).some(uri => uri.includes(drink.id.slice(4))), 'the forgotten note is still in OpenViking after the forget')
+    assert.ok(!(await recall('what do I like to drink?')).notes.some(one => one.id === drink.id), 'recall still returns the forgotten note')
+  })
+  await arm(ARMS.race, async () => {
+    const ana = await noteWith(ANA)
+    const LANTERN = 'the paper lantern on the porch came from Ubud'
+    slow.write = 1500
+    slow.remove = 500
+    try {
+      // A RECALL WAITING ON A RECONCILE, AND A FORGET THAT LANDS WHILE IT WAITS: the recall reads the ledger in its turn.
+      await say('I keep a red kite in the garden shed')
+      await pause(100)
+      const waiting = recall('when does Ana land?')
+      await pause(100)
+      assert.equal((await route('POST', KIRA_ROUTES.forget, { id: ana.id })).forgotten, true, 'vacuity: Ana was not forgotten')
+      const answer = await waiting
+      show('the recall that waited, after Ana was forgotten', { method: answer.method, ids: answer.notes.map(one => one.id) })
+      assert.ok(!answer.notes.some(one => one.id === ana.id), 'a recall that waited returned a note forgotten meanwhile')
+      // A FORGET WHILE THE NOTE'S OWN INDEX WRITE IS IN FLIGHT: it is removed after that write, not before it.
+      slow.remove = 0
+      await say(LANTERN)
+      const lantern = await noteWith(LANTERN)
+      await pause(300)
+      assert.equal((await route('POST', KIRA_ROUTES.forget, { id: lantern.id })).forgotten, true, 'vacuity: the lantern was not forgotten')
+      await pause(slow.write + 1000)
+      const left = (await indexed()).filter(uri => [ana, lantern].some(one => uri.includes(one.id.slice(4))))
+      show('forgotten notes OpenViking still holds', left)
+      assert.deepEqual(left, [], 'a forgotten note was written back into OpenViking')
+    } finally { slow.write = 0; slow.remove = 0 }
+  })
+  await arm(ARMS.privacy, async () => {
+    const { readBridgeConfig } = await load('recall-openviking.mjs')
+    const other = join(work, 'remote')
+    bridgeTo(other, 'http://127.0.0.1:1933', { embedding: { dense: { provider: 'openai', api_base: 'https://api.openai.com/v1' } } })
+    const refused = readBridgeConfig(other)
+    show('ov.conf with a remote embedding endpoint', refused)
+    assert.equal(refused.configured, false, 'a remote model endpoint was accepted')
+    assert.match(String(refused.reason), /models-off-machine/u)
+    bridgeTo(other, 'http://10.0.0.1:1933')
+    assert.equal(readBridgeConfig(other).reason, 'openviking-url-not-on-this-machine')
   })
 } finally {
   server.close()
