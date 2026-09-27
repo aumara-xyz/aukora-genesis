@@ -1,0 +1,89 @@
+{
+  "domain": "aukora:kernel-node-pin:v1",
+  "source": {
+    "repository": "https://github.com/aumara-xyz/aukora",
+    "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+    "path": "packages/kernel-node",
+    "taken": "Already fetched local vendor-staging/kernel-node; no network."
+  },
+  "license": "AGPL-3.0-or-later",
+  "runtimeImports": false,
+  "files": [
+    {
+      "path": "SOURCE-COMMIT",
+      "sha256": "608a1622052a34e55476050c96ac58d89739ce13af57cc42bc2dfa0e516377da",
+      "bytes": 41,
+      "sourcePath": "vendor-staging/kernel-node/SOURCE-COMMIT",
+      "note": "Local fetched-source pin metadata, not asserted to be an upstream repository file."
+    },
+    {
+      "path": "index.ts",
+      "upstreamPath": "packages/kernel-node/index.ts",
+      "sha256": "7df775fa5f86e2f0215334ec90f4d4f73352bd9616ab79ef8524da994f6b0bc8",
+      "bytes": 78,
+      "note": "Unmodified source barrel retained as reference only; no runtime import."
+    },
+    {
+      "path": "package.json",
+      "upstreamPath": "packages/kernel-node/package.json",
+      "sha256": "f258dfc647a6eb81af564fddc62f86832cff8e441529a03c27e6da5b91693a35",
+      "bytes": 778,
+      "note": "Unmodified source package metadata retained to substantiate package identity and license; not a runtime dependency."
+    },
+    {
+      "path": "src/index.ts",
+      "upstreamPath": "packages/kernel-node/src/index.ts",
+      "sha256": "325147f8e32ea375c95c4d2f9c1559ab73b141eec2928f8f71c3a0d5a5e04980",
+      "bytes": 86,
+      "note": "Unmodified source barrel retained as reference only; no runtime import."
+    },
+    {
+      "path": "src/trustedStateStore.ts",
+      "upstreamPath": "packages/kernel-node/src/trustedStateStore.ts",
+      "sha256": "38c5d50da2038845eb4a8f005848c8090bea199f947413b887957cecc3ed4ecc",
+      "bytes": 20571
+    },
+    {
+      "path": "test/trustedStateStore.hardening.test.ts",
+      "upstreamPath": "packages/kernel-node/test/trustedStateStore.hardening.test.ts",
+      "sha256": "cd43725016146a020940328d302b9e3c3abeabbaa507cc1994ac7a6c0b5c9d53",
+      "bytes": 6271
+    },
+    {
+      "path": "test/trustedStateStore.pathsafety.test.ts",
+      "upstreamPath": "packages/kernel-node/test/trustedStateStore.pathsafety.test.ts",
+      "sha256": "297f6461651bf6af1b9fc26987cbc080b9a942cbd1fb1fd0f9bc4908e81b17ec",
+      "bytes": 11114
+    },
+    {
+      "path": "test/trustedStateStore.realDecide.test.ts",
+      "upstreamPath": "packages/kernel-node/test/trustedStateStore.realDecide.test.ts",
+      "sha256": "9f717117a2866251a0177df1c8a0a56e77a19966d65ccac4e896e834d26f9c23",
+      "bytes": 8293
+    },
+    {
+      "path": "test/trustedStateStore.sigkill.test.ts",
+      "upstreamPath": "packages/kernel-node/test/trustedStateStore.sigkill.test.ts",
+      "sha256": "081a68134a1afc25f4c24472dffc1a9a6cd103f12bd258f2c088d78baace251c",
+      "bytes": 9001
+    },
+    {
+      "path": "test/trustedStateStore.test.ts",
+      "upstreamPath": "packages/kernel-node/test/trustedStateStore.test.ts",
+      "sha256": "91b0caa7fc6d3cc27908429c37c28bc752f955c51caa128b395cdf886eef8c23",
+      "bytes": 7420
+    },
+    {
+      "path": "LICENSE",
+      "upstreamPath": "packages/kernel/LICENSE",
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0",
+      "bytes": 34523,
+      "note": "AGPL-3.0-or-later license from the already measured kernel package at the same source commit; kernel-node declares the same license in package.json."
+    }
+  ],
+  "port": {
+    "path": "scripts/aukora/trusted-state-store.mjs",
+    "from": "src/trustedStateStore.ts",
+    "sourceLineMapping": "Trailing @source L markers name original statement lines. Types are JSDoc. PORT comments identify the POSIX path helper and Genesis state-file/lock-file/external-high-water/journal-write seams plus mandatory directory fsync on the external witness path."
+  }
+}
