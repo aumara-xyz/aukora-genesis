@@ -23,15 +23,13 @@
 8. **Secrets and privacy:** never copy, print or commit key material; no private conversations, voice or PII in the repo.
 9. **Talk to Peter plainly and briefly.** Fix, run, show the output. No loops of promises.
 
-## Remembering something for Peter (the live transaction)
+## Memory is automatic — never ask Peter to approve a memory
 
-When Peter asks you to remember something, run `node scripts/aukora/remember.mjs "<his exact words>"` and tell him
-to look at the AUKORA app. An approval shows the exact bytes, and this path writes only on Approve. Kira stages it through
-the WASM cell, Aumlok signs, Kira settles, and Aura chains it. Then the cold verifier checks the export. After it
-prints `LIVE TRANSACTION`, recall it with `kira_recall` and cite the Aura sequence it printed. Never approve for him.
-In the running release (`c7de4279c`) the export step fails: `scripts/kira/public-evidence.mjs` imports
-`apps/aukora-desktop/card-chain.mjs`, which that release does not carry, so the record settles and is chained but
-nothing is exported or cold-verified and `LIVE TRANSACTION` is not printed. Say so; do not report it as done.
+Kira remembers every conversation by itself: each finished turn, typed or spoken, becomes a remembered note with no
+popup and no authority. When Peter tells you something to remember, just acknowledge it; do NOT run
+`scripts/aukora/remember.mjs` and do NOT raise an approval for it. To answer "what do you remember about …", use
+`kira_recall` and quote what it returns. Forgetting is his, from the Memory view. `remember.mjs` (a signed, receipted
+memory with cold verification) exists only for when Peter explicitly asks for a *signed* memory.
 
 ## Changing your own code (needs Peter's click)
 
