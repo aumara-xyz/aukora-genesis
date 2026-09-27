@@ -60,7 +60,7 @@ import { provideKiraRecall } from './recall-service.mjs'
 import { RECALL_CEILINGS } from './memory-tiers.mjs'
 import { provideKiraCite } from './cite-service.mjs'
 import { RETRIEVAL_LIMITS, RETRIEVAL_OPTIONS } from './retrieval.mjs'
-import { queueTool, recallTool, settleTool, stageTool } from './tools.mjs'
+import { queueTool, recallRemembered, recallTool, settleTool, stageTool } from './tools.mjs'
 
 /** Cordis plugin name. */
 export const name = 'aukora-kira'
@@ -751,6 +751,7 @@ export async function apply(ctx, config) {
   // that could only ever answer "nothing here" would make an unconfigured build read as a
   // reviewed-clean one — the same reason `kira_settle` is registered only with a memory owner.
   if (pendingQueue !== undefined) registry.register(queueTool(pendingQueue))
+  const rememberedNotes = memoryOwner === undefined ? undefined : storeDepsForRecall().listNotes
   registry.register(recallTool(async (exec, request) => {
     const kind = typeof request.kind === 'string' ? request.kind : ''
     if (kind !== '' && !recordKind.includes(/** @type {never} */ (kind))) {
@@ -758,7 +759,8 @@ export async function apply(ctx, config) {
     }
     const conversation = sessionFor(exec, kind)
     const signal = /** @type {AbortSignal | undefined} */ (exec['signal'])
-    return conversation.turn(request, signal ?? new AbortController().signal)
+    const answer = await conversation.turn(request, signal ?? new AbortController().signal)
+    return typeof request.text === 'string' && request.text !== '' ? { ...answer, remembered: await recallRemembered(rememberedNotes, request.text) } : answer
   }))
 }
 

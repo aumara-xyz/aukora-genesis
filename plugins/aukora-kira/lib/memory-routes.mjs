@@ -115,6 +115,7 @@ export async function routeRequest(request, deps = {}) {
           source: note.source ?? null,
           aura: note.aura ?? null,
           receiptState: note.receiptState ?? null,
+          bodyAtCapture: note.bodyAtCapture ?? null,
           evidence: note.evidence ?? [],
           citation: { source: note.source ?? null, evidence: note.evidence ?? [], aura: note.aura ?? null },
         })),

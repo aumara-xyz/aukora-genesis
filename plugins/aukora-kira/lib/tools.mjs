@@ -612,6 +612,7 @@ export function recallTool(dispatch) {
           ceiling: { type: 'array', items: { type: 'string' } },
           state: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           counters: { type: 'object', additionalProperties: true, properties: {}, required: [] },
+          remembered: { type: 'object', additionalProperties: true, properties: {}, required: [] },
         },
         required: ['availability', 'status', 'snippets', 'relations', 'interpretation', 'retrieval', 'ceiling', 'state'],
       },
@@ -629,6 +630,29 @@ export function recallTool(dispatch) {
       return { card: 'generic', title, kind: 'read', rawInput: title }
     },
   })
+}
+
+/**
+ * THE REMEMBERED TIER IN `kira_recall` (2026-09-27; it read signed records only). The question's words (3+ letters) go through the
+ * Memory app's own `listNotes`, ranked by how many match; each hit keeps its `bodyAtCapture` (`null` = UNKNOWN). Never authority.
+ */
+export async function recallRemembered(listNotes, text, limit = 5) {
+  const terms = [...new Set(String(text).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(term => term.length >= 3))]
+  if (typeof listNotes !== 'function' || terms.length === 0) return { state: 'not-asked', notes: [] }
+  let notes
+  // EVERY MATCH, THEN RARER WORDS WEIGH MORE (2026-09-27 review): capped at 500 in file order and scored by a plain count, a
+  // 701-note store answered "where is the quokka figurine" with five notes that only shared "where" and "the".
+  try { notes = await listNotes({ tiers: ['remembered'], q: terms.join(' '), limit: Number.MAX_SAFE_INTEGER }) } catch (error) { return { state: 'undetermined', reason: String(error?.code ?? error?.message).slice(0, 200), notes: [] } }
+  const has = notes.map(note => new Set(terms.filter(term => String(note.text).toLowerCase().includes(term))))
+  const weight = new Map(terms.map(term => [term, 1 / Math.max(1, has.filter(set => set.has(term)).length)]))
+  const score = new Map(notes.map((note, at) => [note, [...has[at]].reduce((sum, term) => sum + weight.get(term), 0)]))
+  return {
+    state: notes.length === 0 ? 'empty' : 'found', grantsAuthority: false,
+    notes: notes.sort((a, b) => score.get(b) - score.get(a)).slice(0, limit).map(note => ({
+      id: note.id, text: String(note.text).slice(0, 600), observedAt: note.observedAt ?? null,
+      source: { sessionId: note.source?.sessionId ?? null, seq: note.source?.seq ?? null }, bodyAtCapture: note.bodyAtCapture ?? null,
+    })),
+  }
 }
 
 /** Declared parameter schema for the `kira_queue` tool. */
