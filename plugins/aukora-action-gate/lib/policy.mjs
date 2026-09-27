@@ -80,7 +80,25 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0'])
 /** Tool names that spend or publish, for tools this gate has no specific model of (an MCP bridge, say). */
 const SPEND_NAME = /(^|[_-])(buy|purchase|pay|payment|checkout|transfer|withdraw|deposit|trade|spend|top_?up)([_-]|$)/iu
 const PUBLISH_NAME = /(^|[_-])(publish|deploy|merge)([_-]|$)/iu
-const WRITE_NAME = /(^|[^a-z0-9])(write|edit|create|delete|move|put|save)([^a-z0-9]|$)/iu
+const WRITE_NAME = /(^|[^a-z0-9])(write|edit|create|delete|move|put|save|patch|append|replace)([^a-z0-9]|$)/iu
+
+// Compile these existing allow outcomes for the kernel. New classes/outcomes need explicit rules.
+export const KERNEL_ALLOWS = Object.freeze([
+  ['read', 'observe', ['allow:ok']],
+  ['write', 'local-write', ['allow:ok', 'allow:approved', 'allow:approved-checked']],
+  ['exec', 'external', ['allow:ok']],
+  ['network', 'external', ['allow:ok', 'allow:non-network-uri', 'allow:search-provider']],
+  ['tool', 'external', ['allow:approved', 'allow:approved-checked']],
+])
+
+function actionClass(tool, args) {
+  if (['cordis_define', 'cordis_run'].includes(tool)) return 'live-code'
+  if (tool === 'str_replace_editor') return args?.command === 'view' ? 'read' : 'write'
+  if (['read', 'read_image', 'present', 'grep', 'glob'].includes(tool)) return 'read'
+  if (['bash', 'run_code', 'terminal_open', 'terminal_send'].includes(tool)) return 'exec'
+  if (['web_fetch', 'web_search'].includes(tool)) return 'network'
+  return WRITE_NAME.test(tool.replace(/([a-z0-9])([A-Z])/gu, '$1_$2')) ? 'write' : 'tool'
+}
 
 /** Argument keys read as paths, and as network destinations, on tools the gate has no specific model of. */
 const PATH_KEYS = /^(file_?paths?|paths?|target|source|destination|src|dest|dst|from|to|cwd|workdir|dir|directory|file|filename|notebook_path|(?:source|destination|target|src|dest|dst)[_-]?(?:path|file|dir))$/iu
@@ -232,9 +250,10 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
   /** Judge one declared path for an operation kind: read, list, search, dir or write. */
   function judgePath(raw, kind, call) {
     // The shell's conventional discard sink is a device, not a filesystem write root.
-    if (kind === 'write' && raw === '/dev/null') return allow('allow:null-device')
+    if (kind === 'write' && raw === '/dev/null') { call.targets?.add(raw); return allow('allow:null-device') }
     const forms = candidates(raw, call)
     if (forms === null) return deny('path:unresolvable', 'the path is not a usable string; a path the gate cannot reason about is a path it does not allow')
+    for (const form of forms) call.targets?.add(form)
     for (const abs of forms) {
       const key = protectedBy(keyLaw, abs)
       if (key?.unresolvable) return deny('path:unresolvable', `${key.unresolvable} (seed guard)`)
@@ -292,8 +311,9 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
   }
 
   /** Judge one host a call names. */
-  function judgeHost(host) {
+  function judgeHost(host, call) {
     const h = String(host).toLowerCase().replace(/\.$/u, '')
+    call.targets?.add(h)
     if (allowLoopback && LOOPBACK.has(h)) return null
     const ok = networkAllow.some(entry => {
       const e = entry.toLowerCase()
@@ -301,7 +321,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
     })
     return ok ? null : deny('network:host-not-allowed', `${h} is not on this deployment's network allowlist`)
   }
-  function judgeUrl(url) {
+  function judgeUrl(url, call) {
     let parsed
     try { parsed = new URL(String(url)) } catch {
       return deny('network:unparseable-url', 'the URL could not be parsed, so its host could not be checked')
@@ -310,7 +330,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
     // read as the host `user` and every memory write and forget was refused. Only the named local schemes pass: an unknown
     // scheme (postgres://host, tcp://host) is still judged by its host, as before.
     if (NON_NETWORK_SCHEMES.has(parsed.protocol)) return allow('allow:non-network-uri')
-    return judgeHost(parsed.hostname.replace(/^\[|\]$/gu, ''))
+    return judgeHost(parsed.hostname.replace(/^\[|\]$/gu, ''), call)
   }
 
   /** Judge a shell or code string: what it names, command by command. */
@@ -341,7 +361,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
       }
     }
     for (const host of hostsNamed(text)) {
-      const refused = judgeHost(host)
+      const refused = judgeHost(host, call)
       if (refused !== null) return refused
     }
     return null
@@ -393,7 +413,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
       case 'run_code':
         return judgeText(args.code ?? '', call.workspace, call, { code: true }) ?? allow()
       case 'web_fetch':
-        return judgeUrl(args.url) ?? allow()
+        return judgeUrl(args.url, call) ?? allow()
       case 'web_search':
         return allow('allow:search-provider')
       default: {
@@ -410,7 +430,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
         if (stale !== null) return stale
         const loose = looseTargets(args)
         const kind = WRITE_NAME.test(tool.replace(/([a-z0-9])([A-Z])/gu, '$1_$2')) ? 'write' : 'read'
-        const refused = first(...loose.paths.map(p => judgePath(p, kind, call)), ...loose.urls.map(judgeUrl))
+        const refused = first(...loose.paths.map(p => judgePath(p, kind, call)), ...loose.urls.map(url => judgeUrl(url, call)))
         if (refused !== null) return refused
         return allow(loose.paths.length + loose.urls.length > 0 ? 'allow:approved-checked' : 'allow:approved')
       }
@@ -427,5 +447,12 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
     return switched
   }
 
-  return Object.freeze({ judge: judgeCall })
+  function classify(call) {
+    const targets = new Set()
+    const { rule, message } = judgeCall({ ...call, targets })
+    return { kind: actionClass(String(call.tool), call.args), rule, message,
+      targets: targets.size === 0 ? [`tool:${String(call.tool)}`] : [...targets].sort() }
+  }
+
+  return Object.freeze({ judge: judgeCall, classify })
 }
