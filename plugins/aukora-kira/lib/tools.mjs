@@ -590,7 +590,9 @@ export function recallTool(dispatch) {
       + 'excerpts with Aura citations, never a generated answer. Store availability (found, empty, undetermined) is '
       + `reported separately from retrieval status (match, ambiguous, insufficient, exhausted). Ask a question, then `
       + `use more, select, not-that, clarify: original|current, new, or stop within at most ${RETRIEVAL_LIMITS.references} references. `
-      + 'The subject and permitted privacy classes come from the host and cannot be chosen or widened here.',
+      + 'The subject and permitted privacy classes come from the host and cannot be chosen or widened here. '
+      + 'remembered holds the automatic notes: matched by meaning (method openviking-semantic) when the owner installed OpenViking, '
+      + 'only notes the chained store holds, each with its bodyAtCapture; otherwise matched by words.',
     parameters: RECALL_PARAMETERS,
     output: {
       schema: {

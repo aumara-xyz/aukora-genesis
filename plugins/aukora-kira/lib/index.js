@@ -61,6 +61,7 @@ import { RECALL_CEILINGS } from './memory-tiers.mjs'
 import { provideKiraCite } from './cite-service.mjs'
 import { RETRIEVAL_LIMITS, RETRIEVAL_OPTIONS } from './retrieval.mjs'
 import { queueTool, recallRemembered, recallTool, settleTool, stageTool } from './tools.mjs'
+import { createOpenVikingRecall, openVikingHome, readBridgeConfig, semanticNotes } from './recall-openviking.mjs'
 
 /** Cordis plugin name. */
 export const name = 'aukora-kira'
@@ -331,6 +332,70 @@ export async function apply(ctx, config) {
     }
   }
 
+  // ── OPENVIKING FINDS, THE CHAINED STORE ANSWERS (`recall-openviking.mjs`) ──────────────────────────────────────────
+  // Off unless the OpenViking home beside the store holds `aukora-bridge.json`, re-read per use so an install or a changed
+  // bridge takes effect without a restart. Captures are indexed AFTER they are durable and never waited on; a recall asks
+  // OpenViking first and shows only notes the chained store holds. It grants nothing and raises no approval.
+  let semantic
+  let semanticConfig = ''
+  const semanticRecall = () => {
+    if (normalized.memoryOwner === undefined) return undefined
+    const config = readBridgeConfig(openVikingHome(normalized.memoryOwner.stateDir))
+    const same = JSON.stringify(config)
+    if (same !== semanticConfig) { semanticConfig = same; semantic = createOpenVikingRecall({ config, logger: ctx.logger }) }
+    return semantic
+  }
+  const semanticLedger = () => {
+    try {
+      return { entries: new Map(storeDepsForRecall().liveRemembered().notes.map(note => [String(note.id), note])), complete: true }
+    } catch { return { entries: new Map(), complete: false } }
+  }
+  /** Reconcile in the background: a capture, the mount and a changed bridge all land here, so a note missed while down is indexed later. */
+  const semanticIndex = () => {
+    const bridge = semanticRecall()
+    if (bridge?.configured !== true) return
+    void (async () => {
+      if ((await bridge.available()).ok !== true) return
+      const done = await bridge.sync(semanticLedger)
+      if (done.failed.length > 0) ctx.logger?.warn?.(`aukora-kira: OpenViking index: ${String(done.failed.length)} not indexed (${done.failed.slice(0, 2).join('; ')})`)
+    })().catch(error => ctx.logger?.warn?.(`aukora-kira: OpenViking index stopped (${String(error?.code ?? error?.message ?? 'unknown')})`))
+  }
+  semanticIndex()
+  /** A forget also removes the note from OpenViking, and names it among what it did not reach when it could not. */
+  const withSemanticForget = deps => ({
+    ...deps,
+    forgetNote: async args => {
+      const answer = await deps.forgetNote(args)
+      const bridge = answer?.forgotten === true ? semanticRecall() : undefined
+      if (bridge?.configured !== true) return answer
+      const reached = await bridge.forget(String(answer.id))
+      return reached.reached === true
+        ? { ...answer, openviking: { removed: true, uri: reached.uri } }
+        : { ...answer, notReached: [...(Array.isArray(answer.notReached) ? answer.notReached : []), { what: 'openviking', ref: String(reached.uri ?? 'openviking'), because: String(reached.because) }] }
+    },
+  })
+  /** The reason recall last said it answered lexically: said once per reason, not on every call. */
+  let semanticNotice = null
+  /** `kira_recall`'s remembered notes: by meaning through OpenViking when it answers, else lexical as before. */
+  const rememberedFor = async (listNotes, text) => {
+    const bridge = semanticRecall()
+    if (bridge === undefined) return recallRemembered(listNotes, text)
+    let found = { available: false, reason: String(bridge.reason) }
+    if (bridge.configured === true) {
+      try { found = await bridge.recall({ question: text, live: semanticLedger }) } catch (error) { found = { available: false, reason: `semantic-recall-failed (${String(error?.code ?? error?.message ?? 'unknown')})` } }
+    }
+    if (found.available === true && found.hits.length > 0) { semanticNotice = null; return semanticNotes(found) }
+    const lexical = await recallRemembered(listNotes, text)
+    if (found.available === true) {
+      semanticNotice = null
+      return { ...lexical, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold } }
+    }
+    if (found.reason === semanticNotice) return lexical
+    semanticNotice = found.reason
+    if (bridge.configured === true) ctx.logger?.warn?.(`aukora-kira: semantic recall is not available (${found.reason}); kira_recall answers lexically`)
+    return { ...lexical, semantic: { available: false, reason: found.reason, notice: 'semantic recall (OpenViking) is not available, so this answer is lexical; said once' } }
+  }
+
   // ── `kira.recall`: THE READ-ONLY DOOR ONTO THE MEMORY ──────────────────────
   // PROVIDED OVER THE READ OWNER, NEVER OVER THE MEMORY OWNER: the read owner already decides the subject,
   // the permitted privacy classes, and whether a damaged store reports `undetermined` instead of `empty`. The
@@ -456,7 +521,7 @@ export async function apply(ctx, config) {
     sessionsRoot: String(normalized.memoryOwner.stateDir).replace(/\/[^/]+$/u, ''),
     policyOf: capturePolicyOf,
     logger: ctx.logger,
-    onRemembered: info => ctx.logger?.info?.(`aukora-kira: remembered ${String(info.remembered)} note(s) from ${info.sessionId} turn ${String(info.turn)}`),
+    onRemembered: info => { ctx.logger?.info?.(`aukora-kira: remembered ${String(info.remembered)} note(s) from ${info.sessionId} turn ${String(info.turn)}`); semanticIndex() },
   })
   // ── AUMA LIVE TURNS, BESIDE THE TEXT-CHAT CAPTURE (2026-09-27) ────────────────────────────────────────────────
   // `registerAumaTurnCapture` was built and never registered: the apps face emits `auma/turn-finished` for every heard
@@ -467,7 +532,7 @@ export async function apply(ctx, config) {
       stateDir: captureStateDir,
       policyOf: capturePolicyOf,
       logger: ctx.logger,
-      onRemembered: info => ctx.logger?.info?.(`aukora-kira: remembered ${String(info.remembered)} note(s) from Auma Live ${info.sessionId} turn ${String(info.turn)}`),
+      onRemembered: info => { ctx.logger?.info?.(`aukora-kira: remembered ${String(info.remembered)} note(s) from Auma Live ${info.sessionId} turn ${String(info.turn)}`); semanticIndex() },
     })
   } catch (error) {
     ctx.logger?.warn?.(`aukora-kira: Auma Live capture NOT registered (${String(error?.code ?? error?.message ?? 'unknown')})`)
@@ -669,7 +734,7 @@ export async function apply(ctx, config) {
     // loadable headless (no server: the routes simply never mount) and mounts them the moment the server exists.
     ctx.inject(['webServer', 'connection'], (web) => {
     try {
-      const mounted = mountKiraRoutes(web, buildRouteDeps({
+      const mounted = mountKiraRoutes(web, withSemanticForget(buildRouteDeps({
         stateDir: normalized.memoryOwner.stateDir,
         readOwner: owner,
         // THE QUEUE THIS DEPLOYMENT STAGES INTO, so Forget can remove the auto-staged copy of the same words.
@@ -716,7 +781,7 @@ export async function apply(ctx, config) {
               because: String(error?.message ?? error).slice(0, 200) }
           }
         },
-      }))
+      })))
       if (mounted.mounted.length > 0) ctx.emit?.('kira.memory-mounted', { routes: mounted.mounted })
     } catch (error) {
       // NAMED, NOT SWALLOWED: a reader of the log can see exactly which route set is absent and why.
@@ -760,7 +825,7 @@ export async function apply(ctx, config) {
     const conversation = sessionFor(exec, kind)
     const signal = /** @type {AbortSignal | undefined} */ (exec['signal'])
     const answer = await conversation.turn(request, signal ?? new AbortController().signal)
-    return typeof request.text === 'string' && request.text !== '' ? { ...answer, remembered: await recallRemembered(rememberedNotes, request.text) } : answer
+    return typeof request.text === 'string' && request.text !== '' ? { ...answer, remembered: await rememberedFor(rememberedNotes, request.text) } : answer
   }))
 }
 
