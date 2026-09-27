@@ -14,8 +14,9 @@
  * Everything it writes is inside one scratch root (scripts/lib/run-root.mjs `openScratch`), removed at exit. It reads
  * no key material: the one live key path it names is refused by the gate before any tool body could open it.
  */
+import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, linkSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, linkSync, mkdirSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { homedir, tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -25,6 +26,7 @@ import { canonicalJSON } from '../aukora-kira/lib/record.mjs'
 import { openScratch } from '../../scripts/lib/run-root.mjs'
 import * as gate from './lib/index.mjs'
 import { createPolicy } from './lib/policy.mjs'
+import { createSelfChangeTool } from './lib/self-change-tool.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -225,6 +227,46 @@ for (const [index, call] of calls.entries()) {
     process.stdout.write(`FAIL #${String(index + 1).padStart(2, '0')} ${call.group}: ${call.label ?? call.name}; expected ${call.expect}, got ${got}, body ${bodyRan ? 'ran' : 'did not run'}  ${shown}\n`)
     if (result.isError) process.stdout.write(`       ${text.length > 230 ? `${text.slice(0, 230)}...` : text}\n`)
   }
+}
+// ── THE TRUSTED TOOL ITSELF (self-change-tool.mjs) on a scratch owner repository whose self-change.mjs is a stub: it proves
+// which script runs and with what, and that a worktree the agent could have planted is refused. No approval machinery runs.
+{
+  const owner = scratch.path('owner'), origin = scratch.path('origin.git'), wtRoot = scratch.path('worktrees')
+  const git = (cwd, ...args) => execFileSync('/usr/bin/git', ['-c', 'core.hooksPath=/dev/null', '-c', 'user.name=c', '-c', 'user.email=c@c', ...args],
+    { cwd, stdio: 'pipe', env: { PATH: '/usr/bin:/bin', HOME: '/dev/null', GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1' } })
+  const stub = who => `// reads AUKORA_SELF_CHANGE_SOURCE\nconsole.log('${who}', process.env.AUKORA_SELF_CHANGE_SOURCE, process.argv.slice(2).join(' '))\n`
+  mkdirSync(join(owner, 'scripts', 'aukora'), { recursive: true })
+  mkdirSync(join(wtRoot, 'fake'), { recursive: true })
+  writeFileSync(join(owner, 'scripts', 'aukora', 'self-change.mjs'), stub('OWNER'))
+  writeFileSync(join(wtRoot, 'fake', '.git'), `gitdir: ${scratch.path('elsewhere')}\n`)
+  mkdirSync(scratch.path('elsewhere'))
+  symlinkSync(join(wtRoot, 'fake'), join(wtRoot, 'link'))
+  git(owner, 'init', '-q', '-b', 'main'); git(owner, 'add', '-A'); git(owner, 'commit', '-qm', 'stub')
+  git(scratch.root, 'clone', '-q', '--bare', owner, origin); git(owner, 'remote', 'add', 'origin', origin)
+  const tool = createSelfChangeTool({ repo: owner, worktreesRoot: wtRoot, supportRoot: support })
+  const wt = join(realpathSync(wtRoot), 'fix-1')
+  const use = async args => { try { return { ok: true, text: await tool.execute(args, { signal }) } } catch (error) { return { ok: false, text: error.message } } }
+  const arms = [
+    ['a new name is made at main', { worktree: 'fix-1', why: 'w' }, r => r.ok && r.text.startsWith('CREATED') && existsSync(join(wt, '.git'))],
+    ['the owner\'s script runs, not the worktree\'s', { worktree: 'fix-1', why: 'w', paths: ['a.txt'], preview: true },
+      r => r.ok && r.text.includes(`EXIT 0`) && r.text.includes(`OWNER ${wt} --preview w a.txt`), () => writeFileSync(join(wt, 'scripts', 'aukora', 'self-change.mjs'), stub('WORKTREE'))],
+    ['a name outside the root', { worktree: '../fix-1', why: 'w', paths: ['a.txt'] }, r => !r.ok],
+    ['a path that climbs', { worktree: 'fix-1', why: 'w', paths: ['../a.txt'] }, r => !r.ok],
+    ['a .git pointing elsewhere', { worktree: 'fake', why: 'w', paths: ['a.txt'] }, r => !r.ok && r.text.includes('not a worktree')],
+    ['a linked worktree', { worktree: 'link', why: 'w', paths: ['a.txt'] }, r => !r.ok && r.text.includes('not a plain directory')],
+  ]
+  let passed = 0
+  for (const [label, args, expect, before] of arms) {
+    before?.()
+    const r = await use(args)
+    if (expect(r)) passed += 1
+    else { failures += 1; process.stdout.write(`FAIL trusted self-change tool: ${label}: ${r.text.slice(0, 300)}\n`) }
+  }
+  // A machine with no worktree root yet: the tool makes it on the host (a confined shell may not).
+  const fresh = createSelfChangeTool({ repo: owner, worktreesRoot: scratch.path('no-root-yet'), supportRoot: support })
+  if (await fresh.execute({ worktree: 'fix-2', why: 'w' }, { signal }).then(text => text.startsWith('CREATED'), () => false)) passed += 1
+  else { failures += 1; process.stdout.write('FAIL trusted self-change tool: a missing worktree root\n') }
+  groups.set('trusted self-change tool', { total: arms.length + 1, passed })
 }
 // `git -C ~/…` (the spelling AGENTS.md teaches) names the tree under home, not a `~` directory under a workspace on main.
 // Judged by the policy directly, with the scratch root as home: a worktree off main may commit there.
