@@ -176,31 +176,27 @@ export function registerRememberedCapture(ctx, options = {}) {
           logger?.warn?.(`aukora-kira: a candidate was not remembered (${String(drop.rule)}): statement sha256 ${sha256Hex(String(drop.statement ?? '')).slice(0, 16)}… — the text is deliberately not logged`)
         }
         // THE BOUND AND ITS REPORT COME FROM ONE PLACE, so the court that drives them drives what RUNS.
-        const notes = boundedNotes(captured.notes, { logger })
+        const notes = boundedNotes(captured.notes, { logger }).map(note => ({ ...note, bodyAtCapture }))
         if (notes.length === 0) return notes
-        // THE TURN'S ANCHOR, FIRST: a digest and a seq, never the words. The notes below chain after it.
-        {
-          const prior = readLinesIfPresent(journalFile)
-          let previous = null
-          if (prior.length > 0) {
-            try { previous = JSON.parse(prior[prior.length - 1]) } catch { throw new Error('aukora-kira: the remembered journal tail is not JSON; refusing to append an unchained entry') }
-          }
-          appendJournalLine({ file: journalFile, line: JSON.stringify(nextEntry({ previous, op: 'turn', id: turnDigest, objectDigest: turnDigest, actor: 'kira.capture/v1', reason: `turn ${String(sessionId)} seq ${String(seq)} was remembered`, at })) })
+        // THE TURN'S ANCHOR, a digest and a seq, never the words: CHAINED FIRST, WRITTEN ONLY AFTER THE NOTE (2026-09-27 review).
+        // It is the durable "done" mark, and appended before the plan, a refusal below (AURA_TAIL_TORN) left the ask anchored with
+        // no note, so no later turn retried it: measured, every ask during a torn tail was lost for good.
+        const prior = readLinesIfPresent(journalFile)
+        let previous = null
+        if (prior.length > 0) {
+          try { previous = JSON.parse(prior[prior.length - 1]) } catch { throw new Error('aukora-kira: the remembered journal tail is not JSON; refusing to append an unchained entry') }
         }
+        const anchor = nextEntry({ previous, op: 'turn', id: turnDigest, objectDigest: turnDigest, actor: 'kira.capture/v1', reason: `turn ${String(sessionId)} seq ${String(seq)} was remembered`, at })
 
         // ONE PLAN, THEN THE WRITES: a note and its journal line travel together, so a caller cannot write a note the store
         // cannot account for — the rule `planStoreWrite` refuses a mismatch over.
         const plan = planStoreWrite({
           stateDir,
           notes,
-          // CHAINED FROM THE JOURNAL'S TAIL (2026-09-27, red team), as memory-auma-hook.mjs does: an unhashed 'remember' line
+          // CHAINED AFTER THE ANCHOR (2026-09-27, red team), as memory-auma-hook.mjs does: an unhashed 'remember' line
           // is not one of the journal's ops and verifyChain reads it as DAMAGED, so the first captured turn would have broken it.
           journalLines: (() => {
-            const prior = readLinesIfPresent(`${stateDir}/${STORE_PATHS.journal}`)
-            let chained = null
-            if (prior.length > 0) {
-              try { chained = JSON.parse(prior[prior.length - 1]) } catch { throw new Error('aukora-kira: the remembered journal tail is not JSON; refusing to append an unchained entry') }
-            }
+            let chained = anchor
             return notes.map(note => {
               const entry = nextEntry({ previous: chained, op: 'add', id: note.id, objectDigest: String(note.id).slice(4), actor: 'kira.capture/v1', reason: 'remembered from a conversation turn', at })
               chained = entry
@@ -212,12 +208,13 @@ export function registerRememberedCapture(ctx, options = {}) {
           // in the path Peter's conversations go through. It also lacked `entryHash`, so the chain could not confirm the note's own entry.
           // CHAINED, as memory-auma-hook.mjs does: an unhashed line here left an unchained TAIL, and the next settle refused AURA_TAIL_TORN
           // (measured live 2026-09-27). One call for the batch, so each entry names the one before it.
-          auraAppends: chainAuraEntries(stateDir, notes.map(note => ({ op: 'remember', id: note.id, at, tier: note.tier, by: 'kira.capture/v1', index: note.aura?.index, entryHash: note.aura?.entryHash, digest: String(note.id).slice(4) })), { file: auraFile }),
+          auraAppends: chainAuraEntries(stateDir, notes.map(note => ({ op: 'remember', id: note.id, at, tier: note.tier, by: 'kira.capture/v1', index: note.aura?.index, entryHash: note.aura?.entryHash, digest: String(note.id).slice(4), bodyAtCapture })), { file: auraFile }),
         })
         // THE DIRECTORIES FIRST: the store's first write needs `remembered/` to exist, and creating it is a named act here
         // rather than something the writer does quietly to any path it is handed.
         for (const dir of plan.dirs) ensureDirectory(dir)
         for (const write of plan.writes) durableWrite(write.file, write.contents, { dir: stateDir })
+        appendJournalLine({ file: journalFile, line: JSON.stringify(anchor) })
         // `durableAppend` READS `options.readExisting` UNCONDITIONALLY, so every caller must hand it an options object or it
         // throws inside itself with a message about a property rather than about the argument. Passing `{}` is the honest
         // call; the trap is worth an arm of its own and is noted in the commit.
@@ -228,13 +225,14 @@ export function registerRememberedCapture(ctx, options = {}) {
         for (const append of plan.appends) appendJournalLine({ file: append.file, line: append.line })
         return notes
       })
+      seenTurns.set(sessionId, seq)
       if (remembered.length === 0) return
       // REPORTED, NOT SILENT: a reader of the log can see what was remembered and how many, which is the only way to notice a
       // capture path that has quietly stopped producing notes.
       options.onRemembered?.({ sessionId, turn, seq, remembered: remembered.length, ids: remembered.map(note => note.id) })
     } catch (error) {
       // THE ONLY OUTLET. A capture fault costs a record; it must never cost the turn.
-      logger?.warn?.(`aukora-kira: remembered capture skipped (${error?.message ?? String(error)})`)
+      fail(error?.code ?? error?.message ?? String(error))
     }
   })
 }
