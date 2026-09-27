@@ -411,6 +411,18 @@ try {
       turn += 1
       for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: { id: TEXT_SESSION } }, turn })
       assert.equal((await rememberedWith('spare ladder')).length, 1, 'a refused capture was marked done and never retried')
+      const { canonicalJSON } = await load('plugins/aukora-kira/lib/wasm-cell/aukora/kernel-seed/canonical-json.mjs')
+      const { MEMORY_PUT_PROPOSAL_WASM_SHA256 } = await load('plugins/aukora-kira/lib/wasm-cell/aukora/guest/wasm-proposal-cell.mjs')
+      const entries = readFileSync(chainFile, 'utf8').trim().split('\n').map(line => JSON.parse(line))
+      const captured = filesUnder(join(stateDir, 'remembered')).filter(file => file.path.endsWith('.json'))
+        .map(file => JSON.parse(file.text)).filter(note => note.source?.sessionId === TEXT_SESSION)
+      assert.ok(captured.length >= 5, 'vacuity: no automatic text captures to check')
+      for (const { wasmCell, ...note } of captured) {
+        assert.ok(note.text === note.statement, 'persisted text differs from the proposed statement')
+        const digest = createHash('sha256').update(canonicalJSON({ key: note.id, value: note })).digest('hex')
+        assert.deepEqual(wasmCell, { sha256: MEMORY_PUT_PROPOSAL_WASM_SHA256, proposalDigest: digest }, 'note lacks the exact cell proposal digest')
+        assert.deepEqual(entries.find(entry => entry.id === note.id)?.wasmCell, wasmCell, 'chain does not bind the cell evidence')
+      }
     })
 
     // ── ARM 3k: WHAT REMEMBERING EVERYTHING MUST STILL LEAVE OUT ─────────────────────────────────────────────────────

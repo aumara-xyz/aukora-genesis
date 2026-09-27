@@ -38,6 +38,9 @@ import { MAX_NOTES_PER_TURN, boundedNotes, consumeTurn } from './memory-capture-
 import { FORBIDDEN_WINDOW_DIGESTS, SECRET_PATTERNS } from './compaction-export.mjs'
 import { appendJournalLine, durableWrite, ensureDirectory, readJsonStrict, readLinesIfPresent, withFileLock } from './strict-read.mjs'
 import { readLastUserMessage } from './session-read.mjs'
+import { proposeMemoryPutThroughCell } from './wasm-proposal.mjs'
+import { MEMORY_PUT_PROPOSAL_WASM_SHA256 } from './wasm-cell/aukora/guest/wasm-proposal-cell.mjs'
+import { canonicalJSON } from './wasm-cell/aukora/kernel-seed/canonical-json.mjs'
 
 /**
  * `bodyAtCapture` (AUKORA-37's name; the formats are versioned apart): the release directory, its plugin-set digest and the code
@@ -176,7 +179,22 @@ export function registerRememberedCapture(ctx, options = {}) {
           logger?.warn?.(`aukora-kira: a candidate was not remembered (${String(drop.rule)}): statement sha256 ${sha256Hex(String(drop.statement ?? '')).slice(0, 16)}… — the text is deliberately not logged`)
         }
         // THE BOUND AND ITS REPORT COME FROM ONE PLACE, so the court that drives them drives what RUNS.
-        const notes = boundedNotes(captured.notes, { logger }).map(note => ({ ...note, bodyAtCapture }))
+        const notes = boundedNotes(captured.notes, { logger }).map(note => {
+          // The complete note carries statement/text, subject, category and provenance
+          // as the value of the closed memory.put pair. Keep an independent binding
+          // before entering the cell; persist only the host-validated snapshot.
+          const args = { key: note.id, value: { ...note, bodyAtCapture } }
+          const reviewed = JSON.parse(canonicalJSON(args))
+          const proposal = proposeMemoryPutThroughCell(args, reviewed)
+          return {
+            ...proposal.value,
+            wasmCell: {
+              sha256: MEMORY_PUT_PROPOSAL_WASM_SHA256,
+              // Hash of the validated canonical argumentsJson, without a trailing LF.
+              proposalDigest: sha256Hex(canonicalJSON(proposal)),
+            },
+          }
+        })
         if (notes.length === 0) return notes
         // THE TURN'S ANCHOR, a digest and a seq, never the words: CHAINED FIRST, WRITTEN ONLY AFTER THE NOTE (2026-09-27 review).
         // It is the durable "done" mark, and appended before the plan, a refusal below (AURA_TAIL_TORN) left the ask anchored with
@@ -208,7 +226,7 @@ export function registerRememberedCapture(ctx, options = {}) {
           // in the path Peter's conversations go through. It also lacked `entryHash`, so the chain could not confirm the note's own entry.
           // CHAINED, as memory-auma-hook.mjs does: an unhashed line here left an unchained TAIL, and the next settle refused AURA_TAIL_TORN
           // (measured live 2026-09-27). One call for the batch, so each entry names the one before it.
-          auraAppends: chainAuraEntries(stateDir, notes.map(note => ({ op: 'remember', id: note.id, at, tier: note.tier, by: 'kira.capture/v1', index: note.aura?.index, entryHash: note.aura?.entryHash, digest: String(note.id).slice(4), bodyAtCapture })), { file: auraFile }),
+          auraAppends: chainAuraEntries(stateDir, notes.map(note => ({ op: 'remember', id: note.id, at, tier: note.tier, by: 'kira.capture/v1', index: note.aura?.index, entryHash: note.aura?.entryHash, digest: String(note.id).slice(4), bodyAtCapture, wasmCell: note.wasmCell })), { file: auraFile }),
         })
         // THE DIRECTORIES FIRST: the store's first write needs `remembered/` to exist, and creating it is a named act here
         // rather than something the writer does quietly to any path it is handed.
