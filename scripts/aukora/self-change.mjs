@@ -49,11 +49,16 @@ import {
 } from './aumlok-candidate-authority.mjs'
 import { PENDING_INTENT_SCHEMA } from '../../vendor/aukora-seed-app/lib/apps/seed/src/governedCrossing.js'
 
-const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+// THIS script's checkout supplies every program it runs (approve-operation, verify-approval, the face tuples, the imports).
+// AUKORA_SELF_CHANGE_SOURCE names another checkout to propose FROM: the trusted aukora_self_change tool
+// (plugins/aukora-action-gate/lib/self-change-tool.mjs) runs the owner's copy against a contained agent's worktree, so the
+// code that raises the popup is never the code being proposed.
+const HOME_REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+const REPO = process.env.AUKORA_SELF_CHANGE_SOURCE ? realpathSync(process.env.AUKORA_SELF_CHANGE_SOURCE) : HOME_REPO
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
 const STATE = join(SUPPORT, 'state')
-const CLIENT = join(REPO, 'scripts', 'aumlok', 'approve-operation')
-const VERIFY = join(REPO, 'scripts', 'aumlok', 'verify-approval')
+const CLIENT = join(HOME_REPO, 'scripts', 'aumlok', 'approve-operation')
+const VERIFY = join(HOME_REPO, 'scripts', 'aumlok', 'verify-approval')
 const WINDOW_SECONDS = 300
 // The approval window shows at most WITNESS_DISPLAY_LIMIT characters (apps/aukora-desktop/aumlok-signer.mjs; being raised
 // from 1,800 to 12,000 on 2026-09-27) and truncates the rest, saying so. 11,800 leaves 200 for the window's own heading.
@@ -162,7 +167,7 @@ for (const path of named) {
     fail(`there is no uncommitted change to ${path}`)
   }
 }
-const buildFaceText = readFileSync(join(REPO, 'scripts', 'build-face.py'), 'utf8')
+const buildFaceText = readFileSync(join(HOME_REPO, 'scripts', 'build-face.py'), 'utf8')
 const pyTuple = (name) => {
   const found = buildFaceText.match(new RegExp(`^${name} = \\(([^)]*)\\)`, 'mu'))
   if (!found) fail(`scripts/build-face.py names no ${name} tuple, so face source cannot be told apart`)
@@ -177,6 +182,9 @@ const sourceFace = (path) => {
     && CARRY.some((item) => inner === item || inner.startsWith(`${item}/`)) ? face : null
 }
 const faces = [...new Set(named.map(sourceFace).filter(Boolean))].sort()
+// The face build runs the source checkout's build-face.py and toolchain (its own vendor/dsh first) on this machine, outside
+// any sandbox; in another source that is the proposer's code, so a face change is proposed from the owner's checkout only.
+if (faces.length > 0 && REPO !== HOME_REPO) fail(`${faces.join(', ')} face source needs a build, which is not run from ${REPO}; propose face changes from ${HOME_REPO}`)
 // 0e. EVERY CHANGED FACE SOURCE IS NAMED. build-face.py builds from the working tree and places EVERY face's carried
 // source, so a changed source file that is not named would ride into a bundle the window shows only as a blob
 // (measured 2026-09-27: an unnamed spatial-tokens.css edit landed in layout's client.js under a named AppFrame diff).
