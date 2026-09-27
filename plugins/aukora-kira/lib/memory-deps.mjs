@@ -70,6 +70,31 @@ export function rememberedChainEntry(stateDir, id) {
 }
 
 /**
+ * EVERY NOTE THE CHAIN VOUCHES FOR, in one pass: id -> the entryHash its `add`/`remember` entry carries. The same walk as
+ * `rememberedChainEntry`, so the two cannot disagree: lines link and rehash up to the entry, a break in the unsigned tier's chain
+ * vouches for nothing after it (and the pre-split `aura.jsonl` is then not consulted), an unchained legacy line vouches for nothing.
+ * @param {string} stateDir
+ * @returns {Map<string, string>}
+ */
+export function chainedRememberedIds(stateDir) {
+  const vouched = new Map()
+  for (const file of [`${stateDir}/${STORE_PATHS.rememberedAura}`, `${stateDir}/${STORE_PATHS.aura}`]) {
+    let prev = AURA_RECORD_DOMAIN
+    for (const line of readLinesIfPresent(file)) {
+      let entry
+      try { entry = JSON.parse(line) } catch { entry = null }
+      if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) return vouched
+      if (typeof entry.hash !== 'string') continue
+      const { prev: named, hash, ...fields } = entry
+      if (named !== prev || auraEntryHash(prev, fields) !== hash) return vouched
+      prev = hash
+      if ((fields.op === 'add' || fields.op === 'remember') && typeof fields.entryHash === 'string' && !vouched.has(fields.id)) vouched.set(String(fields.id), fields.entryHash)
+    }
+  }
+  return vouched
+}
+
+/**
  * Whether a queue entry (or a set-aside copy of one) holds the same turn as a remembered note.
  *
  * SAME SESSION AND THE SAME WORDS (either containing the other, whitespace and case folded). The session is the guard: forgetting
@@ -425,6 +450,42 @@ export function buildRouteDeps(input) {
     return { id, forgotten: true, tombstone: { ...tombstone, hash: tombstoneHash }, localOnly: true, objectsRemoved, queueRemoved, notReached }
   }
 
+  /**
+   * THE LEDGER THE SEMANTIC INDEX ANSWERS TO (`recall-openviking.mjs`): every live remembered note, uncapped. Live means what
+   * `listNotes` means (not forgotten, not hidden) AND chained: the file is the note its name says, and the remembered chain holds
+   * its entry with the note's own entryHash. A note that fails any of these is not in the ledger, so a hit on it is never shown.
+   * @returns {{notes: Array<Record<string, unknown>>, unreadable: number, unchained: number}}
+   */
+  const liveRemembered = () => {
+    let names
+    try {
+      names = listJsonFiles(rememberedDir)
+    } catch (error) {
+      throw new KiraDepsError('store-unreadable', `the remembered store could not be read (${String(error?.code ?? error?.name ?? 'unknown')})`)
+    }
+    const chained = chainedRememberedIds(stateDir)
+    const forgottenSet = forgottenNow()
+    const hiddenStates = hiddenNow()
+    const notes = []
+    let unreadable = 0
+    let unchained = 0
+    for (const name of names) {
+      const file = `${rememberedDir}/${name}`
+      if (!insideStateDir(file, stateDir)) continue
+      let note
+      try { note = readJsonStrict(file) } catch { unreadable += 1; continue }
+      const id = String(note?.id ?? '')
+      let expected = null
+      try { expected = objectFileName(id) } catch { expected = null }
+      if (expected !== name) { unreadable += 1; continue }
+      if (forgottenSet.has(id) || hiddenStates.get(id) === 'hidden') continue
+      if (typeof note.statement !== 'string' || note.statement === '') continue
+      if (chained.get(id) !== note.aura?.entryHash) { unchained += 1; continue }
+      notes.push({ ...note, tier: 'remembered' })
+    }
+    return { notes, unreadable, unchained }
+  }
+
   /** The `queue-backup-*` directories `scripts/kira/migrate-queue.mjs --apply` sets aside beside the store. */
   const setAsideDirs = () => {
     try {
@@ -453,7 +514,7 @@ export function buildRouteDeps(input) {
   // *** AND AN UNMOUNTED ONE IS `undefined` RATHER THAN A STUB: the route refuses by name when it is absent, because a
   // stub answering `{items: []}` would tell the owner he has nothing to approve when in fact nobody looked. ***
   return {
-    listNotes, verifyNote, forgetNote, trustNotes,
+    listNotes, verifyNote, forgetNote, trustNotes, liveRemembered,
     pendingReview: typeof input?.pendingReview === 'function' ? input.pendingReview : undefined,
     approvePending: typeof input?.approvePending === 'function' ? input.approvePending : undefined,
   }
