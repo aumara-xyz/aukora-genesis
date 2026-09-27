@@ -21,6 +21,36 @@ membrane minimal verifier (`vendor/phase0-consistency`, byte-identical to `minim
 Work happens on `main` of `aumara-xyz/aukora-genesis`. `aumara-xyz/aukora-genesis-archive` holds the history up to
 2026-09-27, read-only and private (`ARCHIVE.md`); the commit hashes on this page are there.
 
+## Genesis / A37 parity
+
+Genesis is the lab; AUKORA-37 is the simplified public build of the same architecture.
+The shared sequence is `aukora_self_change` → exact-byte owner card → one-use
+consume → chained change → `become`. That last step means restart into the
+approved application, observe readiness, and roll back on failure; tool registration
+alone does not earn the name. Automatic memory informs this loop and never authorizes it.
+
+This table records source parity against Genesis `96cb4cec` and A37 `394fa63b`
+plus the card-display change accompanying this table. It is not a fresh measurement
+of either installed application. **NEXT** names a port still required.
+
+| Feature | Genesis | A37 | Status |
+| --- | --- | --- | --- |
+| Kira / automatic memory | Automatic remembered tier; explicit signed-memory path remains separate. | Automatic local capture and recall; bounded retries preserve failed bytes while the process lives. | No approval for ordinary memory; implementations and failure policies differ. |
+| Viking retrieval | Owner deployment uses `aukora/owner`; automatic Kira-to-Viking loop still needs a live proof. | Defaults to `aukora37/owner`; another destination requires explicit owner confirmation. | Separate namespaces; delivery acknowledgment is not extraction or recall proof. |
+| Aumlok authorization | Software machine key; root re-derived for root acts. | Phrase unlock creates a temporary software signing session; new homes retain public identity, with legacy seed cleanup explicit. | Same role, distinct custody; the host UID remains trusted and human attendance unestablished. |
+| `aukora_self_change` | Candidate tree → approval → one-use consume → commit and Aura chain. | Python capability → approval → one-use consume → immutable version and receipt chain. | Same law, different bounded effects and versioned formats. |
+| Owner card | Derived code-change display; exact approved bytes. | Plain headline from checked bound card; proposer reason labeled as a claim; original exact bytes below. | Summary never substitutes for the signed bytes or proves code safety. |
+| `become` | Release admission, restart, observed readiness, best-effort rollback and body record in source. | Capability activation exists; full application restart, rollback and chained body transition not ported. | **NEXT A37:** supervised release transition; do not expand a tool grant into engine authority. |
+| Unknown tools / decision log | Tool-name policies and durable decision logging in the app; host and subagent routes are outside full mediation. | Exact trusted tool definitions; durable guard record before allowed dispatch; failed guard mount blocks startup. | Same requirement, unequal coverage; neither governs every host action. |
+| Coding tools | Host path/command policy. | Container workspace tools with no network and an explicitly pinned local image. | **NEXT Genesis:** container execution; host and Docker daemon remain trusted. |
+| Engine pin / interrupted install | Plugin-set admission and release recovery. | Operator-admitted engine digest; interrupted install reconciles without renewing spent permission. | **NEXT Genesis:** distill these bindings; mechanisms are not interchangeable. |
+| Shared vectors | v1 contract checks prepared in the shared-contract worktree, not yet on this inspected main. | Byte-identical v1 vectors and court-23(e) run native verifiers; unsupported profiles remain explicit. | Shared fixture SHA-256: `82c12697e79dc70de4f7d2f5971710c5063788ddee0cb83af0e492873d8abb3d`; no blanket format compatibility. |
+
+Update this table in both READMEs when a feature lands. Change shared formats in
+the vectors first, run each implementation against them, and keep named profiles
+distinct. Genesis mechanisms move to A37 after live verification; A37 hardening
+moves back without importing its UI or replacing Genesis's authority semantics.
+
 ## Limits first
 
 These are true today, and the rest of this page should be read through them.
