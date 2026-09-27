@@ -102,6 +102,16 @@ export function aukoraDenyForms(paths) {
 }
 
 /**
+ * The grants AUKORA adds, appended BEFORE {@link aukoraDenyForms} so every deny still wins inside them.
+ * @param {Readonly<{worktrees: string}>} paths - from {@link protectedPaths}.
+ * @param {{mode?: string}} policy - the call's sandbox policy; only `workspace-write` gains anything.
+ * @returns {string[]} the forms.
+ */
+export function aukoraAllowForms(paths, policy) {
+  return policy?.mode === 'workspace-write' ? [`(allow file-write* (subpath ${literal(canonicalPath(paths.worktrees))}))`] : []
+}
+
+/**
  * Append the forms to a Seatbelt wrap the harness produced; refuse anything else.
  *
  * A wrap this function does not recognise is not passed through: the command would then run without the denies, and

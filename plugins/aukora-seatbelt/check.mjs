@@ -86,9 +86,9 @@ async function harness(mountSandbox) {
   })
   await mountSandbox(ctx)
   await ctx.plugin(SandboxBashExecutor, { cwd: ws, timeoutMs: 20_000 })
-  return async (command, workspaceRoot = ws) => {
+  return async (command, workspaceRoot = ws, mode = 'workspace-write') => {
     const result = await ctx.shell.run(ctx.shell.resolve({
-      command, workdir: workspaceRoot, sandboxPolicy: { mode: 'workspace-write', workspaceRoot },
+      command, workdir: workspaceRoot, sandboxPolicy: { mode, workspaceRoot },
     }))
     return { exit: result.exitCode, out: result.stdout.text.trim(), err: result.stderr.text.trim(), denied: result.sandbox?.denied }
   }
@@ -130,6 +130,7 @@ const ANCESTOR_ARMS = [
 // CONTAINED WORK: the session's workspace is the governing checkout, as in the live app.
 const CONTAINED_ARMS = [
   ['(g) write governing code in the workspace checkout', `echo x > ${q(join(repo, 'plugins', 'x.mjs'))}`, 'denied'],
+  ['(h) write in a proposal worktree', `echo wt-ok > ${q(join(ws, 'f.txt'))} && cat ${q(join(ws, 'f.txt'))}`, 'allowed'],
   ['(h2) re-point a worktree\'s .git', `echo 'gitdir: /private/tmp/x' > ${q(join(ws, '.git'))}`, 'denied'],
   ['(h3) make a worktree directory', `mkdir ${q(join(home, 'aukora-worktrees', 'new'))}`, 'denied'],
   ['(h4) move a worktree aside', `mv ${q(ws)} ${q(join(S, 'moved-wt'))}`, 'denied'],
@@ -152,12 +153,14 @@ async function section(title, run, arms, expectFor, workspaceRoot) {
 await section('WITH aukora-seatbelt', aukora, ARMS, e => e, ws)
 await section('WITH aukora-seatbelt, workspace = the scratch root (an ancestor of every protected path)', aukora, ANCESTOR_ARMS, e => e, S)
 await section('WITH aukora-seatbelt, workspace = the governing checkout', aukora, CONTAINED_ARMS, e => e, repo)
+await section('WITH aukora-seatbelt, read-only: no worktree grant', (c, w) => aukora(c, w, 'read-only'), CONTAINED_ARMS.slice(1, 2), () => 'denied', repo)
 // The red arm: the protection removed. Every arm this plugin exists for must now SUCCEED.
 const RED = new Set(['(a) read the fake seed', '(c) a script the command writes, then runs, reads the seed',
   '(c2) the same, as a node script', '(d) connect to the signer socket', '(e) append to the code Aura chain'])
 await section('RED ARM: the stock sandbox-local profile only', stock, ARMS.filter(([label]) => RED.has(label)), () => 'allowed', ws)
 process.stdout.write(`\nfake chain after the red arm: ${JSON.stringify(readFileSync(auraLog, 'utf8'))}\n`)
 await section('RED ARM, ancestor workspace', stock, ANCESTOR_ARMS.slice(0, 1), () => 'allowed', S)
+// (h) is not in a red arm: this scratch tree sits under /private/tmp, which the stock grant already covers.
 await section('RED ARM, governing checkout as workspace', stock, CONTAINED_ARMS.slice(0, 1), () => 'allowed', repo)
 
 signer.close()

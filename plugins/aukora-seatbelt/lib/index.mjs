@@ -24,6 +24,7 @@
  *   - Key bytes under another name outside the denied directories (a backup, a hard link made before the sandbox).
  *   - The harness host process itself and plugins: only commands spawned through `ctx.sandbox` are confined.
  *   - Any platform but macOS: a non-Seatbelt wrap is refused (fail closed), not passed through.
+ *   - The in-process `write`/`edit` tools: `fs-sandbox` fences them to the workspace and temp, not ~/aukora-worktrees.
  *
  * @module @aukora/dsh-plugin-seatbelt
  */
@@ -32,7 +33,7 @@ import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { aukoraDenyForms, protectedPaths, withAukoraDenies } from './profile.mjs'
+import { aukoraAllowForms, aukoraDenyForms, protectedPaths, withAukoraDenies } from './profile.mjs'
 
 export const name = 'aukora-seatbelt'
 
@@ -45,7 +46,7 @@ const PROVIDER_CANDIDATES = Object.freeze([
   join(ROOT, 'vendor', 'dsh', 'packages', 'sandbox', 'sandbox-local', 'lib', 'index.js'),
 ])
 
-export const CONFIG_FIELDS = Object.freeze(['supportRoot', 'dshHome', 'home', 'providerModule', 'providerConfig'])
+export const CONFIG_FIELDS = Object.freeze(['supportRoot', 'dshHome', 'home', 'repoRoots', 'worktreesRoot', 'providerModule', 'providerConfig'])
 
 /**
  * Validate the row's config. Refuses by name rather than guessing a location.
@@ -59,7 +60,11 @@ export function readSettings(config = {}) {
   const home = config.home ?? homedir()
   const supportRoot = config.supportRoot ?? join(home, 'Library', 'Application Support', 'AUKORA')
   const dshHome = config.dshHome ?? join(supportRoot, 'state', 'home')
-  for (const [key, value] of Object.entries({ home, supportRoot, dshHome })) {
+  // This deployment's governing checkout and proposal worktrees, unless the row names others.
+  const repoRoots = config.repoRoots ?? [join(home, 'aukora-genesis')]
+  const worktreesRoot = config.worktreesRoot ?? join(home, 'aukora-worktrees')
+  if (!Array.isArray(repoRoots)) throw refused('repoRoots must be a list of absolute paths')
+  for (const [key, value] of [...Object.entries({ home, supportRoot, dshHome, worktreesRoot }), ...repoRoots.map(root => ['repoRoots[]', root])]) {
     if (typeof value !== 'string' || !isAbsolute(value)) throw refused(`${key} must be an absolute path`)
   }
   const providerModule = config.providerModule ?? PROVIDER_CANDIDATES.find(path => existsSync(path))
@@ -67,7 +72,7 @@ export function readSettings(config = {}) {
     throw refused(`the stock sandbox provider was not found (${config.providerModule ?? PROVIDER_CANDIDATES.join(', ')})`)
   }
   return Object.freeze({
-    roots: Object.freeze({ home, supportRoot, dshHome }),
+    roots: Object.freeze({ home, supportRoot, dshHome, repoRoots: Object.freeze([...repoRoots]), worktreesRoot }),
     providerModule,
     providerConfig: config.providerConfig ?? {},
   })
@@ -84,7 +89,7 @@ export function aukoraSeatbeltProvider(Provider, roots) {
   return class AukoraSeatbeltProvider extends Provider {
     async confine(argv, policy, signal) {
       // Canonicalised per call, so a protected directory created (or re-pointed) after boot is matched as it now is.
-      return withAukoraDenies(await super.confine(argv, policy, signal), aukoraDenyForms(paths))
+      return withAukoraDenies(await super.confine(argv, policy, signal), [...aukoraAllowForms(paths, policy), ...aukoraDenyForms(paths)])
     }
   }
 }
