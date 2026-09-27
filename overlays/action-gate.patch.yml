@@ -87,6 +87,9 @@
           - aukora_self_change
         repoRoots:
           - !!js process.env.HOME + '/aukora-genesis'
+        # Registers `aukora_self_change`: the owner's self-change.mjs (the first repoRoot) run on the host against a
+        # worktree directly under this root. A contained shell cannot reach the signer, so this is its one route.
+        worktreesRoot: !!js process.env.HOME + '/aukora-worktrees'
         # Where agents may also write: lane worktrees (proposals go there, then self-change), temp, and the owner's
         # everyday folders. Key material stays refused inside every one of them.
         extraWritableRoots:
@@ -96,3 +99,19 @@
           - !!js process.env.HOME + '/Desktop'
           - !!js process.env.HOME + '/Documents'
           - !!js process.env.HOME + '/Downloads'
+
+# THE SEATBELT, BY DEFAULT (plugins/aukora-seatbelt; overlays/seatbelt.patch.yml says what it stops). Every confined
+# agent command (bash, terminal, run_code, the web shell in `read-only` or `workspace-write`) carries AUKORA's denies:
+# key material, the signer socket, the receipt chains, and no write to ~/aukora-genesis or the support root, even as
+# the session workspace. `workspace-write` may also write ~/aukora-worktrees. `danger-full-access` is never confined.
+# The base `sandbox` row is disabled and this one inserted (`ctx.provide` refuses a second `sandbox`).
+- id: sandbox
+  disabled: true
+
+- insert:
+    - id: aukora-seatbelt
+      name: ./plugins/aukora-seatbelt/lib/index.mjs
+      config:
+        home: !!js process.env.HOME
+        supportRoot: !!js process.env.HOME + '/Library/Application Support/AUKORA'
+        dshHome: !!js dshHomePath()
