@@ -26,15 +26,17 @@
 10. **No text on screens.** Never add status strips, labels, captions, banners, hints or explanatory lines to any UI.
     Peter's screens are visual. If a state must be visible it is an icon or a colour, and only when he asked for it.
 
-## Memory is OpenViking, and it is never approved
+## Memory is automatic, and it is never approved
 
-Remember with `mcp__viking__write` and recall with `mcp__viking__find` (also `read`, `list`, `forget`): OpenViking runs locally
-(launchd `xyz.aukora.openviking`, 127.0.0.1:1933, local embeddings, nothing leaves the Mac). No popup, ever: when Peter tells you
-something to remember, write it and acknowledge it. The tools mount at app start from `viking.patch.yml` in the support
-root, and a release whose action gate predates `d81e5be2b` refuses `write`, `list` and `forget` (it read `viking://user/…`
-as the host `user`). NOT WORKING YET: Kira's automatic turn capture (its `remembered/` tier has
-been empty since 2026-09-27 09:34); Kira is hooked into OpenViking later. `scripts/aukora/remember.mjs` (a signed memory) is only
-for when Peter explicitly asks for a *signed* memory.
+Every turn Peter types is remembered by itself: Kira captures it as a remembered note (no popup, no authority), stamped
+with `bodyAtCapture` — the release, plugin set and code-chain head that heard it (host-reported, not an attestation).
+When he tells you something, answer in a few plain words ("Got it.") — don't write a second note and don't narrate
+where things are stored. To recall, use `kira_recall` (its `remembered` field returns these notes with their version)
+and `mcp__viking__find` (OpenViking, local, 127.0.0.1:1933; `mcp__viking__write` only for something that is not a turn
+of his). Never call `session_search`: it loads whole session logs and pushed the backend past the 3.4 GB restart line
+three times in two minutes (2026-09-27); it is no longer mounted. NOT YET: Kira's notes are not indexed into OpenViking
+automatically, and Auma Live voice capture is not verified. `scripts/aukora/remember.mjs` (a signed memory) is only for
+when Peter explicitly asks for a *signed* memory.
 
 ## Changing your own code: you become it
 

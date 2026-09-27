@@ -151,7 +151,7 @@
 <body>
 <div class="scrim">
 <main class="card">
-  <h1>Approve this?</h1>
+  <h1 id="headline">Approve this?</h1>
   <p class="lede">This is the exact operation digest your key would sign. Nothing is signed until you
     approve, and refusing signs nothing.</p>
   <section id="facts" hidden>
@@ -183,7 +183,7 @@
     is approvable.
   -->
   <section id="queue" hidden>
-    <h2 id="queue-heading">Waiting for you</h2>
+    <h2 id="queue-heading">Also waiting</h2>
     <ul id="queue-list"></ul>
   </section>
   <!--
@@ -384,7 +384,7 @@
         decline: 'Decline',
         reading: 'Checking the description against the bytes being signed…',
         cannotDisplay: 'cannot display',
-        queueHeading: 'Waiting for you',
+        queueHeading: 'Also waiting',
         summaryPrefix: 'operation: ',
         routedPending: 'Waiting for the owner: approve in the owner console or on your phone.',
         routedConsole: 'Approved in the owner console.',
@@ -655,8 +655,32 @@
       card.hidden = card.childNodes.length === 0
     }
 
-    function renderQueue(entries) {
-      var list = Array.isArray(entries) ? entries : []
+    /**
+     * THE PLAIN-WORDS HEADLINE, READ FROM THE VERIFIED TEXT ONLY (2026-09-27, Peter: "these cards need human summaries").
+     * A change's "why" line is the proposer's own words, so it is labelled as Auma's; the exact bytes stay below it.
+     */
+    function summarize(text) {
+      var why = /(?:^|\n)why:?\s+(.+)/u.exec(text)
+      var paths = /(?:^|\n)paths:?\s+(.+)/u.exec(text)
+      if (/code\.change/u.test(text) && why) {
+        var files = paths ? paths[1].split(',').length : 0
+        return 'Auma wants to: ' + why[1].trim() + (files > 0 ? ' (' + files + (files === 1 ? ' file)' : ' files)') : '')
+      }
+      if (/AUKORA: ADMIT THESE PLUGINS/u.test(text)) {
+        var count = /(\d+) plugins, (\d+) files/u.exec(text)
+        return 'Load her new version' + (count ? ' (' + count[1] + ' plugins)' : '')
+      }
+      if (/AUKORA: MOVE MAIN/u.test(text)) return 'Publish to GitHub main' + (why ? ': ' + why[1].trim() : '')
+      var first = text.split('\n').map(function (l) { return l.trim() }).filter(Boolean)[0]
+      return first || 'Approve this?'
+    }
+
+    function renderQueue(entries, current) {
+      // THE QUESTION ON THE CARD IS NOT ALSO LISTED BELOW IT: one question, one pair of buttons. Others waiting show only
+      // their headline and their own pair.
+      var list = (Array.isArray(entries) ? entries : []).filter(function (entry) {
+        return entry !== null && typeof entry === 'object' && entry.challenge !== current
+      })
       queueList.textContent = ''
       queueSection.hidden = list.length === 0
       list.forEach(function (entry) {
@@ -692,7 +716,7 @@
         when.className = 'queue-facts'
         when.textContent = String(entry.expiresAt === undefined || entry.expiresAt === null
           ? '—' : entry.expiresAt)
-        row.appendChild(line); row.appendChild(facts); row.appendChild(when)
+        row.appendChild(line) // its digest and expiry stay in the record; the row shows only what it is and its two buttons
         queueList.appendChild(row)
         var shown = Date.now()
         witnessText(entry.words, entry.wordsDigest).then(function (check) {
@@ -702,7 +726,7 @@
             return
           }
           line.setAttribute('data-approval-queue-line', 'shown')
-          line.textContent = check.text
+          line.textContent = summarize(check.text)
           var press = document.createElement('button')
           press.setAttribute('data-approval-queue-approve', entryChallenge)
           press.textContent = t('approve')
@@ -796,7 +820,7 @@
     bridge.question().then(function (reply) {
       // THE QUEUE, RENDERED BEFORE ANYTHING ELSE IS DECIDED ABOUT THE SINGLE QUESTION. A reply that carries no
       // queue renders nothing and leaves the section hidden, so a bridge that predates the queue still works.
-      if (reply !== null && typeof reply === 'object') renderQueue(reply.queue)
+      if (reply !== null && typeof reply === 'object') renderQueue(reply.queue, reply.challenge)
       if (reply === null || typeof reply !== 'object' || reply.ok !== true) {
         say(shellReason(reply), true)
         return
@@ -831,6 +855,7 @@
       witnessText(reply.words, reply.wordsDigest).then(function (checked) {
         if (checked.ok === true) {
           show('f-words', checked.text)
+          document.getElementById('headline').textContent = summarize(checked.text)
           if (reply.wordsTruncated === true) {
             var note = document.getElementById('f-words-note')
             note.textContent = 'The description above is SHORTENED for this screen: '
