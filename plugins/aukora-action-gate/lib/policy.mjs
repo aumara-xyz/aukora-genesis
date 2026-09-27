@@ -11,7 +11,7 @@
  * The laws it asks (patterns in the seed's own glob language):
  *   key material and credentials   refused for READ and WRITE (root `/`, so a copy of the support folder is still keys)
  *   governing code                 refused for WRITE in the repository and the running release: an AUTHORITY action,
- *                                  with scripts/aukora/self-change.mjs named as the route
+ *                                  with the aukora_self_change tool named as the route
  *   governing config and receipts  refused for WRITE (the live patches, the harness profiles, both Aura logs)
  *   .git internals                 refused for WRITE anywhere (refs, hooks and config move through git itself)
  *   write roots                    a write must land inside the session workspace, the repository or a configured root
@@ -27,7 +27,7 @@ import { basename, isAbsolute, join, resolve } from 'node:path'
 import { REASON, decide } from '../../../vendor/aukora-seed-guard/src/guard.mjs'
 import { compileAll, judge } from '../../../vendor/aukora-seed-guard/src/law.mjs'
 import { analyse, realpathish } from '../../../vendor/aukora-seed-guard/src/paths.mjs'
-import { routedRefusal } from './routes.mjs'
+import { SELF_CHANGE_ROUTE, routedRefusal } from './routes.mjs'
 import { authorityRefusal, credentialRefusal, effectiveShellCommands, gitMainRefusal, hostsNamed, literalPath, literalWriteTargets, shellCommands } from './shell.mjs'
 
 /** Key material and credentials, as seed-guard patterns rooted at `/`: `**` + `/` finds them at any depth. */
@@ -208,7 +208,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
     if (held === definition) return null
     return deny('authority:tool-redefined', `the tool ${tool} is not the definition this deployment approved: its ` +
       'registered definition changed after startup, so the approval does not carry. Propose it with ' +
-      'scripts/aukora/self-change.mjs')
+      'the aukora_self_change tool')
   }
 
   /** Whether the reading session is (or may be) CORE. Asked only when a CORE row matched. */
@@ -266,9 +266,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
         if (v.reasonClass === REASON.PROTECTED || v.reasonClass === REASON.SELF) {
           const where = v.reasonClass === REASON.SELF ? 'the gate\'s own judge (vendor/aukora-seed-guard)' : `governing code in ${root}`
           return deny('authority:governing-code', `${raw} is ${where} (seed guard: ${v.reasonClass}${v.rule ? `, rule "${v.rule}"` : ''}). `
-            + 'Changing it is self-modification, an authority action. Stage the change in a proposal worktree '
-            + `(\`git worktree add <dir> origin/${mainBranch}\`), then run \`node scripts/aukora/self-change.mjs "why, in one line" <path> [<path> ...]\` `
-            + 'there: it shows Peter the full diff in the Aumlok popup and lands the change only if he approves')
+            + `Changing it is self-modification, an authority action. Use ${SELF_CHANGE_ROUTE}; it lands only if he approves`)
         }
         return deny(`write:${v.reasonClass}`, `${v.message} (seed guard)`)
       }
@@ -366,7 +364,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
       case 'cordis_define':
       case 'cordis_run':
         return deny('authority:live-code', `the tool ${tool} loads code into the running harness with no approval; ` +
-          'propose it with scripts/aukora/self-change.mjs')
+          'propose it with the aukora_self_change tool')
       case 'read':
       case 'read_image':
         return paths([args.file_path], 'read') ?? allow()
@@ -405,7 +403,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
         // outright (`allow:unclassified`), which is how a dynamically registered package's tool ran unchecked.
         if (!approvedName(tool)) {
           return deny('authority:tool-not-approved', `the tool ${tool} is not one this deployment approved. A tool ` +
-            'registered by a dynamic package is refused here; propose it with scripts/aukora/self-change.mjs, ' +
+            'registered by a dynamic package is refused here; propose it with the aukora_self_change tool, ' +
             'approved in the AUKORA popup')
         }
         const stale = pinnedVerdict(tool, call)
