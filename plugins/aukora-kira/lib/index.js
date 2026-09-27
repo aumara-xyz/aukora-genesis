@@ -113,10 +113,11 @@ export function readConfig(config) {
   }
   const record = /** @type {Record<string, unknown>} */ (config)
   for (const key of Object.keys(record)) {
-    if (!['retrieval', 'readOwner', 'memoryOwner', 'maxSessions'].includes(key)) {
-      refuse('config-field-unknown', `configuration carries a field outside retrieval, readOwner, memoryOwner, maxSessions`)
+    if (!['retrieval', 'readOwner', 'memoryOwner', 'maxSessions', 'autoStage'].includes(key)) {
+      refuse('config-field-unknown', `configuration carries a field outside retrieval, readOwner, memoryOwner, maxSessions, autoStage`)
     }
   }
+  if (record.autoStage !== undefined && typeof record.autoStage !== 'boolean') refuse('config-autostage', 'autoStage must be a boolean')
   const retrieval = record.retrieval ?? IMPLEMENTED_RETRIEVAL
   if (typeof retrieval !== 'string' || !RETRIEVAL_OPTIONS.some(option => option.id === retrieval)) {
     refuse(
@@ -474,7 +475,9 @@ export async function apply(ctx, config) {
   }
 
 
-  if (pendingQueue !== undefined) {
+  // AUTO-STAGE IS OFF UNLESS A DEPLOYMENT ASKS FOR IT (2026-09-27): it staged memories for a signed approval nobody wants, and
+  // it decoded the whole session log on every turn, which grew the backend past the 3.4 GB restart line in 40 minutes.
+  if (pendingQueue !== undefined && config?.autoStage === true) {
     registerAutoStage(ctx, {
       stageFromDigest: async (digest) => {
         const policy = readOwnerPolicy(await owner.describe())
