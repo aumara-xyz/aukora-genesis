@@ -139,11 +139,24 @@ function looseTargets(args) {
 }
 
 /**
+ * THE TOOLS THIS DEPLOYMENT APPROVES (issue #26). A name in the switch below is known to the harness itself; every
+ * OTHER name must appear here, exactly or by a trailing-`*` family, or the call is refused with
+ * `authority:tool-not-approved` and the self-change route named. Written from the live action chain
+ * (`state/home/aura-actions/aura.jsonl`) plus the families: what the agent is observed to use, not what it might.
+ */
+export const DEFAULT_ALLOW_TOOLS = Object.freeze([
+  'present', 'read_image', 'str_replace_editor', 'glob', 'skill', 'todo_write', 'ask_user_question', 'workflow',
+  'aura_association', 'send_message', 'interrupt_agent', 'list_agents', 'exit_plan_mode',
+  'get_goal', 'create_goal', 'update_goal', 'read_mcp_resource',
+  'kira_*', 'mcp__viking__*', 'cordis_inspect_*', 'subagent*', 'session_*', 'job_*', 'list_*',
+])
+
+/**
  * Build the policy for one deployment.
  * @param {object} settings - validated settings (see `index.mjs`).
  * @returns {{judge: (call: object) => {decision: 'allow'|'deny', rule: string, message: string|null}}}
  */
-export function createPolicy(settings) {
+export function createPolicy(settings, { definitionOf = null } = {}) {
   const { home, supportRoot, dshHome, auraDir, repoRoots, releaseRoots, extraWritableRoots, networkAllow, allowLoopback, mainBranch } = settings
   const governingRoots = [...new Set([...repoRoots, ...releaseRoots])]
   const keyLaw = { root: '/', rules: compileAll(KEY_PATTERNS.map(([pattern]) => pattern)) }
@@ -168,6 +181,32 @@ export function createPolicy(settings) {
 
   const deny = (rule, message) => ({ decision: 'deny', rule, message: `AUKORA action gate refused this call [${rule}]: ${message}` })
   const allow = (rule = 'allow:ok') => ({ decision: 'allow', rule, message: null })
+
+  // ── THE APPROVED TOOLS, AND THE DEFINITION EACH NAME IS PINNED TO (#26). ────────────────────────────────────────
+  // The declared list is the only source of names for tools the switch does not know. A name ending in `*` is a
+  // family. ON THE FIRST ALLOWED CALL the tool's registered definition is pinned; a later call whose definition is
+  // NOT that same object is refused, so a package that re-registers an approved name after startup cannot inherit
+  // its approval. `definitionOf` is the harness runtime's own lookup (`ctx.tools.get(name, agent)`); when a
+  // deployment cannot supply it, the name check still applies and pinning is skipped rather than faked.
+  const declared = Array.isArray(settings.allowTools) && settings.allowTools.length > 0
+    ? settings.allowTools
+    : DEFAULT_ALLOW_TOOLS
+  const allowExact = new Set(declared.filter(n => !n.endsWith('*')))
+  const allowFamily = declared.filter(n => n.endsWith('*')).map(n => n.slice(0, -1))
+  const pinned = new Map()
+  const approvedName = tool => allowExact.has(tool) || allowFamily.some(prefix => tool.startsWith(prefix))
+  function pinnedVerdict(tool, call) {
+    if (definitionOf === null) return null
+    let definition
+    try { definition = definitionOf(tool, call.agent) } catch { return null }
+    if (definition === undefined || definition === null) return null
+    const held = pinned.get(tool)
+    if (held === undefined) { pinned.set(tool, definition); return null }
+    if (held === definition) return null
+    return deny('authority:tool-redefined', `the tool ${tool} is not the definition this deployment approved: its ` +
+      'registered definition changed after startup, so the approval does not carry. Propose it with ' +
+      'scripts/aukora/self-change.mjs')
+  }
 
   /** Whether the reading session is (or may be) CORE. Asked only when a CORE row matched. */
   function isCore(call) {
@@ -319,6 +358,11 @@ export function createPolicy(settings) {
     const paths = (list, kind) => first(...list.filter(p => p !== undefined).map(p => judgePath(p, kind, call)))
 
     switch (tool) {
+      // ── LIVE CODE LOADS WITH NO APPROVAL, SO IT IS REFUSED BY NAME (#26, live tier). ──────────────────────────
+      case 'cordis_define':
+      case 'cordis_run':
+        return deny('authority:live-code', `the tool ${tool} loads code into the running harness with no approval; ` +
+          'propose it with scripts/aukora/self-change.mjs')
       case 'read':
       case 'read_image':
         return paths([args.file_path], 'read') ?? allow()
@@ -353,11 +397,20 @@ export function createPolicy(settings) {
       default: {
         if (SPEND_NAME.test(tool)) return deny('authority:spend', `the tool ${tool} spends or moves money, an authority action. Ask Peter`)
         if (PUBLISH_NAME.test(tool)) return deny('authority:publish', `the tool ${tool} publishes, an authority action. Ask Peter`)
+        // AN UNKNOWN NAME IS NOT AN APPROVED ONE. Before this, every name the switch did not know was allowed
+        // outright (`allow:unclassified`), which is how a dynamically registered package's tool ran unchecked.
+        if (!approvedName(tool)) {
+          return deny('authority:tool-not-approved', `the tool ${tool} is not one this deployment approved. A tool ` +
+            'registered by a dynamic package is refused here; propose it with scripts/aukora/self-change.mjs, ' +
+            'approved in the AUKORA popup')
+        }
+        const stale = pinnedVerdict(tool, call)
+        if (stale !== null) return stale
         const loose = looseTargets(args)
         const kind = WRITE_NAME.test(tool.replace(/([a-z0-9])([A-Z])/gu, '$1_$2')) ? 'write' : 'read'
         const refused = first(...loose.paths.map(p => judgePath(p, kind, call)), ...loose.urls.map(judgeUrl))
         if (refused !== null) return refused
-        return allow(loose.paths.length + loose.urls.length > 0 ? 'allow:unclassified-checked' : 'allow:unclassified')
+        return allow(loose.paths.length + loose.urls.length > 0 ? 'allow:approved-checked' : 'allow:approved')
       }
     }
   }

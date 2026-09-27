@@ -67,7 +67,7 @@ export const LOADED_FROM_ROOT = resolve(dirname(fileURLToPath(import.meta.url)),
 
 export const CONFIG_FIELDS = Object.freeze([
   'auraDir', 'supportRoot', 'dshHome', 'home', 'repoRoots', 'releaseRoots', 'extraWritableRoots', 'networkAllow',
-  'allowLoopback', 'mainBranch', 'defaultWorkspace', 'rotateBytes',
+  'allowLoopback', 'mainBranch', 'defaultWorkspace', 'rotateBytes', 'allowTools',
 ])
 
 /**
@@ -102,6 +102,14 @@ export function readSettings(config = {}) {
     : abs(config.supportRoot, 'supportRoot')
   const networkAllow = config.networkAllow === undefined ? [...DEFAULT_NETWORK_ALLOW] : config.networkAllow
   if (!Array.isArray(networkAllow) || networkAllow.some(h => typeof h !== 'string' || h === '')) throw refused('networkAllow must be a list of host names')
+  // THE APPROVED-TOOL LIST (#26): exact names, and a trailing `*` for a family. Omitted means the policy's own
+  // baseline; declared means exactly what it says, so a deployment can narrow it without touching code.
+  const allowTools = config.allowTools === undefined
+    ? []
+    : (Array.isArray(config.allowTools) ? config.allowTools : [config.allowTools])
+  if (allowTools.some(name => typeof name !== 'string' || name === '')) {
+    throw refused('allowTools must be a list of non-empty tool names, each optionally ending in * for a family')
+  }
   return Object.freeze({
     auraDir: abs(config.auraDir, 'auraDir'),
     home,
@@ -115,6 +123,7 @@ export function readSettings(config = {}) {
     mainBranch: typeof config.mainBranch === 'string' && config.mainBranch !== '' ? config.mainBranch : 'main',
     defaultWorkspace: config.defaultWorkspace === undefined ? process.cwd() : abs(config.defaultWorkspace, 'defaultWorkspace'),
     rotateBytes: Number.isSafeInteger(config.rotateBytes) && config.rotateBytes > 0 ? config.rotateBytes : undefined,
+    allowTools: Object.freeze([...allowTools]),
   })
 }
 
@@ -145,8 +154,8 @@ export function presetOf(ctx, agent) {
  * @param {{settings: object, lookupPreset?: (agent: object|undefined) => unknown, logger?: object}} options
  * @returns {(exec: object) => string|undefined}
  */
-export function createGuard({ settings, lookupPreset = () => null, logger }) {
-  const policy = createPolicy(settings)
+export function createGuard({ settings, lookupPreset = () => null, logger, definitionOf = null }) {
+  const policy = createPolicy(settings, { definitionOf })
   const receipts = createReceiptLog({ auraDir: settings.auraDir, ...settings.rotateBytes === undefined ? {} : { rotateBytes: settings.rotateBytes } })
   return function actionGate(exec) {
     const agent = exec?.agent
@@ -195,7 +204,13 @@ export function apply(ctx, config) {
   const settings = readSettings(config ?? {})
   let logger
   try { logger = ctx.logger } catch { logger = undefined }
-  const guard = createGuard({ settings, lookupPreset: agent => presetOf(ctx, agent), logger })
+  // The harness runtime is the only place a tool's REGISTERED definition lives, so the pin is taken from it:
+  // `ctx.tools.get(name, agent)`. A package that re-registers an approved name after startup hands back a different
+  // object, and the policy refuses that call.
+  const definitionOf = (name, agent) => {
+    try { return ctx.tools.get(name, agent) } catch { return undefined }
+  }
+  const guard = createGuard({ settings, lookupPreset: agent => presetOf(ctx, agent), logger, definitionOf })
   ctx.tools.guard(guard)
   logger?.info?.(`aukora-action-gate: guarding every tool call; receipts in ${settings.auraDir}`)
 }
