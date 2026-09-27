@@ -120,11 +120,18 @@ export function createSelfChangeTool({ repo, worktreesRoot, supportRoot, env = {
       + 'again with why (one line) and the paths you changed. preview: true returns the exact text Peter will see. Without '
       + 'preview the Aumlok popup opens on his screen and this call waits: Approve commits exactly that tree to GitHub main '
       + 'and restarts into it; Refuse commits nothing. Never run self-change.mjs from your shell.',
+    // A JSON Schema object: the model API refuses a bare field map ("schema must be type: object"), and one bad tool
+    // schema fails EVERY turn in the app (live, 2026-09-27 21:40).
     parameters: {
-      why: { type: 'string', required: true, description: 'Why, in one line. It becomes the commit subject.' },
-      worktree: { type: 'string', required: true, description: 'A worktree name (or path) directly under ~/aukora-worktrees.' },
-      paths: { type: 'array', items: { type: 'string' }, description: 'Repository-relative files changed in that worktree.' },
-      preview: { type: 'boolean', description: 'true: show the operation text only; no popup, nothing written.' },
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        why: { type: 'string', description: 'Why, in one line. It becomes the commit subject.' },
+        worktree: { type: 'string', description: 'A worktree name (or path) directly under ~/aukora-worktrees.' },
+        paths: { type: 'array', items: { type: 'string' }, description: 'Repository-relative files changed in that worktree.' },
+        preview: { type: 'boolean', description: 'true: show the operation text only; no popup, nothing written.' },
+      },
+      required: ['why', 'worktree'],
     },
     timeoutMs: 20 * 60_000,
     output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
