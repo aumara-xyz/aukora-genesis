@@ -53,6 +53,8 @@ import { createHash, createPrivateKey, createPublicKey, randomBytes, sign as nod
 import { appendFileSync, chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, unlinkSync } from 'node:fs'
 import { connect, createServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
+import { readOwnerDaemonConfig } from './aumlok-airlock-config.mjs'
+import { createAirlockSigner, requestOwnerSignature } from './aumlok-signer-airlock.mjs'
 // THE REST OF THIS SIGNER LIVES IN TWO SIBLINGS, MOVED WHOLE (2026-09-27) so that no file of it passes the self-change
 // loop's 64 KiB limit (MAX_PATCH_BYTES, vendor/aukora-seed-app). No moved line was rewritten, every name this file
 // exported is still exported from here, and the code below that uses them is unchanged.
@@ -125,6 +127,12 @@ export async function startShellSigner(input) {
   const { library, directory, socketPath, log, ask, logDir: requestedLogDir } = input
   const say = typeof log === 'function' ? log : () => {}
   const logDir = resolveSignerLogDir({ logDir: requestedLogDir, socketPath })
+  let ownerConfig
+  try {
+    ownerConfig = readOwnerDaemonConfig(input.ownerDaemonConfigPath, input.ownerDaemonConfigUid)
+  } catch {
+    return decide({ logDir, say, verdict: { serving: false, reason: 'airlock:config-refused', socketPath: null } })
+  }
 
   if (directory === null || directory === undefined) {
     // A shell with no bound controller is a shell with nothing to sign for. It says so and stays up.
@@ -170,38 +178,43 @@ export async function startShellSigner(input) {
   // ── the machine key, read rather than asked for ────────────────────────────────────────────────
   // A BOUND MACHINE KEEPS THIS KEY, AND THAT IS WHY A SHELL CAN SIGN AT ALL. A machine that has never
   // been bound holds none — a different fact from a refused approval, and reported as one.
-  let kept
-  try {
-    kept = library.readKeptMachineSeed({ directory, custodian: 'file' })
-  } catch {
-    const reason = 'aumlok:no-seed'
-    say(`aukora-desktop: aumlok signer: not serving: ${reason}: no machine key is kept in ${directory}, so `
-      + 'this laptop has nothing to sign an approval with. Binding this machine writes one; until then '
-      + 'nothing is signed.')
-    return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
-  }
-
-  // THE MACHINE'S OWN KEY, DERIVED FROM THE SEED RATHER THAN TRUSTED FROM THE FILE. The file names both
-  // the seed and a public key; deriving the second from the first is what makes the pair a fact instead
-  // of two claims that happen to sit in one JSON document.
   let privateKey
-  try {
-    privateKey = ed25519KeyFromSeed(kept.ed25519SeedHex)
-  } catch (error) {
-    const reason = 'aumlok:no-seed'
-    say(`aukora-desktop: aumlok signer: not serving: ${reason}: the kept machine seed is not a usable `
-      + `Ed25519 seed: ${String(error?.message ?? error)}`)
-    return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
-  }
-  const machinePublicKeyHex = library.rawEd25519PublicKeyHex?.(privateKey)
-    ?? rawPublicKeyHexOf(privateKey)
-  if (typeof kept.ed25519PublicKeyHex === 'string' && kept.ed25519PublicKeyHex !== machinePublicKeyHex) {
-    // THE FILE CONTRADICTS ITSELF. Signing would produce bytes the record's own machine list cannot
-    // explain, so it is refused before a socket exists rather than after a person has been asked.
-    const reason = 'aumlok:machine-signer-not-listed-by-the-record'
-    say(`aukora-desktop: aumlok signer: not serving: ${reason}: ${directory} keeps a seed that derives `
-      + `${machinePublicKeyHex}, and the same file names ${kept.ed25519PublicKeyHex}. Nothing is signed.`)
-    return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
+  let machinePublicKeyHex = ownerConfig?.ownerPublicKeyHex
+  // AIRLOCK: configured custody must never enter the local seed reader, even on daemon failure.
+  if (ownerConfig === null) {
+    let kept
+    try {
+      kept = library.readKeptMachineSeed({ directory, custodian: 'file' })
+    } catch {
+      const reason = 'aumlok:no-seed'
+      say(`aukora-desktop: aumlok signer: not serving: ${reason}: no machine key is kept in ${directory}, so `
+        + 'this laptop has nothing to sign an approval with. Binding this machine writes one; until then '
+        + 'nothing is signed.')
+      return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
+    }
+
+    // THE MACHINE'S OWN KEY, DERIVED FROM THE SEED RATHER THAN TRUSTED FROM THE FILE. The file names both
+    // the seed and a public key; deriving the second from the first is what makes the pair a fact instead
+    // of two claims that happen to sit in one JSON document.
+    try {
+      privateKey = ed25519KeyFromSeed(kept.ed25519SeedHex)
+    } catch (error) {
+      const reason = 'aumlok:no-seed'
+      say(`aukora-desktop: aumlok signer: not serving: ${reason}: the kept machine seed is not a usable `
+        + `Ed25519 seed: ${String(error?.message ?? error)}`)
+      return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
+    }
+    machinePublicKeyHex = library.rawEd25519PublicKeyHex?.(privateKey)
+      ?? rawPublicKeyHexOf(privateKey)
+    if (typeof kept.ed25519PublicKeyHex === 'string' && kept.ed25519PublicKeyHex !== machinePublicKeyHex) {
+      // THE FILE CONTRADICTS ITSELF. Signing would produce bytes the record's own machine list cannot
+      // explain, so it is refused before a socket exists rather than after a person has been asked.
+      const reason = 'aumlok:machine-signer-not-listed-by-the-record'
+      say(`aukora-desktop: aumlok signer: not serving: ${reason}: ${directory} keeps a seed that derives `
+        + `${machinePublicKeyHex}, and the same file names ${kept.ed25519PublicKeyHex}. Nothing is signed.`)
+      return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
+    }
+
   }
 
   // THE RECORD HAS TO LIST THIS MACHINE. `publicRoot.machines[].ed25519` is the record's own statement
@@ -234,7 +247,10 @@ export async function startShellSigner(input) {
   const encodeResponse = organValueAt(library, 'library.serializeApprovalResponse')
   let signer
   try {
-    signer = library.createOwnerSigner({
+    signer = ownerConfig !== null
+      ? createAirlockSigner({ config: ownerConfig, library: library.library, review,
+        stillListed: () => stillListedByTheRecord() })
+      : library.createOwnerSigner({
       privateKey,
       registeredPublicKeyHex: machinePublicKeyHex,
       review,
@@ -438,7 +454,14 @@ export async function startShellSigner(input) {
     // what `stillListedByTheRecord`'s own comment promises, and a promise kept on one side of an await
     // is not kept.
     if (!stillListedByTheRecord()) return refuse(NOSTR_SIGNER_REFUSE.MACHINE_NOT_LISTED, challenge)
-    const signature = nodeSign(null, preimage, privateKey).toString('hex')
+    const signature = ownerConfig === null
+      ? nodeSign(null, preimage, privateKey).toString('hex')
+      : (await requestOwnerSignature(ownerConfig, { kind: 'nostr-binding', request: statement,
+        challenge, operationDigest: sha256Hex(preimage) }, preimage, challenge, library.library)).signature
+    if (ownerConfig !== null) {
+      if (Math.floor(Date.now() / 1000) >= expiresAt) return refuse(EXPIRED, challenge)
+      if (!stillListedByTheRecord()) return refuse(NOSTR_SIGNER_REFUSE.MACHINE_NOT_LISTED, challenge)
+    }
     if (typeof encodeSigned !== 'function') return refuse(MALFORMED, challenge)
     // MARKED SEEN ONLY WHEN A SIGNATURE ACTUALLY GOES OUT, which is the rule `owner-signer.mjs` follows:
     // `seen.add` sits at :137, inside `sign`, after the decision — not in `precheck`. A request that was
@@ -535,7 +558,14 @@ export async function startShellSigner(input) {
     // somebody deciding.
     if (Math.floor(Date.now() / 1000) >= expiresAt) return refuse(EXPIRED, challenge)
     if (!stillListedByTheRecord()) return refuse(NOSTR_SIGNER_REFUSE.MACHINE_NOT_LISTED, challenge)
-    const signature = nodeSign(null, preimage, privateKey).toString('hex')
+    const signature = ownerConfig === null
+      ? nodeSign(null, preimage, privateKey).toString('hex')
+      : (await requestOwnerSignature(ownerConfig, { kind: 'nostr-sas', request: statement,
+        challenge, operationDigest: sha256Hex(preimage) }, preimage, challenge, library.library)).signature
+    if (ownerConfig !== null) {
+      if (Math.floor(Date.now() / 1000) >= expiresAt) return refuse(EXPIRED, challenge)
+      if (!stillListedByTheRecord()) return refuse(NOSTR_SIGNER_REFUSE.MACHINE_NOT_LISTED, challenge)
+    }
     if (typeof encodeSigned !== 'function') return refuse(MALFORMED, challenge)
     // MARKED SEEN ONLY WHEN A SIGNATURE ACTUALLY GOES OUT: a request that was declined, that expired, or
     // that named a machine the record no longer lists produced nothing to replay.

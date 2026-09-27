@@ -11,6 +11,9 @@ import { canonicalJSONSafeInteger } from '../../plugins/aukora-kira/lib/record.m
 import { buildRepoAdvance, REPO_ADVANCE_KIND } from '../../plugins/aukora-aumlok/lib/repo-advance.mjs'
 import { buildReleaseActivate, RELEASE_ACTIVATE_KIND } from '../../plugins/aukora-aumlok/lib/release-activate.mjs'
 import { WITNESS_DISPLAY_LIMIT } from './aumlok-signer.mjs'
+import { decodeNpub } from '../../plugins/aukora-owner-daemon/lib/airlock-witness.mjs'
+export { SAS_CONFIRMATION_DOMAIN, SAS_CONFIRMATION_KEYS, sasConfirmationPreimage, NOSTR_BINDING_DOMAIN,
+  decodeNpub, nostrBindingPreimage } from '../../plugins/aukora-owner-daemon/lib/airlock-witness.mjs'
 
 // ── THE SECOND OPERATION: `sign-nostr-binding` (Y7) ────────────────────────────────────────────
 //
@@ -46,39 +49,8 @@ export const NOSTR_BINDING_OPERATION = 'sign-nostr-binding'
  */
 export const CONFIRM_NOSTR_SAS_OPERATION = 'confirm-nostr-sas'
 
-/** Beta's domain string, distinct from the binding's deliberately. */
-export const SAS_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v1'
-
-/** Beta's ruled key set, in his order. A field added here changes the preimage and is a migration. */
-export const SAS_CONFIRMATION_KEYS = Object.freeze([
-  'subject', 'npub', 'controllerKeyHex', 'sasDigits', 'confirmedAt',
-])
-
 /** How long a person has to answer about a comparison, in seconds, from the request's `confirmedAt`. */
 export const SAS_CONFIRMATION_WINDOW_SECONDS = 300
-
-/**
- * The bytes one `confirm-nostr-sas` request is signed over — `confirmation.mjs:69-72`, to the byte.
- * @param {Readonly<Record<string, unknown>>} statement - the five ruled fields.
- * @returns {string} the preimage.
- */
-export function sasConfirmationPreimage(statement) {
-  const lines = SAS_CONFIRMATION_KEYS.map(key => `${key}=${String(statement?.[key] ?? '')}`)
-  // NO TRAILING NEWLINE, matching the module: `${DOMAIN}\n${lines.join('\n')}`.
-  return `${SAS_CONFIRMATION_DOMAIN}\n${lines.join('\n')}`
-}
-
-/**
- * The binding document's domain, and the exact bytes it is signed over.
- *
- * IT IS THE PRODUCT'S OWN DOMAIN AND THE PRODUCT'S OWN PREIMAGE RULE, spelled out here rather than
- * imported, because `plugins/aukora-nostr/**` is not part of this shell's build: the shell carries no
- * copy of that plugin and imports nothing from it. The rule is one line — the domain, a newline, and
- * the statement with its keys sorted and no whitespace — and it is NOT left to drift: the court
- * assembles the same document and verifies it with `verifyBinding`, so an encoder that disagrees with
- * the product's own is a red court rather than a binding nobody can check.
- */
-export const NOSTR_BINDING_DOMAIN = 'aukora:nostr-identity-binding:v1'
 
 /**
  * How long a person has to answer about a binding, in seconds, measured from the request's `issuedAt`.
@@ -108,72 +80,6 @@ export const NOSTR_SIGNER_REFUSE = Object.freeze({
 export const CANONICAL_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u
 export const HEX64 = /^[0-9a-f]{64}$/u
 
-// ── bech32 (BIP-173), the twenty lines an npub needs ───────────────────────────────────────────
-// AN ENCODING, NOT A CURVE. Nothing here computes a point or holds a secret; it turns the `npub1…`
-// string into the 32 bytes it encodes, which is what the signed statement must name. The alternative
-// — importing the Nostr plugin's decoder — is not available to this file: that plugin is not in this
-// shell's build, and a shell that imported it would ship a dependency on a face.
-const BECH32_CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
-
-/** One bech32 checksum step. */
-function bech32Polymod(values) {
-  const generators = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
-  let checksum = 1
-  for (const value of values) {
-    const top = checksum >> 25
-    checksum = ((checksum & 0x1ffffff) << 5) ^ value
-    for (let index = 0; index < 5; index += 1) if ((top >> index) & 1) checksum ^= generators[index]
-  }
-  return checksum >>> 0
-}
-
-/** The expanded human-readable part, for the checksum. */
-const bech32HrpExpand = hrp => [...hrp].map(c => c.charCodeAt(0) >> 5)
-  .concat([0], [...hrp].map(c => c.charCodeAt(0) & 31))
-
-/**
- * Decode one npub into the 32 bytes it encodes.
- *
- * REFUSES EVERYTHING IT CANNOT READ, and the caller turns that into a name. A wrong checksum, a wrong
- * prefix, a mixed case or a length that is not 32 bytes are all "this is not an npub", and signing a
- * statement built from half-understood bytes would be a binding about a key nobody named.
- * @param {unknown} npub - the bech32 string.
- * @returns {string|null} 64 lowercase hex characters, or null when this is not an npub.
- */
-export function decodeNpub(npub) {
-  if (typeof npub !== 'string' || npub.length < 8 || npub.length > 128) return null
-  // MIXED CASE IS INVALID BECH32, and it is checked before lowercasing so it is not silently accepted.
-  if (npub !== npub.toLowerCase() && npub !== npub.toUpperCase()) return null
-  const text = npub.toLowerCase()
-  const separator = text.lastIndexOf('1')
-  if (separator < 1 || separator + 7 > text.length) return null
-  const hrp = text.slice(0, separator)
-  if (hrp !== 'npub') return null
-  const data = []
-  for (const character of text.slice(separator + 1)) {
-    const value = BECH32_CHARSET.indexOf(character)
-    if (value === -1) return null
-    data.push(value)
-  }
-  if (bech32Polymod(bech32HrpExpand(hrp).concat(data)) !== 1) return null
-  // Drop the six checksum characters, then read the 5-bit groups back into bytes.
-  let accumulator = 0
-  let bits = 0
-  const bytes = []
-  for (const value of data.slice(0, -6)) {
-    accumulator = (accumulator << 5) | value
-    bits += 5
-    while (bits >= 8) {
-      bits -= 8
-      bytes.push((accumulator >> bits) & 0xff)
-    }
-  }
-  // NO PADDING IS ACCEPTED: an npub whose payload is not exactly 32 bytes is not a key.
-  if (bits >= 5 || ((accumulator << (8 - bits)) & 0xff) !== 0) return null
-  if (bytes.length !== 32) return null
-  return Buffer.from(bytes).toString('hex')
-}
-
 /**
  * The statement one `sign-nostr-binding` request asserts, and the bytes the machine key signs.
  *
@@ -196,21 +102,6 @@ export function nostrBindingStatement(input) {
     createdAt: input.issuedAt,
   })
 }
-
-/**
- * The exact bytes signed for a binding: the domain, a newline, and the statement canonically.
- *
- * THE KEYS ARE SORTED AND NOTHING IS PRETTIED, so two encoders that agree on the fields agree on the
- * bytes. This is the product's own rule, restated where the signing happens.
- * @param {Readonly<Record<string, string>>} statement - the binding's claim fields.
- * @returns {Buffer} the signing preimage.
- */
-export function nostrBindingPreimage(statement) {
-  const ordered = {}
-  for (const key of Object.keys(statement).sort()) ordered[key] = statement[key]
-  return Buffer.from(`${NOSTR_BINDING_DOMAIN}\n${JSON.stringify(ordered)}`, 'utf8')
-}
-
 
 /**
  * SHA-256 of some bytes, as lowercase hex. The digest that goes in front of a person.

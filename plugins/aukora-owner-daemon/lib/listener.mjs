@@ -625,7 +625,8 @@ export async function serveBounded(input) {
           // from "the effect is in flight".
           serving = true
           try {
-            reply = await input.handle(input.role, request)
+            // The optional third argument identifies the accepted connection itself.
+            reply = await input.handle(input.role, request, socket)
           } finally {
             serving = false
             processor.release()

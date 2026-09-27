@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 import { readFileSync, existsSync, mkdirSync, renameSync, writeFileSync } from 'node:fs'
 import { pathToFileURL } from 'node:url'
 import { APPROVAL_FIELD_ORDER, APPROVAL_FIELD_NOT_STATED } from './aumlok-signer.mjs'
+import { readOwnerDaemonConfig } from './aumlok-airlock-config.mjs'
 
 /**
  * Read the `id` and `config.directory` of each plugin row in a composition patch.
@@ -465,23 +466,22 @@ export async function loadOrganLibrary(releaseDir) {
  * so a record that predates the handle projects exactly the shape it always did.
  * @param {{loadLocalAumlokPublicControl: Function}} library - the organ library from the release.
  * @param {string|null} directory - the bound controller directory.
+ * @param {object} [options] - optional config location and ownership for an isolated check.
  * @returns {Readonly<{bound: boolean, reason?: string, subject?: string, handle?: string}>} the state.
  */
-export function readBindingState(library, directory) {
+export function readBindingState(library, directory, options = {}) {
   if (directory === null) return Object.freeze({ bound: false, reason: 'aumlok:adapter-unbound' })
   if (!existsSync(join(directory, 'local-control.json'))) {
     return Object.freeze({ bound: false, reason: 'aumlok:controller-absent' })
   }
   try {
-    // THE MACHINE KEY THIS LAPTOP KEPT, READ HERE BECAUSE THIS IS THE PROCESS THAT MAY READ IT. A v3
-    // record listing several machines does not say which one is this laptop, and the reader answers
-    // `aumlok:record-names-no-machine` rather than guess. The shell already opens this file to sign
-    // (`aumlok-signer.mjs` reads the seed at startup), so reading it here is the same act in the same
-    // uid, and it is what makes a SECOND DEVICE read BOUND instead of refusing. ABSENT IS NOT AN ERROR:
-    // a second laptop with no key for this identity passes null and the single-machine fallback still
-    // answers, which is the shape every existing one-machine binding has.
+    // Configured custody selects the protected public pin without reading the old local seed.
+    // A refresh retires that old key, so consulting it here would make the bound airlock read unbound.
+    const owner = readOwnerDaemonConfig(options.ownerDaemonConfigPath, options.ownerDaemonConfigUid)
+    const machinePublicKeyHex = owner === null
+      ? keptMachinePublicKeyOf(library, directory) : owner.ownerPublicKeyHex
     const projection = library
-      .loadLocalAumlokPublicControl(directory, undefined, keptMachinePublicKeyOf(library, directory))
+      .loadLocalAumlokPublicControl(directory, undefined, machinePublicKeyHex)
       .projection
     return Object.freeze({
       bound: true,

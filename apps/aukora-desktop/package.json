@@ -26,6 +26,8 @@
       "aumlok-bridge-state.mjs",
       "aumlok-bridge.mjs",
       "aumlok-draw.mjs",
+      "aumlok-airlock-config.mjs",
+      "aumlok-signer-airlock.mjs",
       "aumlok-signer-review.mjs",
       "aumlok-signer-witness.mjs",
       "aumlok-signer.mjs",
@@ -62,6 +64,9 @@
         "filter": [
           "detect.mjs",
           "client.mjs",
+          "peer-uid.mjs",
+          "boundary.mjs",
+          "airlock-witness.mjs",
           "visible.mjs"
         ]
       },
