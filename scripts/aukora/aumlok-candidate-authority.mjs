@@ -37,6 +37,7 @@ export const CANDIDATE_CEILINGS = Object.freeze([
   'CROSSING_ADVISORY_ONLY (original qualifier halts before signature; offline council; no authority granted)',
   'TEXT_PRESERVE_MODE (existing 100644/100755 only; new files 100644; no deletion, binary, symlink or mode changes)',
   'EXACT_TREE_COMMIT (commit-tree bypasses commit hooks; compare-and-swap updates HEAD)',
+  'GENERATED_NOT_REPRODUCED (face lib files are the bytes build-face.py wrote in this run, hashed right after it and bound by the tree; shown as blob ids, not crossed, not rebuilt independently)',
 ])
 export const PATH_FENCE_DESCRIPTION = 'Original secret/sacred/authority/self-protecting refusals; literal file paths, no symlinks or case collisions; Genesis guard and action-gate files require exact explicit names (no directory/pattern grant). Not OS confinement.'
 const CANONICAL = ACCEPTED_ORIGIN_FORMS[1]
@@ -47,6 +48,15 @@ const snapshots = new WeakMap()
 const deny = code => { throw new Error(code) }
 const digestOf = bytes => createHash('sha256').update(Buffer.from('aukora:operation-content:v1\0')).update(bytes).digest('hex')
 const inside = (path, root) => path.startsWith(root + sep)
+// GENERATED FACE OUTPUTS (2026-09-27). The app loads plugins/aukora-face/<face>/lib/*, so a face source change ships only
+// if its rebuilt bundle rides in the same approved tree. self-change.mjs runs scripts/build-face.py and names here only
+// the files that build reported writing, each with the blob it hashed right after the build. Those files stay in the
+// candidate (digest, original materializer, tree) but skip the per-file crossing, which refuses them: its 64 KiB draft
+// budget is smaller than layout's client.js (84,579 bytes) and its secret scan refuses every .build-inputs.json (a
+// 64-hex digest). The path fence still applies to them, here and again inside the original materializer.
+const GENERATED_PATH = /^plugins\/aukora-face\/[^/]+\/lib\/(index\.js|client\.js|invariant\.js|\.build-inputs\.json)$/
+const GENERATED_MAX_BYTES = 1024 * 1024
+const byteLimit = (path, generated) => generated?.has(path) ? GENERATED_MAX_BYTES : LIMITS.MAX_PATCH_BYTES
 
 // A fixed binary and closed environment; preview Git never loads caller config/hooks
 // or runs a clean filter. Blob bytes are written directly, not through `git add`.
@@ -100,14 +110,14 @@ function fence(paths, explicit) {
   }
 }
 
-function sourceBytes(repo, path, expectedMode) {
+function sourceBytes(repo, path, expectedMode, maxBytes = LIMITS.MAX_PATCH_BYTES) {
   let full = repo
   for (const part of path.split('/')) {
     full = join(full, part)
     if (lstatSync(full).isSymbolicLink()) deny('candidate:source-symlink')
   }
   const st = lstatSync(full)
-  if (!st.isFile() || st.size > LIMITS.MAX_PATCH_BYTES) deny('candidate:requires-regular-text')
+  if (!st.isFile() || st.size > maxBytes) deny('candidate:requires-regular-text')
   // Git's executable bit is the owner's execute bit. Also refuse any execute
   // permissions on a 100644 file, even when core.filemode would ignore them.
   const mode = st.mode & 0o100 ? '100755' : '100644'
@@ -130,8 +140,14 @@ function treeFor(repo, base, candidate, index) {
   return git(repo, ['write-tree'], { env }).trim()
 }
 
-export function stageCandidatePreview({ repo, support, paths, explicitlyNamedPaths = [], why }) {
+export function stageCandidatePreview({ repo, support, paths, explicitlyNamedPaths = [], why, generated = {} }) {
   fence(paths, explicitlyNamedPaths)
+  const built = new Map(Object.entries(generated))
+  for (const [path, blob] of built) {
+    if (!paths.includes(path) || !GENERATED_PATH.test(path) || !/^[0-9a-f]{40}$/.test(blob)) deny('candidate:generated-path-refused')
+  }
+  if (paths.every(path => built.has(path))) deny('candidate:generated-without-source')
+  const generatedPaths = new Set(built.keys())
   repo = realpathSync(repo)
   const identity = assertSourceIdentity({ repo, support })
   const base = git(repo, ['rev-parse', 'HEAD']).trim()
@@ -140,7 +156,7 @@ export function stageCandidatePreview({ repo, support, paths, explicitlyNamedPat
     const entry = git(repo, ['ls-tree', base, '--', path])
     if (entry && !/^(100644|100755) blob /.test(entry)) deny('candidate:base-requires-regular-text')
     const mode = entry ? entry.split(' ')[0] : '100644'
-    const newContent = sourceBytes(repo, path, mode)
+    const newContent = sourceBytes(repo, path, mode, byteLimit(path, generatedPaths))
     if (entry) {
       const previous = git(repo, ['show', `${base}:${path}`], { encoding: null })
       if (previous.includes(0) || !Buffer.from(previous.toString('utf8')).equals(previous)) deny('candidate:base-requires-utf8-text')
@@ -165,11 +181,19 @@ export function stageCandidatePreview({ repo, support, paths, explicitlyNamedPat
   git(stageRepo, ['checkout', '-q', '--detach', base])
   git(stageRepo, ['remote', 'add', 'origin', CANONICAL])
   const tree = treeFor(stageRepo, base, candidate, join(directory, 'preview.index'))
-  const diff = git(stageRepo, ['diff', '--no-color', '--no-ext-diff', '--no-textconv', '--text', '--full-index', '--no-renames', base, tree, '--'])
+  // The window shows the SOURCE diff in full. Each generated file is shown as one line naming its blob in this tree; the
+  // blob must be the one self-change hashed right after the build, so bytes that moved after the build are refused.
+  const shownPaths = paths.filter(path => !generatedPaths.has(path))
+  const diff = git(stageRepo, ['diff', '--no-color', '--no-ext-diff', '--no-textconv', '--text', '--full-index', '--no-renames', base, tree, '--', ...shownPaths])
   if (!diff.trim() || diff.includes('\0')) deny('candidate:diff-not-displayable')
+  const shownGenerated = [...generatedPaths].sort().map(path => {
+    const blob = git(stageRepo, ['ls-tree', tree, '--', path]).split(/\s+/)[2]
+    if (blob !== built.get(path)) deny('candidate:generated-changed-after-build')
+    return Object.freeze({ path, blob })
+  })
   const record = Object.freeze({ directory, worktree: stageRepo, digest: candidatePayloadHash(candidate, base), base, tree,
-    paths: Object.freeze([...paths]), diff, identity: identity.profile })
-  snapshots.set(record, { repo, support, identity, stageRepo, candidate, explicit: [...explicitlyNamedPaths], why, authorized: false, committed: false })
+    paths: Object.freeze([...paths]), diff, generated: Object.freeze(shownGenerated), identity: identity.profile })
+  snapshots.set(record, { repo, support, identity, stageRepo, candidate, explicit: [...explicitlyNamedPaths], why, generated: generatedPaths, authorized: false, committed: false })
   writeFileSync(join(directory, 'preview.json'), JSON.stringify({ ...record, authority: 'UNAUTHORIZED_PREVIEW' }) + '\n', { mode: 0o600 })
   checkCandidatePreview(record)
   return record
@@ -181,7 +205,7 @@ function crossingDrafts(record) {
   const snapshot = snapshots.get(record)
   if (!snapshot) deny('candidate:unknown-preview')
   if (git(snapshot.repo, ['rev-parse', 'HEAD']).trim() !== record.base) deny('crossing:stale-head')
-  return snapshot.candidate.files.map(file => {
+  return snapshot.candidate.files.filter(file => !snapshot.generated.has(file.path)).map(file => {
     const draft = { targetPath: file.path, newContent: sourceBytes(snapshot.repo, file.path, file.mode), supersedes: null }
     if (deriveDraftHash(draft) !== file.draftHash) deny('crossing:draft-mismatch')
     return draft
@@ -226,10 +250,14 @@ export function candidateOperation(record, why) {
   if (!snapshot) deny('candidate:unknown-preview')
   if (!snapshot.crossings) deny('crossing:not-qualified')
   checkCandidatePreview(record)
+  // `tree:` binds every byte, generated files included; with none generated the text is what it was before.
+  const shown = record.diff.endsWith('\n') ? record.diff : `${record.diff}\n`
+  const generated = record.generated.map(({ path, blob }) =>
+    `generated: ${path} blob ${blob} (rebuilt by scripts/build-face.py from the source above)\n`).join('')
   return ['code.change — Auma asks to change her own code', `why: ${why}`, `candidate: ${record.digest}`,
     `base: ${record.base}`, `tree: ${record.tree}`, `paths: ${record.paths.join(', ')}`,
     ...snapshot.crossings.map(crossing => `binding: ${crossing.binding.bindingHash} (${crossing.envelope.proposal.targetPath})`), '',
-    record.diff.endsWith('\n') ? record.diff : `${record.diff}\n`].join('\n')
+    `${shown}${generated}`].join('\n')
 }
 
 export function checkCandidatePreview(record) {
@@ -247,7 +275,7 @@ export function checkCandidatePreview(record) {
   const changed = git(stageRepo, ['diff', '--name-only', '--no-renames', '-z', record.base, record.tree, '--']).split('\0').filter(Boolean).sort()
   if (JSON.stringify(changed) !== JSON.stringify([...record.paths].sort())) deny('candidate:path-set-changed')
   for (const file of candidate.files) {
-    if (sourceBytes(repo, file.path, file.mode) !== candidate.workspace.get(file.path)) deny('candidate:source-changed')
+    if (sourceBytes(repo, file.path, file.mode, byteLimit(file.path, snapshot.generated)) !== candidate.workspace.get(file.path)) deny('candidate:source-changed')
     if (git(stageRepo, ['ls-tree', record.tree, '--', file.path]).split(/\s+/)[0] !== file.mode ||
         git(stageRepo, ['show', `${record.tree}:${file.path}`]) !== candidate.workspace.get(file.path)) deny('candidate:tree-changed')
   }
@@ -323,7 +351,7 @@ export function authorizeAndMaterializeCandidate(record, { approvalPath, approve
       git(snapshot.stageRepo, ['rev-parse', `${materialized.commitSha}^`]).trim() !== record.base ||
       git(materialized.worktreePath, ['status', '--porcelain', '--untracked-files=all']).trim()) deny('candidate:materialized-tree-changed')
   for (const file of snapshot.candidate.files) {
-    if (sourceBytes(materialized.worktreePath, file.path, file.mode) !== snapshot.candidate.workspace.get(file.path)) deny('candidate:materialized-tree-changed')
+    if (sourceBytes(materialized.worktreePath, file.path, file.mode, byteLimit(file.path, snapshot.generated)) !== snapshot.candidate.workspace.get(file.path)) deny('candidate:materialized-tree-changed')
   }
   checkCandidatePreview(record)
   snapshot.authorized = { operationDigest, approverDid, approvalDigest: createHash('sha256').update(approvalBytes).digest('hex') }

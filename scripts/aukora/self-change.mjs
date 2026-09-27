@@ -2,13 +2,20 @@
 /**
  * AUMA'S CODE CHANGE, SHOWN IN FULL AND SIGNED BEFORE IT LANDS.
  *
- *   node scripts/aukora/self-change.mjs "why, in one line" <path> [<path> …]
+ *   node scripts/aukora/self-change.mjs [--preview] "why, in one line" <path> [<path> …]
  *
+ *   0. build   — a named face SOURCE file (plugins/aukora-face/<face>/ src, assets, vendor or config, as build-face.py
+ *                carries it) makes this run `python3 scripts/build-face.py --only <face>` first, because the app loads
+ *                the committed lib bundle, not src. Every changed face source must be named, because the build reads
+ *                the whole working tree. Every lib file left changed joins the change. A failed build
+ *                proposes nothing. --preview stops after step 1 and prints the operation text: no popup, no evidence,
+ *                no code chain (not even reconcile).
  *   1. propose — make an UNAUTHORIZED disposable preview of exactly these paths. The popup binds its original
- *                candidate digest, crossing bindings, base, Git tree, paths and full diff. The adapter re-reads the
- *                drafts; the ORIGINAL crossing binds them and the qualifier halts before signature, granting no authority.
- *                Its operation digest is sha256("aukora:operation-content:v1" ‖ 0x00 ‖ content). The complete rendered
- *                witness must fit within 1,650 characters; a binary change is refused.
+ *                candidate digest, crossing bindings, base, Git tree, paths and the full SOURCE diff; each lib file the
+ *                build wrote is one `generated:` line with its blob id (the tree still binds its bytes). The adapter
+ *                re-reads the drafts; the ORIGINAL crossing binds the source drafts and the qualifier halts before
+ *                signature, granting no authority. Its operation digest is sha256("aukora:operation-content:v1" ‖ 0x00 ‖
+ *                content). The complete rendered witness must fit within 11,800 characters; a binary change is refused.
  *   2. approve — the app's Aumlok signer shows that exact text; Approve signs it, Refuse signs nothing.
  *   3. verify  — before any authorized candidate is materialized, the approval is checked with scripts/aumlok/verify-approval
  *                against the PINNED approver key (the live Kira overlay's approverDid), and its signed fields must name
@@ -18,6 +25,8 @@
  *                approval. The untouched hybrid CLI continues to fail closed without hybrid authorization.
  *   4. apply   — commit EXACTLY the approved candidate tree with a compare-and-swap, then Aura, then fast-forward main.
  *                Every step is written to <evidence>/journal.jsonl, so an interruption leaves a record of where it stopped.
+ *   5. become  — once main has it (and AUKORA_NO_BECOME is not 1), start the main worktree's scripts/aukora/become.mjs
+ *                detached, logging to <evidence>/become.log. This script does not wait for it or check what it does.
  *
  * WHAT THIS IS NOT, said here because a reviewer will check: this is the SUPPORTED path, not an enforced one. The agent
  * runs as the owner's OS user with the owner's git credentials, so a direct `git push` is not stopped by anything on
@@ -25,14 +34,15 @@
  * reported, not proven). Server-side enforcement of main is the next piece of work.
  * NO_PQ_SIGNATURE (Ed25519 only; the original requires Ed25519+ML-DSA-65).
  */
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createHash, createPublicKey } from 'node:crypto'
-import { appendFileSync, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { appendFileSync, closeSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { codeChain } from './aura-code.mjs'
-import { deriveApprovalWitness } from '../../apps/aukora-desktop/aumlok-signer.mjs'
+import { shownLimit } from './shown-limit.mjs'
+import { WITNESS_DISPLAY_LIMIT, deriveApprovalWitness } from '../../apps/aukora-desktop/aumlok-signer.mjs'
 import {
   CANDIDATE_CEILINGS, PATH_FENCE_DESCRIPTION, assertSourceIdentity, stageCandidatePreview,
   qualifyCandidateCrossing, candidateOperation, checkCandidatePreview, authorizeAndMaterializeCandidate, commitCandidateTree,
@@ -45,17 +55,23 @@ const STATE = join(SUPPORT, 'state')
 const CLIENT = join(REPO, 'scripts', 'aumlok', 'approve-operation')
 const VERIFY = join(REPO, 'scripts', 'aumlok', 'verify-approval')
 const WINDOW_SECONDS = 300
-// The approval window shows at most 1,800 characters (apps/aukora-desktop/aumlok-signer.mjs WITNESS_DISPLAY_LIMIT) and
-// truncates the rest. Check the actual rendered witness, including its heading and escaped characters.
-const MAX_SHOWN_CHARS = 1650
+// The approval window shows at most WITNESS_DISPLAY_LIMIT characters (apps/aukora-desktop/aumlok-signer.mjs; being raised
+// from 1,800 to 12,000 on 2026-09-27) and truncates the rest, saying so. 11,800 leaves 200 for the window's own heading.
+// Check the actual rendered witness, including its heading and escaped characters. A face bundle is one `generated:` line,
+// not its diff, so a face change fits. The ceiling follows the signer in THIS tree: GitHub main's signer (c398ccd63) still
+// says 1,800, and a text longer than the window would be approved with lines unseen, so until 12,000 lands this is 1,650.
+const MAX_SHOWN_CHARS = shownLimit(STATE, WITNESS_DISPLAY_LIMIT)
 
 const fail = (message) => { process.stderr.write(`SELF-CHANGE REFUSED: ${message}\n`); process.exit(1) }
 const candidateStep = (action) => {
   try { return action() } catch (error) { fail(error instanceof Error ? error.message : String(error)) }
 }
-const [why, ...paths] = process.argv.slice(2)
-if (!why || paths.length === 0) fail('usage: node scripts/aukora/self-change.mjs "why, in one line" <path> [<path> …]')
+const PREVIEW = process.argv.slice(2).includes('--preview')
+const [why, ...named] = process.argv.slice(2).filter((arg) => arg !== '--preview')
+if (!why || named.length === 0) fail('usage: node scripts/aukora/self-change.mjs [--preview] "why, in one line" <path> [<path> …]')
 if (why.includes('\n')) fail('the reason is one line')
+// The named paths, then (step 0d) the face lib files a rebuild leaves changed.
+const paths = [...named]
 
 // THE CALLER'S GIT ENVIRONMENT IS NOT TRUSTED (2026-09-27, red team): GIT_CONFIG_* variables could install a textconv driver or an
 // attributes file that makes the shown diff differ from the committed bytes, so every git call runs without them.
@@ -92,12 +108,14 @@ function didKeyToPem(did) {
 }
 
 // 0. THE PATHS ARE PLAIN FILES IN THIS REPOSITORY: no pathspec magic, no directories that could sweep in untracked files.
-for (const path of paths) {
+const plainFile = (path) => {
   if (path.startsWith(':') || /[*?[\]]/u.test(path)) fail(`${path} is a pattern, not a file; name each file`)
+  if (path.split('/').some((part) => !part || part === '.' || part === '..')) fail(`${path} is not a plain repository path (empty, . or .. segment); name the file as Git does`)
   const full = resolve(REPO, path)
   if (!full.startsWith(`${REPO}/`)) fail(`${path} is outside the repository`)
   if (existsSync(full) && !statSync(full).isFile()) fail(`${path} is not a file; name each file`)
 }
+for (const path of paths) plainFile(path)
 // 0b. THE CHANGE SITS DIRECTLY ON GITHUB MAIN, so one approval cannot carry unapproved commits onto it.
 // Source identity is checked before any fetch; the named adapter separately identifies disposable staging.
 candidateStep(() => assertSourceIdentity({ repo: REPO, support: SUPPORT }))
@@ -107,11 +125,11 @@ const remoteMain = git(['rev-parse', 'origin/main']).stdout.trim()
 // 0c. RECONCILE FIRST (scripts/aukora/aura-code.mjs). Approved and completed are distinct: an approved change is closed
 // only by a definite result read from GitHub's main. One whose result was never recorded (killed, timed out, refused)
 // is closed here against remote main. A local commit may still exist even if it never reached main. A spent
-// approval is never reused.
-const chain = codeChain(STATE)
+// approval is never reused. A preview appends nothing, so it skips this and never opens the chain.
+const chain = PREVIEW ? null : codeChain(STATE)
 const landed = (commit, main) => main !== undefined && git(['cat-file', '-e', `${commit}^{commit}`], { check: false }).status === 0
   && git(['merge-base', '--is-ancestor', commit, main], { check: false }).status === 0
-chain.locked(() => {
+if (!PREVIEW) chain.locked(() => {
   for (const recovered of chain.closeUnused()) {
     process.stdout.write(recovered.operation === 'code.change'
       ? `RECONCILED COMMITTED_NO_AURA (${recovered.approvalId}): local commit ${recovered.commit}; Aura ${String(recovered.sequence)}\n`
@@ -133,9 +151,88 @@ if (git(['rev-parse', 'HEAD']).stdout.trim() !== remoteMain) {
   fail(`this checkout is not at GitHub main (${remoteMain.slice(0, 9)}); commits GitHub does not have would ride along unapproved. Bring the checkout to main first`)
 }
 
+// 0d. A FACE SOURCE CHANGE CARRIES ITS REBUILT BUNDLE. The app loads plugins/aukora-face/<face>/lib/*, not src, so an
+// approved source change alone (c398ccd63) changed nothing live. Each named path must differ from HEAD (checked first,
+// so an unchanged file never costs a build); each face with named source is rebuilt; every lib file the build leaves
+// changed joins this change. Only files the build itself reported writing are shown as `generated:` lines.
+for (const path of named) {
+  if (!existsSync(join(REPO, path))) continue
+  const before = git(['rev-parse', '-q', '--verify', `HEAD:${path}`], { check: false })
+  if (before.status === 0 && git(['hash-object', '--no-filters', '--', path]).stdout.trim() === before.stdout.trim()) {
+    fail(`there is no uncommitted change to ${path}`)
+  }
+}
+const buildFaceText = readFileSync(join(REPO, 'scripts', 'build-face.py'), 'utf8')
+const pyTuple = (name) => {
+  const found = buildFaceText.match(new RegExp(`^${name} = \\(([^)]*)\\)`, 'mu'))
+  if (!found) fail(`scripts/build-face.py names no ${name} tuple, so face source cannot be told apart`)
+  return [...found[1].matchAll(/'([^']+)'/gu)].map((match) => match[1])
+}
+const FACES = pyTuple('FACES')
+const CARRY = pyTuple('CARRY')
+const sourceFace = (path) => {
+  const [top, dir, face, ...rest] = path.split('/')
+  const inner = rest.join('/')
+  return top === 'plugins' && dir === 'aukora-face' && FACES.includes(face)
+    && CARRY.some((item) => inner === item || inner.startsWith(`${item}/`)) ? face : null
+}
+const faces = [...new Set(named.map(sourceFace).filter(Boolean))].sort()
+// 0e. EVERY CHANGED FACE SOURCE IS NAMED. build-face.py builds from the working tree and places EVERY face's carried
+// source, so a changed source file that is not named would ride into a bundle the window shows only as a blob
+// (measured 2026-09-27: an unnamed spatial-tokens.css edit landed in layout's client.js under a named AppFrame diff).
+if (faces.length > 0) {
+  const dirty = git(['status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--', 'plugins/aukora-face']).stdout
+  const unnamed = dirty.split('\0').filter(Boolean).map((entry) => entry.slice(3)).filter((path) => sourceFace(path) && !named.includes(path))
+  if (unnamed.length > 0) fail(`face source changed but not named, and the rebuilt bundle would carry it unseen: ${unnamed.join(', ')}. Name each one or restore it`)
+}
+// Only build-face.py's fixed outputs can be `generated:`, and only when their inode changed after this build started;
+// any other changed lib file, or one the build did not touch, is shown in full.
+const FACE_OUTPUTS = ['index.js', 'client.js', 'invariant.js', '.build-inputs.json']
+const generated = {}
+for (const face of faces) {
+  process.stdout.write(`FACE BUILD    ${face}: python3 scripts/build-face.py --only ${face}\n`)
+  const outputs = new Set(FACE_OUTPUTS.map((name) => `plugins/aukora-face/${face}/lib/${name}`))
+  const startedNs = BigInt(Date.now()) * 1_000_000n
+  const build = spawnSync('python3', [join(REPO, 'scripts', 'build-face.py'), '--only', face], {
+    cwd: REPO, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 15 * 60 * 1000,
+    env: Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_'))),
+  })
+  const output = `${build.stdout ?? ''}${build.stderr ?? ''}`
+  if (build.status !== 0) {
+    fail(`the ${face} face did not build (${build.error ? build.error.message : `exit ${String(build.status ?? build.signal)}`}), so nothing was proposed:\n${output.trimEnd().split('\n').slice(-25).join('\n')}`)
+  }
+  for (const line of output.split('\n').filter((line) => line.startsWith('FACE BUILT '))) process.stdout.write(`${line}\n`)
+  const wrote = new Set(output.split('\n').filter((line) => line.startsWith('FACE WROTE ')).map((line) => line.slice(11).trim())
+    .filter((path) => {
+      const st = outputs.has(path) ? lstatSync(join(REPO, path), { bigint: true, throwIfNoEntry: false }) : undefined
+      return st !== undefined && st.isFile() && st.ctimeNs >= startedNs
+    }))
+  const changed = git(['status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--', `plugins/aukora-face/${face}/lib`]).stdout
+  for (const entry of changed.split('\0').filter(Boolean)) {
+    const path = entry.slice(3)
+    if (!existsSync(join(REPO, path))) fail(`${path} is deleted in the working tree; a deletion cannot be carried here`)
+    plainFile(path)
+    if (!paths.includes(path)) paths.push(path)
+    if (wrote.has(path)) generated[path] = git(['hash-object', '--no-filters', '--', path]).stdout.trim()
+    process.stdout.write(`FACE LIB      ${path}: ${wrote.has(path) ? `generated, blob ${generated[path]}` : 'changed but NOT written by this build, so shown in full'}\n`)
+  }
+}
+
 // 1. PROPOSE: freeze bytes, paths, original digest and tree in an unauthorized disposable preview.
 // The source checkout/index stays untouched. Original materialization requires the approval below.
-const candidate = candidateStep(() => stageCandidatePreview({ repo: REPO, support: SUPPORT, paths, explicitlyNamedPaths: paths, why }))
+const candidate = candidateStep(() => stageCandidatePreview({ repo: REPO, support: SUPPORT, paths, explicitlyNamedPaths: paths, why, generated }))
+// The disposable candidate (a full local fetch, ~160 MB) is removed when this process exits normally, preview or not: an
+// approved run has committed and pushed from this checkout by then, and its evidence directory keeps the record.
+{
+  process.on('exit', () => {
+    try {
+      const home = realpathSync(join(SUPPORT, 'state', 'home', 'code-candidates'))
+      const directory = realpathSync(candidate.directory)
+      if (dirname(directory) === home && /^candidate-[A-Za-z0-9]{6}$/u.test(basename(directory))) rmSync(directory, { recursive: true, force: true })
+      else process.stdout.write(`CANDIDATE LEFT ${candidate.directory} (not a candidate directory under ${home}, so not removed)\n`)
+    } catch (error) { process.stdout.write(`CANDIDATE LEFT ${candidate.directory} (${error instanceof Error ? error.message : String(error)})\n`) }
+  })
+}
 // Agent-authored words/paths are advisory hints; only re-read disk bytes feed
 // the original crossing's draft hash. No tests/rehearsal are claimed here.
 const crossings = candidateStep(() => qualifyCandidateCrossing(candidate, {
@@ -143,6 +240,7 @@ const crossings = candidateStep(() => qualifyCandidateCrossing(candidate, {
     affectedPaths: paths.map(path => ({ path, epistemicStatus: 'inferred' })), riskNotes: '',
     authoredBy: 'workbench', advisoryOnly: true, grantsAuthority: false }, tests: [],
 }))
+// These checks read the SHOWN source diff; generated files are UTF-8 text by the adapter's own byte check.
 const { base, diff } = candidate
 if (diff.trim() === '') fail(`there is no uncommitted change to ${paths.join(', ')}`)
 if (diff.includes('\u0000')) fail('this change contains NUL bytes, which the approval window cannot show; it cannot be approved here')
@@ -154,6 +252,13 @@ if (content.length > MAX_SHOWN_CHARS || witness.words.length > MAX_SHOWN_CHARS) 
   fail(`this change renders as ${String(witness.words.length)} characters and the approval window allows ${String(MAX_SHOWN_CHARS)} here; split it into smaller changes so every line is seen`)
 }
 const operationDigest = sha256(Buffer.concat([Buffer.from('aukora:operation-content:v1', 'utf8'), Buffer.from([0]), bytes]))
+if (PREVIEW) {
+  process.stdout.write(`\n──────── PREVIEW: the exact operation text the approval window would show ────────\n${content}`)
+  process.stdout.write(`──────── ${String(content.length)} characters (rendered witness ${String(witness.words.length)}; limit ${String(MAX_SHOWN_CHARS)})\n`)
+  process.stdout.write(`OPERATION     ${operationDigest}\nTREE          ${candidate.tree}\n`)
+  process.stdout.write('PREVIEW ONLY  no popup raised, no evidence written, code chain untouched. Run again without --preview to ask for approval.\n')
+  process.exit(0)
+}
 
 const overlay = readFileSync(join(SUPPORT, 'kira-deployment-overlay.patch.yml'), 'utf8')
 const setting = (name) => overlay.match(new RegExp(`^\\s*${name}:\\s*(.+?)\\s*$`, 'm'))?.[1] ?? fail(`the live overlay names no ${name}`)
@@ -277,6 +382,31 @@ if (outcome === 'not-completed') {
 }
 const onMain = outcome === 'completed'
 
+// 5. BECOME: the main worktree's become.mjs turns the landed commit into a release and restarts into it after its own
+// approval. It is started detached and not waited for; its log is the only record of what it did.
+let becoming = null
+if (onMain && process.env.AUKORA_NO_BECOME !== '1') {
+  const common = git(['rev-parse', '--path-format=absolute', '--git-common-dir'], { check: false })
+  const mainWorktree = common.status === 0 && common.stdout.trim() ? dirname(common.stdout.trim()) : null
+  const becomeScript = mainWorktree ? join(mainWorktree, 'scripts', 'aukora', 'become.mjs') : null
+  if (becomeScript && existsSync(becomeScript)) {
+    const log = join(evidence, 'become.log')
+    const fd = openSync(log, 'a', 0o600)
+    try {
+      const child = spawn(process.execPath, [becomeScript, '--commit', commit, '--why', why],
+        { cwd: mainWorktree, detached: true, stdio: ['ignore', fd, fd] })
+      child.on('error', (error) => appendFileSync(log, `become.mjs did not start: ${error.message}\n`))
+      child.unref()
+      becoming = `BECOMING      the app rebuilds this change into a release, asks you to approve loading it, and restarts into it; log ${log}`
+    } catch (error) {
+      becoming = `BECOMING      NOT started: ${error instanceof Error ? error.message : String(error)}`
+    } finally { closeSync(fd) }
+  } else {
+    becoming = `BECOMING      NOT started: ${becomeScript ?? 'the main worktree (git --git-common-dir unreadable)'} is missing`
+  }
+  process.stdout.write(`${becoming}\n`)
+}
+
 const summary = [
   '',
   '════════ SELF-CHANGE APPROVED ════════',
@@ -294,6 +424,7 @@ const summary = [
   `  GitHub main   ${onMain ? 'fast-forwarded' : outcome === 'uncertain' ? `UNCERTAIN, not verified (will be re-checked on the next run): ` : `NOT moved (the change is back in the working tree): ${(pushed.stderr ?? '').trim().split('\n').pop()}`}`,
   `  evidence      ${evidence}`,
   `  fence         ${PATH_FENCE_DESCRIPTION}`,
+  ...(becoming ? [`  ${becoming}`] : []),
   '',
 ].join('\n')
 writeFileSync(join(evidence, 'summary.txt'), `${summary}\n`)

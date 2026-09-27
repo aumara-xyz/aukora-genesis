@@ -12,32 +12,59 @@
 5. **No PRs, one line: `main`.** Work happens on `main` of `aumara-xyz/aukora-genesis`; never base work on a stale
    local label. `aumara-xyz/aukora-genesis-archive` holds the history up to 2026-09-27, read-only and private. Code
    that governs AUKORA changes only through `scripts/aukora/self-change.mjs`. That route is supported, not enforced:
-   on 2026-09-27 it carried one code change (`97714048a`, in the archive) and every other change landed directly. In
+   on 2026-09-27 it carried two code changes (`97714048a`, in the archive, and `c398ccd63`, Aura code chain 7→8) and every other change landed directly. In
    the running app the action gate refuses an agent's write or edit tool call on governing code and names that route,
-   but a shell command that writes the same paths is not refused; every tool call it judges is chained in
-   `state/home/aura-actions/aura.jsonl`.
+   and a shell command whose target it can read (`>`, `tee`, `sed -i`, `cp`, `mv`, a literal path in `python3 -c`); a
+   shell command that hides the target (a script, a variable, `git apply`, `git checkout`, `patch`) is not refused.
+   Every tool call it judges is chained in `state/home/aura-actions/aura.jsonl`.
 6. **Never break the live app or the working demos.** One writer on the live app. Preview any UI change (a screenshot)
    before it reaches Peter's app, and never ship UI he did not ask for.
 7. **Lead with what is not enforced.** Same-UID agents, a software approval key, no server-side check on main. Never
    claim a person clicked; name the key.
 8. **Secrets and privacy:** never copy, print or commit key material; no private conversations, voice or PII in the repo.
 9. **Talk to Peter plainly and briefly.** Fix, run, show the output. No loops of promises.
+10. **No text on screens.** Never add status strips, labels, captions, banners, hints or explanatory lines to any UI.
+    Peter's screens are visual. If a state must be visible it is an icon or a colour, and only when he asked for it.
 
-## Memory is automatic — never ask Peter to approve a memory
+## Memory is OpenViking, and it is never approved
 
-Kira remembers every conversation by itself: each finished turn, typed or spoken, becomes a remembered note with no
-popup and no authority. When Peter tells you something to remember, just acknowledge it; do NOT run
-`scripts/aukora/remember.mjs` and do NOT raise an approval for it. To answer "what do you remember about …", use
-`kira_recall` and quote what it returns. Forgetting is his, from the Memory view. `remember.mjs` (a signed, receipted
-memory with cold verification) exists only for when Peter explicitly asks for a *signed* memory.
+Remember with `mcp__viking__write` and recall with `mcp__viking__find` (also `read`, `list`, `forget`): OpenViking runs locally
+(launchd `xyz.aukora.openviking`, 127.0.0.1:1933, local embeddings, nothing leaves the Mac). No popup, ever: when Peter tells you
+something to remember, write it and acknowledge it. The tools mount at app start from `viking.patch.yml` in the support
+root, and a release whose action gate predates `d81e5be2b` refuses `write`, `list` and `forget` (it read `viking://user/…`
+as the host `user`). NOT WORKING YET: Kira's automatic turn capture (its `remembered/` tier has
+been empty since 2026-09-27 09:34); Kira is hooked into OpenViking later. `scripts/aukora/remember.mjs` (a signed memory) is only
+for when Peter explicitly asks for a *signed* memory.
 
-## Changing your own code (needs Peter's click)
+## Changing your own code: you become it
 
-Never commit or push your own code change directly. Edit the files in a checkout at GitHub `main` (it refuses
-any other), then run `node scripts/aukora/self-change.mjs "<why, one line>" <path> [<path> …]` and tell Peter to
-look at the AUKORA app. The popup shows the exact diff. Approve commits exactly the approved tree, chains it in Aura
-and pushes it to GitHub `main`. Refuse commits nothing, and the change stays in the working tree for you to revise.
-Report the summary it prints.
+You change yourself; nobody outside does it for you. The loop, end to end, with no hand-off:
+
+1. `git -C ~/aukora-genesis fetch -q origin && git -C ~/aukora-genesis worktree add ~/aukora-worktrees/<name> origin/main`
+   and edit there (the main checkout is shared; a worktree is yours). If the worktree has no `scripts/aukora/become.mjs`,
+   GitHub `main` does not carry this loop yet: stop and tell Peter.
+2. `node scripts/aukora/self-change.mjs --preview "<why, one line>" <path> [<path> …]` from inside the worktree prints
+   the exact text Peter will see, with no popup. A face change (`plugins/aukora-face/<face>/src/…`) rebuilds that face's
+   bundle first and carries it in the same change, shown as one `generated:` line per built file.
+3. The same command without `--preview` raises the AUKORA popup with that text. Approve commits exactly that tree,
+   chains it in Aura and pushes GitHub `main`. Refuse, or no answer within five minutes, commits nothing; revise and ask
+   again.
+4. Then you become it, on your own (`scripts/aukora/become.mjs`, spawned by self-change): it builds the release, asks
+   Peter once more to approve loading its plugins (skipped when the plugin bytes did not change), restarts the app into
+   it, and if the new release does not come up within three minutes it restores everything and reopens the old one.
+   Every finished outcome goes to `last.json` and to the code Aura chain as `code.become`, with a body record (running
+   release, plugin set, heads of the code, action and memory chains); a `--plan` run or a crash goes to `last.json`
+   only. If loading was refused or missed: `node ~/aukora-genesis/scripts/aukora/become.mjs --commit <sha> --detach`.
+   The restart ends your turn. On your next turn read `~/Library/Application Support/AUKORA/state/home/become/last.json`
+   and check the change from inside, in the running app.
+
+Limits: self-change, advance and plugin-set refuse any card longer than the INSTALLED shell shows
+(`scripts/aukora/shown-limit.mjs`: 1,650 characters while the installed card is the 1,800 one, 11,800 once become has
+installed the 12,000 one; split bigger changes). Name every changed face source file (an unnamed one is refused). Binary
+files, deletions, symlinks and mode changes are refused; the path fence refuses, among others, README.md, LICENSE, the
+root package.json, .git, .github and any path containing `authority`. For help writing code, run a subscription CLI on your
+worktree: `codex exec -s workspace-write -C ~/aukora-worktrees/<name> "<task>"`, or inside it
+`claude -p "<task>" --permission-mode acceptEdits`; their edits still go through steps 2–4.
 
 How to report an approval: in the running app the signer signs only when Approve is clicked in the AUKORA popup,
 and the scripts verify that signature before they write. Say "approved in the AUKORA popup", name the approving

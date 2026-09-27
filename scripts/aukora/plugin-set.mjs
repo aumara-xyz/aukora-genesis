@@ -34,6 +34,7 @@ import {
 import { operationDigestOf as aumlokOperationDigestOf } from '../../plugins/aukora-aumlok/lib/operation-approval.mjs'
 import { ed25519PublicKeyFromDidKey } from '../../plugins/aukora-aumlok/lib/did-key.mjs'
 import { deriveApprovalWitness } from '../../apps/aukora-desktop/aumlok-signer.mjs'
+import { shownLimit } from './shown-limit.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const CLIENT = join(REPO, 'scripts', 'aumlok', 'approve-operation')
@@ -52,7 +53,10 @@ const mountingPatches = (release) => {
 }
 const WINDOW_SECONDS = 300
 /** The approval window shows at most 1,800 characters; self-change keeps the same margin. */
-const MAX_SHOWN_CHARS = 1650
+// What the INSTALLED card shows (scripts/aukora/shown-limit.mjs), read from the same support root this run acts on.
+const SUPPORT_FOR_LIMIT = process.argv.includes('--support') ? process.argv[process.argv.indexOf('--support') + 1]
+  : (process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA'))
+const MAX_SHOWN_CHARS = shownLimit(join(resolve(SUPPORT_FOR_LIMIT), 'state'))
 export const APPROVAL_FILE = 'plugin-set-approval.json'
 export const PIN_FILE = 'plugin-set-approver.json'
 

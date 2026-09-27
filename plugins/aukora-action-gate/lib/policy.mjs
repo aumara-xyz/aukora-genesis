@@ -38,6 +38,7 @@ export const KEY_PATTERNS = Object.freeze([
   ['**/kira-memory/issuer.json', 'kira-issuer', "the Kira memory issuer's key"],
   ['**/kira-memory/keys', 'kira-keys', 'the Kira keys'],
   ['**/kira-memory/key', 'kira-key', 'the Kira key'],
+  ['**/openviking/root.key', 'openviking-root-key', "OpenViking's root API key, which opens every account's memory"],
   ['**/.config/gh', 'gh-config', "the GitHub CLI's stored token"],
   ['**/.git-credentials', 'git-credentials', "git's stored credentials"],
   ['**/.netrc', 'netrc', 'stored network credentials'],
@@ -49,7 +50,7 @@ export const KEY_PATTERNS = Object.freeze([
 
 /** The same material spelled in command text. Folded to lowercase; a tripwire on the plain spelling, nothing more. */
 export const KEY_MENTIONS = Object.freeze([
-  'state/aumlok', 'machine-seed', '.aukora/signer', 'kira-memory/issuer', 'kira-memory/key', '.config/gh',
+  'state/aumlok', 'machine-seed', '.aukora/signer', 'kira-memory/issuer', 'kira-memory/key', 'openviking/root.key', '.config/gh',
   '.git-credentials', '.ssh/id_', 'library/keychains', 'aumlok-signer.sock', '.netrc',
 ])
 
@@ -117,6 +118,9 @@ function stringLiterals(code) {
 }
 
 /** Walk an argument object for path-like and URL-like strings (depth-limited). */
+/** Schemes that name no host on a network. Every other scheme (http:, postgres:, tcp:, one never seen…) is judged by its host. */
+const NON_NETWORK_SCHEMES = new Set(['viking:', 'data:', 'urn:'])
+
 function looseTargets(args) {
   const paths = []
   const urls = []
@@ -157,7 +161,7 @@ export function createPolicy(settings) {
   ]
   // Where a recursive CONTENT search must not reach, anchored where this deployment keeps it.
   const anchoredKeys = [
-    join(supportRoot, 'state', 'aumlok'), join(home, '.aukora', 'signer'), join(dshHome, 'kira-memory'),
+    join(supportRoot, 'state', 'aumlok'), join(home, '.aukora', 'signer'), join(dshHome, 'kira-memory'), join(dshHome, 'openviking', 'root.key'),
     join(home, '.config', 'gh'), join(home, '.git-credentials'), join(home, '.ssh'), join(home, '.gnupg'),
     join(home, '.aws'), join(home, 'Library', 'Keychains'), join(home, '.netrc'),
   ]
@@ -258,11 +262,15 @@ export function createPolicy(settings) {
     return ok ? null : deny('network:host-not-allowed', `${h} is not on this deployment's network allowlist`)
   }
   function judgeUrl(url) {
-    let host
-    try { host = new URL(String(url)).hostname.replace(/^\[|\]$/gu, '') } catch {
+    let parsed
+    try { parsed = new URL(String(url)) } catch {
       return deny('network:unparseable-url', 'the URL could not be parsed, so its host could not be checked')
     }
-    return judgeHost(host)
+    // AN ADDRESS IN A SCHEME THAT IS NOT A NETWORK IS NOT A HOST (2026-09-27): OpenViking's `viking://user/owner/…` URIs were
+    // read as the host `user` and every memory write and forget was refused. Only the named local schemes pass: an unknown
+    // scheme (postgres://host, tcp://host) is still judged by its host, as before.
+    if (NON_NETWORK_SCHEMES.has(parsed.protocol)) return allow('allow:non-network-uri')
+    return judgeHost(parsed.hostname.replace(/^\[|\]$/gu, ''))
   }
 
   /** Judge a shell or code string: what it names, command by command. */
@@ -288,7 +296,7 @@ export function createPolicy(settings) {
           else dir = literalPath(target, dir, home) ?? undefined
           continue
         }
-        const refusal = credentialRefusal(words) ?? authorityRefusal(words) ?? (program === 'git' ? gitMainRefusal(words, dir, mainBranch) : null)
+        const refusal = credentialRefusal(words) ?? authorityRefusal(words) ?? (program === 'git' ? gitMainRefusal(words, dir, mainBranch, home) : null)
         if (refusal !== null) return deny(refusal.rule, refusal.message)
       }
     }

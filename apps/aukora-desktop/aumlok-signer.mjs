@@ -380,8 +380,9 @@ export const MAX_WITNESS_CONTENT_BYTES = 48 * 1024
  */
 export const OPERATION_CONTENT_ABSENT = 'signer:operation-content-absent'
 
-/** How much of a rendered description is shown. Past this the line is SHORTENED AND SAYS SO. */
-export const WITNESS_DISPLAY_LIMIT = 1800
+/** How much of a rendered description is shown. Past this the line is SHORTENED AND SAYS SO. The card scrolls, so a real
+ * change fits (12,000 since 2026-09-27; it was 1,800, which refused almost every self-change). */
+export const WITNESS_DISPLAY_LIMIT = 12000
 
 /** Domain of the digest that binds a words line to the derivation that produced it. */
 export const APPROVAL_WORDS_DOMAIN = 'aukora:approval-words:v1'

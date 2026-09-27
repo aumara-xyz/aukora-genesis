@@ -1107,14 +1107,56 @@ export function installApprovalBridge(deps) {
     content.addChildView(view)
   }
 
-  /** Keep the docked sheet over the conversation pane as the window is resized. */
+  /**
+   * A SMALL CARD JUST ABOVE THE CHAT BOX, NOT A SHEET OVER THE WHOLE WINDOW (2026-09-27, Peter: "it should just be a
+   * little pop-up in the chat"). The shell still draws it and still holds the key; only its size changed. It is placed
+   * from two measurements it re-reads on every guard tick: where the page's composer card is (`[data-composer-card]`)
+   * and how tall the approval card's content is. With no composer on screen it sits bottom-left.
+   */
+  let composerRect = null
+  let cardHeight = 0
   function dockApproval() {
     const win = typeof getWindow === 'function' ? getWindow() : null
     if (win === null || win === undefined || approval === null) return
     const { width, height } = win.getContentBounds()
-    // A CHILD VIEW'S BOUNDS ARE IN ITS PARENT'S SPACE, and the content view's origin is the window's
-    // content area — so covering it means starting at zero with its size, whatever the window is doing.
-    approval.setBounds({ x: 0, y: 0, width: Math.max(0, Math.floor(width)), height: Math.max(0, Math.floor(height)) })
+    const zoom = typeof win.webContents?.getZoomFactor === 'function' ? win.webContents.getZoomFactor() || 1 : 1
+    const margin = 8
+    const anchor = composerRect === null
+      ? { x: 16, y: height - 96, width: Math.min(460, width - 32) }
+      : { x: composerRect.x * zoom, y: composerRect.y * zoom, width: composerRect.width * zoom }
+    const w = Math.min(Math.max(anchor.width, 340), width - 2 * margin)
+    const x = Math.min(Math.max(margin, anchor.x), width - w - margin)
+    const room = Math.max(160, anchor.y - 2 * margin)
+    const h = Math.min(cardHeight > 0 ? cardHeight : 320, room, 720)
+    const y = Math.max(margin, anchor.y - margin - h)
+    // A CHILD VIEW'S BOUNDS ARE IN ITS PARENT'S SPACE (the window's content area).
+    approval.setBounds({ x: Math.floor(x), y: Math.floor(y), width: Math.max(0, Math.floor(w)), height: Math.max(0, Math.floor(h)) })
+  }
+  /** Re-read the two measurements the card is placed from; a page that answers nothing leaves the last ones. */
+  function measureDock() {
+    const win = typeof getWindow === 'function' ? getWindow() : null
+    const view = approval
+    if (win === null || win === undefined || view === null || deps.headless === true) return
+    const page = win.webContents
+    const own = view.webContents
+    if (page?.isDestroyed?.() || own?.isDestroyed?.()) return
+    Promise.all([
+      page.executeJavaScript(`(() => {
+        const all = [...document.querySelectorAll('[data-composer-card]')].filter((el) => el.getBoundingClientRect().width > 0)
+        const el = document.activeElement?.closest?.('[data-composer-card]') ?? all[0]
+        if (!el) return null
+        const r = el.getBoundingClientRect()
+        return { x: r.left, y: r.top, width: r.width }
+      })()`, false).catch(() => composerRect),
+      own.executeJavaScript(`(() => { const c = document.querySelector('main.card'); return c ? Math.ceil(c.scrollHeight) + 2 : 0 })()`, false)
+        .catch(() => cardHeight),
+    ]).then(([rect, h]) => {
+      if (approval !== view) return
+      const changed = JSON.stringify(rect) !== JSON.stringify(composerRect) || h !== cardHeight
+      composerRect = rect && Number.isFinite(rect.x) && Number.isFinite(rect.y) && Number.isFinite(rect.width) ? rect : null
+      cardHeight = Number.isFinite(h) ? h : 0
+      if (changed) dockApproval()
+    }, () => {})
   }
 
   /**
@@ -1270,7 +1312,10 @@ export function installApprovalBridge(deps) {
       // THE GUARD RUNS FOR AS LONG AS THE SHEET IS DOCKED, and only then: a timer that outlived the sheet
       // would be a timer holding a destroyed view. `unref` so it can never be the reason this process stays
       // alive — the sheet is not a reason for the application to keep running.
-      zOrderGuard = setInterval(() => { raiseApproval() }, Z_ORDER_INTERVAL_MS)
+      composerRect = null
+      cardHeight = 0
+      measureDock()
+      zOrderGuard = setInterval(() => { raiseApproval(); measureDock() }, Z_ORDER_INTERVAL_MS)
       if (typeof zOrderGuard.unref === 'function') zOrderGuard.unref()
       // AND THE KEYBOARD BELONGS TO THE SHEET while it is on screen.
       keyboardGuard = guardKeyboard(win, view)

@@ -358,13 +358,17 @@ const BRANCH_MUTATING = new Set(['-f', '--force', '-d', '-D', '--delete', '-m', 
  * @param {string[]} words - words starting with `git`.
  * @param {string|undefined} workdir - the directory the command runs in, when known.
  * @param {string} mainBranch - the protected branch name.
+ * @param {string} [home] - the home directory a `-C ~/…` names (AGENTS.md teaches `git -C ~/aukora-genesis …`).
  * @returns {{rule: string, message: string}|null} the refusal, or null.
  */
-export function gitMainRefusal(words, workdir, mainBranch) {
+export function gitMainRefusal(words, workdir, mainBranch, home) {
   const { dirs, gitDir, configs, sub, args } = parseGit(words)
   if (sub === null) return null
   let dir = workdir
-  for (const d of dirs) dir = dir === undefined ? (isAbsolute(d) ? d : undefined) : resolve(dir, d)
+  for (const d of dirs) {
+    dir = home !== undefined && (d === '~' || d.startsWith('~/')) ? resolve(home, d.slice(2))
+      : dir === undefined ? (isAbsolute(d) ? d : undefined) : resolve(dir, d)
+  }
   const branch = () => (dir === undefined ? undefined : currentBranch(dir, gitDir))
   const flags = args.filter(a => a.startsWith('-'))
   const positional = []

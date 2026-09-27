@@ -52,6 +52,9 @@ VENDOR_TREES = (
     # carries is the closure these pins check: the same manifest that materialize copies is
     # the one this holds to per-file sha256 and byte count, on both sides of the copy.
     ("vendor/diamond-cold", ("upstream-diamond.json",)),
+    # OpenViking's licence and install pins (the package itself is installed into a venv by
+    # scripts/openviking-setup.sh, never vendored): the LICENSE bytes are held to the manifest here.
+    ("vendor/openviking", ("upstream-openviking.json",)),
 )
 BUILD_OUTPUT_DIRS = ("target",)
 

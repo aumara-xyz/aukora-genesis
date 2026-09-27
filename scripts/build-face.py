@@ -20,12 +20,41 @@ Outputs land in `plugins/aukora-face/<name>/lib/{index.js,client.js}` and are wh
 materializer carries into a release. A face that does not compile is reported by name
 and the build exits non-zero; nothing half-built is copied back.
 """
-import argparse, hashlib, json, re, shutil, subprocess, sys
+import argparse, hashlib, json, os, re, shutil, subprocess, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PINNED = ROOT / 'vendor/dsh'
+
+
+def resolve_pinned():
+    """WHERE THE PINNED HARNESS IS: (path, label, the root it must resolve under).
+
+    `vendor/dsh` is untracked, so a git worktree made from origin/main has none, and self-change runs from such
+    worktrees. In order: AUKORA_PINNED_DSH if set; this checkout's own vendor/dsh if it exists (or is a link, so the
+    guard below refuses it by name); else the MAIN worktree's vendor/dsh, found from Git's common directory. It is
+    only ever read and cloned, never linked: a symlinked vendor/dsh once made this build write into the main harness.
+    """
+    override = os.environ.get('AUKORA_PINNED_DSH')
+    if override:
+        path = Path(override)
+        if not path.is_absolute():
+            sys.exit('pinned-tree-override-relative: AUKORA_PINNED_DSH must be an absolute path, got %s' % override)
+        return path, 'AUKORA_PINNED_DSH', path.parent.resolve()
+    own = ROOT / 'vendor/dsh'
+    if own.exists() or own.is_symlink():
+        return own, 'vendor/dsh', ROOT
+    env = {k: v for k, v in os.environ.items() if not k.startswith('GIT_')}
+    common = subprocess.run(['git', '-C', str(ROOT), 'rev-parse', '--path-format=absolute', '--git-common-dir'],
+                            capture_output=True, text=True, env=env)
+    if common.returncode == 0 and common.stdout.strip():
+        main = Path(common.stdout.strip()).parent
+        if main.resolve() != ROOT:
+            return main / 'vendor/dsh', 'main worktree vendor/dsh', main.resolve()
+    return own, 'vendor/dsh', ROOT
+
+
+PINNED, PINNED_LABEL, PINNED_ROOT = resolve_pinned()
 FACE = ROOT / 'plugins/aukora-face'
 OVERLAY = ROOT / '.runtime/face-build'
 
@@ -75,19 +104,27 @@ def assert_not_symlinked():
     (sha f3a36778 against the pinned ca131858), `tsconfig.client.json` and two node_modules state files INTO the
     main checkout's pinned harness — through the link, at the far end.
 
-    Both paths are refused, and so is any shape whose RESOLVED path leaves ROOT, because a symlinked `vendor/`
-    reaches the same place one level up.
+    Both paths are refused, and so is any shape whose RESOLVED path leaves its root, because a symlinked `vendor/`
+    reaches the same place one level up. The pinned tree's root is the checkout it was found in (resolve_pinned):
+    this one, the main worktree, or the parent named by AUKORA_PINNED_DSH. The overlay's root is always this one.
     """
-    root = ROOT.resolve()
-    for label, path in (('vendor/dsh', PINNED), ('.runtime/face-build', OVERLAY)):
+    resolved_of = lambda path: path.resolve() if path.exists() else path.parent.resolve() / path.name
+    for label, path, root in ((PINNED_LABEL, PINNED, PINNED_ROOT.resolve()), ('.runtime/face-build', OVERLAY, ROOT.resolve())):
         if path.is_symlink():
             sys.exit('pinned-tree-symlinked: %s IS A SYMBOLIC LINK to %s — `cp -Rc` copies a symlink AS a '
                      'symlink, so this build would write INSIDE that target instead of into a private overlay. '
                      'Replace the link with a real clone before building.' % (label, path.resolve()))
-        resolved = path.resolve() if path.exists() else path.parent.resolve() / path.name
+        resolved = resolved_of(path)
         if not str(resolved).startswith(str(root) + '/'):
             sys.exit('pinned-tree-outside-repo: %s resolves to %s, which is NOT under %s — this build compiles '
                      'against the repository\'s own pinned tree or not at all.' % (label, resolved, root))
+    pinned, overlay = resolved_of(PINNED), resolved_of(OVERLAY)
+    if pinned == overlay or str(overlay).startswith(str(pinned) + '/') or str(pinned).startswith(str(overlay) + '/'):
+        sys.exit('pinned-tree-overlaps-overlay: %s and %s overlap; the overlay is written, the pinned tree never is.'
+                 % (pinned, overlay))
+    if not PINNED.is_dir():
+        sys.exit('pinned-tree-missing: no pinned harness at %s (%s); run python3 scripts/build-dsh.py in %s first.'
+                 % (PINNED, PINNED_LABEL, PINNED_ROOT))
 
 
 def pinned_manifest(root: Path):
@@ -323,12 +360,18 @@ HOME_PATH = re.compile(r'\\0dsh-css:(?:[A-Za-z]:)?/(?:[^\s"\'`]*/)+')
 
 
 def copy_back(name, lib):
+    """Write the outputs into the face's lib, and print `FACE WROTE <repo path>` for each file written.
+
+    scripts/aukora/self-change.mjs reads those lines: only files this build wrote are shown in the approval as one
+    `generated:` line; any other changed file under lib is shown in full.
+    """
     dst = FACE / name / 'lib'
     dst.mkdir(exist_ok=True)
     for item in ('index.js', 'client.js', 'invariant.js'):
         if (lib / item).exists():
             shutil.copy2(lib / item, dst / item)
             strip_home_paths(dst / item)
+            print(f'FACE WROTE {(dst / item).relative_to(ROOT).as_posix()}')
     # WHAT THIS LIB WAS BUILT FROM, WRITTEN BESIDE IT. A bundle with no record cannot be told from a bundle built
     # from month-old source: it compiles, it serves, and every court that reads `src/` passes over it. Measured
     # twice tonight — the blocked-on-Peter flag sat in src and not in lib for five rounds.
@@ -339,6 +382,7 @@ def copy_back(name, lib):
         'files': inputs,
         'builtAt': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
     }, indent=2) + '\n')
+    print(f'FACE WROTE {(dst / ".build-inputs.json").relative_to(ROOT).as_posix()}')
 
 
 def main():

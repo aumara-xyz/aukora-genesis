@@ -57,38 +57,42 @@
     -webkit-user-select: none;
     user-select: none;
   }
-  /* DARK GLASS, FROM THE SITE'S OWN NIGHT COLOUR. The blur is what makes this read as docked OVER the pane
-     rather than as a page that replaced it. */
-  /* A CARD OVER THE APP, AND THE APP STAYS VISIBLE BEHIND IT (2026-09-27). The scrim is light and barely blurred, so the
-     person keeps their place; the card scrolls inside itself, and the Approve/Refuse row is pinned to its bottom edge,
-     so a long operation can never push the answer off screen (a main-advance request once did). */
-  .scrim {
-    position: fixed; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: calc(var(--approval-gap) * 5);
-    background: color-mix(in srgb, var(--approval-glass, #0b0e14) 55%, transparent);
-    backdrop-filter: blur(2px);
-  }
-  /* `main.card`, NOT `.card`: the bare class also matched the record's field list (`<dl id="f-card">`), which then took
-     this flex column, max-height and scroll, and was squeezed into a 26px scroll box (measured at 900x600). */
+  /* A SMALL CARD ABOVE THE CHAT BOX, NOT A SHEET OVER THE APP (2026-09-27, Peter: "it should just be a little pop-up in
+     the chat"). The shell sizes this view to the card and places it just above the composer, so there is no scrim: the
+     page is transparent and the card is all there is. The card scrolls inside itself and Approve/Refuse stay pinned. */
+  .scrim { position: fixed; inset: 0; display: flex; align-items: flex-end; background: transparent; }
+  /* `main.card`, NOT `.card`: the bare class also matched the record's field list (`<dl id="f-card">`). */
   main.card {
-    display: flex; flex-direction: column; min-height: 0; width: 100%; max-width: 600px; max-height: 100%;
+    display: flex; flex-direction: column; min-height: 0; width: 100%; max-height: 100vh;
     overflow-y: auto; overscroll-behavior: contain;
-    padding: 24px 26px 0; gap: 16px;
-    background: color-mix(in srgb, var(--approval-surface) 96%, transparent);
-    border: 1px solid color-mix(in srgb, var(--approval-label) 18%, var(--approval-border));
+    padding: 12px 14px 0; gap: 8px;
+    background: color-mix(in srgb, var(--approval-surface) 97%, transparent);
+    border: 1px solid color-mix(in srgb, var(--approval-label) 14%, var(--approval-border));
     border-radius: var(--approval-radius);
-    box-shadow: 0 24px 64px color-mix(in srgb, var(--approval-glass) 55%, transparent),
-                0 0 0 1px color-mix(in srgb, var(--approval-label) 6%, transparent);
+    box-shadow: 0 8px 28px color-mix(in srgb, #000 45%, transparent);
   }
-  h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: 0.01em; }
-  p.lede { margin: 0; color: var(--approval-muted); }
+  /* NOTHING IN THE CARD SHRINKS BELOW ITS TEXT: the card scrolls instead (a shrunk line printed over its neighbour). */
+  main.card > * { flex: none; }
+  h1 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.01em; }
+  p.lede { display: none; }
+  /* THE CHANGE ITSELF, WITH ITS LINE BREAKS: a diff run together into one paragraph is not something a person can read. */
+  .words {
+    margin: 0; padding: 8px 10px; max-height: min(52vh, 480px); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+    font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 11.5px; line-height: 1.45;
+    background: var(--approval-raised); border: 1px solid var(--approval-border); border-radius: calc(var(--approval-radius) - 6px);
+    -webkit-user-select: text; user-select: text;
+  }
+  #facts { display: flex; flex-direction: column; gap: 8px; }
+  #f-words-note { margin: 0; font-size: 11.5px; color: var(--approval-muted); }
+  details.more > summary { cursor: pointer; color: var(--approval-muted); font-size: 12px; }
+  details.more[open] { display: flex; flex-direction: column; gap: 8px; }
+  details.more dl { font-size: 12px; }
   dl {
-    margin: 0; padding: 14px 16px; gap: 10px;
+    margin: 0; padding: 10px 12px; gap: 6px 10px;
     background: var(--approval-raised);
     border: 1px solid var(--approval-border);
     border-radius: calc(var(--approval-radius) - 6px);
-    display: grid; grid-template-columns: 128px 1fr;
+    display: grid; grid-template-columns: 110px 1fr;
   }
   /* THE SEVEN LABELS KEEP THE GRID ABOVE AT THEIR FULL HEIGHT: the outer card is what scrolls, never this list. */
   dl.card-fields { flex: none; }
@@ -97,10 +101,10 @@
   .filler { flex: 1; }
   .actions {
     display: flex; justify-content: flex-end; gap: 10px;
-    position: sticky; bottom: 0; margin: 0 -26px; padding: 14px 26px 18px;
+    position: sticky; bottom: 0; margin: 0 -14px; padding: 10px 14px 12px;
     background: var(--approval-surface); border-top: 1px solid var(--approval-border);
   }
-  .actions button { padding: 10px 24px; font-size: 14px; }
+  .actions button { padding: 6px 16px; font-size: 13px; }
   button {
     font: inherit; font-weight: 600; padding: 8px 18px;
     border-radius: calc(var(--approval-radius) - 7px); cursor: pointer;
@@ -108,7 +112,7 @@
   }
   button.primary { background: var(--approval-label); color: var(--approval-surface); }
   button:disabled { opacity: 0.5; cursor: default; }
-  #state { min-height: 20px; color: var(--approval-muted); }
+  #state { margin: 0; min-height: 0; font-size: 12px; color: var(--approval-muted); }
   #state.bad { color: var(--approval-label); font-weight: 600; }
   /*
    * THE ROUTED STATE: WHAT THE WINDOW SHOWS WHEN THE DECISION IS NOT ITS OWN TO MAKE.
@@ -140,31 +144,32 @@
   #routed-summary { color: var(--approval-label); }
   #routed-ceiling { margin: 0; color: var(--approval-muted); }
   /* THE HONEST LINE ABOUT WHAT THIS APPROVAL IS, shown only where it is true. */
-  .shellAssertion { margin: 0; color: var(--approval-muted); }
+  .shellAssertion { margin: 0; font-size: 11.5px; color: var(--approval-muted); }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <div class="scrim">
 <main class="card">
-  <h1>AUKORA — approve this operation?</h1>
+  <h1>Approve this?</h1>
   <p class="lede">This is the exact operation digest your key would sign. Nothing is signed until you
     approve, and refusing signs nothing.</p>
-  <dl id="facts" hidden>
-    <dt>What is being approved</dt><dd id="f-words">—</dd>
-    <dt>Identity</dt><dd id="f-subject">—</dd>
-    <dt>Operation digest</dt><dd id="f-digest">—</dd>
-    <dt>Challenge</dt><dd id="f-challenge">—</dd>
-    <dt>Valid until</dt><dd id="f-expires">—</dd>
-  </dl>
-  <p id="f-words-note" hidden></p>
-
-  <!-- ══ THE CARD: SEVEN LABELS, EACH READ FROM THE RECORD THE DIGEST COVERS ═══════════════════════════════════
-       What / Where / Who / Limit / Cost / Until / Irreversible. The values are DERIVED, never summarised: five come
-       from the operation's own bytes (through the signer's derivation) and two — WHO and UNTIL — from the request's
-       subject and its window. A label the record does not answer says exactly that, because an empty cell reads as
-       "nothing to report" and that would be a claim nobody made. The page renders this list and decides nothing. -->
-  <dl id="f-card" class="card-fields" data-approval-card hidden></dl>
+  <section id="facts" hidden>
+    <div id="f-words" class="words">—</div>
+    <p id="f-words-note" hidden></p>
+    <details class="more">
+      <summary>Details</summary>
+      <dl>
+        <dt>Identity</dt><dd id="f-subject">—</dd>
+        <dt>Operation digest</dt><dd id="f-digest">—</dd>
+        <dt>Challenge</dt><dd id="f-challenge">—</dd>
+        <dt>Valid until</dt><dd id="f-expires">—</dd>
+      </dl>
+      <!-- THE CARD: SEVEN LABELS (What / Where / Who / Limit / Cost / Until / Irreversible), each read from the record
+           the digest covers; a label the record does not answer says so. -->
+      <dl id="f-card" class="card-fields" data-approval-card hidden></dl>
+    </details>
+  </section>
   <p id="state">Reading the pending questions…</p>
   <!--
     THE QUEUE, AND WHY EVERY ENTRY IS ITS OWN DECISION.
@@ -833,7 +838,7 @@
               + 'The digest above covers every one of them, and it is the digest that is signed.'
             note.hidden = false
           }
-          say('Approve signs exactly the digest above. Refuse signs nothing.')
+          say('Approve signs exactly these bytes (digest under Details). Refuse signs nothing.')
         } else {
           // NO DESCRIPTION IS SHOWN, AND THE QUESTION IS STILL THE PERSON'S TO ANSWER.
           //

@@ -231,7 +231,9 @@ say "(d) materialized $TARGET from the pinned harness, in the CLEAN worktree at 
 # ── (e) THE BOOT SMOKE, WITH ITS LOG PERSISTED ──────────────────────────────────────────────────────────
 mkdir -p "$LOG_DIR"
 SMOKE_LOG="$LOG_DIR/smoke.log"
-"$NODE" "$REPO/scripts/aura/release-boot-smoke.mjs" --release "$TARGET" --log-out "$SMOKE_LOG" > "$LOG_DIR/smoke.out" 2>&1 \
+# --repo IS THE CLEAN WORKTREE AT THIS COMMIT (2026-09-27): without it the smoke took the caller's cwd, the main checkout,
+# whose HEAD is not the commit being cut when become.mjs runs, and refused repo-not-at-release-commit every time.
+"$NODE" "$REPO/scripts/aura/release-boot-smoke.mjs" --release "$TARGET" --repo "$WORKTREE" --log-out "$SMOKE_LOG" > "$LOG_DIR/smoke.out" 2>&1 \
   || refuse boot-smoke-failed "the boot smoke failed; its output is $LOG_DIR/smoke.out and its log $SMOKE_LOG"
 # MEASURED (Fable, 2026-09-25): `launch-dsh.py` composes patches ONLY from its `--patch` arguments, and the
 # smoke passed NONE, so every smoke booted a BARE harness — no face, Kira, Aumlok, board or CORE rows — and

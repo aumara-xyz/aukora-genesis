@@ -1,0 +1,22 @@
+OpenViking — AGPL-3.0
+=====================
+
+AUKORA's Kira memory can use OpenViking ("the context database for AI agents") as a retrieval layer:
+
+    repository : https://github.com/volcengine/OpenViking
+    version    : 0.4.21 (tag v0.4.21, commit 3fca2577520f00b7f580d85d4ac6ae42bb9ba6f1)
+    licence    : GNU Affero General Public License v3.0 (LICENSE in this directory, verbatim from the
+                 wheel's openviking-0.4.21.dist-info/licenses/LICENSE)
+    holder     : Beijing Volcano Engine Technology Co., Ltd. (per the source file headers)
+
+OpenViking is not vendored as source and has not been modified. scripts/openviking-setup.sh installs the
+pinned PyPI wheel (sha256 in upstream-openviking.json) and its hash-locked dependency closure into a
+separate virtual environment, and it runs as its own local HTTP server. Kira talks to it over 127.0.0.1
+through plugins/aukora-kira/lib/recall-openviking.mjs. Kira stays the ledger: OpenViking only finds, and
+every answer is re-read from the Kira store.
+
+The installed closure carries its own licences (163 distributions, listed in
+requirements-macos-arm64-py311.lock); they are installed from PyPI, not redistributed here.
+
+The optional local embedding model (Qwen/Qwen3-Embedding-0.6B-GGUF, Apache-2.0 per its model card) is
+downloaded by the owner, not redistributed here; its pin is in upstream-openviking.json.

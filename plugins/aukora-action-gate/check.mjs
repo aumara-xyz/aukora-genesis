@@ -24,6 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { canonicalJSON } from '../aukora-kira/lib/record.mjs'
 import { openScratch } from '../../scripts/lib/run-root.mjs'
 import * as gate from './lib/index.mjs'
+import { createPolicy } from './lib/policy.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -79,6 +80,7 @@ for (const name of unknownNames) {
     path: { type: 'string' }, source: { type: 'string' }, destination: { type: 'string' },
   }))
 }
+ctx.tools.register(standIn('mcp__fixture__write', { uri: { type: 'string', required: true }, content: { type: 'string' } }))
 
 // THE MOUNT, as the loader performs it: the module namespace is the plugin (name, inject, apply).
 // THE RED ARM: ACTION_GATE_CHECK_UNMOUNTED=1 runs the same calls with the row absent, and the check must go RED.
@@ -176,6 +178,11 @@ for (const command of [
 ]) shellCall('unresolved git push forms', command, 'deny', command, featureRepo)
 shellCall('everyday git', 'unrelated git config and explicit feature', 'allow', 'git -c color.ui=false push origin feature/gate', featureRepo)
 shellCall('everyday git', 'explicit HEAD to feature', 'allow', 'git push origin HEAD:feature/gate', featureRepo)
+calls.push(
+  { group: 'existing protections', label: 'OpenViking root key', expect: 'deny', name: 'read', arguments: { file_path: join(support, 'state', 'home', 'openviking', 'root.key') } },
+  { group: 'memory addresses', label: 'viking:// names no host', expect: 'allow', name: 'mcp__fixture__write', arguments: { uri: 'viking://user/owner/memories/x.md', content: 'x' } },
+  { group: 'memory addresses', label: 'an unknown scheme is judged by its host', expect: 'deny', name: 'mcp__fixture__write', arguments: { uri: 'postgres://example.org/db', content: 'x' } },
+)
 
 for (const name of unknownNames.filter(name => !name.endsWith('__read_file'))) {
   for (const [expect, path] of [['deny', protectedTarget], ['allow', 'notes.txt']]) {
@@ -214,6 +221,13 @@ for (const [index, call] of calls.entries()) {
     if (result.isError) process.stdout.write(`       ${text.length > 230 ? `${text.slice(0, 230)}...` : text}\n`)
   }
 }
+// `git -C ~/…` (the spelling AGENTS.md teaches) names the tree under home, not a `~` directory under a workspace on main.
+// Judged by the policy directly, with the scratch root as home: a worktree off main may commit there.
+const tildeVerdict = createPolicy(gate.readSettings({ auraDir, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo, home: dirname(featureRepo) }))
+  .judge({ tool: 'bash', args: { command: 'git -C ~/feature-repo commit -qm wip' }, workspace: repo })
+const tildeOk = tildeVerdict.decision === 'allow'
+if (!tildeOk) { failures += 1; process.stdout.write(`FAIL git -C ~/feature-repo commit; expected allow, got ${tildeVerdict.rule}\n`) }
+groups.set('git -C ~/ names home', { total: 1, passed: tildeOk ? 1 : 0 })
 for (const [name, group] of groups) process.stdout.write(`${group.passed === group.total ? 'OK  ' : 'FAIL'} ${name}: ${String(group.passed)}/${String(group.total)}\n`)
 
 // ── THE RECEIPTS: every entry re-derived without the gate's code. ──

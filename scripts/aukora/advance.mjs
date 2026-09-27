@@ -42,6 +42,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { approvalIdFrom, codeChain } from './aura-code.mjs'
 import { ALLOWLIST_PATH, emailIsPlaceholder, fileChanges, gitIn, scanPublished, treeFiles } from './snapshot-scan.mjs'
+import { shownLimit } from './shown-limit.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -50,7 +51,7 @@ const CLIENT = join(REPO, 'scripts', 'aumlok', 'approve-operation')
 const VERIFY = join(REPO, 'scripts', 'aumlok', 'verify-approval')
 const WINDOW_SECONDS = 300
 // The approval window shows 1,800 characters (aumlok-signer.mjs WITNESS_DISPLAY_LIMIT); stay under it.
-const MAX_SHOWN_CHARS = 1650
+const MAX_SHOWN_CHARS = shownLimit(STATE)
 const MAX_LISTED_COMMITS = 12
 const MAX_LISTED_FILES = 25
 const MIN_PATH_WIDTH = 24

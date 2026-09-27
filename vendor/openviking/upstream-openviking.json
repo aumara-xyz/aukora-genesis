@@ -1,0 +1,77 @@
+{
+  "domain": "aukora:openviking-pin:v1",
+  "package": "openviking",
+  "version": "0.4.21",
+  "repository": "https://github.com/volcengine/OpenViking",
+  "tag": "v0.4.21",
+  "commit": "3fca2577",
+  "commitLong": "3fca2577520f00b7f580d85d4ac6ae42bb9ba6f1",
+  "license": "AGPL-3.0",
+  "copyright": "Copyright (c) 2026 Beijing Volcano Engine Technology Co., Ltd. (source headers, SPDX-License-Identifier: AGPL-3.0)",
+  "licenseFile": "LICENSE",
+  "licenseFileSha256": "1bd87fa6d9a5c79daf0c2af042b6725c9773bf095cc3d1bdf3656e66d1c3e5b1",
+  "note": "OpenViking is NOT vendored as source. It is installed from PyPI into a venv by scripts/openviking-setup.sh, which refuses a wheel whose sha256 differs from the row below and installs the whole dependency closure with pip --require-hashes from requirements-macos-arm64-py311.lock (163 packages, resolved 2026-09-27 by `uv pip compile --generate-hashes --python-version 3.11 --python-platform aarch64-apple-darwin` from `openviking==0.4.21`). Only LICENSE is upstream bytes here (from the wheel's openviking-0.4.21.dist-info/licenses/LICENSE; byte-identical to LICENSE at upstream main a09a9d2). Measured install on macOS arm64, Python 3.11: 1.2 GB venv, 165 distributions. It runs as a separate local HTTP server; Kira reaches it over 127.0.0.1 only through plugins/aukora-kira/lib/recall-openviking.mjs.",
+  "wheels": [
+    {
+      "filename": "openviking-0.4.21-cp310-abi3-macosx_14_0_arm64.whl",
+      "url": "https://files.pythonhosted.org/packages/99/0a/b5faf992e79dde4f53573adedfc57d2556ca224508c9e816553d0db9ff1a/openviking-0.4.21-cp310-abi3-macosx_14_0_arm64.whl",
+      "sha256": "c2d021689942bdd148b888d0a1b7b05e0bb774684c311cee51c485ebe0ec411b",
+      "bytes": 21780251,
+      "platform": "darwin-arm64"
+    },
+    {
+      "filename": "openviking-0.4.21-cp310-abi3-macosx_15_0_x86_64.whl",
+      "url": "https://files.pythonhosted.org/packages/8c/25/71134768a8c80b5b9f2da4def16729de4df67b8dffc1ae92466f136137e4/openviking-0.4.21-cp310-abi3-macosx_15_0_x86_64.whl",
+      "sha256": "6537aa545ececd14b372030a0aca20dea7412dfad4a9f6b03338089c3d4f21c6",
+      "bytes": 24372078,
+      "platform": "darwin-x86_64"
+    }
+  ],
+  "sdist": {
+    "filename": "openviking-0.4.21.tar.gz",
+    "url": "https://files.pythonhosted.org/packages/3a/9d/0cf63bf4d98f02011eeeb0fd11152b82b16d150516e4dec44b347e5dd763/openviking-0.4.21.tar.gz",
+    "sha256": "27334e0a06ba8c661367e884645639d45db1ba51309472e28e51b41ae4785b03",
+    "bytes": 67024058
+  },
+  "lock": {
+    "path": "requirements-macos-arm64-py311.lock",
+    "sha256": "6c54600a9b9047e04cce43e3ca667e467f179286f9b88a803f6a29931025c8ff",
+    "python": "3.11",
+    "platform": "aarch64-apple-darwin",
+    "distributions": 163
+  },
+  "embeddingModel": {
+    "why": "OpenViking needs an embedding model. This one runs on the Mac through llama.cpp's llama-server (OpenAI-compatible /v1/embeddings), so no note text leaves the machine and no API key is needed. OpenViking's own `local` provider supports only bge-small-zh-v1.5 (a Chinese model), which is why it is not used.",
+    "repository": "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF",
+    "revision": "370f27d7550e0def9b39c1f16d3fbaa13aa67728",
+    "file": "Qwen3-Embedding-0.6B-Q8_0.gguf",
+    "url": "https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF/resolve/370f27d7550e0def9b39c1f16d3fbaa13aa67728/Qwen3-Embedding-0.6B-Q8_0.gguf",
+    "sha256": "06507c7b42688469c4e7298b0a1e16deff06caf291cf0a5b278c308249c3e439",
+    "bytes": 639150592,
+    "dimension": 1024,
+    "license": "Apache-2.0 (model card; the model is not vendored)",
+    "server": "llama-server from llama.cpp (Homebrew `llama.cpp`), NOT pinned by this manifest"
+  },
+  "files": [
+    {
+      "path": "LICENSE",
+      "upstreamPath": "openviking-0.4.21.dist-info/licenses/LICENSE",
+      "sha256": "1bd87fa6d9a5c79daf0c2af042b6725c9773bf095cc3d1bdf3656e66d1c3e5b1",
+      "bytes": 34568
+    }
+  ],
+  "genesisAuthored": [
+    {
+      "path": "upstream-openviking.json",
+      "why": "This manifest. A file cannot carry its own digest; the pin checker prints it instead."
+    },
+    {
+      "path": "NOTICE",
+      "why": "Genesis-authored notice: what OpenViking is, its licence and holder, and that it is installed rather than vendored."
+    },
+    {
+      "path": "requirements-macos-arm64-py311.lock",
+      "why": "Generated hash lock of the dependency closure (see note). Its sha256 is recorded under `lock` and checked by scripts/openviking-setup.sh before it is used."
+    }
+  ]
+}
