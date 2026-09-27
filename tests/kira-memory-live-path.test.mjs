@@ -85,6 +85,18 @@ const MUTANTS = Object.freeze({
     to: '() => found?.aura?.entryHash ?? null',
     arm: ARMS.chain,
   },
+  'first-frame-only': {
+    file: 'plugins/aukora-kira/lib/session-read.mjs',
+    from: '  for (const text of frameTexts(file, true)) {\n',
+    to: "  for (const text of [zstdDecompressSync(readFileSync(file)).toString('utf8')]) {\n",
+    arm: ARMS.everything,
+  },
+  'anchor-before-plan': {
+    file: 'plugins/aukora-kira/lib/memory-remembered-hook.mjs',
+    from: '        const plan = planStoreWrite({\n',
+    to: '        appendJournalLine({ file: journalFile, line: JSON.stringify(anchor) })\n        const plan = planStoreWrite({\n',
+    arm: ARMS.everything,
+  },
   'queue-untouched': {
     file: 'plugins/aukora-kira/lib/memory-deps.mjs',
     from: '    const matchesNote = queueEntryMatcher(found)\n',
@@ -298,12 +310,12 @@ try {
     const routes = new Map()
     const warnings = []
     const on = name => handlers.get(name) ?? []
-    /** One owner message in the text chat, then the agent's turn ends: the two hooks the harness fires. */
-    const say = async content => {
+    /** One owner message in the text chat, then the agent's turn ends. The log is DSH's shape: a header-only frame, one frame per append. */
+    const say = async (content, time = Date.now()) => {
       seq += 2
       turn += 1
-      events.push({ type: 'user/message', seq, time: Date.parse('2026-09-27T10:00:00Z') + seq * 1000, data: { id: `msg-${String(seq)}`, content, source: { kind: 'user' } } })
-      writeFileSync(sessionFile, zstdCompressSync(Buffer.from(events.map(one => `${JSON.stringify(one)}\n`).join(''))))
+      events.push({ type: 'user/message', seq, time, data: { id: `msg-${String(seq)}`, content, source: { kind: 'user' } } })
+      writeFileSync(sessionFile, Buffer.concat([{ type: 'session', id: TEXT_SESSION }, ...events].map(one => zstdCompressSync(Buffer.from(`${JSON.stringify(one)}\n`)))))
       for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: { id: TEXT_SESSION } }, turn })
     }
     let voiceTurn = 0
@@ -338,8 +350,9 @@ try {
         : name === 'connection' ? { requestRejection: () => undefined } : undefined),
       effect: fn => fn(),
     }
+    const tools = new Map()
     const ctx = {
-      tools: { register: () => {} },
+      tools: { register: definition => { tools.set(definition.name, definition); return () => {} } },
       on: (name, handler) => { handlers.set(name, [...on(name), handler]); return () => {} },
       emit: () => {},
       effect: fn => fn(),
@@ -350,6 +363,7 @@ try {
       logger: { warn: line => warnings.push(String(line)), info: () => {}, debug: () => {} },
     }
     await apply(ctx, {
+      autoStage: true, // off by default since 2026-09-27; turned on here so arm 5 keeps testing forget of a staged copy
       memoryOwner: {
         stateDir, subject: SUBJECT, permittedPrivacy: ['local'],
         approvalFile: join(home, 'approval.json'), grantFile: join(home, 'grant.json'), queueDir: join(stateDir, 'queue'),
@@ -383,11 +397,25 @@ try {
       assert.equal(again.length, 2, `two asks with the same words gave ${String(again.length)} note(s), not 2`)
       const voice = await rememberedWith(PLAIN_VOICE)
       assert.equal(voice.length, 1, `an unmarked Auma Live turn gave ${String(voice.length)} note(s), not 1`)
+      assert.equal(text[0].bodyAtCapture?.observationClass, 'HOST_REPORTED_CAPTURE_CONTEXT_NOT_EXECUTION_ATTESTATION', 'the note carries no host-reported bodyAtCapture')
+      const recalled = (await tools.get('kira_recall').execute({ text: 'when does Ana land in Denpasar' }, { agent: {} })).remembered?.notes ?? []
+      assert.deepEqual([recalled[0]?.id, recalled[0]?.bodyAtCapture], [text[0].id, text[0].bodyAtCapture], 'kira_recall does not return the remembered note with its bodyAtCapture')
+      await say('My old passport expired in the spring.', Date.parse('2020-01-01T00:00:00Z'))
+      assert.equal((await rememberedWith('old passport'))[0]?.bodyAtCapture, null, 'an ask older than this process was given this body')
+      // A REFUSED CAPTURE IS RETRIED: the unsigned chain's tail torn, the ask is refused; repaired, the next turn remembers it once.
+      const chainFile = join(stateDir, 'remembered', 'aura.jsonl')
+      const intact = readFileSync(chainFile)
+      writeFileSync(chainFile, Buffer.concat([intact, Buffer.from('{"torn')]))
+      await say('The spare ladder hangs behind the blue shed.')
+      writeFileSync(chainFile, intact)
+      turn += 1
+      for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: { id: TEXT_SESSION } }, turn })
+      assert.equal((await rememberedWith('spare ladder')).length, 1, 'a refused capture was marked done and never retried')
     })
 
     // ── ARM 3k: WHAT REMEMBERING EVERYTHING MUST STILL LEAVE OUT ─────────────────────────────────────────────────────
     await arm(ARMS.keeps, async () => {
-      const secret = `sk-${'a1B2'.repeat(6)}`
+      const secret = 'sk-' + 'a1B2'.repeat(6)
       await say('Off the record, I prefer to keep my salary review with Maya out of this.')
       await say('[fable via lane door] run the courts again and report the survivors')
       await say(`Use the token ${secret} for the staging box.`)
