@@ -83,6 +83,8 @@
           - session_*
           - job_*
           - list_*
+          # The trusted host tool this plugin registers when worktreesRoot is set (lib/self-change-tool.mjs).
+          - aukora_self_change
         repoRoots:
           - !!js process.env.HOME + '/aukora-genesis'
         # Where agents may also write: lane worktrees (proposals go there, then self-change), temp, and the owner's

@@ -21,6 +21,10 @@
  * aukora-seed's guard at 9fca7a0, vendored byte for byte in vendor/aukora-seed-guard/ (PROVENANCE.json). policy.mjs is
  * a thin adapter: it picks the law and the root, and the vendored `analyse`/`judge`/`decide` give the verdict.
  *
+ * ── THE ONE TOOL IT REGISTERS ─────────────────────────────────────────────────────────────────────────────────────
+ * With `worktreesRoot` set it also registers `aukora_self_change` (self-change-tool.mjs), the host-side route by which a
+ * contained agent proposes its own code; bash that runs self-change.mjs itself is refused (routes.mjs).
+ *
  * ── WHAT A DECISION PRODUCES ─────────────────────────────────────────────────────────────────────────────────────
  * One Aura entry per decision (receipts.mjs), appended and fsync'ed BEFORE an allow is returned. If the receipt cannot
  * be written the call is REFUSED (`receipt:failed`): an allowed call with no record is the one outcome this gate
@@ -56,6 +60,7 @@ import { fileURLToPath } from 'node:url'
 
 import { DEFAULT_NETWORK_ALLOW, createPolicy } from './policy.mjs'
 import { argsDigest, createReceiptLog } from './receipts.mjs'
+import { createSelfChangeTool } from './self-change-tool.mjs'
 
 export const name = 'aukora-action-gate'
 
@@ -67,7 +72,7 @@ export const LOADED_FROM_ROOT = resolve(dirname(fileURLToPath(import.meta.url)),
 
 export const CONFIG_FIELDS = Object.freeze([
   'auraDir', 'supportRoot', 'dshHome', 'home', 'repoRoots', 'releaseRoots', 'extraWritableRoots', 'networkAllow',
-  'allowLoopback', 'mainBranch', 'defaultWorkspace', 'rotateBytes', 'allowTools',
+  'allowLoopback', 'mainBranch', 'defaultWorkspace', 'rotateBytes', 'allowTools', 'worktreesRoot',
 ])
 
 /**
@@ -107,6 +112,9 @@ export function readSettings(config = {}) {
   const allowTools = config.allowTools === undefined
     ? []
     : (Array.isArray(config.allowTools) ? config.allowTools : [config.allowTools])
+  if (config.worktreesRoot !== undefined && list(config.repoRoots, 'repoRoots').length === 0) {
+    throw refused('worktreesRoot needs repoRoots: the first is the checkout whose self-change.mjs the tool runs')
+  }
   if (allowTools.some(name => typeof name !== 'string' || name === '')) {
     throw refused('allowTools must be a list of non-empty tool names, each optionally ending in * for a family')
   }
@@ -124,6 +132,8 @@ export function readSettings(config = {}) {
     defaultWorkspace: config.defaultWorkspace === undefined ? process.cwd() : abs(config.defaultWorkspace, 'defaultWorkspace'),
     rotateBytes: Number.isSafeInteger(config.rotateBytes) && config.rotateBytes > 0 ? config.rotateBytes : undefined,
     allowTools: Object.freeze([...allowTools]),
+    // Set: this plugin also registers the trusted `aukora_self_change` tool, proposing from worktrees under it.
+    worktreesRoot: config.worktreesRoot === undefined ? undefined : abs(config.worktreesRoot, 'worktreesRoot'),
   })
 }
 
@@ -213,6 +223,9 @@ export function apply(ctx, config) {
   const guard = createGuard({ settings, lookupPreset: agent => presetOf(ctx, agent), logger, definitionOf })
   ctx.tools.guard(guard)
   logger?.info?.(`aukora-action-gate: guarding every tool call; receipts in ${settings.auraDir}`)
+  if (settings.worktreesRoot !== undefined) {
+    ctx.tools.register(createSelfChangeTool({ repo: settings.repoRoots[0], worktreesRoot: settings.worktreesRoot, supportRoot: settings.supportRoot }))
+  }
 }
 
 function refused(message) {

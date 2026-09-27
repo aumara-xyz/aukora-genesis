@@ -83,16 +83,29 @@ for (const name of unknownNames) {
   }))
 }
 ctx.tools.register(standIn('mcp__fixture__write', { uri: { type: 'string', required: true }, content: { type: 'string' } }))
+// The trusted self-change tool's name and arguments (its real body is self-change-tool.mjs; this stand-in only records).
+ctx.tools.register(standIn('aukora_self_change', { why: { type: 'string', required: true }, worktree: { type: 'string', required: true },
+  paths: { type: 'array', items: { type: 'string' } }, preview: { type: 'boolean' } }))
 ctx.tools.register(standIn('unapproved_fixture_tool', { note: { type: 'string' } }))
+
+/** The overlay's `allowTools` names, read as lines (its `!!js` tags keep a YAML parser out). */
+function deployedTools() {
+  const lines = readFileSync(join(REPO, 'overlays', 'action-gate.patch.yml'), 'utf8').split('\n')
+  const at = lines.findIndex(line => line.trim() === 'allowTools:')
+  const names = []
+  for (let i = at + 1; at >= 0 && i < lines.length && /^\s+(- \S|#)/u.test(lines[i]); i++) if (!lines[i].trim().startsWith('#')) names.push(lines[i].trim().slice(2))
+  if (names.length === 0) throw new Error('overlays/action-gate.patch.yml names no allowTools')
+  return names
+}
 
 // THE MOUNT, as the loader performs it: the module namespace is the plugin (name, inject, apply).
 // THE RED ARM: ACTION_GATE_CHECK_UNMOUNTED=1 runs the same calls with the row absent, and the check must go RED.
 const unmounted = process.env.ACTION_GATE_CHECK_UNMOUNTED === '1'
 if (!unmounted) await ctx.plugin(gate, {
   auraDir, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo,
-  // THE FIXTURE FAMILY IS DECLARED, because an undeclared name is now refused (#26). This is the same act a
-  // deployment performs in overlays/action-gate.patch.yml, so the check exercises the real contract.
-  allowTools: ['mcp__fixture__*'],
+  // THE DEPLOYMENT'S OWN LIST (overlays/action-gate.patch.yml `allowTools`) plus the fixture family, so a tool this
+  // plugin registers but the deployment never approved goes RED here instead of being refused live (#26).
+  allowTools: [...deployedTools(), 'mcp__fixture__*'],
   extraWritableRoots: [tmpdir(), '/private/tmp'],
 })
 
@@ -202,6 +215,8 @@ calls.push(
   { group: 'unknown tool path roles', label: 'read governing file', expect: 'allow', name: 'mcp__fixture__read_file', arguments: { path: protectedTarget } },
   { group: 'unknown tool path roles', label: 'an unlisted tool', expect: 'deny', says: 'tool-not-approved', name: 'unapproved_fixture_tool', arguments: {} },
 )
+calls.push({ group: 'trusted tool name', label: 'aukora_self_change, under the overlay\'s allowTools', expect: 'allow', name: 'aukora_self_change',
+  arguments: { why: 'fix a typo', worktree: 'fix-typo', paths: ['plugins/aukora-action-gate/lib/policy.mjs'], preview: true } })
 
 const signal = new AbortController().signal
 let failures = 0
