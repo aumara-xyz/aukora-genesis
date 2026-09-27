@@ -47,6 +47,7 @@ const home = join(S, 'h')
 const supportRoot = join(S, 'sup')
 const dshHome = join(supportRoot, 'state', 'home')
 const ws = join(home, 'aukora-worktrees', 'wt')
+const repo = join(home, 'aukora-genesis')
 const seed = join(supportRoot, 'state', 'aumlok', 'machine-seed-v3.json')
 const socket = join(supportRoot, 'state', 'aumlok-signer.sock')
 const auraLog = join(dshHome, 'aura-code', 'aura.jsonl')
@@ -69,6 +70,8 @@ for (const [path, text] of Object.entries(fake)) {
   writeFileSync(path, text)
 }
 mkdirSync(ws, { recursive: true })
+mkdirSync(join(repo, 'plugins'), { recursive: true })
+writeFileSync(join(ws, '.git'), `gitdir: ${join(repo, '.git', 'worktrees', 'wt')}\n`)
 if (Buffer.byteLength(socket) > 103) throw new Error(`socket path too long for sun_path: ${socket}`)
 const signer = createServer(connection => connection.end('FAKE-SIGNER-REPLY\n'))
 await new Promise(ok => signer.listen(socket, ok))
@@ -121,7 +124,15 @@ const ARMS = [
 const ANCESTOR_ARMS = [
   ['(f) rename an ancestor, then read the seed', `mv ${q(join(supportRoot, 'state'))} ${q(join(S, 'moved'))} && cat ${q(join(S, 'moved', 'aumlok', 'machine-seed-v3.json'))}`, 'denied'],
   ['(f2) rename an ancestor, then append to the chain', `mv ${q(dshHome)} ${q(join(S, 'moved-home'))} && echo forged >> ${q(join(S, 'moved-home', 'aura-code', 'aura.jsonl'))}`, 'denied'],
-  ['(f3) ordinary work under that ancestor', `mkdir -p ${q(join(supportRoot, 'new', 'deep'))} && echo ok > ${q(join(supportRoot, 'new', 'deep', 'f'))} && cat ${q(join(supportRoot, 'new', 'deep', 'f'))}`, 'allowed'],
+  ['(f3) ordinary work under that ancestor', `mkdir -p ${q(join(S, 'new', 'deep'))} && echo ok > ${q(join(S, 'new', 'deep', 'f'))} && cat ${q(join(S, 'new', 'deep', 'f'))}`, 'allowed'],
+  ['(f4) write in the support root under that ancestor', `echo x > ${q(join(supportRoot, 'new-file'))}`, 'denied'],
+]
+// CONTAINED WORK: the session's workspace is the governing checkout, as in the live app.
+const CONTAINED_ARMS = [
+  ['(g) write governing code in the workspace checkout', `echo x > ${q(join(repo, 'plugins', 'x.mjs'))}`, 'denied'],
+  ['(h2) re-point a worktree\'s .git', `echo 'gitdir: /private/tmp/x' > ${q(join(ws, '.git'))}`, 'denied'],
+  ['(h3) make a worktree directory', `mkdir ${q(join(home, 'aukora-worktrees', 'new'))}`, 'denied'],
+  ['(h4) move a worktree aside', `mv ${q(ws)} ${q(join(S, 'moved-wt'))}`, 'denied'],
 ]
 
 // The kernel's EPERM, as cat/bash print it ("Operation not permitted") or as node prints it ("connect EPERM").
@@ -140,12 +151,14 @@ async function section(title, run, arms, expectFor, workspaceRoot) {
 }
 await section('WITH aukora-seatbelt', aukora, ARMS, e => e, ws)
 await section('WITH aukora-seatbelt, workspace = the scratch root (an ancestor of every protected path)', aukora, ANCESTOR_ARMS, e => e, S)
+await section('WITH aukora-seatbelt, workspace = the governing checkout', aukora, CONTAINED_ARMS, e => e, repo)
 // The red arm: the protection removed. Every arm this plugin exists for must now SUCCEED.
 const RED = new Set(['(a) read the fake seed', '(c) a script the command writes, then runs, reads the seed',
   '(c2) the same, as a node script', '(d) connect to the signer socket', '(e) append to the code Aura chain'])
 await section('RED ARM: the stock sandbox-local profile only', stock, ARMS.filter(([label]) => RED.has(label)), () => 'allowed', ws)
 process.stdout.write(`\nfake chain after the red arm: ${JSON.stringify(readFileSync(auraLog, 'utf8'))}\n`)
 await section('RED ARM, ancestor workspace', stock, ANCESTOR_ARMS.slice(0, 1), () => 'allowed', S)
+await section('RED ARM, governing checkout as workspace', stock, CONTAINED_ARMS.slice(0, 1), () => 'allowed', repo)
 
 signer.close()
 process.stdout.write(failures.length === 0 ? '\nSEATBELT CHECK: all arms as expected\n' : `\nSEATBELT CHECK FAILED:\n  ${failures.join('\n  ')}\n`)

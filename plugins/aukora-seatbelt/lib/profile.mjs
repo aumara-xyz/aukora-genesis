@@ -15,6 +15,12 @@
  * `(allow default)` refuses the read, and it also refuses the same file reached by other spellings (upper case, `..`,
  * `/.vol/<dev>/<inode>`), a symlink, a hard link made inside the sandbox, and `cp -c`.
  *
+ * CONTAINED WORK (2026-09-27). Under `workspace-write` the agent may also write its proposal worktrees
+ * (`~/aukora-worktrees`), and it may never write the governing checkout (`~/aukora-genesis`) or the support root, even
+ * when one of them is the session's workspace. A worktree's own entry and its `.git` pointer are fixed, so the checkout
+ * the trusted `aukora_self_change` tool proposes from keeps pointing at git state the agent cannot write. Worktrees are
+ * created by that tool (or the owner), not by the confined shell.
+ *
  * @module @aukora/dsh-plugin-seatbelt/profile
  */
 import { realpathSync } from 'node:fs'
@@ -29,10 +35,14 @@ export const SEED_NAME_REGEX = String.raw`/machine-seed[^/]*\.json$`
  * @param {{supportRoot?: string, dshHome?: string, home?: string}} roots - where this deployment keeps its state.
  * @returns {Readonly<{keys: string[], sockets: string[], receipts: string[]}>} absolute, not yet canonical.
  */
-export function protectedPaths({ home = homedir(), supportRoot, dshHome } = {}) {
+export function protectedPaths({ home = homedir(), supportRoot, dshHome, repoRoots, worktreesRoot } = {}) {
   const support = supportRoot ?? join(home, 'Library', 'Application Support', 'AUKORA')
   const dsh = dshHome ?? join(support, 'state', 'home')
   return Object.freeze({
+    // No write: the governing checkout(s) and the support root. Reading stays allowed.
+    governing: [...(repoRoots ?? [join(home, 'aukora-genesis')]), support],
+    // Writable under workspace-write; each worktree's own entry and `.git` are not.
+    worktrees: worktreesRoot ?? join(home, 'aukora-worktrees'),
     // No read and no write: the Aumlok controller state (machine seed, record), the signer's key directory, the Kira
     // store (issuer key, keys/), SSH keys and the GitHub CLI's token. Denying writes too stops a key being replaced
     // or a symlink being planted at the protected name.
@@ -69,12 +79,14 @@ export function aukoraDenyForms(paths) {
   const keys = paths.keys.map(canonicalPath)
   const sockets = paths.sockets.map(canonicalPath)
   const receipts = paths.receipts.map(canonicalPath)
+  const governing = paths.governing.map(canonicalPath)
+  const worktrees = canonicalPath(paths.worktrees)
   // A path rule follows a path, not a file. Renaming an ancestor of a protected directory moves the directory out from
   // under its rule (measured: `mv <state> <other>` then read or append succeeds), so no ancestor may be renamed,
   // removed or re-moded. Creating and writing entries INSIDE an ancestor are operations on the child's path and stay
   // allowed.
   const ancestors = new Set()
-  for (const path of [...keys, ...sockets, ...receipts]) {
+  for (const path of [...keys, ...sockets, ...receipts, ...governing, worktrees]) {
     for (let at = dirname(path); at !== dirname(at); at = dirname(at)) ancestors.add(at)
   }
   return [
@@ -83,6 +95,8 @@ export function aukoraDenyForms(paths) {
     `(deny network-outbound ${sockets.map(path => `(remote unix-socket (path-literal ${literal(path)}))`).join(' ')})`,
     `(deny file-read* (regex #"${SEED_NAME_REGEX}"))`,
     `(deny file-write* ${receipts.map(path => `(subpath ${literal(path)})`).join(' ')})`,
+    `(deny file-write* ${governing.map(path => `(subpath ${literal(path)})`).join(' ')})`,
+    `(deny file-write* (literal ${literal(worktrees)}) (regex #"^${pattern(worktrees)}/[^/]+$") (regex #"^${pattern(worktrees)}/[^/]+/\\.git(/|$)"))`,
     `(deny file-write* ${[...ancestors].map(path => `(literal ${literal(path)})`).join(' ')})`,
   ]
 }
@@ -107,6 +121,11 @@ export function withAukoraDenies(confined, forms) {
     throw error
   }
   return { ...confined, argv: [argv[0], '-p', [argv[2], ...forms].join('\n'), ...argv.slice(3)] }
+}
+
+/** A path as a literal inside an SBPL `#"…"` regex. */
+function pattern(path) {
+  return String(path).replace(/[\\^$.*+?()[\]{}|"]/gu, char => `\\${char}`)
 }
 
 /**
