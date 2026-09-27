@@ -16,8 +16,8 @@
  *
  * @module @aukora/dsh-plugin-kira/session-read
  */
-import { fstatSync, openSync, readFileSync, readdirSync } from 'node:fs'
-import { createZstdDecompress, zstdDecompressSync } from 'node:zlib'
+import { closeSync, fstatSync, openSync, readFileSync, readSync, readdirSync } from 'node:fs'
+import { zstdDecompressSync } from 'node:zlib'
 
 import { MAX_ARTIFACT_BYTES } from './strict-read.mjs'
 
@@ -74,7 +74,9 @@ export function findSessionFile({ stateRoot, sessionId }) {
     for (const name of names) {
       const candidate = `${root}/${project}/${name}`
       try {
-        if (fstatSync(openSync(candidate, 'r')).isFile()) return candidate
+        // CLOSED (2026-09-27 review): this runs on every turn now, and the unclosed descriptor leaked one per call (200 calls, 200 fds).
+        const fd = openSync(candidate, 'r')
+        try { if (fstatSync(fd).isFile()) return candidate } finally { closeSync(fd) }
       } catch {
         // Not this project or not this name: keep looking rather than failing the caller's whole read.
       }
@@ -157,16 +159,14 @@ export async function readSessionEventsStreamed({ stateRoot, sessionId, forSeqs,
   const file = findSessionFile({ stateRoot, sessionId })
   if (file === null) return null
   const wanted = forSeqs === undefined ? null : new Set([...forSeqs])
-  const stream = createZstdDecompress({ maxOutputLength: maxBytes })
   const events = []
   const seen = new Set()
   let total = 0
   let remainder = ''
-  stream.end(readFileSync(file))
-  for await (const chunk of stream) {
+  // FRAME BY FRAME (`frameStarts`), keeping only the wanted events when `forSeqs` is given.
+  for (const chunk of frameTexts(file)) {
     total += chunk.length
     if (total > maxBytes) {
-      stream.destroy()
       throw new Error(`kira.read:session-too-large — ${file} decompresses past ${String(maxBytes)} bytes; narrow forSeqs rather than reading a prefix`)
     }
     remainder += chunk.toString('utf8')
@@ -185,13 +185,11 @@ export async function readSessionEventsStreamed({ stateRoot, sessionId, forSeqs,
         continue
       }
       const seq = Number.isInteger(parsed?.seq) ? parsed.seq : null
+      if (wanted !== null && !wanted.has(seq)) continue
       events.push({ seq, at: String(parsed?.at ?? parsed?.time ?? ''), line })
-      if (seq !== null && wanted !== null && wanted.has(seq)) seen.add(seq)
+      if (seq !== null && wanted !== null) seen.add(seq)
     }
-    if (wanted !== null && seen.size === wanted.size) {
-      stream.destroy()
-      return events
-    }
+    if (wanted !== null && seen.size === wanted.size) return events
   }
   return events
 }
@@ -200,6 +198,86 @@ export async function readSessionEventsStreamed({ stateRoot, sessionId, forSeqs,
 /** A session's whole stream may be large, so this cap is a safety net rather than a working limit: callers ask for
  * specific events and the reader stops when it has them. */
 export const MAX_STREAM_BYTES = 512 * 1024 * 1024
+
+export const MAX_TAIL_BYTES = 64 * 1024 * 1024
+const frameScans = new Map()
+
+/**
+ * THE FRAMES OF A SESSION LOG (measured 2026-09-27 on the backend's node, v22.23.0): `zstdDecompressSync` and `createZstdDecompress`
+ * BOTH STOP AFTER THE FIRST FRAME, and a DSH log is one frame per append whose first frame is the header alone, so these readers saw
+ * one event. This walks frame and block headers by positioned reads (vendor/dsh `scanZstdFrames`' layout), keeping one offset per
+ * frame and resuming where the last scan ended; a torn last frame is left for the next scan.
+ */
+function frameStarts(fd, file) {
+  const { ino, size } = fstatSync(fd)
+  let scan = frameScans.get(file)
+  if (scan === undefined || scan.ino !== ino || scan.end > size) scan = { ino, end: 0, starts: [] }
+  const head = Buffer.alloc(5)
+  let fresh = scan.end === 0
+  while (scan.end + 5 <= size) {
+    readSync(fd, head, 0, 5, scan.end)
+    if (head.readUInt32LE(0) !== 0xfd2fb528) {
+      // A FILE REWRITTEN IN PLACE (same inode, larger) puts a cached offset mid-frame: walk once from byte 0 before refusing.
+      if (!fresh) { fresh = true; scan = { ino, end: 0, starts: [] }; continue }
+      throw new Error(`kira.read:zstd-frame — no frame magic at byte ${String(scan.end)} of ${file}`)
+    }
+    const flags = head[4]
+    const fcs = flags >>> 6
+    let next = scan.end + 5 + (flags & 0x20 ? 0 : 1) + [0, 1, 2, 4][flags & 3] + (fcs === 0 ? (flags & 0x20 ? 1 : 0) : 1 << fcs)
+    let last = false
+    while (!last && next + 3 <= size) {
+      readSync(fd, head, 0, 3, next)
+      const block = head.readUIntLE(0, 3)
+      last = (block & 1) === 1
+      next += 3 + (((block >>> 1) & 3) === 1 ? 1 : block >>> 3)
+    }
+    if (flags & 4) next += 4
+    if (!last || next > size) break
+    scan.starts.push(scan.end)
+    scan.end = next
+  }
+  frameScans.delete(file)
+  frameScans.set(file, scan)
+  if (frameScans.size > 32) frameScans.delete(frameScans.keys().next().value)
+  return scan
+}
+
+function* frameTexts(file, reverse = false) {
+  const fd = openSync(file, 'r')
+  try {
+    const { starts, end } = frameStarts(fd, file)
+    for (let n = 0; n < starts.length; n += 1) {
+      const at = reverse ? starts.length - 1 - n : n
+      const bytes = Buffer.alloc((starts[at + 1] ?? end) - starts[at])
+      readSync(fd, bytes, 0, bytes.length, starts[at])
+      yield zstdDecompressSync(bytes).toString('utf8')
+    }
+  } finally {
+    closeSync(fd)
+  }
+}
+
+/**
+ * The last `user/message` whose source is `user` (a person or the lane door) and its exact line, from the raw log's TAIL: frames last
+ * to first, stopping at the first found or past `maxBytes`. null: no session file; undefined: none in reach.
+ */
+export function readLastUserMessage({ stateRoot, sessionId, maxBytes = MAX_TAIL_BYTES }) {
+  const file = findSessionFile({ stateRoot, sessionId })
+  if (file === null) return null
+  let scanned = 0
+  for (const text of frameTexts(file, true)) {
+    const lines = text.split('\n')
+    for (let at = lines.length - 1; at >= 0; at -= 1) {
+      if (!lines[at].includes('"user/message"')) continue
+      let event
+      try { event = JSON.parse(lines[at]) } catch { continue }
+      if (event?.type === 'user/message' && event?.data?.source?.kind === 'user') return { event, line: lines[at] }
+    }
+    scanned += text.length
+    if (scanned > maxBytes) return undefined
+  }
+  return undefined
+}
 
 
 /**
