@@ -1,0 +1,2 @@
+import"./chunk-FGV2HSCH.mjs";var variant={type:"sync",importFFI:()=>import("./ffi.mjs").then(mod=>mod.QuickJSFFI),importModuleLoader:()=>import("./emscripten-module-Q67P5WYC.mjs").then(mod=>mod.default)},src_default=variant;export{src_default as default};
+//# sourceMappingURL=index.mjs.map
