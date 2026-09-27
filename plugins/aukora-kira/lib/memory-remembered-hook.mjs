@@ -23,8 +23,10 @@
  *
  * @module @aukora/dsh-plugin-kira/memory-remembered-hook
  */
-import { dirname } from 'node:path'
-import { AUTOSTAGE_READER_SERVICE, isRealAsk, lastRealAsk, sessionIdOfAgent } from './autostage-hook.mjs'
+import { randomUUID } from 'node:crypto'
+import { basename, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { eventText, isRealAsk, sessionIdOfAgent } from './autostage-hook.mjs'
 import { setLaneDoorMessageIds } from './autostage-hook.mjs'
 import { laneDoorMessageIds } from './lane-door-messages.mjs'
 import { STORE_PATHS, planStoreWrite } from './memory-store.mjs'
@@ -34,8 +36,27 @@ import { sha256Hex, canonicalInstant } from './memory-tiers.mjs'
 import { MAX_NOTES_PER_TURN, boundedNotes, consumeTurn } from './memory-capture-hook.mjs'
 // THE SECRET SHAPES COME FROM THE ONE PLACE THEY ARE DEFINED, so the capture path and the compaction path cannot drift apart.
 import { FORBIDDEN_WINDOW_DIGESTS, SECRET_PATTERNS } from './compaction-export.mjs'
-import { appendJournalLine, durableWrite, ensureDirectory, readLinesIfPresent, withFileLock } from './strict-read.mjs'
-import { readSessionEventStreamed } from './session-read.mjs'
+import { appendJournalLine, durableWrite, ensureDirectory, readJsonStrict, readLinesIfPresent, withFileLock } from './strict-read.mjs'
+import { readLastUserMessage } from './session-read.mjs'
+
+/**
+ * `bodyAtCapture` (AUKORA-37's name; the formats are versioned apart): the release directory, its plugin-set digest and the code
+ * Aura chain head this process reports. HOST-REPORTED, never attestation: a same-UID writer could say otherwise.
+ */
+export function bodyAtCaptureReader({ releaseRoot, home }) {
+  let pluginSetDigest = null
+  try { pluginSetDigest = readJsonStrict(`${releaseRoot}/.dsh-build/plugin-set.json`).setDigest ?? null } catch { /* a checkout has none */ }
+  const base = { kind: 'genesis.kira-body.v1', observationClass: 'HOST_REPORTED_CAPTURE_CONTEXT_NOT_EXECUTION_ATTESTATION', instanceId: randomUUID(), release: basename(releaseRoot), pluginSetDigest }
+  return () => {
+    let codeHead = null
+    try {
+      const last = JSON.parse(readLinesIfPresent(`${home}/aura-code/aura.jsonl`).at(-1))
+      // WITH ITS OPERATION AND COMMIT: between `code.change` (approved) and `code.become` the head names code this process is not running.
+      if (Number.isInteger(last?.sequence)) codeHead = { sequence: last.sequence, hash: last.hash, operation: last.operation ?? null, commit: last.commit ?? null }
+    } catch { /* no code chain in this home */ }
+    return { ...base, codeHead }
+  }
+}
 
 /** The directory holding a file, for a durability sync. The boundary derives this too; naming it here keeps the call explicit. */
 
@@ -76,8 +97,14 @@ export function registerRememberedCapture(ctx, options = {}) {
   setLaneDoorMessageIds(laneDoorMessageIds(laneDoorRoot))
   // SESSION → THE LAST ASK CAPTURED, mirroring the staging hook's own gate.
   const seenTurns = options.seen ?? new Map()
-  const readerService = options.readerService ?? AUTOSTAGE_READER_SERVICE
-  let warnedNoReader = false
+  const bootedAt = Date.now()
+  const bodyNow = bodyAtCaptureReader({ releaseRoot: options.releaseRoot ?? fileURLToPath(new URL('../../..', import.meta.url)), home: sessionsRoot })
+  // ONCE PER CAUSE, ON STDOUT: `ctx.logger` never reaches <state>/logs/server.log, so every failure here was silent. Never the text.
+  const failed = new Set()
+  const fail = cause => {
+    const key = String(cause).replace(/\d+/gu, '#').slice(0, 160)
+    if (!failed.has(key)) { failed.add(key); console.log(`[kira-capture] automatic memory FAILED: ${String(cause).slice(0, 240)}`) }
+  }
 
   return ctx.on('agent/turn-stopping', async payload => {
     try {
@@ -91,44 +118,22 @@ export function registerRememberedCapture(ctx, options = {}) {
       // attributed to the turn that is stopping — `lastRealAsk`'s own docstring says so, and the sibling hook dedupes on the
       // ask for the same reason. Keying on the turn here would have re-remembered the same sentence on every later turn of
       // the session: a memory multiplier, and the worst kind, because each copy would carry a valid receipt.
-      if (seenTurns.has(sessionId)) { /* session already handled */ }
-
-      // *** `ctx.get` FIRST, BECAUSE `ctx.reflect` IS AN UNDECLARED PROPERTY ACCESS. *** That is the same defect Fable found
-      // in the mount (`ctx.webServer` read as a property), and it bit here too: on a bare Context `ctx.reflect` is simply
-      // undefined, the hook returned early, and nothing said why. `ctx.get` is the sanctioned read for a service this
-      // plugin does not inject; the property is kept as a fallback for a context that exposes it.
-      // *** FIXED 2026-09-27 (red team): `reflect` is a ROOT PROPERTY of a Cordis context, never a provided service, and the
-      // service is named `sessionQuery`. `ctx.get('reflect')` was always undefined and 'session-query' never existed, so this hook
-      // returned here on every turn and captured nothing, silently. The same lookup the working auto-stage hook uses. ***
-      const reflect = /** @type {{reflect?: {get?: (name: string, required: boolean) => unknown}}} */ (ctx).reflect
-      const reader = typeof reflect?.get === 'function' ? reflect.get(readerService, false) : undefined
-      if (reader === undefined || reader === null) {
-        if (!warnedNoReader) { warnedNoReader = true; logger?.warn?.(`aukora-kira: remembered capture found no ${readerService} service; nothing is captured`) }
-        return
-      }
-      const surface = await reader.readSurface(sessionId)
-      const events = Array.isArray(surface?.events) ? surface.events : []
-      const ask = lastRealAsk(events)
-      // AN ABSENT ASK IS THE COMMON CASE, NOT A FAULT: our own recall injection and the board's status block are messages in
-      // this stream too, and `isRealAsk` is the same predicate the staging hook uses, imported rather than re-implemented so
-      // the two paths can never disagree about what a person said.
-      if (ask === '') return
-      const event = [...events].reverse().find(one => isRealAsk(one))
-      const seq = Number.isInteger(event?.seq) ? event.seq : null
-      if (seq === null) return
+      // THE RAW LOG'S TAIL (2026-09-27): this read the whole surface every turn (126 MB for the owner's session), then re-read the
+      // ask with a decoder that saw only the first zstd frame, so no turn was remembered. An absent ask (a lane-door turn) is normal.
+      const read = readLastUserMessage({ stateRoot: sessionsRoot, sessionId })
+      if (read === null) return fail(`no session log under ${sessionsRoot}/sessions`)
+      if (read === undefined || !isRealAsk(read.event)) return
+      const { event, line } = read
+      const ask = eventText(event)
+      const seq = Number.isInteger(event.seq) ? event.seq : null
+      if (seq === null || ask === '') return
       // *** ONE CAPTURE PER ASK EVENT, KEYED BY ITS SEQ, NOT BY ITS TEXT (2026-09-27, "remember everything"). *** An agent turn
       // fires this hook many times per ask, so a key is needed; keyed by the TEXT, the owner saying "continue" twice in a row was
       // remembered once. The event's own seq names the ask, so two asks with the same words are two turns.
+      // MARKED ONLY AFTER THE WRITE, so a failed capture is retried; the journal's `turn` anchor keeps it once.
       if (seenTurns.get(sessionId) === seq) return
-      seenTurns.set(sessionId, seq)
-
-      const read = await readSessionEventStreamed({ stateRoot: sessionsRoot, sessionId, seq })
-      const line = read?.line ?? null
-      if (typeof line !== 'string' || line === '') {
-        // NO LINE, NO RECEIPT, NO NOTE. This is the tier's whole claim, and it is refused rather than approximated.
-        logger?.warn?.(`aukora-kira: remembered capture skipped (the event for ${sessionId} seq ${String(seq)} could not be read as a line)`)
-        return
-      }
+      // AN ASK OLDER THAN THIS PROCESS gets `null` (UNKNOWN): this body is never pinned to a message it did not see.
+      const bodyAtCapture = event.time >= bootedAt ? bodyNow() : null
 
       const policy = await policyOf()
       // THE EVENT'S OWN TIME, because that is the canonical record: the surface event carries `{type, seq, time, data}` and its
