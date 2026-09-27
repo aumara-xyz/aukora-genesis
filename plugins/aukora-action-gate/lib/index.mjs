@@ -19,7 +19,8 @@
  *
  * ── WHO JUDGES A PATH ────────────────────────────────────────────────────────────────────────────────────────────
  * aukora-seed's guard at 9fca7a0, vendored byte for byte in vendor/aukora-seed-guard/ (PROVENANCE.json). policy.mjs is
- * a thin adapter: it picks the law and the root, and the vendored `analyse`/`judge`/`decide` give the verdict.
+ * a thin adapter: it picks the law and root, and the seed classifies paths. kernel.mjs calls the carried
+ * vendor/aukora-kernel's `decide` with that classification; its status is the gate's verdict.
  *
  * ── THE ONE TOOL IT REGISTERS ─────────────────────────────────────────────────────────────────────────────────────
  * With `worktreesRoot` set it also registers `aukora_self_change` (self-change-tool.mjs), the host-side route by which a
@@ -37,7 +38,7 @@
  *     recursively copied directory contents are not inspected. Relative paths in a terminal with an unknown cwd
  *     stay unseen. The agent still runs as the owner's OS user with the owner's credentials; this is an in-process
  *     gate, not isolation.
- *   - Unknown tools are classified by name: write/edit/create/delete/move/put/save names make recognized path
+ *   - Unknown tools are classified by name: write/edit/create/delete/move/put/save/patch/append/replace names make recognized path
  *     arguments writes; other names make them reads. Unrecognized argument shapes or concealed side effects remain
  *     unseen. Git config overrides are checked only when named in the command; stored config and environment are
  *     not evaluated to resolve a push destination.
@@ -59,6 +60,7 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { DEFAULT_NETWORK_ALLOW, createPolicy } from './policy.mjs'
+import { decideCall } from './kernel.mjs'
 import { argsDigest, createReceiptLog } from './receipts.mjs'
 import { createSelfChangeTool } from './self-change-tool.mjs'
 
@@ -170,15 +172,19 @@ export function createGuard({ settings, lookupPreset = () => null, logger, defin
   return function actionGate(exec) {
     const agent = exec?.agent
     let verdict
+    let digest
     try {
-      verdict = policy.judge({
+      digest = argsDigest(exec?.arguments)
+      const classified = policy.classify({
         tool: exec?.name,
         args: exec?.arguments,
+        agent,
         workspace: typeof agent?.session?.header?.cwd === 'string' ? agent.session.header.cwd : undefined,
         presetOf: () => lookupPreset(agent),
       })
+      verdict = decideCall(classified, digest)
     } catch (error) {
-      verdict = { decision: 'deny', rule: 'gate:policy-fault', message: `AUKORA action gate refused this call [gate:policy-fault]: the policy failed (${String(error?.message ?? error)}), and a call the gate could not judge is not allowed` }
+      verdict = { decision: 'deny', rule: 'gate:policy-fault', kernelCode: error?.code ?? 'gate:policy-fault', message: `AUKORA action gate refused this call [gate:policy-fault]: the policy failed (${String(error?.message ?? error)}), and a call the gate could not judge is not allowed` }
     }
     try {
       receipts.append({
@@ -189,9 +195,10 @@ export function createGuard({ settings, lookupPreset = () => null, logger, defin
         callId: typeof exec?.callId === 'string' ? exec.callId : null,
         nested: exec?.parent !== undefined,
         tool: String(exec?.name),
-        argsDigest: argsDigest(exec?.arguments),
+        argsDigest: digest ?? argsDigest(exec?.arguments),
         decision: verdict.decision,
         rule: verdict.rule,
+        kernelCode: verdict.kernelCode,
       })
     } catch (error) {
       logger?.warn?.(`aukora-action-gate: receipt not written (${String(error?.message ?? error)})`)
