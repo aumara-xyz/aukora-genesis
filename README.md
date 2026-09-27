@@ -2,22 +2,29 @@
 
 ## What is not enforced
 
-Release scope: `aukora-release-1c0ada9b6`. Source inspection and disposable checks do not verify the installed app.
+Running release on the owner's Mac: `aukora-release-25149f573`, the same commit as GitHub `main` when this was written
+(`state/home/become/last.json` names it with the observed pid and port). Source inspection and disposable checks do
+not verify the installed app.
 
 - **One user account holds everything.** The app, the agent and the approval key run as the same macOS user
   (`SAME_UID`, `OWNER_KEY_SAME_UID`). The checks here are procedures over bytes, not an isolation boundary.
-  The two-principal owner cut is built (`scripts/owner/`, `plugins/aukora-owner-daemon/`) and not installed.
+  The Airlock (the key held by a second macOS user, reached over a socket where the kernel names the caller) is
+  built (`plugins/aukora-owner-daemon/`, runbook in its `INSTALL.md`); on the owner's Mac its account and code are
+  staged but the key is not yet rotated to it, so the key is still same-UID.
 - **A signature is not a person.** The approval key is a software key on this Mac. A click is recorded, but
   nothing binds it to a human (`ATTENDANCE: reported-not-proven`).
-- **The approval routes are supported, not enforced.** `scripts/aukora/self-change.mjs` (code) and
-  `scripts/aukora/advance.mjs` (a remote's `main`) show a change in full, get it signed and verify the signature
-  before they write, but the macOS user holds the push credentials and GitHub has no server-side check requiring
-  these approval routes. On 2026-09-27 self-change carried one code change (`97714048a`) and every other change landed
-  directly; advance carried both snapshot moves of `aumara-xyz/aukora-genesis` `main`.
+- **Nothing on GitHub enforces the approval routes.** `scripts/aukora/self-change.mjs` (a diff card) and
+  `scripts/aukora/advance.mjs` (a MOVE MAIN card) show a change, get it signed in the popup and verify the signature
+  before they write, but the macOS user holds the push credentials and GitHub has no server-side check. Every commit
+  on `main` after `1c362a2c5` came through one of these routes and is in the Aura code chain (the commits inside a
+  MOVE MAIN are listed in its approved operation); a direct push would still not be stopped.
 - **The action gate is an in-process check, not isolation.** It refuses write and edit tool calls on governing
   code and shell writes whose targets it can read (`sed -i`, a redirect, `cp`, `mv`, a literal path in
   `python3 -c`). A shell command that hides its target in a script or variable is not refused by this text check.
   The gate sees a subagent launch, not every tool the child runs; same-UID processes outside the app remain outside it.
+  Its verdict is the kernel's `decide()` (`vendor/authority`, called from `plugins/aukora-action-gate/lib/kernel.mjs`).
+  Seen live on `aukora-release-25149f573`: a `sed -i` on `plugins/aukora-kira/` from Auma's full-access session was
+  refused with `rule: authority:governing-code`, `kernelCode: sacred_target` (2026-09-27T23:53:16Z), file untouched.
 - **Seatbelt does not confine danger-full-access sessions.** It is mounted for BUILD (`workspace-write`) and
   read-only shells. Auma's sessions run `danger-full-access`, where Seatbelt is UNENFORCED. The backend process
   and its plugins are outside the shell sandbox.
@@ -36,10 +43,10 @@ Release scope: `aukora-release-1c0ada9b6`. Source inspection and disposable chec
   release whose plugin set the owner has not approved in the popup. The shipped template sets `allowUnapproved: false`
   (`apps/aukora-desktop/resolve.mjs`); `true` in `config.json` waives both. The resolver also grants a first-run
   waiver when no installed plugin-set approval exists and the approved-record list is empty.
-- **Signed memory is not verified end to end here in this release.** The earlier `c7de4279c` export failure
-  involved a missing `apps/aukora-desktop/card-chain.mjs`; the materializer now carries that file. Carrying the
-  dependency is not a live settlement, export or cold-verification result. Automatic notes grant no authority;
-  automatic Kira-to-OpenViking indexing and Auma Live voice capture remain unverified.
+- **Signed memory was verified end to end on an earlier release, not this one.** On `aukora-release-76bb9650b`
+  (2026-09-27) `scripts/aukora/remember.mjs` staged through the WASM cell, was approved in the popup, settled at Aura
+  sequence 7, exported, and cold-verified from an empty directory (`PUBLICATION: VERIFIED`). It has not been re-run
+  on `25149f573`. Automatic notes grant no authority; Auma Live voice capture remains unverified.
 - **The owner's root key can be searched offline.** It is derived with scrypt from a seven-word phrase and a
   public handle (`plugins/aukora-aumlok/lib/derive-v3.mjs`); the desktop's word lists give about 34 bits.
 - **The voice companion's conversation leaves the machine.** Auma Live sends each turn to a remote model
@@ -94,11 +101,11 @@ first: the face bundles are committed, and a rebuild elsewhere changes their byt
 ## Reviewer packet
 
 Read this first. Run the packet from the repository root of a fresh clone with `python3`, Node.js 22 and
-`perl` (included on macOS): no keys, no network, no harness build, no running app. The 15 commands run in
+`perl` (included on macOS): no keys, no network, no harness build, no running app. The 16 commands run in
 parallel with a hard 55-second timeout per command, including its subprocesses. It prints one line per command,
 in the order below: PASS or FAIL, the seconds, the command and its last nonblank output line; then a `TOTAL` line
-with the time and the count passed. On the owner's Mac on 2026-09-27, at `1c569f8aa`, it ended
-`TOTAL 6.02s | 15/15 passed`. Any failure or timeout makes the packet exit nonzero, and the `TOTAL` line then
+with the time and the count passed. On a fresh clone of `main` at `25149f573`, on 2026-09-28, it ended
+`TOTAL 6.06s | 16/16 passed`. Any failure or timeout makes the packet exit nonzero, and the `TOTAL` line then
 names the temporary directory that keeps the full logs.
 
 PASS means the command exited zero. The table names the output to find in each check, which need not be
