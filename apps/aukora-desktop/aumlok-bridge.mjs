@@ -1258,6 +1258,9 @@ export function installApprovalBridge(deps) {
     delete options.modal
     delete options.backgroundColor
     const view = new WebContentsView(options)
+    // A VIEW IS WHITE UNTIL TOLD OTHERWISE, and the sheet's scrim is translucent: without this the app behind was replaced by
+    // a white page (2026-09-27, "it's going to blind people at night"). Transparent, so the app shows through the dark tint.
+    view.setBackgroundColor('#00000000')
     approval = view
     if (deps.headless !== true) {
       win.contentView.addChildView(view)

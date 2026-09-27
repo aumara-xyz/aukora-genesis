@@ -66,7 +66,7 @@
     position: fixed; inset: 0;
     display: flex; align-items: center; justify-content: center;
     padding: calc(var(--approval-gap) * 5);
-    background: color-mix(in srgb, var(--approval-glass) 30%, transparent);
+    background: color-mix(in srgb, var(--approval-glass, #0b0e14) 55%, transparent);
     backdrop-filter: blur(2px);
   }
   /* `main.card`, NOT `.card`: the bare class also matched the record's field list (`<dl id="f-card">`), which then took
