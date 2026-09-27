@@ -112,8 +112,9 @@ function bodyState(running) {
 
 function finish(outcome, note) {
   dropHeavy()
+  if (outcome === 'rolled-back' && result.booted) outcome = 'booted'
   const running = outcome === 'live' ? result.release : result.previousRelease
-  result = { ...result, outcome, note, finishedAt: stamp(), body: running ? bodyState(running) : null }
+  result = { ...result, outcome, note, finishedAt: stamp(), body: running ? { ...bodyState(running), observed: result.observed } : null }
   writeResult()
   if (!PLAN) {
     try {
@@ -205,7 +206,18 @@ async function main() {
   result.release = target
   result.previousRelease = live
   step('start', { note: `commit ${sha9}${why ? ` (${why})` : ''}; live ${basename(live)}; target ${basename(target)}` })
-  if (live === target) finish('live', `${basename(target)} is already the running release`)
+  // ONLY THE APPROVED MACHINERY RUNS: this checkout at <commit> (fast-forward, re-run), nothing it imports edited.
+  const head = () => git('rev-parse', 'HEAD').text.trim()
+  if (!PLAN && head() !== commit && git('merge', '--ff-only', '-q', commit).status === 0 && head() === commit) {
+    releaseLock(); process.exit(spawnSync(process.execPath, process.argv.slice(1), { stdio: 'inherit' }).status ?? 1)
+  }
+  const dirty = git('status', '--porcelain', '-uall', '--', 'scripts', 'apps/aukora-desktop', 'upstream-dsh.json', ...['aumlok', 'composition-gate', 'owner-daemon', ...'approval memory-owner queue record strict-read'.split(' ').map((n) => `kira/lib/${n}.mjs`)].map((p) => `plugins/aukora-${p}`)).text.trim()
+  if (head() !== commit || dirty) {
+    const off = `NOT the approved machinery: ${REPO} is at ${head().slice(0, 9)}, edited: ${dirty.split('\n').slice(0, 5).join(' ')}`
+    PLAN ? step('machinery', { note: off }) : finish('refused', `${off}; nothing live changed`)
+  }
+  const seen = live === target ? await observe(basename(live)) : null
+  if (seen) { result.observed = seen; finish(seen.pid ? 'live' : 'not-running', `${basename(live)} is the configured release; ${seen.pid ? `pid ${seen.pid} answers on ${seen.port}` : seen}`) }
 
   // NOTHING THE RUNNING RELEASE CARRIES MAY BE DROPPED. MEASURED 2026-09-27: the live release (8c972567f) was cut from a
   // local commit GitHub main does not have, so becoming any commit on main would have silently reverted it. A file the
@@ -483,9 +495,29 @@ async function waitForBoot(from, release) {
     if (!existsSync(DESKTOP_LOG)) continue
     const bytes = readFileSync(DESKTOP_LOG)
     const verdict = bootVerdict(bytes.subarray(Math.min(from, bytes.length)).toString('utf8'), release)
+    const seen = verdict?.ok ? await observe(release, 20_000) : null
+    if (typeof seen === 'string') { result.booted ??= release === basename(result.release); return { ok: false, line: `window loaded, but ${seen}` } }
+    if (seen) result.observed = seen
     if (verdict !== null) return verdict
   }
   return { ok: false, line: `no "release ${release} … spatial frontend" and "window loaded" within ${BOOT_TIMEOUT_MS / 1000} s` }
+}
+/** LIVE IS OBSERVED: the log's backend since the shell's start is `release`, that shell lives, its port's listener runs its bin.js and answers. */
+export async function observe(release, settle = 0) {
+  let seen = null
+  for (const wait of [0, settle]) {
+    await sleep(wait)
+    const text = (existsSync(DESKTOP_LOG) ? readFileSync(DESKTOP_LOG, 'utf8') : '').split(/ start pid=/u).pop()
+    const [, port, name] = [...text.matchAll(/ log aukora-desktop: backend http:\/\/127\.0\.0\.1:(\d+) .* release (\S+) /gu)].pop() ?? []
+    if (name !== release) return `the log's backend is not ${release}`
+    try { process.kill(parseInt(text), 0) } catch { return 'its shell is gone' }
+    const pid = Number(run('/usr/sbin/lsof', ['-t', '-nP', `-iTCP:${port}`, '-sTCP:LISTEN']).text.split('\n')[0])
+    if (!run('/bin/ps', ['-ww', '-o', 'command=', '-p', String(pid)]).text.includes(`/${release}/apps/cli/lib/bin.js`)) return `no ${release} backend listens on ${port}`
+    if (await fetch(`http://127.0.0.1:${port}/`, { method: 'HEAD', signal: AbortSignal.timeout(15_000) }).then(() => false, () => true)) return `port ${port} did not answer`
+    if (seen && seen.pid !== pid) return `pid ${seen.pid} did not stay up`
+    seen ??= { pid, port: Number(port), answeredAt: stamp() }
+  }
+  return { ...seen, stableFor: Date.now() - Date.parse(seen.answeredAt) }
 }
 
 /** Every row naming the release `from` (as a directory prefix, or as a whole quoted value) names `to` instead. */

@@ -181,6 +181,9 @@ const faces = [...new Set(named.map(sourceFace).filter(Boolean))].sort()
 // source, so a changed source file that is not named would ride into a bundle the window shows only as a blob
 // (measured 2026-09-27: an unnamed spatial-tokens.css edit landed in layout's client.js under a named AppFrame diff).
 if (faces.length > 0) {
+  // 0f. The build runs before approval, so every script it runs must be HEAD's bytes.
+  const moved = git(['status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--', 'scripts', 'vendor/aukora-seed-app']).stdout.split('\0').filter(Boolean).map((entry) => entry.slice(3))
+  if (moved.length > 0) fail(`the face build runs before approval, so ${moved.join(', ')} must match HEAD. ${moved.some((path) => named.includes(path)) ? 'Propose it alone first, then the face change' : 'Restore it or propose it alone first'}`)
   const dirty = git(['status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--', 'plugins/aukora-face']).stdout
   const unnamed = dirty.split('\0').filter(Boolean).map((entry) => entry.slice(3)).filter((path) => sourceFace(path) && !named.includes(path))
   if (unnamed.length > 0) fail(`face source changed but not named, and the rebuilt bundle would carry it unseen: ${unnamed.join(', ')}. Name each one or restore it`)
@@ -395,9 +398,14 @@ if (onMain && process.env.AUKORA_NO_BECOME !== '1') {
     try {
       const child = spawn(process.execPath, [becomeScript, '--commit', commit, '--why', why],
         { cwd: mainWorktree, detached: true, stdio: ['ignore', fd, fd] })
-      child.on('error', (error) => appendFileSync(log, `become.mjs did not start: ${error.message}\n`))
+      // Started only if become.mjs exits 0 (it detaches its worker and returns at once).
+      const failure = await new Promise((done) => {
+        setTimeout(() => done('no exit within 30 s'), 30_000)
+        child.once('exit', (code) => done(code === 0 ? null : `become.mjs exited ${code}`))
+        child.on('error', (error) => done(error.message))
+      })
       child.unref()
-      becoming = `BECOMING      the app rebuilds this change into a release, asks you to approve loading it, and restarts into it; log ${log}`
+      becoming = `BECOMING      ${failure ? `NOT started: ${failure}` : 'started'}; log ${log}`
     } catch (error) {
       becoming = `BECOMING      NOT started: ${error instanceof Error ? error.message : String(error)}`
     } finally { closeSync(fd) }
@@ -425,8 +433,9 @@ const summary = [
   `  evidence      ${evidence}`,
   `  fence         ${PATH_FENCE_DESCRIPTION}`,
   ...(becoming ? [`  ${becoming}`] : []),
+  ...(onMain ? ['  LANDED on GitHub main; live only when state/home/become/last.json says outcome live for this commit'] : []),
   '',
 ].join('\n')
 writeFileSync(join(evidence, 'summary.txt'), `${summary}\n`)
 process.stdout.write(`${summary}\n`)
-process.exit(onMain ? 0 : 1)
+process.exit(onMain && !becoming?.includes('NOT started') ? 0 : 1)
