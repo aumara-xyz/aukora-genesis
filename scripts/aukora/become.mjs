@@ -34,12 +34,13 @@
  * and this script runs as the owner's user, so it is the supported path, not an enforced one.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, copyFileSync, existsSync, fstatSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync,
+import { closeSync, copyFileSync, existsSync, fstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, renameSync, rmSync,
   statSync, unlinkSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { basename, dirname, join, posix, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { codeChain } from './aura-code.mjs'
+import { root, consistencyProof } from './aura-merkle.mjs'
 import { acquireHeavyRun } from '../lib/heavy-run.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 
@@ -110,17 +111,91 @@ function bodyState(running) {
     actions: chainHead('aura-actions/aura.jsonl'), memory: chainHead('kira-memory/aura.jsonl') } }
 }
 
-function finish(outcome, note) {
+const RETAINED = join(HOME_DIR, 'membrane-retained.json')
+const CONFLICT = 'the code chain was rewritten since the last become'
+// LF separates records; hash every other byte, including whitespace/CR, without JSON reserialization.
+function auraLeaves() {
+  const path = join(STATE, 'home', 'aura-code', 'aura.jsonl')
+  const bytes = existsSync(path) ? readFileSync(path) : Buffer.alloc(0)
+  const leaves = []
+  let start = 0
+  for (let end = 0; end < bytes.length; end += 1) {
+    if (bytes[end] === 10) { leaves.push(bytes.subarray(start, end)); start = end + 1 }
+  }
+  if (start < bytes.length) leaves.push(bytes.subarray(start))
+  return leaves
+}
+function membraneObservation() {
+  if (!existsSync(RETAINED)) return { verdict: 'FIRST_RETENTION' }
+  const retainedBytes = readFileSync(RETAINED)
+  let retainedSize = null
+  try { retainedSize = JSON.parse(retainedBytes)?.treeSize ?? null } catch { /* cold parser decides */ }
+  const leaves = auraLeaves()
+  const presented = { treeSize: leaves.length, root: root(leaves), proofFromPrevious: [] }
+  if (Number.isSafeInteger(retainedSize) && retainedSize >= 0 && retainedSize <= leaves.length) {
+    presented.proofFromPrevious = consistencyProof(leaves, retainedSize)
+  }
+  const dir = mkdtempSync(join(tmpdir(), 'aukora-membrane-'))
+  try {
+    const previous = join(dir, 'retained.json'), current = join(dir, 'presented.json')
+    writeFileSync(previous, retainedBytes, { mode: 0o600 })
+    writeFileSync(current, JSON.stringify(presented), { mode: 0o600 })
+    const checked = run('python3', [join(REPO, 'vendor/phase0-consistency/verify.py'), previous, current], { timeout: 10_000 })
+    const verdict = /^VERDICT:\s*(APPEND_ONLY|OBSERVATION_CONFLICT|UNDETERMINED)\s*$/mu.exec(checked.text)?.[1]
+    const reason = /^REASON\s*:\s*(\S+)/mu.exec(checked.text)?.[1]
+    return { verdict: verdict ?? 'UNDETERMINED', reason: reason ?? 'verifier_unavailable',
+      retainedSize, presentedSize: leaves.length, presentedRoot: presented.root }
+    // The verifier reports POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE as UNDETERMINED, never conflict.
+  } finally { rmSync(dir, { recursive: true, force: true }) }
+}
+function retainMembrane() {
+  const leaves = auraLeaves()
+  const dir = mkdtempSync(join(HOME_DIR, '.membrane-'))
+  try {
+    const path = join(dir, 'head.json')
+    writeFileSync(path, `${JSON.stringify({ treeSize: leaves.length, root: root(leaves) })}\n`, { mode: 0o600 })
+    renameSync(path, RETAINED)
+  } finally { rmSync(dir, { recursive: true, force: true }) }
+}
+function guardMembrane() {
+  if (membraneObservation().verdict === 'OBSERVATION_CONFLICT') finish('refused', CONFLICT)
+}
+
+// Unwind main immediately; finalization may need to await rollback before recording a refusal.
+class BecomeOutcome extends Error {
+  constructor(outcome, note) { super(note); this.outcome = outcome }
+}
+function finish(outcome, note) { throw new BecomeOutcome(outcome, note) }
+async function finishOutcome(outcome, note) {
   dropHeavy()
   if (outcome === 'rolled-back' && result.booted) outcome = 'booted'
-  const running = outcome === 'live' ? result.release : result.previousRelease
-  result = { ...result, outcome, note, finishedAt: stamp(), body: running ? { ...bodyState(running), observed: result.observed } : null }
-  writeResult()
-  if (!PLAN) {
-    try {
-      codeChain(STATE).append({ verdict: 'observed', operation: 'code.become', commit: result.commit, release: result.release ?? null,
-        outcome, note, previousRelease: result.previousRelease ?? null, body: result.body })
-    } catch (error) { say(`AURA APPEND FAILED: ${error.message}`) }
+  const chain = PLAN ? null : codeChain(STATE)
+  const record = () => {
+    const membrane = membraneObservation()
+    if (membrane.verdict === 'OBSERVATION_CONFLICT') {
+      outcome = 'refused'; note = CONFLICT
+      if (rescue !== null && rescuing === null) return false
+    }
+    const running = outcome === 'live' ? result.release : result.previousRelease
+    result = { ...result, outcome, note, finishedAt: stamp(),
+      body: { ...(running ? bodyState(running) : {}), observed: result.observed, membrane } }
+    writeResult()
+    if (chain) {
+      try {
+        chain.append({ verdict: 'observed', operation: 'code.become', commit: result.commit, release: result.release ?? null,
+          outcome, note, previousRelease: result.previousRelease ?? null, body: result.body })
+        retainMembrane()
+      } catch (error) { say(`AURA APPEND FAILED: ${error.message}`) }
+    }
+    // Recorded: a signal or failure from here on must not put back a release that came up.
+    rescue = null
+    return true
+  }
+  // Verification, append and retention share Aura's reentrant writer lock. Rollback cannot hold a synchronous lock.
+  if (chain) {
+    if (!chain.locked(record)) { await putBack(); chain.locked(record) }
+  } else {
+    record()
   }
   say(`BECOME ${outcome.toUpperCase()}: ${note}`)
   releaseLock()
@@ -192,7 +267,8 @@ async function main() {
     process.exit(0)
   }
   if (!PLAN) takeLock()
-  git('fetch', '-q', 'origin', 'main')
+  guardMembrane()
+  if (!PLAN) git('fetch', '-q', 'origin', 'main')
   const commit = git('rev-parse', '--verify', `${commitArg}^{commit}`).text.trim()
   if (!/^[0-9a-f]{40}$/u.test(commit)) finish('refused', `${commitArg} is not a commit this checkout has`)
   if (git('merge-base', '--is-ancestor', commit, 'origin/main').status !== 0) finish('refused', `${commit.slice(0, 9)} is not on GitHub main; only approved changes on main become live`)
@@ -318,6 +394,8 @@ async function main() {
   } else step('shell', { note: 'unchanged' })
   dropHeavy()
 
+  guardMembrane()
+
   // ── 3. BACK UP, THEN THE PLUGIN SET ──────────────────────────────────────────────────────────────────
   // Every patch file directly in the support root (the set desktop-cutover repoints), every patch config.json lists
   // there, config.json, the gate config and the installed plugin-set approval and pin.
@@ -434,7 +512,6 @@ async function main() {
     run('/usr/bin/open', ['-a', APP])
     const booted = await waitForBoot(from, basename(target))
     if (booted.ok) {
-      rescue = null
       // The marker names what the installed shell was built from: the commit when it was swapped in, and the old base when
       // a needed rebuild did not happen (so the next become still rebuilds it).
       if (done.shellBackup !== null) {
@@ -584,5 +661,6 @@ async function crashed(error) {
 
 if (isMainModule(import.meta.url)) {
   for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) process.once(signal, () => { void crashed(new Error(`stopped by ${signal}`)) })
-  main().catch(crashed)
+  main().catch((error) => error instanceof BecomeOutcome
+    ? finishOutcome(error.outcome, error.message).catch(crashed) : crashed(error))
 }
