@@ -1,5 +1,62 @@
 # AUKORA Genesis
 
+## What is not enforced
+
+Release scope: `aukora-release-1c0ada9b6`. Source inspection and disposable checks do not verify the installed app.
+
+- **One user account holds everything.** The app, the agent and the approval key run as the same macOS user
+  (`SAME_UID`, `OWNER_KEY_SAME_UID`). The checks here are procedures over bytes, not an isolation boundary.
+  The two-principal owner cut is built (`scripts/owner/`, `plugins/aukora-owner-daemon/`) and not installed.
+- **A signature is not a person.** The approval key is a software key on this Mac. A click is recorded, but
+  nothing binds it to a human (`ATTENDANCE: reported-not-proven`).
+- **The approval routes are supported, not enforced.** `scripts/aukora/self-change.mjs` (code) and
+  `scripts/aukora/advance.mjs` (a remote's `main`) show a change in full, get it signed and verify the signature
+  before they write, but the macOS user holds the push credentials and GitHub has no server-side check requiring
+  these approval routes. On 2026-09-27 self-change carried one code change (`97714048a`) and every other change landed
+  directly; advance carried both snapshot moves of `aumara-xyz/aukora-genesis` `main`.
+- **The action gate is an in-process check, not isolation.** It refuses write and edit tool calls on governing
+  code and shell writes whose targets it can read (`sed -i`, a redirect, `cp`, `mv`, a literal path in
+  `python3 -c`). A shell command that hides its target in a script or variable is not refused by this text check.
+  The gate sees a subagent launch, not every tool the child runs; same-UID processes outside the app remain outside it.
+- **Seatbelt does not confine danger-full-access sessions.** It is mounted for BUILD (`workspace-write`) and
+  read-only shells. Auma's sessions run `danger-full-access`, where Seatbelt is UNENFORCED. The backend process
+  and its plugins are outside the shell sandbox.
+- **The stock apps share the desktop's origin.** Since 2026-09-27 their frames are `allow-scripts allow-same-origin`
+  (`plugins/aukora-face/apps/src/client/EmbeddedAppSurface.tsx:115`), so the null-origin sandbox is off: a vendored
+  app runs with the desktop page's origin, and its requests no longer carry the `Origin: null` the app's routes refuse.
+- **The composition gate governs the AUKORA plugins by a same-uid record.** A release records every file of each
+  AUKORA plugin its patches mount (`policy.json` `pluginSet`), the owner approves that set in one Aumlok popup, and the gate refuses a changed or
+  unrecorded plugin file at import. Upstream's stock plugins and `node_modules` load ungoverned
+  (`STOCK_PLUGINS_NOT_YET_UNDER_POLICY`), and the record, the approval and the pinned approver are files the
+  owner's uid can rewrite (`plugins/aukora-composition-gate/GOVERNED.md`).
+- **CORE's two code-running subagents are on.** `presets/core/agent.cordis.yml` enables Codex and Claude Code
+  as subagent tools; they run as the owner's user.
+- **Releases were switched in with no owner approval.** Until the plugin-set approval, `scripts/aukora/desktop-cutover.mjs
+  apply` appended the release's record digest to `approvedRecordSha` itself, unsigned. On `main` it now refuses a
+  release whose plugin set the owner has not approved in the popup. The shipped template sets `allowUnapproved: false`
+  (`apps/aukora-desktop/resolve.mjs`); `true` in `config.json` waives both. The resolver also grants a first-run
+  waiver when no installed plugin-set approval exists and the approved-record list is empty.
+- **Signed memory is not verified end to end here in this release.** The earlier `c7de4279c` export failure
+  involved a missing `apps/aukora-desktop/card-chain.mjs`; the materializer now carries that file. Carrying the
+  dependency is not a live settlement, export or cold-verification result. Automatic notes grant no authority;
+  automatic Kira-to-OpenViking indexing and Auma Live voice capture remain unverified.
+- **The owner's root key can be searched offline.** It is derived with scrypt from a seven-word phrase and a
+  public handle (`plugins/aukora-aumlok/lib/derive-v3.mjs`); the desktop's word lists give about 34 bits.
+- **The voice companion's conversation leaves the machine.** Auma Live sends each turn to a remote model
+  provider (OpenRouter) and keeps what is said without review (`REMOTE_PROVIDER_EGRESS`,
+  `TRANSCRIPTS_UNGOVERNED`, in `plugins/aukora-face/apps/src/auma-live/`).
+- **The WASM cell is a relay, not a sandbox.** It runs inside an ordinary Node process
+  (`NODE-EMBEDDER-UNCONFINED`), and settlement bytes are identical with and without it, so no artefact shows
+  that the cell ran in a past settlement.
+- **Every verifier here is this project's own code.** Diamond, the receipt court and the membrane verifier
+  run as separate processes, but no outside party has re-implemented them.
+- **A fresh install does not yet mount Memory or bind an Aumlok phrase on its own.** The release's default
+  composition carries Kira's placeholder subject `aumlok:subject:owner`, which Kira refuses at mount
+  (`SUBJECT_INVALID`), and gives `aukora-aumlok` no controller directory (`aumlok:adapter-unbound`). Both are
+  per-deployment values; `<release>/aukora-deployment-overlay.patch.yml` is the template that supplies them.
+
+## AUKORA Genesis
+
 AUKORA Genesis is a desktop AI application in which the software that proposes an action is not the authority
 that permits it. It runs on a pinned copy of the **DeepSeek Harness** and its **Cordis** plugin loader
 (`upstream-dsh.json`, built locally by `scripts/build-dsh.py`) and adds four organs as Cordis plugins:
@@ -16,96 +73,10 @@ that permits it. It runs on a pinned copy of the **DeepSeek Harness** and its **
 The evidence those organs leave can be checked **cold**, from an empty directory, by verifiers vendored and
 byte-pinned in this tree: Diamond (`vendor/diamond-cold`), the receipt court (`vendor/receipt-v3`) and the
 membrane minimal verifier (`vendor/phase0-consistency`, byte-identical to `minimal/` in
-[aukora-membrane](https://github.com/aumara-xyz/aukora-membrane) at `d8b17fac`).
+`aukora-membrane` at `d8b17fac`).
 
 Work happens on `main` of `aumara-xyz/aukora-genesis`. `aumara-xyz/aukora-genesis-archive` holds the history up to
 2026-09-27, read-only and private (`ARCHIVE.md`); the commit hashes on this page are there.
-
-## Genesis / A37 parity
-
-Genesis is the lab; AUKORA-37 is the simplified public build of the same architecture.
-The shared sequence is `aukora_self_change` → exact-byte owner card → one-use
-consume → chained change → `become`. That last step means restart into the
-approved application, observe readiness, and roll back on failure; tool registration
-alone does not earn the name. Automatic memory informs this loop and never authorizes it.
-
-This table records source parity against Genesis `96cb4cec` and A37 `394fa63b`
-plus the card-display change accompanying this table. It is not a fresh measurement
-of either installed application. **NEXT** names a port still required.
-
-| Feature | Genesis | A37 | Status |
-| --- | --- | --- | --- |
-| Kira / automatic memory | Automatic remembered tier; explicit signed-memory path remains separate. | Automatic local capture and recall; bounded retries preserve failed bytes while the process lives. | No approval for ordinary memory; implementations and failure policies differ. |
-| Viking retrieval | Owner deployment uses `aukora/owner`; automatic Kira-to-Viking loop still needs a live proof. | Defaults to `aukora37/owner`; another destination requires explicit owner confirmation. | Separate namespaces; delivery acknowledgment is not extraction or recall proof. |
-| Aumlok authorization | Software machine key; root re-derived for root acts. | Phrase unlock creates a temporary software signing session; new homes retain public identity, with legacy seed cleanup explicit. | Same role, distinct custody; the host UID remains trusted and human attendance unestablished. |
-| `aukora_self_change` | Candidate tree → approval → one-use consume → commit and Aura chain. | Python capability → approval → one-use consume → immutable version and receipt chain. | Same law, different bounded effects and versioned formats. |
-| Owner card | Derived code-change display; exact approved bytes. | Plain headline from checked bound card; proposer reason labeled as a claim; original exact bytes below. | Summary never substitutes for the signed bytes or proves code safety. |
-| `become` | Release admission, restart, observed readiness, best-effort rollback and body record in source. | Capability activation exists; full application restart, rollback and chained body transition not ported. | **NEXT A37:** supervised release transition; do not expand a tool grant into engine authority. |
-| Unknown tools / decision log | Tool-name policies and durable decision logging in the app; host and subagent routes are outside full mediation. | Exact trusted tool definitions; durable guard record before allowed dispatch; failed guard mount blocks startup. | Same requirement, unequal coverage; neither governs every host action. |
-| Coding tools | Host path/command policy. | Container workspace tools with no network and an explicitly pinned local image. | **NEXT Genesis:** container execution; host and Docker daemon remain trusted. |
-| Engine pin / interrupted install | Plugin-set admission and release recovery. | Operator-admitted engine digest; interrupted install reconciles without renewing spent permission. | **NEXT Genesis:** distill these bindings; mechanisms are not interchangeable. |
-| Shared vectors | v1 contract checks prepared in the shared-contract worktree, not yet on this inspected main. | Byte-identical v1 vectors and court-23(e) run native verifiers; unsupported profiles remain explicit. | Shared fixture SHA-256: `82c12697e79dc70de4f7d2f5971710c5063788ddee0cb83af0e492873d8abb3d`; no blanket format compatibility. |
-
-Update this table in both READMEs when a feature lands. Change shared formats in
-the vectors first, run each implementation against them, and keep named profiles
-distinct. Genesis mechanisms move to A37 after live verification; A37 hardening
-moves back without importing its UI or replacing Genesis's authority semantics.
-
-## Limits first
-
-These are true today, and the rest of this page should be read through them.
-
-- **One user account holds everything.** The app, the agent and the approval key run as the same macOS user
-  (`SAME_UID`, `OWNER_KEY_SAME_UID`). The checks here are procedures over bytes, not an isolation boundary.
-  The two-principal owner cut is built (`scripts/owner/`, `plugins/aukora-owner-daemon/`) and not installed.
-- **A signature is not a person.** The approval key is a software key on this Mac. A click is recorded, but
-  nothing binds it to a human (`ATTENDANCE: reported-not-proven`).
-- **The approval routes are supported, not enforced.** `scripts/aukora/self-change.mjs` (code) and
-  `scripts/aukora/advance.mjs` (a remote's `main`) show a change in full, get it signed and verify the signature
-  before they write, but the agent has the owner's git credentials, and nothing on this machine or on GitHub stops a
-  direct push. On 2026-09-27 self-change carried one code change (`97714048a`) and every other change landed
-  directly; advance carried both snapshot moves of `aumara-xyz/aukora-genesis` `main`.
-- **The action gate is an in-process check, not isolation.** It judges every tool call in the app's agent
-  sessions, but it refuses a write to governing code only in a write or edit tool call: a shell command that writes
-  the same paths (`sed -i`, a redirect, `cp`, `mv`) is not refused. It reads a shell command as text, so a script
-  the agent writes and then runs is not seen. Unknown and MCP tools are allowed, with any paths in their arguments
-  judged as reads. The harness's `tool-cordis` tools, mounted in the app, run model-written code inside the backend
-  process; the gate sees the call, not the code. The Codex and Claude Code subagents and anything else running as
-  the owner are not governed by it.
-- **AUKORA's Seatbelt denies are not live.** `plugins/aukora-seatbelt`, which adds kernel denies to agent shell
-  commands through `overlays/seatbelt.patch.yml`, is on `main`, but the running release neither carries nor mounts it.
-- **The stock apps share the desktop's origin.** Since 2026-09-27 their frames are `allow-scripts allow-same-origin`
-  (`plugins/aukora-face/apps/src/client/EmbeddedAppSurface.tsx:115`), so the null-origin sandbox is off: a vendored
-  app runs with the desktop page's origin, and its requests no longer carry the `Origin: null` the app's routes refuse.
-- **The composition gate governs the AUKORA plugins by a same-uid record.** A release records every file of each
-  AUKORA plugin its patches mount (`policy.json` `pluginSet`), the owner approves that set in one Aumlok popup, and the gate refuses a changed or
-  unrecorded plugin file at import. Upstream's stock plugins and `node_modules` load ungoverned
-  (`STOCK_PLUGINS_NOT_YET_UNDER_POLICY`), and the record, the approval and the pinned approver are files the
-  owner's uid can rewrite (`plugins/aukora-composition-gate/GOVERNED.md`). This is on `main`; the release the owner runs today predates it and governs only `hello-governed`.
-- **CORE's two code-running subagents are on.** `presets/core/agent.cordis.yml` enables Codex and Claude Code
-  as subagent tools; they run as the owner's user.
-- **Releases were switched in with no owner approval.** Until the plugin-set approval, `scripts/aukora/desktop-cutover.mjs
-  apply` appended the release's record digest to `approvedRecordSha` itself, unsigned. On `main` it now refuses a
-  release whose plugin set the owner has not approved in the popup. The shipped template sets `allowUnapproved: false`
-  (`apps/aukora-desktop/resolve.mjs`); `true` in `config.json` waives both.
-- **Memory does not work end to end in the running release.** In release `c7de4279c` the export step of
-  `scripts/aukora/remember.mjs` fails: `scripts/kira/public-evidence.mjs` imports `apps/aukora-desktop/card-chain.mjs`,
-  which the release does not carry, so a record settles and is chained but is not exported or cold-verified.
-  Automatic memory is not verified live: on 2026-09-27 the live remembered store was empty.
-- **The owner's root key can be searched offline.** It is derived with scrypt from a seven-word phrase and a
-  public handle (`plugins/aukora-aumlok/lib/derive-v3.mjs`); the desktop's word lists give about 34 bits.
-- **The voice companion's conversation leaves the machine.** Auma Live sends each turn to a remote model
-  provider (OpenRouter) and keeps what is said without review (`REMOTE_PROVIDER_EGRESS`,
-  `TRANSCRIPTS_UNGOVERNED`, in `plugins/aukora-face/apps/src/auma-live/`).
-- **The WASM cell is a relay, not a sandbox.** It runs inside an ordinary Node process
-  (`NODE-EMBEDDER-UNCONFINED`), and settlement bytes are identical with and without it, so no artefact shows
-  that the cell ran in a past settlement.
-- **Every verifier here is this project's own code.** Diamond, the receipt court and the membrane verifier
-  run as separate processes, but no outside party has re-implemented them.
-- **A fresh install does not yet mount Memory or bind an Aumlok phrase on its own.** The release's default
-  composition carries Kira's placeholder subject `aumlok:subject:owner`, which Kira refuses at mount
-  (`SUBJECT_INVALID`), and gives `aukora-aumlok` no controller directory (`aumlok:adapter-unbound`). Both are
-  per-deployment values; `<release>/aukora-deployment-overlay.patch.yml` is the template that supplies them.
 
 ## Get started
 
@@ -152,7 +123,7 @@ sh scripts/check.sh
 | 7 | Aumlok approval verifier | `AUMLOK VERIFY APPROVAL: GREEN` | Approval bytes verify under the public key alone; forged or wrong keys, extra fields and preimage mismatches are refused. |
 | 8 | Approval round trip | `PASS — 13/13 arms` | Exact bytes round-trip through the shipped producer and desktop signer under the listed machine key; a scratch socket, no window, click or person. |
 | 9 | Aumlok cold root | `AUMLOK COLD ROOT: GREEN` | Only a machine key is kept in disposable custody; the root is re-derived from the handle and words. |
-| 10 | Required grant | `AUMLOK GATE REQUIRE GRANT: GREEN` | The gate fails closed for an unusable required grant; its policy still governs only `hello-governed`. |
+| 10 | Required grant | `AUMLOK GATE REQUIRE GRANT: GREEN` | The gate fails closed for an unusable required grant; this check exercises the one-use grant for `hello-governed`. |
 | 11 | Control admission | `# pass 7` and `# fail 0` | A stale control head refuses settlement and leaves the store unchanged; rotation state is modeled, no rotation event is performed. |
 | 12 | Restore scope | `AUMLOK RESTORE SCOPE: GREEN` | An external witness keeps a spent approval spent across a restore; without it, the restore un-spends the approval. This measures a gap. |
 | 13 | Consolidation | `kira-consolidate: ok` | Three agents repeating one false report create no evidence and no authority, and cannot undo a person's decision. |
@@ -182,9 +153,9 @@ so they are `LIVE-ONLY` in `docs/CLAIMS.md` and never counted as passing here:
 - `node scripts/aukora/remember.mjs "<text>"` — Kira stages the text through the WASM cell, the app's Aumlok
   signer shows the exact bytes, and on Approve Kira settles once, Aura chains it, the public evidence is
   exported and Diamond verifies it cold. Refuse writes nothing. It ran end to end once, on 2026-09-27 (Kira Aura
-  sequence 5, on an earlier release); in the running release its export step fails (see Limits first).
-- `node scripts/aukora/self-change.mjs "<why>" <paths>` — the full diff is shown in the popup (at most 1,650
-  characters; no deletions, binaries, symlinks or executables), the original governedCrossing binds the proposal to
+  sequence 5, on an earlier release); this release is not verified end to end here (see What is not enforced).
+- `node scripts/aukora/self-change.mjs "<why>" <paths>` — the full diff is shown in the popup (bounded by the
+  installed card limit; no deletions, binaries, symlinks or executables), the original governedCrossing binds the proposal to
   the bytes re-read from disk, the returned signature is verified against the pinned key and spent once by the
   kernel, the original localCandidateStage materializes exactly the approved tree, and only then is it committed,
   chained in Aura and pushed to `origin`'s `main`. This version has not run with a real approval; the one
@@ -198,8 +169,9 @@ so they are `LIVE-ONLY` in `docs/CLAIMS.md` and never counted as passing here:
   tool call an agent session makes in the app and chains each decision in `state/home/aura-actions/aura.jsonl`
   before the call runs. It refuses a write or edit tool call on governing code (naming `self-change.mjs` as the
   route), key material, pushes to main, publishing and hosts off its allowlist. It reads shell commands as text
-  only: a shell command that writes governing code is not refused, and a script the agent writes and runs is not
-  seen; it does not govern the Codex and Claude Code subagents, which run their own tools.
+  only: literal write targets are judged, while a script or variable can hide a target from this check.
+  It does not judge every tool the Codex and Claude Code subagents run. Seatbelt confines BUILD and read-only
+  shells; it does not confine Auma's `danger-full-access` sessions.
 
 ## How it runs
 
@@ -249,8 +221,7 @@ dist` in that order. `scripts/aukora/cut-release.sh` is the owner's cutover path
 | Release path | `scripts/materialize-aukora-release.py`, `scripts/aukora/`, `scripts/launch-dsh.py` | `scripts/genesis-check.mjs` |
 
 Further reading: `SECURITY.md` (scope and every printed ceiling, organ by organ), `docs/CLAIMS.md` (claims,
-ceilings and what is not claimed), `docs/AUKORA-GOLDEN-BOUNDARY.md` (the research position; a paper, not a
-deployment or safety certification), `AGENTS.md` (rules for agents working in this tree) and `ARCHIVE.md`
+ceilings and what is not claimed), `AGENTS.md` (rules for agents working in this tree) and `ARCHIVE.md`
 (what was removed on 2026-09-27 and where it still lives).
 
 ## License

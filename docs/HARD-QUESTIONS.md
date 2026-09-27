@@ -277,14 +277,12 @@ paths to `main` remains a defect.
 
 Imported byte for byte, each with a `PROVENANCE.json` giving every file's upstream commit, git blob and sha256, most
 with a README giving their own test command: under `vendor/`, `aukora-kernel`, `aukora-seed-guard`, `aukora-membrane`,
-`aukora-deep-authority`, `aukora-first-echo`, `aukora-governed-recall`, `aukora-phi-guards`, `aukora-diamond`,
-`aukora-seed-app`, `aukora-packages`, `aukora-evidence` and `aukora-membrane-organs`; and `docs/research`. Re-run on
+`aukora-first-echo`, `aukora-seed-app`, `aukora-packages` and `aukora-evidence`; and `docs/research`. Re-run on
 2026-09-27 at `ebcee5bd7` (those trees are unchanged since): kernel 37/37; seed guard 37 tests, conformance 11/12
-(the declared `undeclared-path` gap); the membrane tour; `DIAMOND: GREEN`; governed recall 150/150, council 82/82
-and First Echo 141/141 (bun 1.3.14; its git-identity test left out); seed app 90/90 on generated JS
+(the declared `undeclared-path` gap); the membrane tour; First Echo 141/141 (bun 1.3.14; its git-identity test left
+out); seed app 90/90 on generated JS
 (`node vendor/aukora-seed-app/run-tests.mjs --vitest <path to vitest.mjs>`). Re-run at `1c569f8aa`: kernel 37/37 and
-the membrane tour (both in `sh scripts/check.sh`), and `node vendor/aukora-evidence/conformance.mjs` 178/178. Not
-re-run: deep-authority (its README records 37 of 43 gate arms), the phi guards and the membrane organs.
+the membrane tour (both in `sh scripts/check.sh`), and `node vendor/aukora-evidence/conformance.mjs` 178/178.
 
 Wired in:
 - the seed guard judges every path for the action gate (`plugins/aukora-action-gate/lib/policy.mjs:27-29`), which is

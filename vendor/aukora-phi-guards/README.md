@@ -1,9 +1,0 @@
-# aukora-phi guards (vendored): the membrane write guard (a signed, deny-by-default law judged on every agent Write/Edit and receipted in a hash chain), the door's `requireSession` write gate and the `sightBlock` vision fence, with their tests.
-Source: aumara-xyz/aukora-phi @ a099901ad5a2d623c5343263de6ae5f9994d3159, copied byte for byte with `git archive` into `src/` in the upstream layout. Each file's git blob, sha256 and size is in `PROVENANCE.json`. License: AGPL-3.0-only, declared in upstream `package.json` (the upstream commit has no LICENSE or NOTICE file).
-`upstream-settings.json` holds the bytes of upstream `.claude/settings.json`, the PreToolUse wiring `bun run bin/witness.mjs guard || exit 2`. It is renamed so it is not live in Genesis.
-Tests need bun 1.3 and nothing else. Run them from the Genesis root, then from a non-git scratch dir, so no receipt reaches ~/.aukora or gets written under Genesis's repo identity:
-S=$(mktemp -d); T=$PWD/vendor/aukora-phi-guards/src/test; mkdir -p $S/c $S/f $S/k $S/w; cd $S; export TMPDIR=$S AUKORA_KEYS_DIR=$S/k AUKORA_FORGE_WORKTREE_ROOT=$S/w AUKORA_FORGE_REPO=$S/f
-bun test $T/door-write-guards.test.ts $T/witness-corpus-verdicts.test.ts $T/witness-{action-class,advice,alias-gaps,allowlist,chain,cli,empty-bypass,paths,session}.test.mjs
-AUKORA_CHAIN_HOME=$S/c bun test $T/sight.test.ts $T/witness-governing-root.test.mjs $T/witness-worktree-fence.test.mjs
-Measured 2026-09-27 (bun 1.3.14): 108 pass / 0 fail, then 40 pass / 1 fail. The one failure is F2, which reads `src/.claude/settings.json` (carried here as `upstream-settings.json`). In a scratch copy with that file back in place, F2's suite passes 12/12.
-STATUS: imported byte for byte, not yet wired into Genesis, except one comment in `src/core/memory/erasureCertificate.ts` that named a private document (removed for publication; `genesisEdit` in `PROVENANCE.json` records the upstream digest).

@@ -1,9 +1,0 @@
-{
-  "schema": "aukora-swarm-campaign-manifest-v1",
-  "campaignId": "camp-0026-fg",
-  "issueNumbers": [26],
-  "baseCommit": "0123456789abcdef0123456789abcdef01234567",
-  "baseTreeDigest": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-  "budget": { "maxWorkers": 4, "maxProposals": 16, "maxWallClockMin": 120, "haltOnVerifyRed": true },
-  "createdAt": "2026-08-05T00:00:00Z"
-}

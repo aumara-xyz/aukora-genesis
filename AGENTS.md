@@ -5,9 +5,8 @@
 1. **Done means it works in Peter's installed app.** A green court, a passing script or a merged branch is not done.
 2. **Never say something works unless you ran it live and saw the output.** Otherwise say "not verified". Before
    saying a component is part of a flow, show its call path from the live entry point, file by file.
-3. **Carry the old tech forward before building anything new.** Check ~/aukora-great-merge/OLD-TECH-INVENTORY-*.md
-   (the kernel, localCandidateStage, the phi guard, governedRecall, First Echo, the membrane minimal verifier). Port
-   it; don't reinvent it.
+3. **Carry the old tech forward before building anything new.** Carry forward the kernel, localCandidateStage,
+   the phi guard, governedRecall, First Echo and the membrane consistency verifier. Port them; don't reinvent them.
 4. **No new courts, test forests, lane reports or docs as deliverables.** At most one focused check per change.
 5. **No PRs, one line: `main`.** Work happens on `main` of `aumara-xyz/aukora-genesis`; never base work on a stale
    local label. `aumara-xyz/aukora-genesis-archive` holds the history up to 2026-09-27, read-only and private. Code

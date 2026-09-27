@@ -68,70 +68,6 @@
       "why": "A test plants a PEM header around the word \"redacted\" and checks that a generated test key is refused; no key is committed."
     },
     {
-      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/README.md",
-      "sha256": "12a58ac1edde12d6604131ef97067d25eb168d7b85e48a84f3ad7e0a59cbb039",
-      "rules": [
-        "home-path"
-      ],
-      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
-    },
-    {
-      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/README.zh.md",
-      "sha256": "17d6c349aeb158193ab7c2367ba72a2b4f3a7fb90d75a826017067c4955fe322",
-      "rules": [
-        "home-path"
-      ],
-      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
-    },
-    {
-      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/operation.json",
-      "sha256": "a48e7307f1528bd45c23d4cfb3cf5181fc93263623d0df8a1dc3727ab62ec3f2",
-      "rules": [
-        "home-path"
-      ],
-      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
-    },
-    {
-      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/receipt.json",
-      "sha256": "8c35124cfd3f2f2b3191c4e3ddb53442b3ccf4ce6fd658e386e930b38bc48e7c",
-      "rules": [
-        "home-path"
-      ],
-      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
-    },
-    {
-      "path": "vendor/aukora-deep-authority/src/courts/evidence/2026-09-14-owner-approval-flight/verify-output.txt",
-      "sha256": "bc392b6c56ebb57ebf170dc987bf8e90a2cc3a6419bdd5524dfa6384c574bd3c",
-      "rules": [
-        "home-path"
-      ],
-      "why": "Pinned upstream evidence of a 2026-09-14 approval flight: it records paths on the owner's Mac (a username, no content). Signed bytes; an edit would break their verification."
-    },
-    {
-      "path": "vendor/aukora-deep-authority/src/courts/open-findings.json",
-      "sha256": "2110970dad8df359cd0fc7c495de7f333913c73659bc4241be9a8e02ee062f83",
-      "rules": [
-        "home-path"
-      ],
-      "why": "An upstream findings record that cites a path on the owner's Mac (a username, no content)."
-    },
-    {
-      "path": "vendor/aukora-deep-authority/src/vendor/loader/package.json",
-      "sha256": "40cf4a563afabae89b14199e4c985ce4c07df9202962c5f4b714a9135e126c29",
-      "rules": [
-        "email"
-      ],
-      "why": "The public author address of a third-party npm package, as the package itself publishes it."
-    },
-    {
-      "path": "vendor/aukora-diamond/src/tests/kira-evidence/evidence/PRODUCER.md",
-      "sha256": "aa15fe49761071588a98d26003f9dec2288e4d95b035a8a04d646997de3cdb1a",
-      "rules": [
-        "home-path"
-      ],
-      "why": "A fixture producer record that names the worktree path it was minted in (a username, no content)."
-    },
-    {
       "path": "vendor/aukora-evidence/lib-test/evidencePackV1.test.js",
       "sha256": "11e8fbc394a82db9e35a5a81eb0639b735d5f1bda19ccd03555f71a08db2fd12",
       "rules": [
@@ -212,14 +148,6 @@
       "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
     },
     {
-      "path": "vendor/aukora-governed-recall/src/PROVENANCE.md",
-      "sha256": "a8b86f039576372887cb62a091eb61a82155a20fa4ea06331280e13f8a29349d",
-      "rules": [
-        "home-path"
-      ],
-      "why": "An upstream provenance note that names a worktree path on the owner's Mac (a username, no content)."
-    },
-    {
       "path": "vendor/aukora-kernel/deps/@noble/ciphers@2.2.0/LICENSE",
       "sha256": "f36671a5487c9c5050efacb58011c37c24c55a889803cb036cf9d9a6347c1e2d",
       "rules": [
@@ -234,46 +162,6 @@
         "email"
       ],
       "why": "The public author address in a third-party license or README (noble-ciphers upstream text)."
-    },
-    {
-      "path": "vendor/aukora-membrane-organs/src/core/swarm/fractal-court-fixtures.ts",
-      "sha256": "3c0f8ba4b347d49e7b3bd90367aa02acfbaf12c47e6a357c2bfdbed211cee1cf",
-      "rules": [
-        "token:pem-private-key"
-      ],
-      "why": "A court fixture with a truncated, non-key PEM body (\"MIIEv...\" then \"...\") that the court must refuse."
-    },
-    {
-      "path": "vendor/aukora-membrane-organs/src/core/swarm/schemas/fixtures/SandboxProfileV1.valid.json",
-      "sha256": "dce86cbb9b42adc2c57ce65d9c451156e90cb6ad0efca37c11c8746aadd90570",
-      "rules": [
-        "home-path"
-      ],
-      "why": "A schema fixture with example sandbox paths under the owner's home (a username, no content)."
-    },
-    {
-      "path": "vendor/aukora-membrane-organs/src/scripts/swarm/validate-cell-c4.ts",
-      "sha256": "0738bbc252ce74c79ab9c998dc9463bb7e184cf177e2e881bbe9f8db86b992f1",
-      "rules": [
-        "home-path"
-      ],
-      "why": "An upstream validation script that names a local model-cache path (a username, no content)."
-    },
-    {
-      "path": "vendor/aukora-phi-guards/src/PROVENANCE.md",
-      "sha256": "a8b86f039576372887cb62a091eb61a82155a20fa4ea06331280e13f8a29349d",
-      "rules": [
-        "home-path"
-      ],
-      "why": "An upstream provenance note that names a worktree path on the owner's Mac (a username, no content)."
-    },
-    {
-      "path": "vendor/aukora-phi-guards/src/surface/door.ts",
-      "sha256": "24404bf7e9b496dfb83989f882d94bbefd596fa14bea5c92f7a49bf24de6686d",
-      "rules": [
-        "email"
-      ],
-      "why": "An invented attacker address in a guard comment."
     },
     {
       "path": "vendor/aukora-seed-app/lib/apps/seed/scripts/scan-public-tree.js",

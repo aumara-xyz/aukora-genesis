@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-export PYTHONPATH="$ROOT"
-STORE="${1:-out/aura.jsonl}"
-RETAINED="${2:-out/retained.json}"
-OUT="${3:-out/presented.json}"
-exec python3 -m diamond.aura --store "$STORE" present --retained "$RETAINED" --out "$OUT"
