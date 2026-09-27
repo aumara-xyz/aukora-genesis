@@ -168,7 +168,7 @@
     }
   ],
   "transpile": {
-    "command": "node vendor/aukora-kernel/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js",
+    "command": "node vendor/authority/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js",
     "compiler": "typescript 6.0.3 (ts.transpileModule; type stripping only)",
     "compilerOptions": {
       "target": "ES2022",
@@ -453,28 +453,28 @@
   "dependencies": [
     {
       "specifier": "@noble/hashes/sha2.js",
-      "resolvesTo": "vendor/aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js",
+      "resolvesTo": "vendor/authority/deps/@noble/hashes@2.2.0/sha2.js",
       "sha256": "0fb8e3c3f2c73a890be2524ac5d2542aaed4decff69e561231a86131203b3973",
       "upstreamPin": "@noble/hashes@2.2.0",
       "vendored": "@noble/hashes@2.2.0"
     },
     {
       "specifier": "@noble/hashes/utils.js",
-      "resolvesTo": "vendor/aukora-kernel/deps/@noble/hashes@2.2.0/utils.js",
+      "resolvesTo": "vendor/authority/deps/@noble/hashes@2.2.0/utils.js",
       "sha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f",
       "upstreamPin": "@noble/hashes@2.2.0",
       "vendored": "@noble/hashes@2.2.0"
     },
     {
       "specifier": "@noble/curves/ed25519.js",
-      "resolvesTo": "vendor/aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js",
+      "resolvesTo": "vendor/authority/deps/@noble/curves@2.2.0/ed25519.js",
       "sha256": "28c6fd6157fe2d1c69ea4751844c3d8fe3ee1a496b4f10fb7b48a51c48857a21",
       "upstreamPin": "@noble/curves@2.2.0",
       "vendored": "@noble/curves@2.2.0"
     },
     {
       "specifier": "@noble/post-quantum/ml-dsa.js",
-      "resolvesTo": "vendor/aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js",
+      "resolvesTo": "vendor/authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js",
       "sha256": "210a020b4933275edf89201e2a5168ee404190f2d5cfa676d0cb13b7a1072276",
       "upstreamPin": "@noble/post-quantum@0.6.1",
       "vendored": "@noble/post-quantum@0.6.1"
@@ -534,7 +534,7 @@
     "examples/observe.mjs"
   ],
   "conformance": {
-    "command": "node vendor/aukora-kernel/conformance.mjs",
+    "command": "node vendor/authority/conformance.mjs",
     "expectedCases": 37,
     "upstreamMeasurement": "bun test ./test in a scratch copy of packages/kernel at def297f: 37 pass / 0 fail, 115 expects (~/aukora-great-merge/OLD-TECH-INVENTORY-20260927.md row 3)",
     "testFiles": [

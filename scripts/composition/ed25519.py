@@ -13,7 +13,7 @@ self-test that runs before any signature is trusted.
 
 Provenance, stated plainly so nobody has to guess: this is an independent
 stdlib implementation written for this brick against RFC 8032, not bytes
-copied from `vendor/receipt-v3/` (which did not exist in this worktree when
+copied from `vendor/receipt/` (which did not exist in this worktree when
 this file was written) and not bytes copied from the toy control plane at
 github.com/aumara-xyz/aukora-toy (MIT — the licence that repository actually
 ships; AGPL-3.0-only is the *membrane's*, not the toy's). The RFC's published
@@ -149,7 +149,7 @@ def _decode(raw: bytes):
     TWO DIFFERENT MESSAGES*, *and 2 of the 8 small-order keys were accepted.* *The forgery works because the
     identity element makes the verification equation collapse*: *`[S]B = R + [k]A` becomes `[1]B = identity +
     [k]·identity`, and every term on the right vanishes.* **Fix `90b1dcad8`/`228999932` repaired only
-    `vendor/receipt-v3`'s toy implementation, not this one** -- *so the forgery has remained live here, in the
+    `vendor/receipt`'s toy implementation, not this one** -- *so the forgery has remained live here, in the
     file the composition gate actually uses.*
     *
     * THREE CHECKS, APPLIED IN THIS ORDER, AND EACH ONE IS LOAD-BEARING:

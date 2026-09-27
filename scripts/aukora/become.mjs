@@ -140,7 +140,7 @@ function membraneObservation() {
     const previous = join(dir, 'retained.json'), current = join(dir, 'presented.json')
     writeFileSync(previous, retainedBytes, { mode: 0o600 })
     writeFileSync(current, JSON.stringify(presented), { mode: 0o600 })
-    const checked = run('python3', [join(REPO, 'vendor/phase0-consistency/verify.py'), previous, current], { timeout: 10_000 })
+    const checked = run('python3', [join(REPO, 'vendor/append-only/verify.py'), previous, current], { timeout: 10_000 })
     const verdict = /^VERDICT:\s*(APPEND_ONLY|OBSERVATION_CONFLICT|UNDETERMINED)\s*$/mu.exec(checked.text)?.[1]
     const reason = /^REASON\s*:\s*(\S+)/mu.exec(checked.text)?.[1]
     return { verdict: verdict ?? 'UNDETERMINED', reason: reason ?? 'verifier_unavailable',

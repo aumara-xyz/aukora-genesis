@@ -6,7 +6,7 @@
     python3 scripts/phase0/verify --retainer <dir-or-git-url> <presented.json> [--chain-key K]
     python3 scripts/phase0/verify --retainer <url> <presented.json> --publish <dir>
 
-This script computes no verdict. It runs `vendor/phase0-consistency/verify.py` as a
+This script computes no verdict. It runs `vendor/append-only/verify.py` as a
 separate process against the exact bytes on disk and prints the command it ran, so a
 reader who trusts this program for nothing can run the second line themselves and get
 the same answer. The exit status is the court's own.
@@ -49,7 +49,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, HERE)
 import retainer as retainer_mod  # noqa: E402
 
-COURT = os.path.join(ROOT, "vendor", "phase0-consistency", "verify.py")
+COURT = os.path.join(ROOT, "vendor", "append-only", "verify.py")
 UNCHECKED_EXIT = 3
 DEFAULT_CHAIN_KEY = "genesis-phase0:aura-chain"
 

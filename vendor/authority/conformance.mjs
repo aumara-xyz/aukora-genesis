@@ -2,7 +2,7 @@
 /**
  * The one check for the vendored kernel.
  *
- *   node vendor/aukora-kernel/conformance.mjs
+ *   node vendor/authority/conformance.mjs
  *
  * Genesis-authored runner. It does two things:
  *   1. PINS. Every file PROVENANCE.json names (the verbatim upstream bytes, the emitted lib/ and lib-test/, and the

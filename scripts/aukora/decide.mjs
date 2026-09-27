@@ -10,7 +10,7 @@
  * Prints ALLOW or DENY with the reason on the first line. Exit 0 on ALLOW, 1 on DENY, 2 on usage.
  *
  * WHO DECIDES WHAT. The approval is an `aukora:approval-receipt:v1` written by scripts/aumlok/approve-operation. It
- * carries ONE Ed25519 signature. The vendored kernel (vendor/aukora-kernel, aumara-xyz/aukora@def297f) accepts
+ * carries ONE Ed25519 signature. The vendored kernel (vendor/authority, aumara-xyz/aukora@def297f) accepts
  * authority only as a HYBRID Ed25519 + ML-DSA-65 `aumlok-signed-promotion-v2` under a trusted
  * `aumlok-authority-root-v2`, and it refuses a one-signature downgrade by design. A v1 receipt therefore cannot be
  * put in the kernel's authorization slot. So the work is split, and nothing is claimed for the kernel that it did
@@ -59,7 +59,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const aumlok = await import(pathToFileURL(join(ROOT, 'plugins', 'aukora-aumlok', 'lib', 'index.mjs')).href)
 const { readJsonStrictBytes } = await import(pathToFileURL(join(ROOT, 'plugins', 'aukora-kira', 'lib', 'strict-read.mjs')).href)
-const kernel = await import(pathToFileURL(join(ROOT, 'vendor', 'aukora-kernel', 'lib', 'index.js')).href)
+const kernel = await import(pathToFileURL(join(ROOT, 'vendor', 'authority', 'lib', 'index.js')).href)
 
 const HEX64 = /^[0-9a-f]{64}$/u
 export const KERNEL_ACTION = Object.freeze({ namespace: 'aumlok', kind: 'approved-operation', verb: 'apply' })

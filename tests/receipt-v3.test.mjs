@@ -3,10 +3,10 @@
 //   node tests/receipt-v3.test.mjs
 //
 // WHAT THIS PROVES. A receipt JSON, a public key file and the bytes committed under
-// vendor/receipt-v3/ are enough to reach the cold court's verdict from a FRESH EMPTY
+// vendor/receipt/ are enough to reach the cold court's verdict from a FRESH EMPTY
 // TEMPORARY DIRECTORY — no sibling checkout, nothing inherited through PYTHONPATH, and
 // nothing written into the directory the stranger stands in. The fixture receipt was
-// produced by upstream's own producer (vendor/receipt-v3/PROVENANCE.md records the exact
+// produced by upstream's own producer (vendor/receipt/PROVENANCE.md records the exact
 // demo run), and every refusal below is a negative control: the check is only worth its
 // green run if the mutation that should break it actually turns it red.
 //
@@ -33,12 +33,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const WRAPPER = join(ROOT, 'scripts', 'receipt-verify');
-const VENDOR = join(ROOT, 'vendor', 'receipt-v3');
+const VENDOR = join(ROOT, 'vendor', 'receipt');
 const FIXTURES = join(VENDOR, 'fixtures');
 const RECEIPT = join(FIXTURES, 'receipt.json');
 const PUB = join(FIXTURES, 'issuer.pk');
 const MANIFEST = join(VENDOR, 'upstream-receipt-v3.json');
-const PHASE0_VECTORS = join(ROOT, 'vendor', 'phase0-consistency', 'vectors');
+const PHASE0_VECTORS = join(ROOT, 'vendor', 'append-only', 'vectors');
 const PYTHON = process.env.PYTHON ?? 'python3';
 
 let failures = 0;
@@ -98,7 +98,7 @@ check('the committed fixture verifies from a fresh empty directory', baseline.co
   `exit ${baseline.code}: ${baseline.stderr.trim().split('\n').slice(-1)[0] ?? ''}`);
 check('the court is the VENDORED one, named in the printed command it ran',
   baseline.stdout.includes(`cd ${VENDOR} &&`) && baseline.stdout.includes('-m toy.cold_verify'),
-  'the printed command does not name vendor/receipt-v3/toy');
+  'the printed command does not name vendor/receipt/toy');
 check('it needed exactly the two input files and wrote nothing into the stranger\'s directory',
   baseline.leftBehind.length === 0, `left behind: ${baseline.leftBehind.join(', ')}`);
 // The signature court is only worth what its curve arithmetic is worth. The vendored
@@ -198,7 +198,7 @@ const paired = stranger([RECEIPT, '--pub', PUB, '--pair',
   join(PHASE0_VECTORS, 'retained.json'), join(PHASE0_VECTORS, 'append-only.json')]);
 check('with --pair the Phase 0 court decides consistency in its own process',
   paired.code === 0 && paired.stdout.includes('VERDICT: APPEND_ONLY')
-  && paired.stdout.includes(join('vendor', 'phase0-consistency', 'verify.py')),
+  && paired.stdout.includes(join('vendor', 'append-only', 'verify.py')),
   `exit ${paired.code}: ${paired.stdout.split('\n').filter((l) => l.startsWith('VERDICT') || l.startsWith('FAIL')).join(' ')}`);
 
 console.log();

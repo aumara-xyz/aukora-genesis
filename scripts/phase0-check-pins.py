@@ -46,12 +46,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (vendor directory, the manifests that pin it). One line per vendored tree; a tree that
 # is missing here is unpinned, and nothing else in this file needs to know about it.
 VENDOR_TREES = (
-    ("vendor/phase0-consistency", ("upstream-phase0.json", "upstream-replicas.json")),
-    ("vendor/receipt-v3", ("upstream-receipt-v3.json",)),
+    ("vendor/append-only", ("upstream-phase0.json", "upstream-replicas.json")),
+    ("vendor/receipt", ("upstream-receipt-v3.json",)),
     # Diamond's cold Kira evidence consumer. Registered here so the closure that a release
     # carries is the closure these pins check: the same manifest that materialize copies is
     # the one this holds to per-file sha256 and byte count, on both sides of the copy.
-    ("vendor/diamond-cold", ("upstream-diamond.json",)),
+    ("vendor/kira-export", ("upstream-diamond.json",)),
     # OpenViking's licence and install pins (the package itself is installed into a venv by
     # scripts/openviking-setup.sh, never vendored): the LICENSE bytes are held to the manifest here.
     ("vendor/openviking", ("upstream-openviking.json",)),
@@ -220,7 +220,7 @@ def main(argv: list[str]) -> int:
                 shutil.copytree(os.path.join(ROOT, vendor_rel), os.path.join(work, vendor_rel))
 
             # Mutation 1: a file pinned by the first manifest.
-            tree_rel = "vendor/phase0-consistency"
+            tree_rel = "vendor/append-only"
             target_rel = "verify.py"
             with open(os.path.join(work, tree_rel, target_rel), "ab") as fh:
                 fh.write(b"\n# mutated by scripts/phase0-check-pins.py --mutate\n")
@@ -262,7 +262,7 @@ def main(argv: list[str]) -> int:
             # Mutation 4: a SECOND vendor tree's own pin set. Without this arm, a checker
             # that walked only the first tree would still pass every mutation above while
             # the receipt-v3 bytes went unpinned.
-            receipt_rel = "vendor/receipt-v3"
+            receipt_rel = "vendor/receipt"
             receipt_target = os.path.join("toy", "receipt.py")
             receipt_path = os.path.join(work, receipt_rel, receipt_target)
             if os.path.isfile(receipt_path):
@@ -282,7 +282,7 @@ def main(argv: list[str]) -> int:
             # Mutation 5: the THIRD vendor tree. Each new tree gets its own arm for the same
             # reason mutation 4 exists: a checker that walked only the first two trees would
             # pass every mutation above while Diamond's bytes went unpinned.
-            diamond_rel = "vendor/diamond-cold"
+            diamond_rel = "vendor/kira-export"
             diamond_target = os.path.join("diamond", "kira_evidence.py")
             diamond_path = os.path.join(work, diamond_rel, diamond_target)
             if os.path.isfile(diamond_path):

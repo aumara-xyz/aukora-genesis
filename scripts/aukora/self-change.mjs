@@ -330,7 +330,7 @@ try { checkCandidatePreview(candidate) } catch (error) {
   journal('MOVED', {})
   fail(`the candidate changed after it was shown. NOTHING was committed: ${error instanceof Error ? error.message : String(error)}`)
 }
-// ONE APPROVAL, ONE USE — decided by the verifier-only kernel (vendor/aukora-kernel, aumara-xyz/aukora@def297f, 37/37
+// ONE APPROVAL, ONE USE — decided by the verifier-only kernel (vendor/authority, aumara-xyz/aukora@def297f, 37/37
 // conformance). The approval id is the SIGNED challenge, never a hash of the file, so editing an unsigned field cannot mint
 // a second id. The consumed-ids set lives beside the code Aura chain and only grows on ALLOW.
 // ONE USE (the kernel, inside the candidate adapter), THE EXACT-TREE COMMIT AND THE APPROVED ENTRY in one locked region

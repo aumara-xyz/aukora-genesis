@@ -5,7 +5,7 @@
     python3 scripts/receipt-verify <receipt.json> --pub <issuer.pk> --pair <retained.json> <presented.json>
     python3 scripts/receipt-verify <receipt.json> --pub <issuer.pk> --dry-run
 
-This script computes no verdict. It runs `vendor/receipt-v3/toy/cold_verify.py` as a
+This script computes no verdict. It runs `vendor/receipt/toy/cold_verify.py` as a
 separate process against the exact bytes on disk — with PYTHONPATH and the working
 directory pinned to the vendored tree, so an inherited PYTHONPATH cannot substitute a
 different `toy` package — prints the command it ran, and returns the court's own exit
@@ -41,7 +41,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-VENDOR = os.path.join(ROOT, "vendor", "receipt-v3")
+VENDOR = os.path.join(ROOT, "vendor", "receipt")
 COLD_COURT = os.path.join(VENDOR, "toy", "cold_verify.py")
 PHASE0_COURT = os.path.join(ROOT, "scripts", "phase0", "verify")
 

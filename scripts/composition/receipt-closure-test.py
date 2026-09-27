@@ -11,7 +11,7 @@ own log, and have a STRANGER verify that receipt — using only the bytes inside
 The distinction matters because the two failure modes look identical from a file listing. A release
 can carry `scripts/composition` and still be unable to verify its own receipt, because the adapter
 imports `phase0log` by bare name from `scripts/phase0` and the receipt contract lives in
-`vendor/receipt-v3/toy`. The owner named exactly this: copying two directories is not a receipt closure.
+`vendor/receipt/toy`. The owner named exactly this: copying two directories is not a receipt closure.
 
 HOW THE CHECKOUT IS KEPT OUT OF REACH, WITHOUT TOUCHING IT. Every release command runs with an
 EMPTY working directory and a `PYTHONPATH` that names only the release's own module directories, so
@@ -256,12 +256,12 @@ def main() -> int:
 
             # ── the stranger: an EMPTY cwd, exit 0, and the four labelled verdicts ────────────
             # The canonical invocation, taken from scripts/receipt-verify: `-B` and
-            # `PYTHONPATH=<release>/vendor/receipt-v3`, so `toy` resolves from the release's own
+            # `PYTHONPATH=<release>/vendor/receipt`, so `toy` resolves from the release's own
             # tree and the vendored bytes stay free of __pycache__. `-B` also keeps this run from
             # writing into the release it is measuring.
             #
             # cwd IS THE EMPTY RUN DIRECTORY, which is what this file's header claims for EVERY
-            # command. An earlier version ran this one from `release/vendor/receipt-v3` to get `toy`
+            # command. An earlier version ran this one from `release/vendor/receipt` to get `toy`
             # onto sys.path, so the assertion said "empty directory" while the invocation did not —
             # and a test whose stated isolation and actual isolation differ is the failure this
             # suite exists to catch. `PYTHONPATH` is the supported mechanism and it is release-only:
@@ -271,7 +271,7 @@ def main() -> int:
             # `FAIL: REFUSE: ...` — the fail-closed refusal for a missing anchor. Exit 0 plus the
             # named verdicts is what makes this arm evidence rather than a liveness check.
             stranger_env = release_env(release, {
-                'PYTHONPATH': str(release / 'vendor' / 'receipt-v3'),
+                'PYTHONPATH': str(release / 'vendor' / 'receipt'),
                 'PYTHONDONTWRITEBYTECODE': '1',
             })
             cold = run([python, '-B', '-m', 'toy.cold_verify', receipts[0],

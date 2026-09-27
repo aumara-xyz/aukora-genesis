@@ -11,7 +11,7 @@ below — is pinned here by digest so a reader can tell whether the rules they a
 code that produced their verdict:
 
 ```
-vendor/phase0-consistency/verify.py
+vendor/append-only/verify.py
 sha256 039aa8999f9a1e1a8b8e01eb51598bfc546e4e574b2c9333f13e8bb303958089
 ```
 
@@ -137,7 +137,7 @@ The consequences, stated plainly:
 The court is vendored and consumes the two documents directly:
 
 ```
-python3 vendor/phase0-consistency/verify.py <retained.json> <presented.json>
+python3 vendor/append-only/verify.py <retained.json> <presented.json>
 ```
 
 Through a retainer (the retained bytes come from the retainer and nowhere else — there is no

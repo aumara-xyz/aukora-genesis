@@ -75,8 +75,8 @@ STRIP_CLI = ROOT / 'scripts/release-strip.mjs'
 # imports `aura`, `receipt` and `phase0log` by bare name. So `scripts/phase0/phase0log.py` is a
 # hard dependency, and a release carrying only scripts/composition cannot even import its own
 # adapter. Both the adapter and the composition CLI also execute
-# `vendor/phase0-consistency/verify.py`, and the accepted receipt contract lives in
-# `vendor/receipt-v3/toy`. Those two vendored trees are carried whole: `scripts/phase0-check-pins.py`
+# `vendor/append-only/verify.py`, and the accepted receipt contract lives in
+# `vendor/receipt/toy`. Those two vendored trees are carried whole: `scripts/phase0-check-pins.py`
 # pins every file under each named tree and refuses a tree whose pins and bytes disagree, so a
 # subset would be a tree the repository's own pin check no longer describes.
 COMPOSITION = ROOT / 'scripts/composition'
@@ -126,18 +126,18 @@ SCRIPTS_LIB = ROOT / 'scripts' / 'lib'
 # I supplied", never "is this write authorized" and never "did the cell run" (it always reports
 # `cellRan: null`). `upstream-diamond.json` pins every file, and `phase0-check-pins.py` holds
 # the same closure to the same digests on both sides of the copy.
-# `aukora-seed-guard` is aukora-seed's path guard at 9fca7a0, byte for byte (PROVENANCE.json pins every file). The
+# `vendor/seed` is aukora-seed's path guard at 9fca7a0, byte for byte (PROVENANCE.json pins every file). The
 # action gate (plugins/aukora-action-gate) calls its `analyse`, `judge` and `decide` on every agent tool call, so the
 # release must carry it or the gate cannot import its judge.
-# `aukora-packages` and `aukora-kernel` carry the original memory law (aumara-xyz/aukora packages/memory and
+# `aukora-packages` and `vendor/authority` carry the original memory law (aumara-xyz/aukora packages/memory and
 # packages/kernel at def297f). Kira's `plugins/aukora-kira/lib/memory-law.mjs` imports the generated
 # `vendor/aukora-packages/lib/packages/memory/src/{envelope,ingestGate}.js`, which import
-# `vendor/aukora-kernel/lib/canonical.js` and its pinned `deps/@noble/hashes@2.2.0`, so a release without these two
+# `vendor/authority/lib/canonical.js` and its pinned `deps/@noble/hashes@2.2.0`, so a release without these two
 # trees could not load Kira at all (the ERR_MODULE_NOT_FOUND class LANE_PLUGINS below records).
 # `aukora-first-echo` is imported by `scripts/aura/echo-head.mjs` (carried: `scripts/aura/**`), so a release without it
 # carried an Aura script that could not load its own verifier.
-VENDORED = (ROOT / 'vendor/phase0-consistency', ROOT / 'vendor/receipt-v3', ROOT / 'vendor/diamond-cold',
-            ROOT / 'vendor/aukora-seed-guard', ROOT / 'vendor/aukora-packages', ROOT / 'vendor/aukora-kernel',
+VENDORED = (ROOT / 'vendor/append-only', ROOT / 'vendor/receipt', ROOT / 'vendor/kira-export',
+            ROOT / 'vendor/seed', ROOT / 'vendor/aukora-packages', ROOT / 'vendor/authority',
             ROOT / 'vendor/aukora-first-echo')
 #: ── SINGLE FILES A CARRIED SCRIPT IMPORTS FROM OUTSIDE EVERY DIRECTORY THIS SCRIPT COPIES (2026-09-27) ─────────────
 #: MEASURED: `remember.mjs` settled a memory on the owner's click and then died at export, because the release's
@@ -264,7 +264,7 @@ LANE_PLUGINS = ('aukora-kira', 'aukora-aumlok', 'aukora-board', 'aukora-eye',
                 'aukora-goal-resume',
                 # ── THE ACTION GATE: every agent tool call judged and receipted. It imports Kira's chain writer
                 # (`../../aukora-kira/lib/memory-owner.mjs`), which this tuple already carries, and the vendored seed
-                # guard (`vendor/aukora-seed-guard`, carried by VENDORED). Carrying is not mounting:
+                # guard (`vendor/seed`, carried by VENDORED). Carrying is not mounting:
                 # `action-gate.patch.yml` (written beside the other root patches below) mounts it.
                 'aukora-action-gate',
                 # ── AUKORA SEATBELT: the `sandbox` provider with AUKORA's kernel denies appended. Imports only `node:*`,

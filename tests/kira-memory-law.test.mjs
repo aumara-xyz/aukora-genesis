@@ -117,7 +117,7 @@ const { forgetRecord } = await load('plugins/aukora-kira/lib/memory-tiers.mjs')
 const { exportPublicEvidence } = await load('scripts/kira/public-evidence.mjs')
 // THE LAW ITSELF, imported directly rather than through Kira's adapter, so a tombstone is compared with the law's own.
 const { tombstoneCommitment } = await load('vendor/aukora-packages/lib/packages/memory/src/envelope.js')
-const { canonicalHash } = await load('vendor/aukora-kernel/lib/canonical.js')
+const { canonicalHash } = await load('vendor/authority/lib/canonical.js')
 if (mutation !== null) {
   assert.equal(mutation.applied, 1, `mutant ${mutation.name} did not load its subject, so it removed nothing`)
   process.stdout.write(`MUTANT ${mutation.name}: removed the guard in ${mutation.file} (in memory only)\n`)

@@ -117,7 +117,7 @@ process arguments and configuration; that shows what a release carries, not how 
 | **WASM proposal cell** | Pinned 64 KiB-budget `memory.put` proposal module on the staging path | [adapter][wasm-adapter], [provenance][wasm-provenance] | [Release court][wasm-test], 4 plain arms against the bytes of the release installed on the §1 host, a local build that is not published, for this revision; no mutation run. **[TESTED_AT_PIN: installed release]** | Present | `CELL_EXECUTION: NOT_ESTABLISHED`; `CONFINEMENT: NOT_ESTABLISHED`; the court reads release bytes in a separate process; the aperture does not confine Node. |
 | **Aumlok** | Seven-word acrostic root for root-class acts; HKDF machine key; signer display binding; printed ceilings | [`plugins/aukora-aumlok/`][aumlok] | `measure()` and common-words court (16/16) for this revision; cold-root, derivation, signer and approval courts in private CI at earlier main. **[TESTED_AT_PIN]** | Owner binding with a cold root, operator-recorded on 23 Sept in a private log; the root-key ceiling print is absent | About 34 bits, offline-guessable, no floor (§5). |
 | **Aura / Phase 0** | RFC 6962 consistency verifier with a Rust replica; retained log heads | [`scripts/phase0/`][phase0], [verifier][minimal] | Self-test, pin checks and replica build in private CI at the pin. **[TESTED_AT_PIN]** | Retention operator-recorded on 23 Sept in a private log | Heads sit on the same machine and account; an honest prefix can omit later history, and a locally rewritable anchor cannot establish freshness. |
-| **Diamond** (vendored) | Offline cold consumer of Kira evidence, from an empty directory | [`vendor/diamond-cold/`][diamond-cold] | Cold-consumer court for this revision: a real export verifies; byte flips and a small-order-key forgery are refused. **[TESTED_AT_PIN]** | Carried | A vendored copy, not an independent implementation; authorizes nothing; prints `NO_GLOBAL_REPLAY_PREVENTION` and `NO_LATESTNESS`. |
+| **Diamond** (vendored) | Offline cold consumer of Kira evidence, from an empty directory | [`vendor/kira-export/`][diamond-cold] | Cold-consumer court for this revision: a real export verifies; byte flips and a small-order-key forgery are refused. **[TESTED_AT_PIN]** | Carried | A vendored copy, not an independent implementation; authorizes nothing; prints `NO_GLOBAL_REPLAY_PREVENTION` and `NO_LATESTNESS`. |
 | **Point hygiene** | Refuses non-canonical and small-order Ed25519 points on the gate's verifier | `scripts/composition/ed25519.py` | Five arms, three red arms proven, for this revision; wired plain and `--mutate` into the front door and CI at a later commit, with no green CI run recorded yet. **[TESTED_AT_PIN]** | Absent | The round-trip check has no red arm of its own. |
 | **Read guard; profile generator** | In-process refusal of CORE-session reads through the file service; a deny-default Seatbelt profile generator | `plugins/aukora-core-read-deny/` | Guard: 62 arms and 11 removed-rule mutations in private CI at the pin; generator: none. **[TESTED_AT_PIN; SOURCE_PRESENT]** | Absent | Same uid, not isolation; the generator has no production caller and is recorded as unusable. `CONFINEMENT: NOT_ESTABLISHED`. |
 | **Owner daemon** | A second principal meant to hold the owner key under its own uid, with a write-ahead journal | `plugins/aukora-owner-daemon/` | Single-uid arms green in private CI at the pin; protocol court `NOT_READY`; no two-uid run on the product path. **[TESTED_AT_PIN: single uid]** | Not installed | Same uid today; the authority mode is printed beside the receipt, not signed into it. |
@@ -127,7 +127,7 @@ process arguments and configuration; that shows what a release carries, not how 
 
 The desktop observed on 26 September runs a release built from an earlier commit plus an unpublished hotfix and carries none of that day's hardening: point hygiene, the privacy rows, the provider data-collection denial, the cloud-voice default, the note filter and the root-key disclosure print. **[DOCTRINE: deployment gap]**
 An earlier private codebase holds mechanisms Genesis lacks: the proposal cell run at the effect, separate-uid custody, a deny-default proposer fence over canonical paths, and a confinement class signed into receipts. **[BUILT: private source, not published; not re-run for this revision]**
-On 22 September Genesis vendored Diamond at `7400473`; upstream's point-validation hardening landed at `0d3cc665` that afternoon, and Genesis re-vendored the changed files the same evening, so its copy now records `0d3cc665` in `vendor/diamond-cold/upstream-diamond.json`, as AUKORA-37 does; a consumer carries upstream hardening only once it records the commit that holds it. **[BUILT: dated observation]**
+On 22 September Genesis vendored Diamond at `7400473`; upstream's point-validation hardening landed at `0d3cc665` that afternoon, and Genesis re-vendored the changed files the same evening, so its copy now records `0d3cc665` in `vendor/kira-export/upstream-diamond.json`, as AUKORA-37 does; a consumer carries upstream hardening only once it records the commit that holds it. **[BUILT: dated observation]**
 Spec Alpha's receipt profiles [private source, not published] add one rule: select profiles explicitly and never apply another wire's canonicalization silently. **[DOCTRINE]**
 
 ### The cell and the receipt answer different questions
@@ -545,9 +545,9 @@ The possibility is an interface that meets a person through a living gesture whi
 [wasm-test]: ../tests/kira-wasm-proposal-release.test.mjs
 [aumlok]: ../plugins/aukora-aumlok/
 [phase0]: ../scripts/phase0/
-[minimal]: ../vendor/phase0-consistency/verify.py
-[diamond-cold]: ../vendor/diamond-cold/
-[diamond-verify]: ../vendor/diamond-cold/scripts/verify-kira-evidence.py
+[minimal]: ../vendor/append-only/verify.py
+[diamond-cold]: ../vendor/kira-export/
+[diamond-verify]: ../vendor/kira-export/scripts/verify-kira-evidence.py
 [diamond-test]: ../tests/kira-diamond-cold.test.mjs
 [a37]: https://github.com/aumara-xyz/aukora-37
 [ucan]: https://github.com/ucan-wg/spec/tree/9955aa1fb7b32897f80b57651f4ee8b22ebf35a7

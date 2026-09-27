@@ -168,7 +168,7 @@ def main() -> int:
 
         # ── 1c. the receipt closure imports, from the release's own bytes ────────────────────
         # The closure is not scripts/composition alone: the adapter imports `phase0log` by bare
-        # name from scripts/phase0 and `receipt` from vendor/receipt-v3. Imported HERE, with the
+        # name from scripts/phase0 and `receipt` from vendor/receipt. Imported HERE, with the
         # release's own directories on the path, so a missing member fails rather than being
         # discovered later by a reader trying to verify a receipt they were handed.
         import_probe = (
@@ -198,7 +198,7 @@ def main() -> int:
         # whose verifier needs a sibling checkout is not a release that can verify its own
         # evidence. The probe runs from an EMPTY cwd with no PYTHONPATH and names the package
         # root explicitly, so anything it reaches came from the release.
-        diamond_root = release / 'vendor' / 'diamond-cold'
+        diamond_root = release / 'vendor' / 'kira-export'
         diamond_probe = (
             'import sys;'
             f'sys.path[:0]=[{str(diamond_root)!r}];'

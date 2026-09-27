@@ -221,18 +221,18 @@ else
 fi
 
 # ── LEG 4: the stranger — Diamond, from an EMPTY cwd ─────────────────────────────────────────────
-DIAMOND="$ROOT/vendor/diamond-cold/scripts/verify-kira-evidence.py"
+DIAMOND="$ROOT/vendor/kira-export/scripts/verify-kira-evidence.py"
 DIAMOND_PIN="0d3cc66"
 DIAMOND_COMMIT="$(python3 -c "
 import json, sys
 try: print(json.load(open(sys.argv[1])).get('commit') or '')
 except Exception: print('')
-" "$ROOT/vendor/diamond-cold/upstream-diamond.json" 2>/dev/null)"
+" "$ROOT/vendor/kira-export/upstream-diamond.json" 2>/dev/null)"
 if [ -z "$DIAMOND_COMMIT" ] || [ "${DIAMOND_COMMIT#"$DIAMOND_PIN"}" = "$DIAMOND_COMMIT" ]; then
   note "stranger" "RED — the vendored Diamond is not the ${DIAMOND_PIN} this check names"
   FAILED=$((FAILED + 1))
 elif [ ! -f "$DIAMOND" ]; then
-  note "stranger" "RED — LEG_MISSING (vendor/diamond-cold)"
+  note "stranger" "RED — LEG_MISSING (vendor/kira-export)"
   FAILED=$((FAILED + 1))
 elif [ ! -s "$PIN" ]; then
   note "stranger" "skipped — the export did not happen, so there is nothing to verify"
@@ -266,7 +266,7 @@ PY
     EMPTY="$(mktemp -d)"
     DV="$(cd "$EMPTY" && python3 "$DIAMOND" --record "$R" --receipt "$T" \
       --log "$SCRATCH/export/evidence/aura.jsonl" --anchor "$ANCHOR" \
-      --artifact-content "$C" --package-root "$ROOT/vendor/diamond-cold" 2>&1 | grep -m1 '^VERDICT:')"
+      --artifact-content "$C" --package-root "$ROOT/vendor/kira-export" 2>&1 | grep -m1 '^VERDICT:')"
     rm -rf "$EMPTY"
     case "$DV" in
       *VERIFIED*) note "stranger" "ok — $DV [diamond ${DIAMOND_COMMIT:0:7}, empty cwd]" ;;

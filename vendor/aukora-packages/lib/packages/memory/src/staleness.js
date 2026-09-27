@@ -8,4 +8,4 @@
  * This module is a PURE RE-EXPORT so `@aukora/memory` keeps its public surface with NO duplicate
  * implementation — R33 item 1 collapses the former copy to this import. No logic may be added here.
  */
-export { DEFAULT_DRAFT_HORIZON_MS, EXPIRING_SOON_WINDOW_MS, canonicalIsoFromMs, stampExpiresBy, stalenessVerdict, challengeStalenessGate, stalenessGrantsAuthority, } from '../../../../../aukora-kernel/lib/staleness.js';
+export { DEFAULT_DRAFT_HORIZON_MS, EXPIRING_SOON_WINDOW_MS, canonicalIsoFromMs, stampExpiresBy, stalenessVerdict, challengeStalenessGate, stalenessGrantsAuthority, } from '../../../../../authority/lib/staleness.js';

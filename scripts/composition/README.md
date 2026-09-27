@@ -156,7 +156,7 @@ belongs to the verifier into data the signer controls.
 
 ### Ed25519 provenance, and the vendored cross-check
 
-Python's standard library has no Ed25519. `vendor/receipt-v3/` **did not exist in
+Python's standard library has no Ed25519. `vendor/receipt/` **did not exist in
 this worktree** when this gate's crypto was written, so `ed25519.py` and `jcs.py`
 here are independent stdlib implementations (`hashlib`, `secrets`): not copied
 from the sealed toy (AGPL-3.0) and not copied from the vendored tree.
@@ -193,7 +193,7 @@ both choices are declared in `ed25519.py`.
 
 Vocabulary is shared, and since the receipt-v3 pin moved to `c512d0c` the vendored
 verifier accepts `aukora-receipt/v3-genesis` as its own sibling kind
-(`vendor/receipt-v3/toy/receipt.py`, `KIND_GENESIS`), so a receipt from this gate
+(`vendor/receipt/toy/receipt.py`, `KIND_GENESIS`), so a receipt from this gate
 verifies under the vendored cold verifier, whose genesis-kind composition set Genesis
 extended locally (see `upstream-receipt-v3.json`). That is not acceptance by unmodified
 upstream `c512d0c`, and the pinned digest for `toy/receipt.py` is of the locally edited
@@ -260,7 +260,7 @@ never authorizes anything. Grants authorize, and they authorize once.**
 | `refusals.py` | the stable refusal-code vocabulary, and the refusal type |
 | `ceilings.py` | the ceilings, spelled once, printed on every path |
 | `ed25519.py` | RFC 8032 Ed25519 in stdlib, with vectors and negative controls |
-| `parity-vendored.py` | measures this gate's crypto against `vendor/receipt-v3/`, or reports the check skipped |
+| `parity-vendored.py` | measures this gate's crypto against `vendor/receipt/`, or reports the check skipped |
 | `jcs.py` | RFC 8785 canonical form, integer-only subset |
 | `hexutil.py` | strict hex/digest/JSON helpers |
 | `composition-selfcheck.py` | the acceptance command: 23 published arms |

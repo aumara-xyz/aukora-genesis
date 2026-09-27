@@ -148,7 +148,7 @@
       "why": "Synthetic token and URL-userinfo test vectors (alphabet runs, an invented database URL) that the secret catalogue must catch; the file says they are non-real."
     },
     {
-      "path": "vendor/aukora-kernel/deps/@noble/ciphers@2.2.0/LICENSE",
+      "path": "vendor/authority/deps/@noble/ciphers@2.2.0/LICENSE",
       "sha256": "f36671a5487c9c5050efacb58011c37c24c55a889803cb036cf9d9a6347c1e2d",
       "rules": [
         "email"
@@ -156,7 +156,7 @@
       "why": "The public author address in a third-party license or README (noble-ciphers upstream text)."
     },
     {
-      "path": "vendor/aukora-kernel/deps/@noble/ciphers@2.2.0/README.md",
+      "path": "vendor/authority/deps/@noble/ciphers@2.2.0/README.md",
       "sha256": "e8b7fa9b8536b67d1bf535b219c095e22fd1a011abf7970b3d268abd6771f4da",
       "rules": [
         "email"

@@ -61,13 +61,13 @@ Other vendored material
 
 | tree | manifest | licence |
 |---|---|---|
-| `vendor/phase0-consistency/` | `upstream-phase0.json` | AGPL-3.0-only |
-| `vendor/receipt-v3/` | `upstream-receipt-v3.json` | AGPL-3.0-only |
-| `vendor/diamond-cold/` | `upstream-diamond.json` | AGPL-3.0-only |
+| `vendor/append-only/` | `upstream-phase0.json` | AGPL-3.0-only |
+| `vendor/receipt/` | `upstream-receipt-v3.json` | AGPL-3.0-only |
+| `vendor/kira-export/` | `upstream-diamond.json` | AGPL-3.0-only |
 
 **Every `LICENSE` in this tree that claims to be the AGPL carries section 13 — *Remote Network Interaction* —
 as of 2026-09-27** (`LICENSE` and the three above; checked by hand when the court that checked it,
 `tests/aukora-agpl-section-13.test.mjs`, was archived with the test forest, `ARCHIVE.md`). **That court existed
 because one of these files was, until 2026-09-26, a paraphrase that omitted section 13 and carried the FSF's own
 "changing it is not allowed" notice while being a changed copy.** See
-`vendor/phase0-consistency/upstream-phase0.json` for the recorded reason that file departs from upstream bytes.
+`vendor/append-only/upstream-phase0.json` for the recorded reason that file departs from upstream bytes.

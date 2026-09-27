@@ -48,14 +48,14 @@ done
 [ -n "$OUT" ] || { echo "REFUSED: --out is required; the bundle is written somewhere named" >&2; exit 2; }
 [ -d "$STORE" ] || { echo "REFUSED: the store $STORE is not a directory" >&2; exit 4; }
 
-DIAMOND="$ROOT/vendor/diamond-cold/scripts/verify-kira-evidence.py"
+DIAMOND="$ROOT/vendor/kira-export/scripts/verify-kira-evidence.py"
 DIAMOND_COMMIT="$(python3 -c "
 import json,sys
 try:
     print(json.load(open(sys.argv[1])).get('commit') or '')
 except Exception:
     print('')
-" "$ROOT/vendor/diamond-cold/upstream-diamond.json" 2>/dev/null)"
+" "$ROOT/vendor/kira-export/upstream-diamond.json" 2>/dev/null)"
 if [ -z "$DIAMOND_COMMIT" ] || [ "${DIAMOND_COMMIT#"$DIAMOND_PIN"}" = "$DIAMOND_COMMIT" ]; then
   echo "REFUSED: the vendored Diamond is not the ${DIAMOND_PIN} this bundle names" >&2; exit 4
 fi
@@ -220,9 +220,9 @@ trap 'echo ""; ceiling' EXIT
 # The verifier is looked for INSIDE the clone the reviewer already has, then beside the bundle.
 DIAMOND=""
 for candidate in \
-  "${AUKORA_ROOT:-}/vendor/diamond-cold/scripts/verify-kira-evidence.py" \
-  "$HERE/../../vendor/diamond-cold/scripts/verify-kira-evidence.py" \
-  "$PWD/vendor/diamond-cold/scripts/verify-kira-evidence.py"; do
+  "${AUKORA_ROOT:-}/vendor/kira-export/scripts/verify-kira-evidence.py" \
+  "$HERE/../../vendor/kira-export/scripts/verify-kira-evidence.py" \
+  "$PWD/vendor/kira-export/scripts/verify-kira-evidence.py"; do
   [ -n "$candidate" ] && [ -f "$candidate" ] && { DIAMOND="$candidate"; break; }
 done
 [ -n "$DIAMOND" ] || { echo "REFUSED: the vendored Diamond verifier was not found; pass AUKORA_ROOT=<clone>"; exit 4; }

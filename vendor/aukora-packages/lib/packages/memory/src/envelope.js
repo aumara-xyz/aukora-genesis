@@ -12,7 +12,7 @@
  * PROVENANCE: distilled from donor apps/symbiote/core/src/coreMemoryEnvelope.ts (aukora-kernel b441edc4),
  * node:crypto replaced by the kernel canonical hash; consent/provenance/validation laws preserved.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 export const MEMORY_SCHEMA = 'aukora-memory-v1';
 export const CONSENT_SCOPES = ['owner-only', 'private', 'shared'];
 export const PROVENANCE_KINDS = ['observation', 'proposal', 'receipt', 'reflection', 'tombstone'];

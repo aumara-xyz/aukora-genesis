@@ -105,7 +105,7 @@ def main(argv: list[str]) -> int:
     print(f"proofFromPrevious: {len(proof)} digest(s)")
     print()
     print("Now the whole question, and no trust in this program required:")
-    print(f"  python3 vendor/phase0-consistency/verify.py {retained_file} {args.out}")
+    print(f"  python3 vendor/append-only/verify.py {retained_file} {args.out}")
     return 0
 
 

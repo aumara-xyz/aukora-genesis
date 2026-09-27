@@ -1,7 +1,7 @@
 /**
  * THE STRANGER'S VERDICT MAY NOT DISAGREE WITH `node:crypto` — Fable's item (b), 2026-09-26.
  *
- * WHY. The stranger side of this repository verifies Ed25519 with its own Python (`vendor/receipt-v3/toy/ed25519.py`),
+ * WHY. The stranger side of this repository verifies Ed25519 with its own Python (`vendor/receipt/toy/ed25519.py`),
  * and we have already measured that implementation getting a case catastrophically wrong: no small-order check, so one
  * signature verified two different messages under the identity key. `AGENTS.md` forbids adding a curve implementation
  * of our own and names `node:crypto` as the sanctioned second opinion — so the rule here is: ASK BOTH, AND IF THEY

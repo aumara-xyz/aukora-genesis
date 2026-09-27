@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (c) 2026 Peter Viviani
-// Port of vendor/aukora-kernel/src/merkle.ts's RFC 6962 fold and SUBPROOF, using node:crypto.
+// Port of vendor/authority/src/merkle.ts's RFC 6962 fold and SUBPROOF, using node:crypto.
 import { createHash } from 'node:crypto'
 
 const sha = (bytes) => createHash('sha256').update(bytes).digest()

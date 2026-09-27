@@ -12,7 +12,7 @@ WHY THIS FILE EXISTS. Genesis keeps two ledgers and only one of them was covered
 Nothing retained a head of the second log anywhere the second log could reach, so the newest
 memory could be DROPPED and every verifier Genesis ships would still read green. That is the
 defect this module closes: the same producer (`scripts/phase0/phase0log.py`), the same vendored
-court (`vendor/phase0-consistency/verify.py`, never edited, never imported — run as a separate
+court (`vendor/append-only/verify.py`, never edited, never imported — run as a separate
 process by `scripts/phase0/verify`), and a head kept OUTSIDE the state directory.
 
 THE ONE MOVE THAT MAKES TRUNCATION VISIBLE. A log is self-consistent at every prefix: cut the
@@ -680,7 +680,7 @@ def run_court(hashes: list[bytes], retained_document: dict, retained_size: int,
     """Build the presented document and run the VENDORED court over the pair.
 
     The court is never imported and never edited: `scripts/phase0/verify` runs
-    `vendor/phase0-consistency/verify.py` as a separate process against the exact bytes on disk,
+    `vendor/append-only/verify.py` as a separate process against the exact bytes on disk,
     and this function reports that process's own verdict and exit status.
     """
     if retained_size == len(hashes):

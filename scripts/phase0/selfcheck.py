@@ -43,7 +43,7 @@ sys.path.insert(0, HERE)
 import phase0log  # noqa: E402  (sibling module: the producer-side arithmetic)
 import retainer as retainer_mod  # noqa: E402  (the second-custody store)
 
-VECTORS = os.path.join("vendor", "phase0-consistency", "vectors")
+VECTORS = os.path.join("vendor", "append-only", "vectors")
 VERIFY = os.path.join(HERE, "verify")
 RETAIN = os.path.join(HERE, "retain-head")
 PRESENT = os.path.join(HERE, "present-head")

@@ -3,7 +3,7 @@
  * Regenerate the runnable ESM of the vendored @aukora/kernel from its verbatim upstream sources, and
  * rewrite PROVENANCE.json from the bytes on disk.
  *
- *   node vendor/aukora-kernel/transpile.mjs [--typescript <path to typescript/lib/typescript.js>]
+ *   node vendor/authority/transpile.mjs [--typescript <path to typescript/lib/typescript.js>]
  *
  * Genesis-authored. Genesis runs Node ESM, not TypeScript, so `src/*.ts` and `test/*.ts` (verbatim from
  * aumara-xyz/aukora packages/kernel at def297f) are type-stripped with the TypeScript compiler Genesis already
@@ -38,7 +38,7 @@ const rel = (path) => relative(HERE, path).split('\\').join('/')
 const COMPILER_OPTIONS = { target: 'ES2022', module: 'ESNext', verbatimModuleSyntax: true }
 
 // Each specifier goes to the file the pinned package's own `exports` map names for it.
-const DEPS = 'vendor/aukora-kernel/deps/@noble'
+const DEPS = 'vendor/authority/deps/@noble'
 const NOBLE = {
   '@noble/hashes/sha2.js': { to: `${DEPS}/hashes@2.2.0/sha2.js`, upstreamPin: '@noble/hashes@2.2.0', vendored: '@noble/hashes@2.2.0' },
   '@noble/hashes/utils.js': { to: `${DEPS}/hashes@2.2.0/utils.js`, upstreamPin: '@noble/hashes@2.2.0', vendored: '@noble/hashes@2.2.0' },
@@ -127,7 +127,7 @@ const provenance = {
   },
   upstream,
   transpile: {
-    command: 'node vendor/aukora-kernel/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js',
+    command: 'node vendor/authority/transpile.mjs --typescript <Genesis vendor/dsh>/node_modules/typescript/lib/typescript.js',
     compiler: `typescript ${ts.version} (ts.transpileModule; type stripping only)`,
     compilerOptions: COMPILER_OPTIONS,
     rule: 'emitted bytes are exactly the compiler output except import specifiers, each listed under specifierRewrites',
@@ -145,7 +145,7 @@ const provenance = {
   genesisAuthored: ['package.json', 'transpile.mjs', 'vitest-shim.mjs', 'conformance.mjs', 'PROVENANCE.json', 'deps/PROVENANCE.json', 'deps/README.md', 'deps/.gitignore', 'deps/node_modules/@noble/{ciphers,curves,hashes,post-quantum} (links)'],
   notVendored: ['README.md', 'PROVENANCE.md', 'SBOM.cdx.json', 'package.json (upstream)', 'tsconfig.json', 'tsconfig.build.json', 'vitest.config.ts', 'examples/observe.mjs'],
   conformance: {
-    command: 'node vendor/aukora-kernel/conformance.mjs',
+    command: 'node vendor/authority/conformance.mjs',
     expectedCases: 37,
     upstreamMeasurement: 'bun test ./test in a scratch copy of packages/kernel at def297f: 37 pass / 0 fail, 115 expects (~/aukora-great-merge/OLD-TECH-INVENTORY-20260927.md row 3)',
     testFiles: generated.filter((file) => file.path.startsWith('lib-test/')).map((file) => file.path),

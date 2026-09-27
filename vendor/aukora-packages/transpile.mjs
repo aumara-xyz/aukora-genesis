@@ -47,8 +47,8 @@ for (const file of provenance.files) {
 
 const PACKAGE = join(HERE, 'src', 'packages', 'memory')
 const KERNEL = {
-  '@aukora/kernel/canonical': join(ROOT, 'vendor', 'aukora-kernel', 'lib', 'canonical.js'),
-  '@aukora/kernel/staleness': join(ROOT, 'vendor', 'aukora-kernel', 'lib', 'staleness.js'),
+  '@aukora/kernel/canonical': join(ROOT, 'vendor', 'authority', 'lib', 'canonical.js'),
+  '@aukora/kernel/staleness': join(ROOT, 'vendor', 'authority', 'lib', 'staleness.js'),
 }
 const sources = [join(PACKAGE, 'index.ts'), ...readdirSync(join(PACKAGE, 'src')).filter((name) => name.endsWith('.ts')).sort().map((name) => join(PACKAGE, 'src', name))]
 const pinned = new Set(provenance.files.map((file) => resolve(HERE, file.path)))

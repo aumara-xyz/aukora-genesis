@@ -105,7 +105,7 @@ function fence(paths, explicit) {
     if (!candidateAllowed(verdict)) deny(verdict.reasonClass)
     if (path.split('/').some(part => !part || part === '.' || part === '..') || seen.has(path.toLowerCase())) deny('candidate:unsafe-write-path')
     seen.add(path.toLowerCase())
-    if (/^(vendor\/aukora-seed-guard|plugins\/aukora-action-gate)(\/|$)/i.test(path) && !explicit.includes(path)) deny('candidate:gate-judge-not-explicit')
+    if (/^(vendor\/seed|plugins\/aukora-action-gate)(\/|$)/i.test(path) && !explicit.includes(path)) deny('candidate:gate-judge-not-explicit')
     if (!explicit.includes(path)) deny('candidate:path-not-explicit')
   }
 }

@@ -71,8 +71,8 @@ that permits it. It runs on a pinned copy of the **DeepSeek Harness** and its **
 - **The composition gate**: a module the policy names loads only with a one-use grant bound to its bytes.
 
 The evidence those organs leave can be checked **cold**, from an empty directory, by verifiers vendored and
-byte-pinned in this tree: Diamond (`vendor/diamond-cold`), the receipt court (`vendor/receipt-v3`) and the
-membrane minimal verifier (`vendor/phase0-consistency`, byte-identical to `minimal/` in
+byte-pinned in this tree: Diamond (`vendor/kira-export`), the receipt court (`vendor/receipt`) and the
+membrane minimal verifier (`vendor/append-only`, byte-identical to `minimal/` in
 `aukora-membrane` at `d8b17fac`).
 
 Work happens on `main` of `aumara-xyz/aukora-genesis`. `aumara-xyz/aukora-genesis-archive` holds the history up to
@@ -133,8 +133,7 @@ sh scripts/check.sh
 What they show, in one line each:
 
 - **The membrane verifier** decides append-only, an earned accusation and its own blind spot on its built-in
-  vectors. Its guided tour runs in full from the vendored membrane tree: `cd vendor/aukora-membrane && python3
-  minimal/tour.py` (append-only, an honest decline, an earned accusation, the blind spot; 12 published cases).
+  vectors. Its guided tour runs in full from the vendored membrane tree: `python3 vendor/aukora-membrane/minimal/tour.py` (append-only, an honest decline, an earned accusation, the blind spot; 12 published cases).
 - **The WASM cell** produces exact, canonical proposal bytes and refuses nine kinds of bad input or bad module.
 - **Diamond** verifies a real Kira export from a literally empty directory, and refuses a flipped byte in the
   receipt, the record, the Aura log or the object by name, plus a small-order-key forgery.
@@ -184,8 +183,8 @@ apps/aukora-desktop        Electron shell: starts the supervisor, hosts the appr
             ├─ plugins/aukora-kira       memory, with lib/wasm-cell
             ├─ plugins/aukora-aumlok     identity and approval
             ├─ plugins/aukora-action-gate, aukora-composition-gate, aukora-foundation, aukora-board, aukora-eye, …
-            └─ scripts/{aura,kira,composition,phase0} and vendor/{diamond-cold,receipt-v3,phase0-consistency,
-               aukora-kernel,aukora-packages,aukora-seed-guard}
+            └─ scripts/{aura,kira,composition,phase0} and vendor/{kira-export,receipt,append-only,
+               authority,aukora-packages,seed}
 ```
 
 A release is cut with `scripts/aukora/cut-release.sh` and switched in with
@@ -212,10 +211,10 @@ dist` in that order. `scripts/aukora/cut-release.sh` is the owner's cutover path
 
 | Organ | Code | Cold check |
 | --- | --- | --- |
-| Kira memory | `plugins/aukora-kira/`, `scripts/kira/` | `scripts/kira/verify-public-evidence.py` + `vendor/diamond-cold` |
+| Kira memory | `plugins/aukora-kira/`, `scripts/kira/` | `scripts/kira/verify-public-evidence.py` + `vendor/kira-export` |
 | Aumlok approval | `plugins/aukora-aumlok/`, `scripts/aumlok/`, `apps/aukora-desktop/aumlok-signer.mjs` | `scripts/aumlok/verify-approval` |
-| Aura evidence | `scripts/aura/`, `scripts/phase0/` | `vendor/phase0-consistency/verify.py` |
-| Composition gate | `plugins/aukora-composition-gate/`, `scripts/composition/` | `scripts/receipt-verify` + `vendor/receipt-v3` |
+| Aura evidence | `scripts/aura/`, `scripts/phase0/` | `vendor/append-only/verify.py` |
+| Composition gate | `plugins/aukora-composition-gate/`, `scripts/composition/` | `scripts/receipt-verify` + `vendor/receipt` |
 | Desktop shell | `apps/aukora-desktop/` | — |
 | Faces | `plugins/aukora-face/` | — |
 | Release path | `scripts/materialize-aukora-release.py`, `scripts/aukora/`, `scripts/launch-dsh.py` | `scripts/genesis-check.mjs` |
@@ -235,6 +234,6 @@ AUKORA-authored code in this repository is licensed under the
 Third-party components retain their own licenses and copyright notices.
 The pinned DSH host retains its upstream MIT license; vendored components
 retain the notices shipped beside their source, including
-[`vendor/phase0-consistency/LICENSE`](vendor/phase0-consistency/LICENSE),
-[`vendor/receipt-v3/LICENSE`](vendor/receipt-v3/LICENSE), and the
+[`vendor/append-only/LICENSE`](vendor/append-only/LICENSE),
+[`vendor/receipt/LICENSE`](vendor/receipt/LICENSE), and the
 [noble cryptography notices](plugins/aukora-aumlok/lib/vendor/noble-ml-dsa/licenses/).

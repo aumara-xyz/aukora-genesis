@@ -13,7 +13,7 @@
  * Merkle tree, and writes an observation into a directory you name — which is NOT the state
  * directory, and which the state directory never writes to. Later, `present` re-reads the log and
  * writes an observation carrying the consistency proof from what you kept to what is there now.
- * The pair is then a question `vendor/phase0-consistency/verify.py` can settle cold, on bytes.
+ * The pair is then a question `vendor/append-only/verify.py` can settle cold, on bytes.
  *
  * WHAT IT DOES NOT DO. It does not validate the hash chain, spend nonces, check grants or read
  * approvals: `memory-owner.mjs` is the chain's own check and this tool deliberately does not

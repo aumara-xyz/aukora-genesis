@@ -18,9 +18,9 @@
  * held-read-deny.patch.yml.
  *
  * ── WHO JUDGES A PATH ────────────────────────────────────────────────────────────────────────────────────────────
- * aukora-seed's guard at 9fca7a0, vendored byte for byte in vendor/aukora-seed-guard/ (PROVENANCE.json). policy.mjs is
+ * aukora-seed's guard at 9fca7a0, vendored byte for byte in vendor/seed/ (PROVENANCE.json). policy.mjs is
  * a thin adapter: it picks the law and root, and the seed classifies paths. kernel.mjs calls the carried
- * vendor/aukora-kernel's `decide` with that classification; its status is the gate's verdict.
+ * vendor/authority's `decide` with that classification; its status is the gate's verdict.
  *
  * ── THE ONE TOOL IT REGISTERS ─────────────────────────────────────────────────────────────────────────────────────
  * With `worktreesRoot` set it also registers `aukora_self_change` (self-change-tool.mjs), the host-side route by which a

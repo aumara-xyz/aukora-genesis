@@ -19,7 +19,7 @@
 //
 // Second arm: when the retained side carries (or yields) a Merkle root, the tool builds an RFC 6962
 // tree over the re-derived entry hashes, writes the presented head with a consistency proof, and
-// runs vendor/phase0-consistency/verify.py (the membrane minimal verifier, unedited) as a separate
+// runs vendor/append-only/verify.py (the membrane minimal verifier, unedited) as a separate
 // process on the two documents. That verdict is printed beside the chain verdict.
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -30,7 +30,7 @@ import { openScratch } from '../lib/run-root.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = resolve(HERE, '..', '..')
-const COURT = join(ROOT, 'vendor', 'phase0-consistency', 'verify.py')
+const COURT = join(ROOT, 'vendor', 'append-only', 'verify.py')
 const WRITER = join(ROOT, 'plugins', 'aukora-kira', 'lib', 'memory-owner.mjs')
 const DOMAIN = 'aukora:aura-record:v1'
 // Leaf k is sha256(0x00 || entry hash k) and an internal node is sha256(0x01 || left || right), the
@@ -275,7 +275,7 @@ function print(result) {
   ]
   if (result.at !== undefined) lines.push(`POSITION: ${result.at}`)
   lines.push(`REASON : ${result.reason}`, `DETAIL : ${result.detail}`, '')
-  lines.push('court: vendor/phase0-consistency/verify.py (membrane minimal verifier), run as a separate process')
+  lines.push('court: vendor/append-only/verify.py (membrane minimal verifier), run as a separate process')
   if (!court.ran) {
     lines.push(`  not run: ${court.why}`)
   } else {

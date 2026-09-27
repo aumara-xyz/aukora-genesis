@@ -1,6 +1,6 @@
 /** The seed/shell policy classifies paths, tools and hosts; the carried kernel decides. */
 import { createHash } from 'node:crypto'
-import { canonicalBytes, decide } from '../../../vendor/aukora-kernel/lib/index.js'
+import { canonicalBytes, decide } from '../../../vendor/authority/lib/index.js'
 import { KERNEL_ALLOWS } from './policy.mjs'
 
 const action = kind => ({ namespace: 'action-gate', kind, verb: 'call' })

@@ -5,7 +5,7 @@ WHAT THIS IS FOR. The composition gate writes one hash-linked log of transitions
 `<state>/aura/records.jsonl` (`scripts/composition/aura.py`) and one receipt per accepted
 transition (`scripts/composition/receipt.py`). The composition's own consistency check
 compares two checkpoints *with the log in hand*. The pinned Phase 0 court
-(`vendor/phase0-consistency/verify.py`) answers the cross-time question for a reader who
+(`vendor/append-only/verify.py`) answers the cross-time question for a reader who
 holds two JSON documents and no log at all. Nothing joined the two, and they index the
 same bytes under DIFFERENT leaf conventions, so a reader could compare a composition root
 with a Phase 0 root and conclude the log had forked when it had not.
@@ -96,7 +96,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 COMPOSITION_DIR = os.path.join(ROOT, "scripts", "composition")
 PHASE0_DIR = os.path.join(ROOT, "scripts", "phase0")
-COURT = os.path.join(ROOT, "vendor", "phase0-consistency", "verify.py")
+COURT = os.path.join(ROOT, "vendor", "append-only", "verify.py")
 
 # The composition's modules import each other by bare name and so does scripts/phase0;
 # this is the same flat-script idiom, and the same reason for it (scripts/composition/__main__.py).
@@ -551,7 +551,7 @@ def roots_for(prefix: int, phase0_hashes: list[bytes], log: aura_mod.Aura) -> di
         "phase0": {
             "algorithm": PHASE0_LEAF_CONVENTION,
             "root": phase0log.tree_head(phase0_hashes[:prefix]).hex(),
-            "consumedBy": "vendor/phase0-consistency/verify.py",
+            "consumedBy": "vendor/append-only/verify.py",
         },
         "composition": {
             "algorithm": COMPOSITION_LEAF_CONVENTION,
@@ -674,7 +674,7 @@ def run_court(retained_path: str, presented_path: str, display: str | None = Non
         capture_output=True,
         text=True,
         # THE FLAG ABOVE DOES NOT REACH A CHILD. The court is release Python living under
-        # `vendor/phase0-consistency/` inside this release, so a child free to write bytecode would
+        # `vendor/append-only/` inside this release, so a child free to write bytecode would
         # put `__pycache__` there and break the release's own `strip-totals-mismatch` check. Set
         # explicitly rather than inherited: the attended shell may or may not have it, and a check
         # that passes only because of an inherited variable is not evidence.
@@ -692,7 +692,7 @@ def run_court(retained_path: str, presented_path: str, display: str | None = Non
         "verdict": verdict.group(1),
         "reason": reason.group(1) if reason else "",
         "exit": completed.returncode,
-        "command": f"python3 vendor/phase0-consistency/verify.py {retained_path} {display or presented_path}",
+        "command": f"python3 vendor/append-only/verify.py {retained_path} {display or presented_path}",
         "raw": output.strip(),
     }
 

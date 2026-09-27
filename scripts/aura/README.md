@@ -5,7 +5,7 @@ One job: take the composition gate's **actual** transition log and make it judge
 
 The adapter adds no ledger, receipt format or hash of its own; the composition log stays the one
 transition ledger. The producer stays `scripts/composition/` and the consumer stays
-`vendor/phase0-consistency/verify.py`. The lane's witness does add a countersigned envelope
+`vendor/append-only/verify.py`. The lane's witness does add a countersigned envelope
 (`aukora-aura-witness-v1`, Ed25519 over `jcs(observation)`), and settle-time retention adds a pending
 queue (`<state>/aura/retainer-pending.json`) and a delivery record beside each receipt (`*.retainer.json`).
 
@@ -32,7 +32,7 @@ Three facts are printed on every path, separately, and they are separate questio
 | Fact | Question | Answered by |
 | --- | --- | --- |
 | `ASSOCIATION` | are these documents about **this** log, at these positions, for the receipts that name them? | this adapter, by recomputation |
-| `COURT` | what does the pinned court say about the pair **alone**? | `vendor/phase0-consistency/verify.py`, a separate process |
+| `COURT` | what does the pinned court say about the pair **alone**? | `vendor/append-only/verify.py`, a separate process |
 | `COMPOSITION` | what does the log **in hand** say about the same two sizes? | `scripts/composition/aura.py:verify_consistency` |
 
 Exit codes: `0` all three green, `3` a verdict was reached and is not `APPEND_ONLY`,
@@ -265,7 +265,7 @@ Genesis files this lane **consumes and does not own**, digests at base `b887dde`
 | `scripts/composition/receipt.py` | `75f2bc14e1c75efa` | the lead's composition lane |
 | `scripts/composition/loader.py` | `eb23b3ac0df6b6c1` | the lead's composition lane |
 | `scripts/phase0/phase0log.py` | `2ff4471f70c65652` | the Phase 0 lane |
-| `vendor/phase0-consistency/verify.py` | `039aa8999f9a1e1a` | vendored; never edited |
+| `vendor/append-only/verify.py` | `039aa8999f9a1e1a` | vendored; never edited |
 
 What was taken from the pin, and what was **not**:
 

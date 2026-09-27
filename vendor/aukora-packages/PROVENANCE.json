@@ -304,12 +304,12 @@
       "path": "lib/packages/memory/src/envelope.js",
       "from": "src/packages/memory/src/envelope.ts",
       "transpiled": true,
-      "sha256": "c44febe5438a99c61bde66df52c8f290f156f1056c07701ef3565ff192d308d8",
-      "bytes": 5398,
+      "sha256": "024cf31ba15d22639a65046e70f242c62127631ffe848b4567d36eaf89393525",
+      "bytes": 5394,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -341,12 +341,12 @@
       "path": "lib/packages/memory/src/staleness.js",
       "from": "src/packages/memory/src/staleness.ts",
       "transpiled": true,
-      "sha256": "f5badc25d8d42aa5e7c7c69b17ad2bfb81f35b599e88fb24cf2d9b3cefe2f276",
-      "bytes": 767,
+      "sha256": "7d38d4563c0d1c9e52ceddabb019ffbef65bbd853604d6384d28cfd15f653d38",
+      "bytes": 763,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/staleness'",
-          "to": "'../../../../../aukora-kernel/lib/staleness.js'"
+          "to": "'../../../../../authority/lib/staleness.js'"
         }
       ]
     }
@@ -354,12 +354,12 @@
   "generatedDependencies": [
     {
       "specifier": "@aukora/kernel/canonical",
-      "resolvesTo": "vendor/aukora-kernel/lib/canonical.js",
+      "resolvesTo": "vendor/authority/lib/canonical.js",
       "sha256": "b213762567fc959e419372e75454eaf320fd123f62aabb7538a080da11a5abf3"
     },
     {
       "specifier": "@aukora/kernel/staleness",
-      "resolvesTo": "vendor/aukora-kernel/lib/staleness.js",
+      "resolvesTo": "vendor/authority/lib/staleness.js",
       "sha256": "aff97a35431e18b8bb634a8d27bad3ff199da21c0b4a56ba356ec8ceb10efd37"
     }
   ],
@@ -371,8 +371,8 @@
     },
     {
       "path": "transpile.mjs",
-      "sha256": "ce9f643838f811f267d131ac668031ee19c67428079e99c043d9290f2973e379",
-      "bytes": 8051
+      "sha256": "8d25abd3e4e28dfa910bc06680ced367cbd61a5cf376b7691f236935db30f65f",
+      "bytes": 8043
     }
   ]
 }

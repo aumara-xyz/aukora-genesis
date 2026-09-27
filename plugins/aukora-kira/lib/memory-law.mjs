@@ -21,7 +21,7 @@
  */
 import { memoryGrantsAuthority, tombstoneCommitment } from '../../../vendor/aukora-packages/lib/packages/memory/src/envelope.js'
 import { qualifyMemoryIngest } from '../../../vendor/aukora-packages/lib/packages/memory/src/ingestGate.js'
-import { canonicalHash } from '../../../vendor/aukora-kernel/lib/canonical.js'
+import { canonicalHash } from '../../../vendor/authority/lib/canonical.js'
 
 /** A named refusal: a record the law will not admit, or a tombstone with nothing to name. */
 export class KiraMemoryLawError extends Error {

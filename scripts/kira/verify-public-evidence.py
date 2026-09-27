@@ -2,7 +2,7 @@
 """Verify one public-evidence export with the RELEASE's own vendored Diamond.
 
 WHAT THIS IS. A caller, not a verifier. Every judgement belongs to the frozen
-Diamond consumer vendored under ``vendor/diamond-cold``; this script's whole job
+Diamond consumer vendored under ``vendor/kira-export``; this script's whole job
 is to map an exporter manifest onto that CLI's arguments, run it as a bounded
 subprocess, and report what came back without softening it.
 
@@ -853,7 +853,7 @@ def separate_findings(report: dict, exit_code: int, stderr: str,
 def main(argv: list[str]) -> int:
     here = Path(__file__).resolve().parent
     repo_root = here.parent.parent
-    default_root = repo_root / "vendor" / "diamond-cold"
+    default_root = repo_root / "vendor" / "kira-export"
 
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--export", required=True, help="the public-evidence export directory")

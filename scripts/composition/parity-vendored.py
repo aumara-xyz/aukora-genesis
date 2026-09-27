@@ -5,8 +5,8 @@
 
 WHY THIS EXISTS, AND WHY IT IS NOT A DEPENDENCY. The rule for this brick was
 binary: either implement RFC 8032 in stdlib, **or** reuse the vendored
-implementation under `vendor/receipt-v3/` — but do not depend on a file that may
-not exist. When this brick was written, `vendor/receipt-v3/` did not exist, so
+implementation under `vendor/receipt/` — but do not depend on a file that may
+not exist. When this brick was written, `vendor/receipt/` did not exist, so
 `ed25519.py` and `jcs.py` here are independent stdlib implementations. The
 vendored tree arrived afterwards, committed by another agent working in this same
 worktree.
@@ -53,7 +53,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-VENDOR = os.path.join(ROOT, "vendor", "receipt-v3", "toy")
+VENDOR = os.path.join(ROOT, "vendor", "receipt", "toy")
 
 #: Values chosen for the canonical-form disagreements that exist in the wild.
 JCS_CASES = (

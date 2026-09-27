@@ -45,16 +45,16 @@ In scope is AUKORA's own code in this repository:
 
 | Organ | What it does | Where it lives |
 | --- | --- | --- |
-| Composition gate | admits or refuses a declared module before it loads; issues and verifies one-use grants and receipts | `plugins/aukora-composition-gate/`, `plugins/aukora-gate-demo/`, `scripts/composition/`, `vendor/receipt-v3/` |
+| Composition gate | admits or refuses a declared module before it loads; issues and verifies one-use grants and receipts | `plugins/aukora-composition-gate/`, `plugins/aukora-gate-demo/`, `scripts/composition/`, `vendor/receipt/` |
 | Kira | memory records, their receipts, owner-approved settlement, and the Experience Court | `plugins/aukora-kira/`, `scripts/kira/` |
 | Aumlok | identity records, owner approvals, the separate signer and its approval popup | `plugins/aukora-aumlok/`, `scripts/aumlok/` |
-| Aura | the hash-linked, tamper-evident evidence log (append-only is judged between retained observations, not enforced on the file), retained observations, the witness and the consistency court | `scripts/aura/`, `scripts/phase0/`, `vendor/phase0-consistency/` |
+| Aura | the hash-linked, tamper-evident evidence log (append-only is judged between retained observations, not enforced on the file), retained observations, the witness and the consistency court | `scripts/aura/`, `scripts/phase0/`, `vendor/append-only/` |
 | Desktop shell | the Electron window that starts or attaches to one local harness | `apps/aukora-desktop/` |
-| Checks | the keyless commands `docs/CLAIMS.md` lists, which must fail when their protection is removed | `tests/`, `plugins/aukora-kira/lib/wasm-cell/courts/`, `scripts/phase0-check-pins.py`, `vendor/phase0-consistency/verify.py` |
+| Checks | the keyless commands `docs/CLAIMS.md` lists, which must fail when their protection is removed | `tests/`, `plugins/aukora-kira/lib/wasm-cell/courts/`, `scripts/phase0-check-pins.py`, `vendor/append-only/verify.py` |
 | Release materializer | builds the pinned host, strips it, records it and launches it | `scripts/build-dsh.py`, `scripts/materialize-aukora-release.py`, `scripts/release-strip.mjs`, `scripts/artifact-record.mjs`, `scripts/genesis-check.mjs`, `scripts/launch-dsh.py`, `scripts/artifacts-coverage.json` |
 | Other AUKORA plugins | the foundation preset and the faces | `plugins/aukora-foundation/`, `plugins/aukora-face/` |
 
-`vendor/receipt-v3/` and `vendor/phase0-consistency/` are byte-pinned copies of AUKORA's own
+`vendor/receipt/` and `vendor/append-only/` are byte-pinned copies of AUKORA's own
 verifier code. Report problems in them here; a fix is made where those bytes come from and then
 re-pinned, never by editing the pinned copy.
 

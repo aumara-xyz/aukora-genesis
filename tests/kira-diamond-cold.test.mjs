@@ -5,7 +5,7 @@
  *   node tests/kira-diamond-cold.test.mjs            # every arm
  *   node tests/kira-diamond-cold.test.mjs --mutate   # every arm again, its invariant broken
  *
- * WHAT THIS COURT PROVES. `vendor/diamond-cold/scripts/verify-kira-evidence.py` — the frozen
+ * WHAT THIS COURT PROVES. `vendor/kira-export/scripts/verify-kira-evidence.py` — the frozen
  * Diamond consumer vendored at upstream pin 7400473825c5af4c17657604bf3d9c3c749ff1a1, whose own
  * docstring says "The consumer must run from an EMPTY directory. Its own package may be reached by
  * an explicit `--package-root`" — is executed with its process cwd set to a directory that holds
@@ -65,7 +65,7 @@
  *
  * It also does NOT prove the exporter's allowlist, determinism or refusals (that is
  * `tests/public-evidence.test.mjs`), and it does NOT prove the release's vendored copy: the
- * consumer under test is this checkout's `vendor/diamond-cold`, named by absolute path.
+ * consumer under test is this checkout's `vendor/kira-export`, named by absolute path.
  *
  * DISPOSABLE STATE ONLY. One temporary root per run, removed afterwards. Every tampered document
  * and every broken dependency lives in a COPY under that root; the working tree, the release, the
@@ -92,8 +92,8 @@ const { canonicalJSON, stageKiraMemoryRecord } = await import(pathToFileURL(join
 const { createApprover, writeApproval } = await import(pathToFileURL(join(ROOT, 'tests/kira-approval-standin.mjs')).href)
 
 const MUTATE = process.argv.includes('--mutate')
-const CONSUMER = join(ROOT, 'vendor/diamond-cold/scripts/verify-kira-evidence.py')
-const PACKAGE_ROOT = join(ROOT, 'vendor/diamond-cold')
+const CONSUMER = join(ROOT, 'vendor/kira-export/scripts/verify-kira-evidence.py')
+const PACKAGE_ROOT = join(ROOT, 'vendor/kira-export')
 const DRIVER = join(ROOT, 'scripts/kira/verify-public-evidence.py')
 const SUBJECT = `aukora:1:${'3c'.repeat(32)}`
 const AT = '2026-09-08T00:00:00Z'
@@ -335,7 +335,7 @@ const RUBBER_STAMPS = {
 }
 
 /**
- * A disposable copy of `vendor/diamond-cold` with ONE check defeated.
+ * A disposable copy of `vendor/kira-export` with ONE check defeated.
  * @param {keyof typeof RUBBER_STAMPS} check - which check to defeat.
  * @returns {string} the copy's root, for `--package-root`.
  */
@@ -407,7 +407,7 @@ arm('the cold consumer VERIFIES the real export: four facets, exit 0, ceilings i
   // `vendor/` IS READ AND NEVER WRITTEN — the copy is disposable, under this court's own `work`, and only the COPY is edited.
   const scratch = broken ? vendoredCopyWithoutReplayCeiling(join(work, 'vendor-no-replay-ceiling')) : null
   // `flipped` keeps its name for the evidence line below; what it now names is the mutation, not a byte.
-  const flipped = scratch === null ? null : 'the NO_GLOBAL_REPLAY_PREVENTION ceiling removed from a scratch copy of vendor/diamond-cold'
+  const flipped = scratch === null ? null : 'the NO_GLOBAL_REPLAY_PREVENTION ceiling removed from a scratch copy of vendor/kira-export'
   const run = runConsumer([...evidenceArgs(exportDir, scratch ?? PACKAGE_ROOT), '--expect', 'verified', '--json'], emptyDir)
   // THE DIAGNOSIS MUST BE READABLE, because the mutant's failure IS the evidence: an empty message made a crash look
   // like a catch in `--mutate`. stdout carries the consumer's own verdict and refusal names; stderr carries crashes.
@@ -787,7 +787,7 @@ arm('a vendored tree WITHOUT the diamond package fails by name (SETUP: cannot im
   assert.equal(run.status, 2, `expected the documented usage/setup exit 2, got ${run.status}`)
   assert.match(run.stderr, /SETUP: cannot import diamond\.kira_evidence/u,
     'a missing package must be reported by name, not as a traceback')
-  return `diamond/ removed from a DISPOSABLE copy of vendor/diamond-cold: exit 2, stderr names the import failure`
+  return `diamond/ removed from a DISPOSABLE copy of vendor/kira-export: exit 2, stderr names the import failure`
 })
 
 arm('a vendored tree WITHOUT the consumer script fails naming the missing file', broken => {

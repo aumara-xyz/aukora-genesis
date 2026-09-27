@@ -87,7 +87,7 @@ check() {
     pids="$pids $!"
 }
 
-check 'python3 vendor/phase0-consistency/verify.py --selftest'
+check 'python3 vendor/append-only/verify.py --selftest'
 check 'python3 scripts/phase0-check-pins.py'
 check 'node plugins/aukora-kira/lib/wasm-cell/courts/harness/wasm-proposal-cell/run.mjs'
 check 'node tests/kira-diamond-cold.test.mjs'
@@ -101,8 +101,8 @@ check 'node tests/aukora-gate-require-grant.test.mjs'
 check 'node tests/kira-control-admission.test.mjs'
 check 'node tests/aukora-restore-scope.test.mjs'
 check 'node tests/kira-consolidate.test.mjs'
-check 'cd vendor/aukora-membrane && python3 minimal/tour.py'
-check 'node vendor/aukora-kernel/conformance.mjs'
+check 'python3 vendor/aukora-membrane/minimal/tour.py'
+check 'node vendor/authority/conformance.mjs'
 
 index=0
 for pid in $pids; do

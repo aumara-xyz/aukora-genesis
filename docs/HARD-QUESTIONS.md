@@ -82,7 +82,7 @@ accept, until the live configuration names another approver (`self-change.mjs:15
 `scripts/aukora/remember.mjs:35-40`). The signer runs inside the app's main process
 (`apps/aukora-desktop/main.mjs:438`), so code that can change the app can sign. The cold verifier takes no
 revocation input and prints `NO_GLOBAL_REPLAY_PREVENTION` and `NO_LATESTNESS`
-(`vendor/diamond-cold/diamond/kira_evidence.py:846-851`), so evidence signed before a key change still verifies.
+(`vendor/kira-export/diamond/kira_evidence.py:846-851`), so evidence signed before a key change still verifies.
 No check here performs a rotation.
 
 ### 7. Can the popup show one thing and sign another?
@@ -117,7 +117,7 @@ For memory, Kira spends an approval before the write and refuses a second use as
 `scripts/aukora/decide.mjs` through the candidate adapter (`self-change.mjs:219-222`,
 `scripts/aukora/aumlok-candidate-authority.mjs:260`), and `advance.mjs` calls it directly (`advance.mjs:188-192`).
 The adapter reads the receipt strictly, verifies its one Ed25519 signature under the pinned did:key, and checks
-operation, subject, control digest and window (`decide.mjs:104-164`). Then the vendored verifier-only kernel (`vendor/aukora-kernel`, from aumara-xyz/aukora at
+operation, subject, control digest and window (`decide.mjs:104-164`). Then the vendored verifier-only kernel (`vendor/authority`, from aumara-xyz/aukora at
 `def297f`) allows one use of the signed challenge, and the spent set is rewritten only on ALLOW
 (`decide.mjs:166-212`).
 
@@ -132,16 +132,16 @@ lock, and the entry carries the kernel's approval id (`self-change.mjs:216-234`)
 (`self-change.mjs:47`, `:180`) and the checkout-equals-GitHub-`main` rule (`:125-127`) remain. After the push each
 script reads `main` back and chains a separate result (`completed`, `not-completed` or `uncertain`); only a definite
 result closes an approval, and a spent approval is never reused. A restore of Kira's state un-spends its markers unless an outside witness recorded the spend.
-Check: `node vendor/aukora-kernel/conformance.mjs` prints `KERNEL CONFORMANCE: 37/37 passed`;
+Check: `node vendor/authority/conformance.mjs` prints `KERNEL CONFORMANCE: 37/37 passed`;
 `node tests/aukora-restore-scope.test.mjs` measures the restore gap.
 
 ### 10. What does the cold verifier prove, and what does it not prove?
 
 With anchors you supply, it proves that an exported Kira record, its receipt, its Aura entry and the object bytes
 agree and carry valid issuer signatures, and, given the approval artifact, that the approver key signed that exact
-content (`APPROVAL_ARTIFACT_VERIFIED`, `vendor/diamond-cold/diamond/approval_artifact.py:845`). In its own printed
+content (`APPROVAL_ARTIFACT_VERIFIED`, `vendor/kira-export/diamond/approval_artifact.py:845`). In its own printed
 words it does not prove that the WASM cell ran, first presentation, latestness, absence of forks, human attendance
-or that the record is in anyone's store (`vendor/diamond-cold/diamond/kira_evidence.py:844-861`). It is this
+or that the record is in anyone's store (`vendor/kira-export/diamond/kira_evidence.py:844-861`). It is this
 project's verifier in a separate process, not an independent implementation.
 Check: `node tests/kira-diamond-cold.test.mjs --mutate` ends `ALL ARMS PASSED, AND EVERY ARM WENT RED WHEN BROKEN`.
 
@@ -150,7 +150,7 @@ Check: `node tests/kira-diamond-cold.test.mjs --mutate` ends `ALL ARMS PASSED, A
 From the caller; it prints `ANCHOR_SUPPLIED_BY_CALLER` (`scripts/kira/verify-public-evidence.py:971`). In
 `remember.mjs` the caller is the producer: the issuer anchor comes from its own store and the approver anchor from
 its own live configuration (`remember.mjs:89-92`), and the verifier states `SAME_UID_ISSUER`
-(`vendor/diamond-cold/diamond/kira_evidence.py:861`). So the live evidence shows consistency under the owner's own
+(`vendor/kira-export/diamond/kira_evidence.py:861`). So the live evidence shows consistency under the owner's own
 keys. A third party needs the approver key from a source independent of this Mac; none exists yet.
 
 ### 12. Is automatic memory an authority bypass?
@@ -188,12 +188,12 @@ Check: `node plugins/aukora-kira/lib/wasm-cell/courts/harness/wasm-proposal-cell
 ### 14. What does the membrane minimal verifier prove, and what is it connected to?
 
 One arithmetic fact: whether a presented log (size, root, proof) extends a retained one
-(`vendor/phase0-consistency/CLAIM.md`). `APPEND_ONLY` is not truth, occurrence or identity, and at power-of-two
+(`vendor/append-only/CLAIM.md`). `APPEND_ONLY` is not truth, occurrence or identity, and at power-of-two
 sizes it declines to accuse (`UNDETERMINED`). `scripts/phase0/memory-head` keeps a head of Kira's `aura.jsonl`
 outside the state directory and runs `verify.py` as a separate process (`scripts/phase0/memory_head.py:1-15`). The
 head is on the same Mac (`RETAINER_SAME_OWNER`, `scripts/phase0/retainer.py:38`), so whoever controls the Mac can
 rewrite both.
-Check: `python3 scripts/phase0/selfcheck.py` (36/36 arms); `cd vendor/aukora-membrane && python3 minimal/tour.py`.
+Check: `python3 scripts/phase0/selfcheck.py` (36/36 arms); `python3 vendor/aukora-membrane/minimal/tour.py`.
 
 ### 15. Can a lane or a CORE session pass itself off as the owner or the orchestrator?
 
@@ -276,7 +276,7 @@ paths to `main` remains a defect.
 ### 19. What was imported from the older repositories, and what is wired in?
 
 Imported byte for byte, each with a `PROVENANCE.json` giving every file's upstream commit, git blob and sha256, most
-with a README giving their own test command: under `vendor/`, `aukora-kernel`, `aukora-seed-guard`, `aukora-membrane`,
+with a README giving their own test command: under `vendor/`, `authority`, `seed`, `aukora-membrane`,
 `aukora-first-echo`, `aukora-seed-app`, `aukora-packages` and `aukora-evidence`; and `docs/research`. Re-run on
 2026-09-27 at `ebcee5bd7` (those trees are unchanged since): kernel 37/37; seed guard 37 tests, conformance 11/12
 (the declared `undeclared-path` gap); the membrane tour; First Echo 141/141 (bun 1.3.14; its git-identity test left

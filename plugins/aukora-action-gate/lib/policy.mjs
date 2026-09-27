@@ -2,7 +2,7 @@
  * THE DECISION: one tool call in, one verdict out — `{decision, rule, message}`.
  *
  * A THIN ADAPTER OVER THE VENDORED SEED GUARD. Every question about a PATH is answered by aukora-seed's guard at
- * 9fca7a0, vendored byte for byte in `vendor/aukora-seed-guard/` (PROVENANCE.json): `analyse` resolves a path in both
+ * 9fca7a0, vendored byte for byte in `vendor/seed/` (PROVENANCE.json): `analyse` resolves a path in both
  * its lexical and its real form and folds it (paths.mjs), `compileAll`/`judge` match the folded keys against a law's
  * patterns (law.mjs), and `decide` gives the full write verdict — repository root, the guard's own code, outside the
  * root, protected, hard links (guard.mjs). This file only decides WHICH law to ask about WHICH path for WHICH tool,
@@ -24,9 +24,9 @@
  */
 import { basename, isAbsolute, join, resolve } from 'node:path'
 
-import { REASON, decide } from '../../../vendor/aukora-seed-guard/src/guard.mjs'
-import { compileAll, judge } from '../../../vendor/aukora-seed-guard/src/law.mjs'
-import { analyse, realpathish } from '../../../vendor/aukora-seed-guard/src/paths.mjs'
+import { REASON, decide } from '../../../vendor/seed/src/guard.mjs'
+import { compileAll, judge } from '../../../vendor/seed/src/law.mjs'
+import { analyse, realpathish } from '../../../vendor/seed/src/paths.mjs'
 import { SELF_CHANGE_ROUTE, routedRefusal } from './routes.mjs'
 import { authorityRefusal, credentialRefusal, effectiveShellCommands, gitMainRefusal, hostsNamed, literalPath, literalWriteTargets, shellCommands } from './shell.mjs'
 
@@ -283,7 +283,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
         const v = writeVerdict(root, abs, GOVERNING_PATTERNS, 'receipt')
         if (v.verdict !== 'refused') continue
         if (v.reasonClass === REASON.PROTECTED || v.reasonClass === REASON.SELF) {
-          const where = v.reasonClass === REASON.SELF ? 'the gate\'s own judge (vendor/aukora-seed-guard)' : `governing code in ${root}`
+          const where = v.reasonClass === REASON.SELF ? 'the gate\'s own judge (vendor/seed)' : `governing code in ${root}`
           return deny('authority:governing-code', `${raw} is ${where} (seed guard: ${v.reasonClass}${v.rule ? `, rule "${v.rule}"` : ''}). `
             + `Changing it is self-modification, an authority action. Use ${SELF_CHANGE_ROUTE}; it lands only if he approves`)
         }

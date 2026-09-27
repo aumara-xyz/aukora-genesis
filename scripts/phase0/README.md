@@ -15,7 +15,7 @@ python3 scripts/phase0/present-head --state "$STATE" --retained retained.json --
 python3 scripts/phase0/verify retained.json presented.json
 ```
 
-The verdict is printed by `vendor/phase0-consistency/verify.py`, running as a separate
+The verdict is printed by `vendor/append-only/verify.py`, running as a separate
 process over the two files. `scripts/phase0/verify` computes nothing: it prints the
 command it ran, so a reader who trusts this repository for nothing can run the second
 line by hand and get the same answer.
@@ -60,15 +60,15 @@ names.
 
 ## The Rust replica and the second verifier
 
-`vendor/phase0-consistency/replicas/rust-verifier/` is a second implementation in Rust,
+`vendor/append-only/replicas/rust-verifier/` is a second implementation in Rust,
 written within the same project from its spec rather than ported from `verify.py`. It
 cross-checks runtime and number/JSON semantics, and is not verification by an independent
 party: it shares the project's reading of the spec.
 
 ```bash
-cargo build --release --manifest-path vendor/phase0-consistency/replicas/rust-verifier/Cargo.toml
-./vendor/phase0-consistency/replicas/rust-verifier/target/release/aukora-verify-rs \
-  vendor/phase0-consistency/vectors/retained.json vendor/phase0-consistency/vectors/append-only.json
+cargo build --release --manifest-path vendor/append-only/replicas/rust-verifier/Cargo.toml
+./vendor/append-only/replicas/rust-verifier/target/release/aukora-verify-rs \
+  vendor/append-only/vectors/retained.json vendor/append-only/vectors/append-only.json
 ```
 
 CI builds it and requires both verifiers to agree on all three published vector pairs —

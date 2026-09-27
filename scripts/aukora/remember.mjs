@@ -119,7 +119,7 @@ if (!gate.published) {
 const empty = mkdtempSync(join(tmpdir(), 'aukora-stranger-'))
 const verified = leg('5. cold verify (vendored Diamond consumer, empty directory, anchors out of band)', 'python3', [
   join(REPO, 'scripts/kira/verify-public-evidence.py'), '--export', exportDir,
-  '--package-root', join(REPO, 'vendor/diamond-cold'),
+  '--package-root', join(REPO, 'vendor/kira-export'),
   '--issuer-anchor', join(anchors, 'issuer.pem'), '--approver-anchor', join(anchors, 'approver.pem'),
   '--record', contentSha256,
 ], { cwd: empty })

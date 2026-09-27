@@ -5,7 +5,7 @@ Genesis owns this file, not the vendored court. It carries three things:
 
 1. The RFC 6962 arithmetic a *producer* needs: leaf hashing, the Merkle tree head
    over the first N leaves, and a consistency proof from size N to size M. The
-   consumer side is the vendored `vendor/phase0-consistency/verify.py`, which is
+   consumer side is the vendored `vendor/append-only/verify.py`, which is
    never imported here and never modified: `scripts/phase0/verify` runs it as a
    separate process so the two sides stay independent.
 2. The disposable Aura record stream: one JSONL file, treated as append-only by

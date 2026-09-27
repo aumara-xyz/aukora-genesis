@@ -7,7 +7,7 @@
  * verdict and, beside it, every ceiling that qualifies it.
  *
  * IT IS NOT A receipt-v3. Receipt v3 is a separate, pinned, portable format
- * (`vendor/receipt-v3/`, D5); this is this lane's approval receipt, it claims no CONFORMING
+ * (`vendor/receipt/`, D5); this is this lane's approval receipt, it claims no CONFORMING
  * status, and it deliberately carries no `alg`, no owner field and no identity binding. Nothing
  * here is a stranger-verifiable artifact — it is the honest local record of one verified event.
  *

@@ -1,6 +1,6 @@
 # The minimal verifier, pointed at Aura
 
-`vendor/phase0-consistency/` is `github.com/aumara-xyz/aukora-membrane` `minimal/` at `d8b17fac`, byte for
+`vendor/append-only/` is `github.com/aumara-xyz/aukora-membrane` `minimal/` at `d8b17fac`, byte for
 byte (`verify.py` sha256 `039aa899…958089`; `python3 scripts/phase0-check-pins.py` recomputes every pin).
 `verify.py` is a standalone Python checker for RFC 6962 consistency proofs. Given a head you kept
 (tree size N, root) and a later head (size M, root, proof), it answers `APPEND_ONLY`,
@@ -12,7 +12,7 @@ hash chain `memory-owner.mjs` writes: `sequence`, `prev`, `hash`).
 ## Two commands
 
 ```bash
-python3 vendor/phase0-consistency/verify.py --selftest    # the membrane verifier alone: 4/4 checks, no files
+python3 vendor/append-only/verify.py --selftest    # the membrane verifier alone: 4/4 checks, no files
 node scripts/aura/verify-append-only.mjs --selftest       # the Aura bridge: 12 cases on disposable logs, plus the
                                                           # restated hash rule compared with memory-owner.mjs
 ```
@@ -43,7 +43,7 @@ The retained side can be any of these:
 2. **Court arm (the membrane verifier, unedited, run as a separate process).** When the retained side has a Merkle
    root, the tool builds the RFC 6962 tree over the re-derived entry hashes. Leaf k is `sha256(0x00 ‖ hash_k)` and
    each node is `sha256(0x01 ‖ l ‖ r)`. The tool writes `presented.json` with the consistency proof and runs
-   `python3 vendor/phase0-consistency/verify.py <retained> <presented>`. Pass `--out DIR` to keep both files so
+   `python3 vendor/append-only/verify.py <retained> <presented>`. Pass `--out DIR` to keep both files so
    anyone can re-run that line. The command prints the court's verdict beside its own. If the chain arm says
    `APPEND_ONLY` and the court disagrees, the result is `UNDETERMINED`.
 
@@ -60,7 +60,7 @@ the same disk as the log shows only that the arithmetic holds, not who had custo
 
 ## `tour.py`
 
-`vendor/phase0-consistency/tour.py` is upstream's teaching file. It reads `docs/heads/demo/`, and that directory
+`vendor/append-only/tour.py` is upstream's teaching file. It reads `docs/heads/demo/`, and that directory
 exists only in the membrane repository. Run from this repository, every act prints `UNDETERMINED
 parse_or_io_error`. Run it in a membrane checkout (`python3 minimal/tour.py`), where the four acts print
 `APPEND_ONLY`, `UNDETERMINED`, `OBSERVATION_CONFLICT` and `UNDETERMINED (2^k)`. Its scoreboard there reads 12 cases,

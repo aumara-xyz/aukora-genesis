@@ -138,7 +138,7 @@ const calls = [
   { expect: 'deny', name: 'write', arguments: { file_path: 'plugins/aukora-action-gate/lib/policy.mjs', content: 'export {}' } },
   { expect: 'deny', name: 'write', arguments: { file_path: '/etc/aukora-gate-check', content: 'x' } },
   { expect: 'deny', name: 'write', arguments: { file_path: 'second-name.txt', content: 'x' } },
-  { expect: 'deny', name: 'write', arguments: { file_path: join(REPO, 'vendor', 'aukora-seed-guard', 'src', 'guard.mjs'), content: 'x' } },
+  { expect: 'deny', name: 'write', arguments: { file_path: join(REPO, 'vendor', 'seed', 'src', 'guard.mjs'), content: 'x' } },
   { expect: 'deny', name: 'bash', arguments: { command: 'security find-generic-password -s github -w', description: 'Read a keychain item' } },
   { expect: 'deny', name: 'web_fetch', arguments: { url: 'https://example.org/upload' } },
   { expect: 'allow', name: 'web_fetch', arguments: { url: 'https://api.github.com/repos/x/y' } },
@@ -254,9 +254,9 @@ for (const [label, expect, command, says] of [
 
 const signal = new AbortController().signal
 let failures = 0
-const seedPin = JSON.parse(readFileSync(join(REPO, 'vendor', 'aukora-seed-guard', 'PROVENANCE.json'), 'utf8'))
+const seedPin = JSON.parse(readFileSync(join(REPO, 'vendor', 'seed', 'PROVENANCE.json'), 'utf8'))
 process.stdout.write(`DSH tool runtime: ${join(DSH, 'packages', 'core', 'tools')}\n`
-  + `path judge:       vendor/aukora-seed-guard (${seedPin.repository} @ ${seedPin.commit.slice(0, 9)}, ${String(seedPin.files.length)} files pinned)\n`
+  + `path judge:       vendor/seed (${seedPin.repository} @ ${seedPin.commit.slice(0, 9)}, ${String(seedPin.files.length)} files pinned)\n`
   + `plugin mounted:   ${unmounted ? 'NONE (red arm: ACTION_GATE_CHECK_UNMOUNTED=1)' : `${gate.name} (inject ${JSON.stringify(gate.inject)})`}\n\n`)
 const groups = new Map()
 for (const [index, call] of calls.entries()) {
