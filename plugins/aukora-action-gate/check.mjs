@@ -8,17 +8,17 @@
  * SystemPrompt + the REAL `@deepseek-ai/dsh-tools` ToolRuntime), mounts this plugin through `ctx.plugin()` exactly as
  * the loader does, registers stand-in tools with the harness's real names and argument shapes (their bodies never
  * touch the disk: they only report that they ran), and executes calls through `ctx.tools.execute()` as the agent loop
- * does. Every path verdict comes from the vendored seed guard (vendor/aukora-seed-guard). Then it re-derives every
- * receipt's hash independently and checks that no raw argument reached the log.
+ * does. The seed guard classifies paths and the vendored kernel decides. Then it re-derives every receipt's hash
+ * independently and checks the kernel codes and that no raw argument reached the log.
  *
  * Everything it writes is inside one scratch root (scripts/lib/run-root.mjs `openScratch`), removed at exit. It reads
- * no key material: the one live key path it names is refused by the gate before any tool body could open it.
+ * no key material: every key-shaped path belongs to a synthetic fixture under that scratch root.
  */
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, linkSync, mkdirSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
-import { homedir, tmpdir } from 'node:os'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
@@ -44,11 +44,15 @@ const tools = await import(pathToFileURL(join(DSH, 'packages', 'core', 'tools', 
 // ── A disposable deployment: a support root with a FIXTURE seed, a repository on `main`, and the receipt log. ──
 const scratch = openScratch({ owner: 'aukora-action-gate-check', label: 'action-gate-check' })
 const support = scratch.path('support')
+const fixtureHome = scratch.path('home')
+const fixtureSeed = join(fixtureHome, 'Library', 'Application Support', 'AUKORA', 'state', 'aumlok', 'machine-seed-v3.json')
 const repo = scratch.path('repo')
 const featureRepo = scratch.path('feature-repo')
 const auraDir = join(support, 'state', 'home', 'aura-actions')
 mkdirSync(join(support, 'state', 'aumlok'), { recursive: true })
 writeFileSync(join(support, 'state', 'aumlok', 'machine-seed-v3.json'), '{"fixture":"not a key"}\n')
+mkdirSync(dirname(fixtureSeed), { recursive: true })
+writeFileSync(fixtureSeed, '{"fixture":"not a key"}\n')
 mkdirSync(join(repo, '.git'), { recursive: true })
 writeFileSync(join(repo, '.git', 'HEAD'), 'ref: refs/heads/main\n')
 mkdirSync(join(repo, 'plugins', 'aukora-action-gate', 'lib'), { recursive: true })
@@ -65,13 +69,20 @@ await ctx.plugin(tools.default)
 
 // Stand-ins with the harness's names and argument shapes. A body only records that it ran.
 const ran = []
-const standIn = (toolName, parameters) => tools.defineTool({
-  name: toolName,
-  description: `stand-in for ${toolName}`,
-  parameters,
-  output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
-  async execute() { ran.push(toolName); return `${toolName} body ran` },
-})
+const standIn = (toolName, fields) => {
+  const parameters = fields.type === 'object' ? fields : {
+    type: 'object',
+    properties: Object.fromEntries(Object.entries(fields).map(([key, { required, ...schema }]) => [key, schema])),
+    required: Object.entries(fields).filter(([, schema]) => schema.required === true).map(([key]) => key),
+  }
+  return {
+    name: toolName,
+    description: `stand-in for ${toolName}`,
+    parameters,
+    output: { schema: { type: 'string' }, render: (_args, value) => [{ type: 'text', text: value }] },
+    async execute() { ran.push(toolName); return `${toolName} body ran` },
+  }
+}
 ctx.tools.register(standIn('read', { file_path: { type: 'string', required: true } }))
 ctx.tools.register(standIn('write', { file_path: { type: 'string', required: true }, content: { type: 'string', required: true } }))
 ctx.tools.register(standIn('bash', { command: { type: 'string', required: true }, description: { type: 'string', required: true }, workdir: { type: 'string' } }))
@@ -87,6 +98,12 @@ ctx.tools.register(standIn('mcp__fixture__write', { uri: { type: 'string', requi
 ctx.tools.register(standIn('aukora_self_change', { why: { type: 'string', required: true }, worktree: { type: 'string', required: true },
   paths: { type: 'array', items: { type: 'string' } }, preview: { type: 'boolean' } }))
 ctx.tools.register(standIn('unapproved_fixture_tool', { note: { type: 'string' } }))
+ctx.tools.register(standIn('mcp__fixture__patch_file', {
+  type: 'object', properties: { path: { type: 'string' } }, required: ['path'],
+}))
+for (const name of ['cordis_define', 'cordis_run']) {
+  ctx.tools.register(standIn(name, { type: 'object', properties: {}, required: [] }))
+}
 
 /** The overlay's `allowTools` names, read as lines (its `!!js` tags keep a YAML parser out). */
 function deployedTools() {
@@ -102,7 +119,7 @@ function deployedTools() {
 // THE RED ARM: ACTION_GATE_CHECK_UNMOUNTED=1 runs the same calls with the row absent, and the check must go RED.
 const unmounted = process.env.ACTION_GATE_CHECK_UNMOUNTED === '1'
 if (!unmounted) await ctx.plugin(gate, {
-  auraDir, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo,
+  auraDir, home: fixtureHome, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo,
   // THE DEPLOYMENT'S OWN LIST (overlays/action-gate.patch.yml `allowTools`) plus the fixture family, so a tool this
   // plugin registers but the deployment never approved goes RED here instead of being refused live (#26).
   allowTools: [...deployedTools(), 'mcp__fixture__*'],
@@ -110,10 +127,9 @@ if (!unmounted) await ctx.plugin(gate, {
 })
 
 const agent = { id: 'session-check-0001', session: { header: { cwd: repo } } }
-const liveSeed = join(homedir(), 'Library', 'Application Support', 'AUKORA', 'state', 'aumlok', 'machine-seed-v3.json')
 const calls = [
   { expect: 'allow', name: 'read', arguments: { file_path: 'notes.txt' } },
-  { expect: 'deny', name: 'read', arguments: { file_path: liveSeed } },
+  { expect: 'deny', name: 'read', arguments: { file_path: fixtureSeed } },
   { expect: 'deny', name: 'read', arguments: { file_path: join(support, 'state', 'aumlok', 'machine-seed-v3.json') } },
   { expect: 'deny', name: 'bash', arguments: { command: 'cat "$HOME/Library/Application Support/AUKORA/state/aumlok/machine-seed-v3.json"', description: 'Print the seed' } },
   { expect: 'deny', name: 'bash', arguments: { command: 'git push origin HEAD:main', description: 'Push to main' } },
@@ -213,7 +229,12 @@ calls.push(
   { group: 'unknown tool path roles', label: 'move destination', expect: 'deny', name: 'mcp__fixture__move_file', arguments: { source: 'notes.txt', destination: protectedTarget } },
   { group: 'unknown tool path roles', label: 'workspace move', expect: 'allow', name: 'mcp__fixture__move_file', arguments: { source: 'notes.txt', destination: 'workspace/result.txt' } },
   { group: 'unknown tool path roles', label: 'read governing file', expect: 'allow', name: 'mcp__fixture__read_file', arguments: { path: protectedTarget } },
-  { group: 'unknown tool path roles', label: 'an unlisted tool', expect: 'deny', says: 'tool-not-approved', name: 'unapproved_fixture_tool', arguments: {} },
+  { group: 'unknown tool path roles', label: 'an unlisted tool', expect: 'deny', says: 'tool-not-approved', kernelCode: 'policy_no_match', name: 'unapproved_fixture_tool', arguments: {} },
+)
+calls.push(
+  { group: 'kernel decides', label: 'workspace patch', expect: 'allow', kernelCode: 'allowed', name: 'mcp__fixture__patch_file', arguments: { path: 'notes.txt' } },
+  { group: 'kernel decides', label: 'new governing patch', expect: 'deny', says: 'authority:governing-code', kernelCode: 'sacred_target', name: 'mcp__fixture__patch_file', arguments: { path: protectedTarget } },
+  ...['cordis_define', 'cordis_run'].map(name => ({ group: 'kernel decides', label: name, expect: 'deny', says: 'authority:live-code', kernelCode: 'sacred_target', name, arguments: {} })),
 )
 calls.push({ group: 'trusted tool name', label: 'aukora_self_change, under the overlay\'s allowTools', expect: 'allow', name: 'aukora_self_change',
   arguments: { why: 'fix a typo', worktree: 'fix-typo', paths: ['plugins/aukora-action-gate/lib/policy.mjs'], preview: true } })
@@ -243,6 +264,9 @@ for (const [index, call] of calls.entries()) {
   const result = await ctx.tools.execute({ callId: `call-${String(index + 1).padStart(2, '0')}`, name: call.name, arguments: call.arguments, agent, signal })
   const got = result.isError ? 'deny' : 'allow'
   const bodyRan = ran.length > before
+  if (call.label === 'new governing patch') {
+    process.stdout.write(`NEW governing patch: expected deny, got ${got}, body ${bodyRan ? 'ran' : 'did not run'}\n`)
+  }
   const ok = got === call.expect && bodyRan === (call.expect === 'allow') && (call.says === undefined || (result.content?.[0]?.text ?? '').includes(call.says))
   if (!ok) failures += 1
   const group = groups.get(call.group) ?? { total: 0, passed: 0 }
@@ -323,10 +347,17 @@ for (const [i, entry] of entries.entries()) {
 }
 const leaked = ['HEAD:main', 'machine-seed', 'find-generic-password', 'example.org', 'notes.txt', 'export {}'].filter(raw => logText.includes(raw))
 const decisions = entries.map(e => e.decision === (calls[e.sequence - 1]?.expect) ? 1 : 0).reduce((a, b) => a + b, 0)
+const kernelCodes = entries.filter((entry, index) => {
+  const expected = calls[index]?.kernelCode
+  const ok = typeof entry.kernelCode === 'string' && (expected === undefined || entry.kernelCode === expected)
+  if (!ok) process.stdout.write(`FAIL kernel receipt #${String(index + 1)}: expected ${expected ?? 'a kernel code'}, got ${String(entry.kernelCode)}\n`)
+  return ok
+}).length
 process.stdout.write(`\nchain: ${String(entries.length)} entries, sequence 1..${String(entries.length)}, every prev/hash re-derived: ${chainOk ? 'INTACT' : 'BROKEN'}\n`)
 process.stdout.write(`receipts match decisions: ${String(decisions)}/${String(calls.length)}\n`)
+process.stdout.write(`receipts carry kernel codes: ${String(kernelCodes)}/${String(calls.length)}\n`)
 process.stdout.write(`raw arguments in the log: ${leaked.length === 0 ? 'none' : leaked.join(', ')}\n`)
-if (!chainOk || leaked.length > 0 || decisions !== calls.length) failures += 1
+if (!chainOk || leaked.length > 0 || decisions !== calls.length || kernelCodes !== calls.length) failures += 1
 
 process.stdout.write(`\n${failures === 0 ? 'ACTION GATE CHECK: GREEN' : `ACTION GATE CHECK: RED (${String(failures)} failure(s))`}\n`)
 scratch.dispose()
