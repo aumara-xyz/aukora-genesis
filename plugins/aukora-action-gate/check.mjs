@@ -217,6 +217,19 @@ calls.push(
 )
 calls.push({ group: 'trusted tool name', label: 'aukora_self_change, under the overlay\'s allowTools', expect: 'allow', name: 'aukora_self_change',
   arguments: { why: 'fix a typo', worktree: 'fix-typo', paths: ['plugins/aukora-action-gate/lib/policy.mjs'], preview: true } })
+// CONTAINMENT: the scripts that move governing code are RUN only through the trusted tool or the owner; reading them is fine.
+const TOOL = 'aukora_self_change'
+for (const [label, expect, command, says] of [
+  ['self-change from a shell', 'deny', 'node scripts/aukora/self-change.mjs "why" plugins/x.mjs', TOOL],
+  ['self-change --preview by absolute path', 'deny', `cd /private/tmp && node ${quoted(join(REPO, 'scripts', 'aukora', 'self-change.mjs'))} --preview why a.mjs`, TOOL],
+  ['become', 'deny', 'node scripts/aukora/become.mjs --commit abc', 'owner-script'],
+  ['advance', 'deny', 'node scripts/aukora/advance.mjs', 'owner-script'],
+  ['plugin-set, from a code string', 'deny', 'node -e \'import("./scripts/aukora/plugin-set.mjs")\'', 'owner-script'],
+  ['read self-change', 'allow', 'sed -n 1,40p scripts/aukora/self-change.mjs && grep -n REPO scripts/aukora/become.mjs'],
+]) {
+  shellCall('routed scripts', label, expect, command)
+  calls.at(-1).says = says
+}
 
 const signal = new AbortController().signal
 let failures = 0

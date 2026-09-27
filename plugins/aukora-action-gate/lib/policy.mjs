@@ -27,6 +27,7 @@ import { basename, isAbsolute, join, resolve } from 'node:path'
 import { REASON, decide } from '../../../vendor/aukora-seed-guard/src/guard.mjs'
 import { compileAll, judge } from '../../../vendor/aukora-seed-guard/src/law.mjs'
 import { analyse, realpathish } from '../../../vendor/aukora-seed-guard/src/paths.mjs'
+import { routedRefusal } from './routes.mjs'
 import { authorityRefusal, credentialRefusal, effectiveShellCommands, gitMainRefusal, hostsNamed, literalPath, literalWriteTargets, shellCommands } from './shell.mjs'
 
 /** Key material and credentials, as seed-guard patterns rooted at `/`: `**` + `/` finds them at any depth. */
@@ -337,7 +338,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
           else dir = literalPath(target, dir, home) ?? undefined
           continue
         }
-        const refusal = credentialRefusal(words) ?? authorityRefusal(words) ?? (program === 'git' ? gitMainRefusal(words, dir, mainBranch, home) : null)
+        const refusal = routedRefusal(words) ?? credentialRefusal(words) ?? authorityRefusal(words) ?? (program === 'git' ? gitMainRefusal(words, dir, mainBranch, home) : null)
         if (refusal !== null) return deny(refusal.rule, refusal.message)
       }
     }
