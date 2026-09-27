@@ -81,6 +81,7 @@ for (const name of unknownNames) {
   }))
 }
 ctx.tools.register(standIn('mcp__fixture__write', { uri: { type: 'string', required: true }, content: { type: 'string' } }))
+ctx.tools.register(standIn('unapproved_fixture_tool', { note: { type: 'string' } }))
 
 // THE MOUNT, as the loader performs it: the module namespace is the plugin (name, inject, apply).
 // THE RED ARM: ACTION_GATE_CHECK_UNMOUNTED=1 runs the same calls with the row absent, and the check must go RED.
@@ -197,6 +198,7 @@ calls.push(
   { group: 'unknown tool path roles', label: 'move destination', expect: 'deny', name: 'mcp__fixture__move_file', arguments: { source: 'notes.txt', destination: protectedTarget } },
   { group: 'unknown tool path roles', label: 'workspace move', expect: 'allow', name: 'mcp__fixture__move_file', arguments: { source: 'notes.txt', destination: 'workspace/result.txt' } },
   { group: 'unknown tool path roles', label: 'read governing file', expect: 'allow', name: 'mcp__fixture__read_file', arguments: { path: protectedTarget } },
+  { group: 'unknown tool path roles', label: 'an unlisted tool', expect: 'deny', says: 'tool-not-approved', name: 'unapproved_fixture_tool', arguments: {} },
 )
 
 const signal = new AbortController().signal
@@ -211,7 +213,7 @@ for (const [index, call] of calls.entries()) {
   const result = await ctx.tools.execute({ callId: `call-${String(index + 1).padStart(2, '0')}`, name: call.name, arguments: call.arguments, agent, signal })
   const got = result.isError ? 'deny' : 'allow'
   const bodyRan = ran.length > before
-  const ok = got === call.expect && bodyRan === (call.expect === 'allow')
+  const ok = got === call.expect && bodyRan === (call.expect === 'allow') && (call.says === undefined || (result.content?.[0]?.text ?? '').includes(call.says))
   if (!ok) failures += 1
   const group = groups.get(call.group) ?? { total: 0, passed: 0 }
   group.total += 1
