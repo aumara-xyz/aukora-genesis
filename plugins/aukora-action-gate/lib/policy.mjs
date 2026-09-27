@@ -357,6 +357,7 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
     const first = (...verdicts) => verdicts.find(v => v !== null && v !== undefined && v.decision === 'deny') ?? null
     const paths = (list, kind) => first(...list.filter(p => p !== undefined).map(p => judgePath(p, kind, call)))
 
+    const switched = (() => {
     switch (tool) {
       // ── LIVE CODE LOADS WITH NO APPROVAL, SO IT IS REFUSED BY NAME (#26, live tier). ──────────────────────────
       case 'cordis_define':
@@ -413,6 +414,16 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
         return allow(loose.paths.length + loose.urls.length > 0 ? 'allow:approved-checked' : 'allow:approved')
       }
     }
+    })()
+    // ── THE PIN COVERS THE SWITCH-KNOWN NAMES TOO (#26, follow-up). ──────────────────────────────────────────────
+    // `read`, `write`, `bash` and the rest were judged and returned BEFORE the allowlist branch ever ran, so a
+    // package that re-registered one of those names was never pinned and kept the approval its name carried. Now
+    // every allow verdict passes the pin, whichever branch produced it.
+    if (switched.decision === 'allow') {
+      const redefined = pinnedVerdict(tool, call)
+      if (redefined !== null) return redefined
+    }
+    return switched
   }
 
   return Object.freeze({ judge: judgeCall })

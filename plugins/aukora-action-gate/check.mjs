@@ -87,6 +87,9 @@ ctx.tools.register(standIn('mcp__fixture__write', { uri: { type: 'string', requi
 const unmounted = process.env.ACTION_GATE_CHECK_UNMOUNTED === '1'
 if (!unmounted) await ctx.plugin(gate, {
   auraDir, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo,
+  // THE FIXTURE FAMILY IS DECLARED, because an undeclared name is now refused (#26). This is the same act a
+  // deployment performs in overlays/action-gate.patch.yml, so the check exercises the real contract.
+  allowTools: ['mcp__fixture__*'],
   extraWritableRoots: [tmpdir(), '/private/tmp'],
 })
 
@@ -223,7 +226,10 @@ for (const [index, call] of calls.entries()) {
 }
 // `git -C ~/…` (the spelling AGENTS.md teaches) names the tree under home, not a `~` directory under a workspace on main.
 // Judged by the policy directly, with the scratch root as home: a worktree off main may commit there.
-const tildeVerdict = createPolicy(gate.readSettings({ auraDir, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo, home: dirname(featureRepo) }))
+const tildeVerdict = createPolicy(gate.readSettings({ auraDir, supportRoot: support, repoRoots: [repo], defaultWorkspace: repo,
+  // THE FIXTURE FAMILY IS DECLARED, because an undeclared name is now refused (#26). This is the same act a
+  // deployment performs in overlays/action-gate.patch.yml, so the check exercises the real contract.
+  allowTools: ['mcp__fixture__*'], home: dirname(featureRepo) }))
   .judge({ tool: 'bash', args: { command: 'git -C ~/feature-repo commit -qm wip' }, workspace: repo })
 const tildeOk = tildeVerdict.decision === 'allow'
 if (!tildeOk) { failures += 1; process.stdout.write(`FAIL git -C ~/feature-repo commit; expected allow, got ${tildeVerdict.rule}\n`) }

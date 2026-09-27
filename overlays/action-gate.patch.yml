@@ -33,6 +33,56 @@
       config:
         auraDir: !!js dshHomePath('aura-actions')
         dshHome: !!js dshHomePath()
+        # THE APPROVED TOOLS (#26). The harness's own tools are known to the gate's switch; every OTHER name a call
+        # may use must be declared here, exactly or as a family ending in `*`, or the gate refuses it with
+        # `authority:tool-not-approved` and names scripts/aukora/self-change.mjs. Seeded from what the live action
+        # chain shows IS used plus the families; a name missing here locks that tool out after the restart, so this
+        # list is the deployment's own contract and widens only by a self-change like any other governed edit.
+        allowTools:
+          - bash
+          - read
+          - write
+          - edit
+          - grep
+          - glob
+          - web_fetch
+          - web_search
+          - present
+          - read_image
+          - str_replace_editor
+          - skill
+          - todo_write
+          - ask_user_question
+          - workflow
+          - aura_association
+          - send_message
+          - interrupt_agent
+          - list_agents
+          - exit_plan_mode
+          - get_goal
+          - create_goal
+          - update_goal
+          - read_mcp_resource
+          - subagent
+          - subagent_aura
+          - subagent_aura_court
+          - subagent_court
+          - subagent_fork
+          - session_search
+          - session_trace
+          - session_event_search
+          - session_event_read
+          - session_event_trace
+          - job_output
+          - job_list
+          - job_kill
+          - kira_*
+          - mcp__viking__*
+          - cordis_inspect_*
+          - subagent*
+          - session_*
+          - job_*
+          - list_*
         repoRoots:
           - !!js process.env.HOME + '/aukora-genesis'
         # Where agents may also write: lane worktrees (proposals go there, then self-change), temp, and the owner's
