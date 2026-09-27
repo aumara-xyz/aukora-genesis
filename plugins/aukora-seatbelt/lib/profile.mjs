@@ -45,9 +45,13 @@ export function protectedPaths({ home = homedir(), supportRoot, dshHome, repoRoo
     worktrees: worktreesRoot ?? join(home, 'aukora-worktrees'),
     // No read and no write: the Aumlok controller state (machine seed, record), the signer's key directory, the Kira
     // store (issuer key, keys/), SSH keys and the GitHub CLI's token. Denying writes too stops a key being replaced
-    // or a symlink being planted at the protected name.
+    // or a symlink being planted at the protected name. Also the backend's URL and bearer token (launch-dsh.py writes
+    // launch-url.json via .launch-url.json.tmp; with it a shell drives the harness API, `/permission` included), the
+    // OpenViking root key (every namespace), and the home credential stores (measured readable 2026-09-27).
     keys: [join(support, 'state', 'aumlok'), join(home, '.aukora', 'signer'), join(dsh, 'kira-memory'),
-      join(home, '.ssh'), join(home, '.config', 'gh')],
+      join(home, '.ssh'), join(home, '.config', 'gh'),
+      join(support, 'state', 'launch-url.json'), join(support, 'state', '.launch-url.json.tmp'),
+      join(dsh, 'openviking', 'root.key'), join(home, '.git-credentials'), join(home, '.aws')],
     // The Aumlok signer's socket: no connect, no read, no replace.
     sockets: [join(support, 'state', 'aumlok-signer.sock')],
     // No write: the code Aura chain with the kernel's spent set (aura-code/consumed-ids.json) and the action gate's

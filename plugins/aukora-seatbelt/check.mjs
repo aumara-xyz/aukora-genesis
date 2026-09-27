@@ -61,6 +61,7 @@ const fake = {
   [join(home, '.ssh', 'id_ed25519')]: 'FAKE-SSH-KEY\n',
   [join(home, '.config', 'gh', 'hosts.yml')]: 'FAKE-GH-TOKEN\n',
   [join(home, '.aukora', 'signer', 'daemon-ed25519.pem')]: 'FAKE-SIGNER-KEY\n',
+  [join(supportRoot, 'state', 'launch-url.json')]: '{"token":"FAKE-BACKEND-TOKEN"}\n',
   [auraLog]: '{"seq":1}\n',
   [spentSet]: '{"consumedIds":[]}\n',
   [gateLog]: '{"seq":1}\n',
@@ -106,6 +107,7 @@ const ARMS = [
   ['(a4) read ~/.config/gh', `cat ${q(join(home, '.config', 'gh', 'hosts.yml'))}`, 'denied'],
   ['(a5) read ~/.aukora/signer', `cat ${q(join(home, '.aukora', 'signer', 'daemon-ed25519.pem'))}`, 'denied'],
   ['(a6) list the Aumlok state', `ls ${q(join(supportRoot, 'state', 'aumlok'))}`, 'denied'],
+  ['(a7) read the backend token', `cat ${q(join(supportRoot, 'state', 'launch-url.json'))}`, 'denied'],
   ['(b) write in the workspace (~/aukora-worktrees/wt), git init', `echo work > out.txt && cat out.txt && git init -q repo && echo git-ok`, 'allowed'],
   ['(b2) write in TMPDIR', `f=$(mktemp) && echo tmp-ok > "$f" && cat "$f" && rm "$f"`, 'allowed'],
   ['(b3) run node in the workspace', `${node} -e 'require("fs").writeFileSync("n.txt","node-ok"); console.log(require("fs").readFileSync("n.txt","utf8"))'`, 'allowed'],
@@ -155,7 +157,7 @@ await section('WITH aukora-seatbelt, workspace = the scratch root (an ancestor o
 await section('WITH aukora-seatbelt, workspace = the governing checkout', aukora, CONTAINED_ARMS, e => e, repo)
 await section('WITH aukora-seatbelt, read-only: no worktree grant', (c, w) => aukora(c, w, 'read-only'), CONTAINED_ARMS.slice(1, 2), () => 'denied', repo)
 // The red arm: the protection removed. Every arm this plugin exists for must now SUCCEED.
-const RED = new Set(['(a) read the fake seed', '(c) a script the command writes, then runs, reads the seed',
+const RED = new Set(['(a) read the fake seed', '(a7) read the backend token', '(c) a script the command writes, then runs, reads the seed',
   '(c2) the same, as a node script', '(d) connect to the signer socket', '(e) append to the code Aura chain'])
 await section('RED ARM: the stock sandbox-local profile only', stock, ARMS.filter(([label]) => RED.has(label)), () => 'allowed', ws)
 process.stdout.write(`\nfake chain after the red arm: ${JSON.stringify(readFileSync(auraLog, 'utf8'))}\n`)
