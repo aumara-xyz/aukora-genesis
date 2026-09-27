@@ -11,12 +11,15 @@
 4. **No new courts, test forests, lane reports or docs as deliverables.** At most one focused check per change.
 5. **No PRs, one line: `main`.** Work happens on `main` of `aumara-xyz/aukora-genesis`; never base work on a stale
    local label. `aumara-xyz/aukora-genesis-archive` holds the history up to 2026-09-27, read-only and private. Code
-   that governs AUKORA changes only through `scripts/aukora/self-change.mjs`. That route is supported, not enforced:
-   on 2026-09-27 it carried two code changes (`97714048a`, in the archive, and `c398ccd63`, Aura code chain 7→8) and every other change landed directly. In
+   that governs AUKORA changes only through `scripts/aukora/self-change.mjs`, or `scripts/aukora/advance.mjs` for
+   moves too big for a card and for authority paths, each on the owner's Aumlok approval. An unenforced route is a bug.
+   Not enforced: GitHub does not stop a direct push to `main`, because this macOS user holds the push credentials. In
    the running app the action gate refuses an agent's write or edit tool call on governing code and names that route,
    and a shell command whose target it can read (`>`, `tee`, `sed -i`, `cp`, `mv`, a literal path in `python3 -c`); a
    shell command that hides the target (a script, a variable, `git apply`, `git checkout`, `patch`) is not refused.
-   Every tool call it judges is chained in `state/home/aura-actions/aura.jsonl`.
+   Every tool call it judges is chained in `state/home/aura-actions/aura.jsonl`. Seatbelt is mounted and confines
+   BUILD (workspace-write) and read-only shells, which closes the hidden-target routes for them; Auma's sessions run
+   danger-full-access, where Seatbelt is UNENFORCED.
 6. **Never break the live app or the working demos.** One writer on the live app. Preview any UI change (a screenshot)
    before it reaches Peter's app, and never ship UI he did not ask for.
 7. **Lead with what is not enforced.** Same-UID agents, a software approval key, no server-side check on main. Never
