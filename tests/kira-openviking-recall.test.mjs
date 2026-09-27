@@ -2,17 +2,24 @@
 /**
  * KIRA AND OPENVIKING, THE CHAINED STORE AS THE TRUTH, on the plugin mounted as tests/kira-memory-live-path.test.mjs mounts it.
  * A stand-in OpenViking by default: a word table, so it proves the bridge, not meaning. Scratch state only; not the installed app.
+ *   --live <openviking home>  the running server through a forwarder pinned to user hook-test; the root key is read at run
+ *                             time and never printed, and everything written there is deleted at the end
+ *   --red                     each protection reverted in memory: its arm must go red
  */
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
+import { registerHooks } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { Readable } from 'node:stream'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { zstdCompressSync } from 'node:zlib'
 
+const argv = process.argv.slice(2)
+const live = argv.includes('--live') ? argv[argv.indexOf('--live') + 1] : undefined
 const HERE = fileURLToPath(import.meta.url)
 const ROOT = resolve(dirname(HERE), '..')
 const ARMS = Object.freeze({
@@ -24,6 +31,44 @@ const ARMS = Object.freeze({
   race: 'race: a note forgotten while a reconcile waits or writes it is not shown and not put back',
   privacy: 'privacy: a model endpoint off this machine is refused',
 })
+const MUTANTS = Object.freeze({
+  'ledger-filter-off': ['recall-openviking.mjs', '      const note = id === null ? undefined : live.entries.get(id)\n', "      const note = id === null ? undefined : (live.entries.get(id) ?? { id, statement: 'unmapped' })\n", ARMS.ledger],
+  'forget-not-passed': ['index.js', '      const reached = await bridge.forget(String(answer.id))\n', "      const reached = { reached: false, because: 'reverted' }\n", ARMS.forget],
+  'capture-not-indexed': ['index.js', "from ${info.sessionId} turn ${String(info.turn)}`); semanticIndex() }", "from ${info.sessionId} turn ${String(info.turn)}`) }", ARMS.backfill],
+  'ledger-read-early': ['index.js', 'found = await bridge.recall({ question: text, live: semanticLedger })', 'found = await bridge.recall({ question: text, live: semanticLedger() })', ARMS.race],
+  'forget-out-of-turn': ['recall-openviking.mjs', '  const forget = id => inTurn(() => forgetNow(id))\n', '  const forget = forgetNow\n', ARMS.race],
+  'remote-models-allowed': ['recall-openviking.mjs', '    if (off.length > 0 && raw.allowRemoteModels !== true) {\n', '    if (false) {\n', ARMS.privacy],
+})
+if (argv.includes('--red')) {
+  const run = extra => { const child = spawnSync(process.execPath, [HERE, ...extra, ...argv.filter(one => one !== '--red')], { encoding: 'utf8', timeout: 600_000 }); return { status: child.status, out: `${child.stdout}${child.stderr}` } }
+  const plain = run([])
+  let caught = 0
+  process.stdout.write(`plain: exit ${String(plain.status)}\n${plain.out}\n`)
+  for (const [name, [file, , , armName]] of Object.entries(MUTANTS)) {
+    const child = run(['--mutant', name])
+    const red = child.status !== 0 && child.out.includes(`FAIL  ${armName}`)
+    caught += red ? 1 : 0
+    process.stdout.write(`revert ${name} (${file}): exit ${String(child.status)} — ${red ? 'CAUGHT' : 'NOT CAUGHT'}\n${child.out}\n`)
+  }
+  const ok = plain.status === 0 && caught === Object.keys(MUTANTS).length
+  process.stdout.write(`KIRA OPENVIKING RED ARM: ${String(caught)}/${String(Object.keys(MUTANTS).length)} reverts caught — ${ok ? 'OK' : 'NOT OK'}\n`)
+  process.exit(ok ? 0 : 1)
+}
+let mutation = null
+if (argv.includes('--mutant')) {
+  const [file, from, to] = MUTANTS[argv[argv.indexOf('--mutant') + 1]]
+  mutation = { name: argv[argv.indexOf('--mutant') + 1], applied: 0 }
+  const target = pathToFileURL(join(ROOT, 'plugins/aukora-kira/lib', file)).href
+  registerHooks({ load(url, context, nextLoad) {
+    const result = nextLoad(url, context)
+    if (url !== target) return result
+    const source = Buffer.from(result.source).toString('utf8')
+    if (source.split(from).length !== 2) throw new Error(`mutant ${mutation.name}: the guarded text does not occur exactly once in ${file}`)
+    mutation.applied += 1
+    return { ...result, source: source.replace(from, to) }
+  } })
+}
+
 let failures = 0
 let passed = 0
 const arm = async (name, body) => {
@@ -40,13 +85,26 @@ const reply = (res, status, body) => { res.statusCode = status; res.setHeader('c
 const load = path => import(pathToFileURL(join(ROOT, 'plugins/aukora-kira/lib', path)).href)
 const { apply } = await load('index.js')
 const { KIRA_ROUTES } = await load('memory-routes.mjs')
+if (mutation !== null) { assert.equal(mutation.applied, 1, `mutant ${mutation.name} did not load its subject`); process.stdout.write(`MUTANT ${mutation.name}: reverted in memory only\n`) }
 
-// ── THE SERVER THE BRIDGE TALKS TO ───────────────────────────────────────────────────────────────────────────────────
+// ── THE SERVER THE BRIDGE TALKS TO: a stand-in, or a forwarder to the live one pinned to user hook-test ─────────────────
 const USER = 'hook-test'
 const KEY = randomBytes(32).toString('hex')
-const serve = standIn()
-const wait = 1
-const tuned = {}
+const serve = live === undefined ? standIn() : forwarder(live)
+const wait = live === undefined ? 1 : 12
+// THE LIVE BRIDGE'S TUNING (thresholds, query instruction), never its key: the scratch home holds a scratch key.
+const tuned = live === undefined ? {} : JSON.parse(readFileSync(join(live, 'aukora-bridge.json'), 'utf8'))
+show('OpenViking', live === undefined ? 'stand-in' : `live, through a forwarder pinned to user ${USER}`)
+function forwarder(home) {
+  const target = JSON.parse(readFileSync(join(home, 'aukora-bridge.json'), 'utf8')).url
+  return async (req, res) => {
+    const body = await bodyOf(req)
+    if (req.url !== '/health' && (req.headers['x-api-key'] !== KEY || req.headers['x-openviking-user'] !== USER)) return reply(res, 403, { status: 'error', error: { message: 'forwarder: user hook-test only' } })
+    const answer = await fetch(`${target}${req.url}`, { method: req.method, ...(body.length > 0 ? { body } : {}),
+      headers: { 'content-type': 'application/json', 'x-api-key': readFileSync(join(home, 'root.key'), 'utf8').trim(), 'x-openviking-account': 'aukora', 'x-openviking-user': USER } })
+    reply(res, answer.status, await answer.text())
+  }
+}
 function standIn() {
   const files = new Map()
   const concept = text => new Set([['drink', 'soda'], ['ana', 'lands']].flatMap((words, i) => (words.some(word => String(text).toLowerCase().includes(word)) ? [i] : [])))
@@ -216,6 +274,10 @@ try {
     assert.equal(readBridgeConfig(other).reason, 'openviking-url-not-on-this-machine')
   })
 } finally {
+  // EVERYTHING THIS RUN WROTE IS DELETED: the whole hook-test namespace, then what is left is said.
+  const cleared = await ov('DELETE', `/api/v1/fs?uri=${encodeURIComponent(`viking://user/${USER}/memories`)}&recursive=true`).catch(error => ({ status: String(error?.message) }))
+  const left = await ov('GET', `/api/v1/fs/ls?uri=${encodeURIComponent(`viking://user/${USER}`)}&simple=true`).catch(() => null)
+  process.stdout.write(`        cleanup: ${String(cleared?.status)}; ${USER} holds ${JSON.stringify(left?.result ?? left)}\n`)
   server.close()
   rmSync(work, { recursive: true, force: true })
 }
