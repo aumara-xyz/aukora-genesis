@@ -37,7 +37,7 @@
  */
 import { spawnSync } from 'node:child_process'
 import { createHash, createPublicKey } from 'node:crypto'
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -45,6 +45,7 @@ import { dualVerifyApproval } from '../aumlok/dual-verify.mjs'
 import { approvalIdFrom, codeChain } from './aura-code.mjs'
 import { ALLOWLIST_PATH, emailIsPlaceholder, fileChanges, gitIn, scanPublished, treeFiles } from './snapshot-scan.mjs'
 import { shownLimit } from './shown-limit.mjs'
+import { precardCheck } from './precard-check.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -125,7 +126,7 @@ const from = remoteLine === '' ? null : remoteLine.split(/\s+/u)[0]
 // RECONCILE FIRST (scripts/aukora/aura-code.mjs). Approved and completed are distinct: an approval is closed only by a
 // definite result read from the remote. One whose result was never recorded (killed, timed out, refused) is closed here
 // against the remote's main NOW; the process that pushed is gone, so `to` is either in main or it did not happen. A spent
-// approval is never reused. Preview writes nothing.
+// approval is never reused. Preview leaves the chain untouched.
 const chain = codeChain(STATE)
 const preview = process.env.AUKORA_ADVANCE_PREVIEW === '1'
 const inMain = (commit, main) => main !== null && main !== undefined && git(['merge-base', '--is-ancestor', commit, main], { check: false }).status === 0
@@ -213,6 +214,13 @@ const added = lines(git(['log', '--no-color', '--format=%h %s', from === null ||
 const listed = added.slice(0, MAX_LISTED_COMMITS).map((line) => `  ${clip(line, 90)}`)
 if (added.length > MAX_LISTED_COMMITS) listed.push(`  … and ${String(added.length - MAX_LISTED_COMMITS)} more`)
 const count = (status) => changes.filter((c) => c.status === status).length
+const evidenceRoot = join(homedir(), 'aukora-live-proof')
+mkdirSync(evidenceRoot, { recursive: true })
+const evidence = mkdtempSync(join(evidenceRoot, `${new Date().toISOString().slice(0, 19).replace(/:/g, '')}-advance-`))
+// PRECARD CHECK: no signer contact or approval consumption before this refusal.
+const checked = await precardCheck({ repo: REPO, tree: to, evidence })
+if (!checked.passed) fail(`${checked.failure}. Evidence: ${evidence}`)
+// PRECARD CHECK END
 const head = [
   replaceRoot ? 'AUKORA: REPLACE MAIN WITH A NEW ROOT' : 'AUKORA: MOVE MAIN',
   `repository  ${url}`,
@@ -223,6 +231,7 @@ const head = [
   ...(snapshot ? [`snapshot of ${source} (its tree, none of its history)`, `author      ${author}, dated in UTC`] : []),
   `tree        ${tree}`,
   `why         ${why}`,
+  checked.summary,
   `commits     ${String(added.length)} added:`,
   ...listed,
   `files       against main now: ${String(count('A'))} added, ${String(count('M'))} modified, ${String(count('D'))} deleted`,
@@ -261,8 +270,6 @@ const subject = setting('subject')
 const controlDigest = setting('activeControlDigest')
 const approverDid = setting('approverDid')
 
-const evidence = join(homedir(), 'aukora-live-proof', `${new Date().toISOString().slice(0, 16).replace(/:/g, '')}-advance-${operationDigest.slice(0, 8)}`)
-mkdirSync(evidence, { recursive: true })
 const journal = (state, detail = {}) => appendFileSync(join(evidence, 'journal.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), state, ...detail })}\n`)
 const operationFile = join(evidence, 'operation.txt')
 writeFileSync(operationFile, bytes)

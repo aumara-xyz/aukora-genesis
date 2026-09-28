@@ -8,7 +8,7 @@
  *                carries it) makes this run `python3 scripts/build-face.py --only <face>` first, because the app loads
  *                the committed lib bundle, not src. Every changed face source must be named, because the build reads
  *                the whole working tree. Every lib file left changed joins the change. A failed build
- *                proposes nothing. --preview stops after step 1 and prints the operation text: no popup, no evidence,
+ *                proposes nothing. --preview stops after step 1 and prints the operation text: no popup, check evidence only,
  *                no code chain (not even reconcile).
  *   1. propose — make an UNAUTHORIZED disposable preview of exactly these paths. The popup binds its original
  *                candidate digest, crossing bindings, base, Git tree, paths and the full SOURCE diff; each lib file the
@@ -43,6 +43,7 @@ import { fileURLToPath } from 'node:url'
 import { dualVerifyApproval } from '../aumlok/dual-verify.mjs'
 import { codeChain } from './aura-code.mjs'
 import { shownLimit } from './shown-limit.mjs'
+import { precardCheck } from './precard-check.mjs'
 import { WITNESS_DISPLAY_LIMIT, deriveApprovalWitness } from '../../apps/aukora-desktop/aumlok-signer.mjs'
 import {
   CANDIDATE_CEILINGS, PATH_FENCE_DESCRIPTION, assertSourceIdentity, stageCandidatePreview,
@@ -231,32 +232,52 @@ for (const face of faces) {
 
 // 1. PROPOSE: freeze bytes, paths, original digest and tree in an unauthorized disposable preview.
 // The source checkout/index stays untouched. Original materialization requires the approval below.
-const candidate = candidateStep(() => stageCandidatePreview({ repo: REPO, support: SUPPORT, paths, explicitlyNamedPaths: paths, why, generated }))
+let candidate = candidateStep(() => stageCandidatePreview({ repo: REPO, support: SUPPORT, paths, explicitlyNamedPaths: paths, why, generated }))
+const previews = new Set([candidate])
 // The disposable candidate (a full local fetch, ~160 MB) is removed when this process exits normally, preview or not: an
 // approved run has committed and pushed from this checkout by then, and its evidence directory keeps the record.
 {
   process.on('exit', () => {
-    try {
-      const home = realpathSync(join(SUPPORT, 'state', 'home', 'code-candidates'))
-      const directory = realpathSync(candidate.directory)
-      if (dirname(directory) === home && /^candidate-[A-Za-z0-9]{6}$/u.test(basename(directory))) rmSync(directory, { recursive: true, force: true })
-      else process.stdout.write(`CANDIDATE LEFT ${candidate.directory} (not a candidate directory under ${home}, so not removed)\n`)
-    } catch (error) { process.stdout.write(`CANDIDATE LEFT ${candidate.directory} (${error instanceof Error ? error.message : String(error)})\n`) }
+    for (const preview of previews) {
+      try {
+        const home = realpathSync(join(SUPPORT, 'state', 'home', 'code-candidates'))
+        const directory = realpathSync(preview.directory)
+        if (dirname(directory) === home && /^candidate-[A-Za-z0-9]{6}$/u.test(basename(directory))) rmSync(directory, { recursive: true, force: true })
+        else process.stdout.write(`CANDIDATE LEFT ${preview.directory} (not a candidate directory under ${home}, so not removed)\n`)
+      } catch (error) { process.stdout.write(`CANDIDATE LEFT ${preview.directory} (${error instanceof Error ? error.message : String(error)})\n`) }
+    }
   })
 }
-// Agent-authored words/paths are advisory hints; only re-read disk bytes feed
-// the original crossing's draft hash. No tests/rehearsal are claimed here.
-const crossings = candidateStep(() => qualifyCandidateCrossing(candidate, {
-  intent: { schema: PENDING_INTENT_SCHEMA, intentId: candidate.digest, goal: why, rationale: why,
-    affectedPaths: paths.map(path => ({ path, epistemicStatus: 'inferred' })), riskNotes: '',
-    authoredBy: 'workbench', advisoryOnly: true, grantsAuthority: false }, tests: [],
-}))
 // These checks read the SHOWN source diff; generated files are UTF-8 text by the adapter's own byte check.
 const { base, diff } = candidate
 if (diff.trim() === '') fail(`there is no uncommitted change to ${paths.join(', ')}`)
 if (diff.includes('\u0000')) fail('this change contains NUL bytes, which the approval window cannot show; it cannot be approved here')
 if (/^Binary files |^GIT binary patch$/mu.test(diff)) fail('a binary change cannot be shown as text in the approval window, so it cannot be approved here')
-const content = candidateStep(() => candidateOperation(candidate, why))
+const evidenceRoot = join(STATE, 'home', 'code-evidence')
+mkdirSync(evidenceRoot, { recursive: true })
+const evidence = mkdtempSync(join(evidenceRoot, `${new Date().toISOString().slice(0, 19).replace(/:/g, '')}-change-`))
+// PRECARD CHECK: no signer contact or approval consumption before this refusal.
+const checked = await precardCheck({ repo: candidate.worktree, tree: candidate.tree, evidence })
+if (!checked.passed) fail(`${checked.failure}. Evidence: ${evidence}`)
+// PRECARD CHECK END
+
+// The adapter binds its saved reason to the entire operation. Restage with the check
+// line in that reason, then require identical bytes before qualifying this preview.
+const checkedCandidate = candidate
+const checkedWhy = `${why}\n${checked.summary}`
+candidate = candidateStep(() => stageCandidatePreview({ repo: REPO, support: SUPPORT, paths, explicitlyNamedPaths: paths, why: checkedWhy, generated }))
+previews.add(candidate)
+if (candidate.base !== checkedCandidate.base || candidate.tree !== checkedCandidate.tree || candidate.digest !== checkedCandidate.digest) {
+  fail(`the candidate changed after its checks. Evidence: ${evidence}`)
+}
+// Agent-authored words/paths are advisory hints; only re-read disk bytes feed
+// the original crossing's draft hash. The suite does not grant crossing authority.
+const crossings = candidateStep(() => qualifyCandidateCrossing(candidate, {
+  intent: { schema: PENDING_INTENT_SCHEMA, intentId: candidate.digest, goal: why, rationale: why,
+    affectedPaths: paths.map(path => ({ path, epistemicStatus: 'inferred' })), riskNotes: '',
+    authoredBy: 'workbench', advisoryOnly: true, grantsAuthority: false }, tests: [],
+}))
+const content = candidateStep(() => candidateOperation(candidate, checkedWhy))
 const bytes = Buffer.from(content, 'utf8')
 const witness = candidateStep(() => deriveApprovalWitness(bytes))
 if (content.length > MAX_SHOWN_CHARS || witness.words.length > MAX_SHOWN_CHARS) {
@@ -267,7 +288,7 @@ if (PREVIEW) {
   process.stdout.write(`\n──────── PREVIEW: the exact operation text the approval window would show ────────\n${content}`)
   process.stdout.write(`──────── ${String(content.length)} characters (rendered witness ${String(witness.words.length)}; limit ${String(MAX_SHOWN_CHARS)})\n`)
   process.stdout.write(`OPERATION     ${operationDigest}\nTREE          ${candidate.tree}\n`)
-  process.stdout.write('PREVIEW ONLY  no popup raised, no evidence written, code chain untouched. Run again without --preview to ask for approval.\n')
+  process.stdout.write(`PREVIEW ONLY  no popup raised, check evidence: ${evidence}, code chain untouched. Run again without --preview to ask for approval.\n`)
   process.exit(0)
 }
 
@@ -277,9 +298,6 @@ const subject = setting('subject')
 const controlDigest = setting('activeControlDigest')
 const approverDid = setting('approverDid')
 
-const evidenceRoot = join(STATE, 'home', 'code-evidence')
-mkdirSync(evidenceRoot, { recursive: true })
-const evidence = mkdtempSync(join(evidenceRoot, `${new Date().toISOString().slice(0, 19).replace(/:/g, '')}-change-${operationDigest.slice(0, 8)}-`))
 const journal = (state, detail = {}) => appendFileSync(join(evidence, 'journal.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), state, ...detail })}\n`)
 const operationFile = join(evidence, 'operation.txt')
 writeFileSync(operationFile, bytes)
