@@ -17,9 +17,13 @@ Quoted from this paper's earlier §2, where they are constitutional goals inheri
 > - Removing an observer or mediator does not silently widen an effect path.
 > - Refusal, interruption, revocation, portability, and exit remain meaningful.
 
+## Care without control
+
+Care grants no authority. **[DOCTRINE]** Peter Viviani's [Care Without Control](CARE-WITHOUT-CONTROL.md), a speculative design note, asks whether growing capability can be paired with a stable orientation toward human flourishing without ever converting care into control; nothing here tests that hypothesis. **[HORIZON]** Auma is not an authorizer: warmth, memory and confidence approve nothing; only the owner's approval routes below move the boundary. **[DOCTRINE]**
+
 ## §4 — The running boundary
 
-Running release: `aukora-release-25149f573`. Documentation baseline: GitHub `main` at `91994c3a1`. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” at that pin bounds every claim.
+Running release: `aukora-release-aeb631a1b`. Documentation baseline: GitHub `main` at `91994c3a1`. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” at that pin bounds every claim.
 
 | Claim | Status | Scope and limit |
 | --- | --- | --- |
