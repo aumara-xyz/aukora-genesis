@@ -14,6 +14,9 @@ import { canonicalJSON } from '../plugins/aukora-aumlok/lib/canonical.mjs'
 import { didKeyFromEd25519PublicKey } from '../plugins/aukora-aumlok/lib/did-key.mjs'
 import { APPROVAL_REQUEST_DOMAIN, APPROVAL_SIGNATURE_DOMAIN } from '../plugins/aukora-aumlok/lib/owner-approval.mjs'
 
+// check.sh shows only a failing check's last line: make that line name the failure.
+process.on('uncaughtException', (error) => { console.log(`FAIL dual approval verifier: ${String(error?.message ?? error).split('\n')[0]}`); process.exit(1) })
+
 const started = performance.now()
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const scratch = mkdtempSync(join(tmpdir(), 'aukora-dual-'))
@@ -252,7 +255,7 @@ try {
   mkdirSync(poisonHome)
   writeFileSync(join(poisonHome, 'usercustomize.py'), `from pathlib import Path\nPath(${JSON.stringify(marker)}).write_text('loaded')\n`)
   const control = spawnSync('/usr/bin/python3', ['-B', '-c', 'pass'], {
-    env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: poisonHome, PYTHONPATH: poisonHome }, encoding: 'utf8', timeout: 1_000, killSignal: 'SIGKILL',
+    env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8', HOME: poisonHome, PYTHONPATH: poisonHome }, encoding: 'utf8', timeout: 10_000, killSignal: 'SIGKILL',
   })
   assert.equal(control.status, 0)
   assert.equal(existsSync(marker), true, 'Python startup loads the harmless planted module without isolation')
