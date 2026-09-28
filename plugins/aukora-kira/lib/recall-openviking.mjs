@@ -5,7 +5,7 @@
  * is Kira's semantic FINDER over remembered notes, and nothing more:
  *
  *   · INDEX. Every live note is one file below the shared semantic root: remembered notes use
- *     `viking://user/<user>/memories/kira/remembered/rem-<hex>.md`; governed notes use `.../governed/kira-<hex>.md`.
+ *     `viking://user/<user>/memories/kira/remembered/rem-<hex>.md`; governed notes use `.../governed/<hex>.md` (legacy `governed/kira-<hex>.md` still accepted on read).
  *     Both carry `kira_id=...` and an explicit `tier=...` tag. `sync` reconciles them with the verified ledgers: a note the
  *     id OpenViking holds and the ledger no longer does (forgotten, hidden, unchained, or unsettled) is removed. Capture never waits for
  *     it: the note is written and chained first, and indexed afterwards, so a server that is down only delays the index.
@@ -111,20 +111,20 @@ export function readBridgeConfig(home) {
   }
 }
 
-/** The OpenViking URI for one note id. */
+/** The OpenViking URI for one note id. WRITE shape: governed/<hex>.md (A1). */
 export function uriFor(user, id) {
   const value = String(id)
   if (NOTE_ID.test(value)) return `viking://user/${user}/memories/kira/remembered/rem-${value.slice(4)}.md`
-  if (GOVERNED_ID.test(value)) return `viking://user/${user}/memories/kira/governed/kira-${value.slice(5)}.md`
+  if (GOVERNED_ID.test(value)) return `viking://user/${user}/memories/kira/governed/${value.slice(5)}.md`
   throw new Error(`kira.semantic: ${value.slice(0, 24)} is not a Kira memory id`)
 }
 
-/** The note id a URI names, or null. Both tiers share one semantic target root. */
+/** The note id a URI names, or null. READ accepts A1 governed/<hex>.md and legacy governed/kira-<hex>.md. */
 export function idFromUri(user, uri) {
   const value = String(uri)
   const ambient = value.match(new RegExp(`^viking://user/${user}/memories/kira/remembered/rem-([0-9a-f]{64})\\.md$`, 'u'))
   if (ambient !== null) return `rem:${ambient[1]}`
-  const governed = value.match(new RegExp(`^viking://user/${user}/memories/kira/governed/kira-([0-9a-f]{64})\\.md$`, 'u'))
+  const governed = value.match(new RegExp(`^viking://user/${user}/memories/kira/governed/(?:kira-)?([0-9a-f]{64})\.md$`, 'u'))
   return governed === null ? null : `kira:${governed[1]}`
 }
 
