@@ -1,5 +1,5 @@
 {
-  "repo": "aumara-xyz/aukora-deep (local clone ~/aukora-great-merge/clones/aukora-deep)",
+  "repo": "aumara-xyz/aukora-deep (local staging copy at the commit below)",
   "commit": "c417f7c5752bf14b8e927986cd995f2e086f4189",
   "paths": [
     "docs/AUKORA-BOUNDARY-ARCHITECTURE.md",
@@ -54,18 +54,14 @@
       "bytes": 66533
     }
   ],
-  "superseded": {
-    "repo": "aumara-xyz/aukora-os (local clone ~/aukora-great-merge/clones/aukora-os)",
+  "excludedImport": {
+    "repo": "aumara-xyz/aukora-os (local staging copy at the commit below)",
     "commit": "a313d13bcacf2989316f2a5aafaa6aca049e48fb",
-    "paths": [
-      "scripts/dev/aukora-memory-signer-daemon.ts"
-    ],
-    "status": "superseded: its role is covered in Genesis by aumlok-signer.mjs and the owner daemon; kept as a record, not wired, not runnable here",
+    "status": "excluded from this snapshot because the source has no applicable licence; only historical source measurements remain below, with no local copy",
     "license": "aukora-os carries no LICENSE or NOTICE at its root at this commit; aukora-ide/NOTICE there covers the OpenCode-derived IDE, not scripts/dev/",
-    "files": [
+    "sourceFiles": [
       {
-        "path": "scripts/dev/aukora-memory-signer-daemon.ts",
-        "local": "superseded/aukora-memory-signer-daemon.ts",
+        "upstreamPath": "scripts/dev/aukora-memory-signer-daemon.ts",
         "gitBlob": "f72a483dc2a136f6d34b17f87333496b01fcca39",
         "sha256": "b11a171893877f107dec5fd6aaccf3262547e8ddba81a8dfd329e80dab0a8337",
         "bytes": 13760

@@ -17,7 +17,7 @@ plainly where the evidence is not public.
 - **Archived Genesis paths (2026-09-27).** The Genesis test forest, `courts/`, `experiments/`,
   `scripts/demo/`, `scripts/ci/`, `.github/` and most of `docs/` were removed from the tree on
   2026-09-27 (`ARCHIVE.md`). A **G** path under one of them is read at commit `5c8508b7f` of the archive repository
-  `aumara-xyz/aukora-genesis-archive`, where it
+  aumara-xyz/aukora-genesis-archive (private archive, not a link), where it
   last existed; it is not in the tree at this revision. Ten suites stayed, and `docs/CLAIMS.md`
   lists them with the other checks that run from a clone.
 - **Public?**

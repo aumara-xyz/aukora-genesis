@@ -10,7 +10,7 @@
     "repository": "github.com/aumara-xyz/aukora",
     "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
     "path": "packages/evidence",
-    "taken": "git show def297f:<path>, one file at a time, from the local read-only clone ~/aukora-great-merge/clones/aukora; no network",
+    "taken": "git show def297f:<path>, one file at a time, from a local read-only staging copy of aumara-xyz/aukora@def297f; no network",
     "license": "packages/evidence carries no LICENSE or NOTICE of its own at def297f (its package.json `files` names them, the tree does not); LICENSE and NOTICE are the repository root files at the same commit. LICENSE is the same blob as vendor/aukora-kernel/LICENSE.",
     "alsoAt": "vendor/aukora-seed-app/src/packages/evidence carries 7 of these 10 src files (the index.ts closure) and none of the tests, as part of the seed-app closure. Same upstream commit, same blobs."
   },

@@ -9,7 +9,7 @@
    the phi guard, governedRecall, First Echo and the membrane consistency verifier. Port them; don't reinvent them.
 4. **No new courts, test forests, lane reports or docs as deliverables.** At most one focused check per change.
 5. **No PRs, one line: `main`.** Work happens on `main` of `aumara-xyz/aukora-genesis`; never base work on a stale
-   local label. `aumara-xyz/aukora-genesis-archive` holds the history up to 2026-09-27, read-only and private. Code
+   local label. aumara-xyz/aukora-genesis-archive (private archive, not a link) holds the history up to 2026-09-27, read-only and private. Code
    that governs AUKORA changes only through `scripts/aukora/self-change.mjs`, or `scripts/aukora/advance.mjs` for
    moves too big for a card and for authority paths, each on the owner's Aumlok approval. An unenforced route is a bug.
    Not enforced: GitHub does not stop a direct push to `main`, because this macOS user holds the push credentials. In

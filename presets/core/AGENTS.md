@@ -7,7 +7,7 @@ reads `$DSH_HOME/AGENTS.md` and the working directory's chain). It is kept well 
 65536-byte rendering budget (`presets/core/agent.cordis.yml`, `agent-instructions: maxBytes`), which
 truncates rather than refuses; nothing checks its size.
 
-Adapted from `~/aukora-private/reviews/auma-superpowers-plan-2026-09-25.md`, "Grounding: Fable operating
+Adapted from the owner's private review dated 2026-09-25 (not published), "Grounding: Fable operating
 model draft". Where this file and a direct instruction disagree, the direct instruction wins; where this file
 and a lane's own report disagree, **verify and then believe the verification**.
 

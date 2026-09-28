@@ -536,7 +536,7 @@
   "conformance": {
     "command": "node vendor/authority/conformance.mjs",
     "expectedCases": 37,
-    "upstreamMeasurement": "bun test ./test in a scratch copy of packages/kernel at def297f: 37 pass / 0 fail, 115 expects (~/aukora-great-merge/OLD-TECH-INVENTORY-20260927.md row 3)",
+    "upstreamMeasurement": "bun test ./test in a scratch copy of packages/kernel at def297f: 37 pass / 0 fail, 115 expects (the owner's private old-tech inventory dated 2026-09-27, row 3; not published)",
     "testFiles": [
       "lib-test/authorityEncoding.test.js",
       "lib-test/conformance.test.js",

@@ -7,7 +7,7 @@
   "vendoredAt": "2026-09-27",
   "rule": "BYTE FOR BYTE: every file below is the upstream file at this commit, unchanged. The old repository may be deleted; these bytes and this record are what remain. Do not edit a vendored file: re-vendor from upstream and regenerate this record.",
   "selection": "src/guard.mjs, src/law.mjs and src/paths.mjs, plus their whole import closure (src/chain.mjs, src/authority.mjs, src/aumlok.mjs, src/phrase.mjs); the upstream tests whose imports that closure satisfies (test/paths.test.mjs, test/scope.test.mjs, test/helpers/fixture.mjs); the shared conformance suite and its twelve vectors (conformance/); and LICENSE. Not vendored: test/self-protection.test.mjs (copies upstream bin/, which pulls engine/serve/view), and the tests of modules outside this closure (verify, log, engine, memory).",
-  "verification": "Each sha256 and git blob id was computed from the vendored file; each file was compared byte for byte with the clone at ~/aukora-great-merge/clones/aukora-seed (HEAD refs/heads/main = the commit above), and each git blob id was matched against the blob id that clone's own .git/index records for the same path.",
+  "verification": "Each sha256 and git blob id was computed from the vendored file; each file was compared byte for byte with a local staging copy of aumara-xyz/aukora-seed (HEAD refs/heads/main = the commit above), and each git blob id was matched against the blob id that clone's own .git/index records for the same path.",
   "consumer": "plugins/aukora-action-gate/lib/policy.mjs calls analyse (src/paths.mjs), compileAll and judge (src/law.mjs), and decide (src/guard.mjs).",
   "files": [
     {

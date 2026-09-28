@@ -4,7 +4,7 @@ Every file and line below was opened and checked on 2026-09-27 against the tree 
 with this page's edits. If a later commit moved a line, search for the quoted text. Where the answer is no, it says
 no. "Not established" means no file settles it.
 
-Work happens on `main` of `aumara-xyz/aukora-genesis`. `aumara-xyz/aukora-genesis-archive` holds the history up to
+Work happens on `main` of `aumara-xyz/aukora-genesis`. aumara-xyz/aukora-genesis-archive (private archive, not a link) holds the history up to
 2026-09-27, read-only and private, including every commit pushed straight to `main`; the commit hashes on this page
 are there.
 
@@ -33,7 +33,7 @@ was pushed directly. The action gate (question 17) refuses a push to `main` type
 inside a script, a subagent or a process outside the app.
 Check: `git config credential.helper`; `gh api repos/aumara-xyz/aukora-genesis --jq .permissions`;
 `gh api repos/aumara-xyz/aukora-genesis/branches/main/protection`; the same two for
-`aumara-xyz/aukora-genesis-archive`.
+aumara-xyz/aukora-genesis-archive (private archive, not a link).
 
 ### 2. Then what does the approval path give you today?
 

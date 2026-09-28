@@ -6,7 +6,7 @@
 **Measured:** 2026-09-27, at archive commit `1c569f8aa`, on macOS with Node.js 22.23.0 and Python 3.9.6, by
 `sh scripts/check.sh`, whose first thirteen checks are rows 1-13. Every RUN row below was run from that tree, with no
 `vendor/dsh`, no `node_modules`, no keys, no network and no running app, and printed the token its row names. Commit
-hashes on this page are in `aumara-xyz/aukora-genesis-archive`, which holds the history up to 2026-09-27, read-only
+hashes on this page are in aumara-xyz/aukora-genesis-archive (private archive, not a link), which holds the history up to 2026-09-27, read-only
 and private; work continues on `main` of `aumara-xyz/aukora-genesis`.
 
 A claim here is **a command and the line it must print**. Run the command. If the output disagrees with the
@@ -20,7 +20,7 @@ recorded.
 
 Earlier versions of this page carried rows measured by suites, courts and experiments that were archived on
 2026-09-27 (`ARCHIVE.md`). Those rows are gone from this page, not re-labelled. They remain readable at
-commit `5c8508b7f` of the read-only, private archive `aumara-xyz/aukora-genesis-archive` (`ARCHIVE.md`).
+commit `5c8508b7f` of the read-only, private archive aumara-xyz/aukora-genesis-archive (private archive, not a link) (`ARCHIVE.md`).
 
 ---
 

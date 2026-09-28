@@ -80,7 +80,7 @@ AUKORA research position and engineering roadmap · Revision 2.2 · 26 September
 >
 > **Evidence paths (2026-09-27).** Many citations below name Genesis test suites, courts,
 > experiments and documents that were archived from the tree on 2026-09-27 (`ARCHIVE.md`).
-> They are read at commit `5c8508b7f` of the archive repository `aumara-xyz/aukora-genesis-archive`, where they last existed. The checks that still run from
+> They are read at commit `5c8508b7f` of the archive repository aumara-xyz/aukora-genesis-archive (private archive, not a link), where they last existed. The checks that still run from
 > a clone of this tree are listed, with their limits, in `docs/CLAIMS.md`.
 
 ## Abstract

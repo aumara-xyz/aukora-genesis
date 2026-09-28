@@ -2,7 +2,7 @@
   "domain": "aukora:vendor-import:v1",
   "repo": "github.com/aumara-xyz/aukora",
   "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
-  "taken": "git archive def297f from the local clone ~/aukora-great-merge/clones/aukora (HEAD verified == commit); no network; no working-tree bytes",
+  "taken": "git archive def297f from a local staging copy of aumara-xyz/aukora@def297f (HEAD verified == commit); no network; no working-tree bytes",
   "paths": {
     "requested": [
       "apps/seed/src/localCandidateStage.ts",

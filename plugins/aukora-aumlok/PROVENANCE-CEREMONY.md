@@ -1,6 +1,6 @@
 # The ceremony ports — where every byte came from
 
-Step 1 of `~/aukora-private/plans/AUMLOK-CEREMONY-PLAN.md`. Each file below is a port of an existing,
+Step 1 of the owner's private Aumlok ceremony plan (not published). Each file below is a port of an existing,
 working module from a repository that had it right. The digests are of the **source** file at the commit
 named, so a future reader can re-verify rather than trust this table.
 

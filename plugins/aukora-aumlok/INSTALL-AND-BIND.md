@@ -1,7 +1,7 @@
 # Install and bind — the runbook for the acceptance
 
-**Rewritten 2026-09-23 for AUMLOK v3 by the Aumlok v3 lane.** `CEREMONY-REBUILD-HANDOFF.md` is the
-durable record of what was removed and why; this is the short version.
+**Rewritten 2026-09-23 for AUMLOK v3 by the Aumlok v3 lane.** This is the short installation runbook;
+the internal ceremony rebuild handoff is not published.
 
 **READ THIS FIRST (corrected 2026-09-26).** As of 2026-09-23, before the first real approval, the
 running release did not carry v3. Releases materialized since do; which one a machine is serving cannot be read from this repository, so

@@ -2,7 +2,7 @@
 
 On 2026-09-27 this tree was cut down to what the running app, its release path and its cold checks use.
 **Nothing was deleted from history.** The history up to 2026-09-27, with every removed file, is kept in
-**`aumara-xyz/aukora-genesis-archive`**, read-only and private. Work continues on `main` of `aumara-xyz/aukora-genesis`,
+aumara-xyz/aukora-genesis-archive (private archive, not a link), read-only and private. Work continues on `main` of `aumara-xyz/aukora-genesis`,
 whose history starts clean. In the archive, every removed file is still in git at commit **`5c8508b7f`**, the parent
 of the cut commit `4d603f8dd` that removed it.
 
@@ -46,7 +46,7 @@ Kept on purpose although they are not on the live path:
 - The whole stock-app vendor tree under `plugins/aukora-face/apps/vendor/` (401 files, 28.8 MB, two thirds of
   the tree's size right after the cut; the Luminara documents alone are 19.6 MB). Luminara is served as a stock
   app, and trimming it means regenerating its `manifest.json`, rebuilding the faces and a boot smoke.
-- `plugins/aukora-aumlok/CEREMONY-REBUILD-HANDOFF.md`, the word-list tools in `scripts/aumlok/`, and
+- The word-list tools in `scripts/aumlok/`, and
   `scripts/aukora-relay.mjs`, which a local launchd job runs.
 
 ## Changed with the cut, so the tree stays true
