@@ -22,6 +22,14 @@ const allowed = join(scratch, 'allowed_signers')
 const repo = join(scratch, 'repo')
 mkdirSync(repo)
 
+const CUSTODY_ENV = [
+  'AUKORA_COMMIT_BIND_REQUIRE_SEPARATE_UID',
+  'AUKORA_COMMIT_BIND_PROOF_DIR',
+  'AUKORA_COMMIT_BIND_PROOF_UID',
+]
+const savedCustodyEnv = new Map(CUSTODY_ENV.map((name) => [name, process.env[name]]))
+for (const name of CUSTODY_ENV) delete process.env[name]
+
 const cleanEnv = {
   PATH: '/usr/bin:/bin',
   HOME: scratch,
@@ -191,6 +199,11 @@ try {
   for (const name of [
     'AUKORA_REQUIRE_COMMIT_SSH', 'AUKORA_COMMIT_SIGN_KEY', 'AUKORA_COMMIT_ALLOWED_SIGNERS',
     'AUKORA_COMMIT_SIGN_MODE', 'AUKORA_COMMIT_BIND_DIGEST',
+    ...CUSTODY_ENV,
   ]) delete process.env[name]
   rmSync(scratch, { recursive: true, force: true })
+  for (const [name, value] of savedCustodyEnv) {
+    if (value === undefined) delete process.env[name]
+    else process.env[name] = value
+  }
 }

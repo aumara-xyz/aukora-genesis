@@ -14,6 +14,11 @@ import {
   assertOneUseCommitBind, _resetCommitBindSeenForTests,
 } from '../scripts/owner/commit-ssh-airlock-bind.mjs'
 
+const ENV = ['AUKORA_COMMIT_SIGN_MODE', 'AUKORA_COMMIT_BIND_PROOF_DIR',
+  'AUKORA_COMMIT_BIND_REQUIRE_SEPARATE_UID', 'AUKORA_COMMIT_BIND_PROOF_UID']
+const savedEnv = new Map(ENV.map((name) => [name, process.env[name]]))
+for (const name of ENV) delete process.env[name]
+
 const scratch = mkdtempSync(join(tmpdir(), 'aukora-proof-store-'))
 const storeDir = join(scratch, 'store')
 
@@ -78,8 +83,19 @@ try {
   assert.equal(got.bindDigest, Dx)
   console.log('PASS assertOneUseCommitBind consumes store; caller operationDigest optional')
 
-  // Without PROOF_DIR, spike still uses stub (compat with landed court)
+  // Separate-UID mode must not silently downgrade to the caller-authored stub.
   delete process.env.AUKORA_COMMIT_BIND_PROOF_DIR
+  process.env.AUKORA_COMMIT_BIND_REQUIRE_SEPARATE_UID = '1'
+  assert.throws(
+    () => assertOneUseCommitBind({
+      unsignedBytes: bytesX, approvalDigest: Dx, proof: { challenge: challenge() },
+    }),
+    /commit-bind:proof-dir-missing/,
+  )
+  console.log('PASS REQUIRE_SEPARATE_UID without PROOF_DIR refuses (D1)')
+
+  // With the flag unset, spike still uses stub (default-off compatibility).
+  delete process.env.AUKORA_COMMIT_BIND_REQUIRE_SEPARATE_UID
   _resetCommitBindSeenForTests()
   const stub = assertOneUseCommitBind({
     unsignedBytes: bytesX,
@@ -91,8 +107,11 @@ try {
 
   console.log('PASS aukora-commit-bind-proof-store focused court')
 } finally {
-  delete process.env.AUKORA_COMMIT_SIGN_MODE
-  delete process.env.AUKORA_COMMIT_BIND_PROOF_DIR
+  for (const name of ENV) delete process.env[name]
   try { _resetProofStoreForTests(storeDir) } catch { /* dir may be incomplete */ }
   rmSync(scratch, { recursive: true, force: true })
+  for (const [name, value] of savedEnv) {
+    if (value === undefined) delete process.env[name]
+    else process.env[name] = value
+  }
 }
