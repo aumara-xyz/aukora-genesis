@@ -1,6 +1,8 @@
-# AUKORA GOLDEN BOUNDARY — Rev 2.3
+# AUKORA GOLDEN BOUNDARY — Rev 2.4
 
 28 September 2026
+
+**Rev 2.4 adds the second boundary to the front matter.** Rev 2.3 protected capability against authority; this revision states, in the opening pages, that **repetition must not manufacture evidence** — a principle the paper already carried in its network, memory and provenance sections, and which a reader should not have had to assemble. No claim was strengthened and no new capability is asserted. No **RUNNING** row was added.
 
 ## The problem
 
@@ -20,6 +22,36 @@ Quoted from [this paper's earlier §2](AUKORA-GOLDEN-BOUNDARY-ARCHIVE.md#2-the-b
 ## Care without control
 
 Care grants no authority. **[DOCTRINE]** Peter Viviani's [Care Without Control](CARE-WITHOUT-CONTROL.md), a speculative design note, asks whether growing capability can be paired with a stable orientation toward human flourishing without ever converting care into control; nothing here tests that hypothesis. **[HORIZON]** Auma is not an authorizer: warmth, memory and confidence approve nothing; only the owner's approval routes below move the boundary. **[DOCTRINE]**
+
+## Authority and provenance in a synthetic world
+
+This paper protects **two** boundaries, not one, and they are siblings.
+
+> As models become able to generate actions, greater capability must not manufacture greater **authority**.
+>
+> As models become able to generate unlimited accounts, reports, summaries and media, greater repetition must not manufacture greater **evidence**.
+
+The first is the subject of most of this document. The second is the reason the memory, provenance and network work exists at all, and it is stated here because a reader should not have to assemble it from sections further down.
+
+**Three invariants, which almost everything else in this paper serves:**
+
+1. **Capability does not create authority.** A smarter machine does not acquire more permission.
+2. **Repetition does not create evidence.** A thousand descendants of one observation remain one evidentiary ancestry.
+3. **Relationship does not create personhood.** Keys, histories and vouches can establish continuity and relationships without pretending to prove unique humanity.
+
+**What the architecture does and does not attempt.** AUKORA does not attempt to prove that a key belongs to one unique human, that a signed claim is true, or that a vouch establishes personhood. Instead it asks whether authority and provenance can survive copying, transformation and communication. A signature can establish that a key stood behind particular bytes. A retained history can establish relationships between records. A vouch can record an introduction. Provenance can distinguish independent observations from descendants of the same observation. **None of those facts alone establishes truth or humanity.** **[DOCTRINE]**
+
+**The consequence, in one line:**
+
+> **In a synthetic information environment, a thousand agents repeating one source must not become a thousand independent sources.**
+
+Four children repeating the same rumour does not mean four children saw it happen. That is the anti-mimetic principle, and the consolidation machinery exists to enforce it.
+
+**The composition, named rather than left to the reader.** *Nostr* can move signed events but is not an authority oracle. *Aumlok* concerns authority and custody. *Aura* concerns retained history and evidence. *Kira* concerns memory and the provenance distinctions above. *Vouches and relationships* can express who recognises whom without magically proving humanity. *Anti-mimetic consolidation* attempts to stop copied ancestry from masquerading as independent evidence. Their possible composition is a network in which communication may be machine-generated while **authority and evidentiary lineage remain inspectable**. **[HORIZON]**
+
+**Not "no bots allowed."** Bots are allowed. **Bots just do not get to counterfeit authority or multiply one observation into a consensus.** **[DOCTRINE]**
+
+**[HORIZON]** If provenance survives across communication and transformation, future retrieval and training systems could distinguish independent observations from copied descendants, preserve attribution and authorization metadata, and weight information according to inspectable lineage rather than repetition alone. **Provenance does not establish truth, copyright ownership, consent beyond the recorded scope, dataset completeness, or that training occurred.** Nothing in this repository implements this, and no part of the claim above is tested here.
 
 ## §4 — The running boundary
 
