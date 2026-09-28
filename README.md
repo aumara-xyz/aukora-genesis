@@ -2,15 +2,21 @@
 
 ## What is not enforced
 
+**Deep launcher is in the tree; the live agent still runs on the host.**
+
 Running release on the owner's Mac: `aukora-release-25149f573`, the same commit as GitHub `main` when this was written
 (`state/home/become/last.json` names it with the observed pid and port). Source inspection and disposable checks do
 not verify the installed app.
 
-- **One user account holds everything.** The app, the agent and the approval key run as the same macOS user
-  (`SAME_UID`, `OWNER_KEY_SAME_UID`). The checks here are procedures over bytes, not an isolation boundary.
-  The Airlock (the key held by a second macOS user, reached over a socket where the kernel names the caller) is
-  built (`plugins/aukora-owner-daemon/`, runbook in its `INSTALL.md`); on the owner's Mac its account and code are
-  staged but the key is not yet rotated to it, so the key is still same-UID.
+- **Approval key: off this user.** It is held by a separate macOS account (`aukora-owner`) and reached only
+  through the Airlock socket, where the kernel names the caller; `node scripts/aukora/airlock-probe.mjs` prints
+  `VERIFIED EACCES: configured key path cannot be opened by UID 501` on the owner's Mac (2026-09-28), and the first
+  approval signed through it moved `main` to `f87b72b68` (`did:key:z6MkiP8BnvVRZJcxtv9TShdq3KUGc7wF1skbZBJbQ96jAtCm`).
+  The app and the agent still run as the same macOS user, and that user can still ask the socket to sign.
+- **Deep's guest launcher, broker and issuer are in the tree; the live agent still runs on the host.** They are
+  copied byte for byte from `aukora-deep@c417f7c` into `plugins/aukora-box/` (sha256 per file in its
+  `PROVENANCE.md`); Deep's confinement verifier passes on this Mac and refuses an unrestricted policy. Nothing mounts
+  them in the release yet.
 - **A signature is not a person.** The approval key is a software key on this Mac. A click is recorded, but
   nothing binds it to a human (`ATTENDANCE: reported-not-proven`).
 - **Nothing on GitHub enforces the approval routes.** `scripts/aukora/self-change.mjs` (a diff card) and
@@ -22,6 +28,7 @@ not verify the installed app.
   code and shell writes whose targets it can read (`sed -i`, a redirect, `cp`, `mv`, a literal path in
   `python3 -c`). A shell command that hides its target in a script or variable is not refused by this text check.
   The gate sees a subagent launch, not every tool the child runs; same-UID processes outside the app remain outside it.
+  The gate's kernel decides each tool call without a one-use grant; one-use applies to self-change and MOVE MAIN.
   Its verdict is the kernel's `decide()` (`vendor/authority`, called from `plugins/aukora-action-gate/lib/kernel.mjs`).
   Seen live on `aukora-release-25149f573`: a `sed -i` on `plugins/aukora-kira/` from Auma's full-access session was
   refused with `rule: authority:governing-code`, `kernelCode: sacred_target` (2026-09-27T23:53:16Z), file untouched.

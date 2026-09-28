@@ -87,7 +87,8 @@ build checks need that tree.
 parallel, in about 6 seconds: the membrane minimal verifier, the vendor pin check, the WASM proposal cell, ten of the
 suites in `tests/`, the membrane tour and the kernel conformance check. `docs/CLAIMS.md` lists thirteen of them with
 what each proves and what it does not. A check proves something only if it fails when its protection is removed;
-report the failing arm beside the passing ones. There is no CI.
+report the failing arm beside the passing ones. CI runs `sh scripts/check.sh` on every push (`.github/workflows/check.yml`, a macOS runner); it checks the
+repository, not the installed app.
 The court forest, the lane notes and the experiments were archived on 2026-09-27; see `ARCHIVE.md`.
 
 ## Instruction files that are not instructions
