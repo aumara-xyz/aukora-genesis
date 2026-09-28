@@ -46,6 +46,7 @@ import { root, consistencyProof } from './aura-merkle.mjs'
 import { acquireHeavyRun } from '../lib/heavy-run.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 import { probeConfinement } from './guest-start.mjs'
+import { failClosedIfFriend } from './friend-guard.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -839,6 +840,7 @@ async function crashed(error) {
 }
 
 if (isMainModule(import.meta.url)) {
+  failClosedIfFriend('become', SUPPORT, (message) => { process.stderr.write(`BECOME REFUSED: ${message}\n`); process.exit(1) })
   for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) process.once(signal, () => { void crashed(new Error(`stopped by ${signal}`)) })
   main().catch((error) => error instanceof BecomeOutcome
     ? finishOutcome(error.outcome, error.message).catch(crashed) : crashed(error))

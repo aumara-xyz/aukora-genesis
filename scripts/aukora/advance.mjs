@@ -46,6 +46,7 @@ import { approvalIdFrom, codeChain } from './aura-code.mjs'
 import { ALLOWLIST_PATH, emailIsPlaceholder, fileChanges, gitIn, scanPublished, treeFiles } from './snapshot-scan.mjs'
 import { shownLimit } from './shown-limit.mjs'
 import { precardCheck } from './precard-check.mjs'
+import { failClosedIfFriend } from './friend-guard.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -59,6 +60,7 @@ const MAX_LISTED_FILES = 25
 const MIN_PATH_WIDTH = 24
 
 const fail = (message) => { process.stderr.write(`ADVANCE REFUSED: ${message}\n`); process.exit(1) }
+failClosedIfFriend('advance', SUPPORT, fail)
 const argv = process.argv.slice(2)
 // --snapshot: publish the TREE of <commit> as one new commit on top of the remote's main, so a repository kept clean of
 // history (the public aukora-genesis) receives this checkout's state and none of its history.

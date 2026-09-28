@@ -126,15 +126,18 @@ if [ "$MISSING" -ne 0 ]; then
 fi
 
 # ── THE STATE DIRECTORY, THE ONE PLACE OUTSIDE THE REPO THIS SCRIPT MAY WRITE ───────────────────────────────────────
-# The same variable the running app reads (plugins/aukora-eye/lib/token-file.mjs), so what the installer prepares is
-# what the app will open.
-STATE="${AUKORA_STATE_ROOT:-${AUKORA_STATE:-$HOME/.aukora}}"
+# The desktop app keeps config and state under ~/Library/Application Support/AUKORA
+# (apps/aukora-desktop/main.mjs sets userData there). $HOME/.aukora is not that folder.
+SUPPORT="${AUKORA_SUPPORT_ROOT:-$HOME/Library/Application Support/AUKORA}"
+STATE="${AUKORA_STATE_ROOT:-${AUKORA_STATE:-$SUPPORT/state}}"
 step "Your AUKORA state"
+say "   support directory: $SUPPORT"
 say "   state directory: $STATE"
 if [ "$DRY_RUN" -eq 1 ]; then
   say "   would create it if it is not there (this run creates nothing)"
 else
   mkdir -p "$STATE"
+  chmod 700 "$SUPPORT" 2>/dev/null || true
   chmod 700 "$STATE" 2>/dev/null || true
   ok "ready, mode 700"
 fi
@@ -187,14 +190,29 @@ else
   heavy "packaging the app" sh -c 'cd apps/aukora-desktop && npm ci && npm run dist'
 fi
 
+# ── FRIEND PREVIEW MARKER ───────────────────────────────────────────────────────────────────────────────────────────
+# Writes config.json "repo" and profile friend-preview when this Mac has no owner-daemon config.
+# A trusted Airlock config is left alone. The marker makes self-change, become, advance and commit-SSH
+# fail closed. It does not turn on REQUIRE_COMMIT_SSH or separate-UID mint.
+step "Friend preview"
+if [ "$DRY_RUN" -eq 1 ]; then
+  say "   would write friend-preview config into $SUPPORT when no owner-daemon config is present"
+  node apps/aukora-desktop/friend-preview.mjs --write-bootstrap --dry-run --repo "$ROOT" --support "$SUPPORT" || true
+else
+  node apps/aukora-desktop/friend-preview.mjs --write-bootstrap --repo "$ROOT" --support "$SUPPORT"
+fi
+
 # ── HOW TO OPEN IT ──────────────────────────────────────────────────────────────────────────────────────────────────
 step "Done"
 say "   Open AUKORA from this clone with:"
 say "       cd apps/aukora-desktop && npm start"
-# The packaged bundle cannot find this clone from inside its asar (apps/aukora-desktop/resolve.mjs refuses
-# `repo-not-configured`), so it needs the clone named once in its config file.
-say "   The packaged app in apps/aukora-desktop/dist needs \"repo\": \"$ROOT\" in its config.json"
-say "   (~/Library/Application Support/AUKORA/config.json) before it can start."
-say "   Then add your own model API key in Models, and link your Aumlok phrase in Aumlok."
-say "   Things that are OFF until you turn them on: voice (it needs a one-time local setup), approvals, and messaging."
-say "   To remove everything: delete this clone, $RELEASE, ~/Library/Application Support/AUKORA and $STATE"
+say "   The packaged app is unsigned (identity null, no notarization)."
+say "   If macOS says the developer cannot be verified, from the clone root:"
+say "       xattr -dr com.apple.quarantine apps/aukora-desktop/dist/*/*.app 2>/dev/null || true"
+say "   Then right-click AUKORA.app, choose Open, and confirm Open."
+say "   Aumlok: on the Aumlok screen, write down the seven words, then type them back."
+say "   That keeps a software machine key in $STATE/aumlok. Any process you run can read it."
+say "   Then add your own model API key in Models."
+say "   Owner-only, and this install stops those by name: Airlock, commit SSH, a second-account proof store,"
+say "   self-change, become, and advance. Steps: docs/FRIEND-MAC-INSTALL.md"
+say "   To remove everything: delete this clone, $RELEASE, and $SUPPORT"

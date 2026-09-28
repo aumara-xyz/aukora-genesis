@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
 import { loopbackOnly } from './url-policy.mjs'
 import { INSTALL_SETTINGS_NAME } from './install-settings.mjs'
+import { friendPreviewLaunchLine } from './friend-preview.mjs'
 
 const run = promisify(execFile)
 const RELEASE_PREFIX = 'aukora-release-'
@@ -41,6 +42,7 @@ export const CONFIG_TEMPLATE = {
     'patch: extra composition patch overlays. Default: the release\'s own aukora-composition.patch.yml, which is what mounts the organs and the spatial frame, followed by kira-deployment-overlay.patch.yml from this folder once the first Aumlok link has written it.',
     'approvedRecordSha: approved artifact record digests. A matching installed plugin-set approval also admits the release record; the gate still verifies its signature.',
     'allowUnapproved: false by default. With no configured record approvals and no installed plugin-set approval, the first-run launch temporarily waives approval so you can link your Aumlok phrase. Nothing saves that waiver. true explicitly waives the plugin set on every launch: for a disposable preview only.',
+    'profile: "friend-preview" marks a normal macOS account. Local Aumlok uses a software key in that account. Airlock, commit SSH and a second-account proof store stay owner-only; this file does not turn those switches on.',
   ],
   release: null,
   repo: null,
@@ -52,6 +54,8 @@ export const CONFIG_TEMPLATE = {
   approvedRecordSha: [],
   // First-run permission is resolved from absent approval evidence, never saved in this template.
   allowUnapproved: false,
+  // Null until a friend bootstrap writes "friend-preview". Owner Airlock installs leave this unset.
+  profile: null,
   searchRoots: [homedir()],
 }
 
@@ -319,6 +323,8 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
       `Name one in ${configPath}.`)
   }
   why.push(`release ${release}`)
+  const friendLine = friendPreviewLaunchLine(config.profile)
+  if (friendLine) why.push(friendLine)
 
   // Read once, for two purposes: preparing a pinned checkout, and telling the window
   // which release it is showing. A named checkout skips the first, never the second.

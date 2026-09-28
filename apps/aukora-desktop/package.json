@@ -35,6 +35,7 @@
       "card-chain.mjs",
       "desktop-log.mjs",
       "eye.mjs",
+      "friend-preview.mjs",
       "footprint-watch.mjs",
       "icons/**",
       "install-settings.mjs",
