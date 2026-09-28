@@ -1,0 +1,31 @@
+{
+  "domain": "aukora:trusted-state-reference:v1",
+  "source": {
+    "repository": "https://github.com/aumara-xyz/aukora",
+    "commit": "def297fc146bf3c448df4d0f4e78358d65345436",
+    "path": "packages/kernel-node"
+  },
+  "license": "AGPL-3.0-or-later",
+  "licenseFile": "../LICENSE",
+  "runtimeImports": false,
+  "files": [
+    {
+      "path": "trustedStateStore.ts",
+      "gitBlob": "5c2b34d6a499852e78c4c4c9a89d7201329eb550",
+      "upstreamPath": "packages/kernel-node/src/trustedStateStore.ts",
+      "sha256": "38c5d50da2038845eb4a8f005848c8090bea199f947413b887957cecc3ed4ecc",
+      "bytes": 20571
+    }
+  ],
+  "port": {
+    "path": "scripts/aukora/trusted-state-store.mjs",
+    "from": "trustedStateStore.ts",
+    "sourceLineMapping": "Trailing @source L markers name original statement lines. Types are JSDoc. PORT comments identify the POSIX path helper and Genesis state-file/lock-file/external-high-water/journal-write seams plus mandatory directory fsync on the external witness path."
+  },
+  "integration": {
+    "path": "scripts/aukora/approval-state-store.mjs",
+    "source": "trusted-state-squashed.patch",
+    "patchSha256": "3d3dc06a7df4e0030a43b6cd5243636dcde79946ce8478cb0986235105cc73c7",
+    "note": "Ported onto the renamed authority tree; reference retained byte-for-byte, not a runtime dependency."
+  }
+}

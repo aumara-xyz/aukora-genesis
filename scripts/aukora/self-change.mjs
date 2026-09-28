@@ -341,7 +341,7 @@ try {
   chain.locked(() => {
     const { decision, materialized } = authorizeAndMaterializeCandidate(candidate, {
       approvalPath: artifact, approverDid, subject, controlDigest, operationBytes: bytes,
-      consumedIdsPath: chain.consumedIds, createConsumedIds: chain.mayCreateSpentSet(),
+      consumedIdsPath: chain.consumedIds, stateRoot: STATE, createConsumedIds: chain.mayCreateSpentSet(),
     })
     writeFileSync(join(evidence, 'kernel-decision.txt'), `${JSON.stringify(decision, null, 2)}\n`)
     if (decision?.decision !== 'ALLOW' || materialized?.ok !== true) throw new Error('the adapter returned no allowed, materialized candidate')

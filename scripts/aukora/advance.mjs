@@ -311,8 +311,9 @@ const { decided, approvalId, entry } = chain.locked(() => {
   const decided = spawnSync(process.execPath, [join(REPO, 'scripts', 'aukora', 'decide.mjs'),
     '--approval', artifact, '--approver-did', approverDid, '--operation-digest', operationDigest,
     '--subject', subject, '--control-digest', controlDigest,
-    '--consumed-ids', chain.consumedIds, ...(chain.mayCreateSpentSet() ? ['--create-consumed-ids'] : []),
+    '--consumed-ids', chain.consumedIds, '--state-root', STATE, ...(chain.mayCreateSpentSet() ? ['--create-consumed-ids'] : []),
   ], { cwd: evidence, encoding: 'utf8' })
+  if (decided.stderr) process.stderr.write(decided.stderr) // Includes the one-time retained-witness migration notice.
   writeFileSync(join(evidence, 'kernel-decision.txt'), `${decided.stdout ?? ''}${decided.stderr ?? ''}`)
   if (decided.status !== 0) return { decided }
   const approvalId = approvalIdFrom(decided.stdout)

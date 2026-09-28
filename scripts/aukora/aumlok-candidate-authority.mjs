@@ -283,14 +283,14 @@ export function checkCandidatePreview(record) {
   return request.payloadHash
 }
 
-export function authorizeAndMaterializeCandidate(record, { approvalPath, approverDid, subject, controlDigest, operationBytes, consumedIdsPath, createConsumedIds = false }) {
+export function authorizeAndMaterializeCandidate(record, { approvalPath, approverDid, subject, controlDigest, operationBytes, consumedIdsPath, stateRoot, createConsumedIds = false }) {
   checkCandidatePreview(record)
   const snapshot = snapshots.get(record)
   if (!Buffer.from(candidateOperation(record, snapshot.why)).equals(Buffer.from(operationBytes))) deny('candidate:operation-binding-mismatch')
   const operationDigest = digestOf(operationBytes)
   mkdirSync(dirname(consumedIdsPath), { recursive: true, mode: 0o700 })
   const approvalBytes = readFileSync(approvalPath)
-  const decision = decideApproval({ approvalPath, approverDid, subject, controlDigest, operationDigest, consumedIdsPath, createConsumedIds })
+  const decision = decideApproval({ approvalPath, approverDid, subject, controlDigest, operationDigest, consumedIdsPath, stateRoot, createConsumedIds })
   if (decision.decision !== 'ALLOW') deny(`candidate:approval-denied:${decision.reason}`)
   if (!readFileSync(approvalPath).equals(approvalBytes)) deny('candidate:approval-file-changed')
   // A real content-free receipt chain, with deliberately limited semantics.

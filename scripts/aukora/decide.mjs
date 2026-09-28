@@ -5,7 +5,7 @@
  *   node scripts/aukora/decide.mjs \
  *     --approval <approval.json> --approver-did <did:key:z…> \
  *     --operation-digest <64 hex> --subject <aukora:1:…> --control-digest <64 hex> \
- *     --consumed-ids <file> [--create-consumed-ids] [--now <unix seconds> (AUDIT ONLY)] [--json]
+ *     --consumed-ids <file> [--state-root <restore boundary>] [--create-consumed-ids] [--now <unix seconds> (AUDIT ONLY)] [--json]
  *
  * Prints ALLOW or DENY with the reason on the first line. Exit 0 on ALLOW, 1 on DENY, 2 on usage.
  *
@@ -42,19 +42,26 @@
  *   evidenceRefs   = ["control:" + activeControlDigest, "signed-bytes:" + signedBytesDigest]
  *   policy         = one rule for that action on "aukora-subject", maxRing "local-write", requiresAuthorization false
  *
- * THE CONSUMED-IDS FILE is the kernel's own `aukora-trusted-state-v1` (consumedIds, receiptHead, SALAMA stop,
- * trustedRoots). It is read strictly, locked with an exclusive `<file>.lock` for the whole decision, and REPLACED
- * ATOMICALLY WITH THE KERNEL'S nextState ONLY ON ALLOW — so the approval id is durably consumed before ALLOW is
- * printed, and a DENY writes nothing. A missing file is a DENY unless --create-consumed-ids is given: a mistyped
- * path must not become a fresh, empty history.
+ * THE SAME CONSUMED-IDS FILE now holds the ported TrustedStateStore record (state + prepared effects). Legacy
+ * plain kernel state is read in place. The store locks, journals, fsyncs and retains a high-water witness OUTSIDE
+ * state/ before returning ALLOW: ~/.aukora-witness/kernel-high-water.json. AUKORA_WITNESS_DIR is honored only
+ * with AUKORA_WITNESS_TEST=1 for isolated tests; production uses the account home reported by the OS.
+ * The first witness for an existing history is initialized from its current count and announced once on stderr;
+ * it cannot detect restores before that initialization. A kernel DENY consumes nothing; recovery may retain an
+ * already committed count. --state-root names the whole restore boundary (the app callers pass their STATE).
+ * SAME UID: rewriting both state and witness defeats this; the Airlock user holding the witness is the planned
+ * close. The approving key is software and no server-side check enforces main. A missing file is a DENY unless
+ * --create-consumed-ids is given; even then a retained higher count refuses a reset.
  *
  * --now evaluates the signed window at a given time instead of the clock. It exists to re-check a past decision; a
  * caller that is about to act must not pass it.
  */
 import { createHash, createPublicKey, verify as ed25519Verify } from 'node:crypto'
-import { closeSync, fsyncSync, openSync, renameSync, unlinkSync, writeSync } from 'node:fs'
-import { basename, dirname, join, resolve } from 'node:path'
+import { userInfo } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { ApprovalStateStore, MissingTrustedStateError, WitnessUnreadableError } from './approval-state-store.mjs'
+import { RollbackRefusedError, WriterLockedError, TrustedStoreUnsafePathError } from './trusted-state-store.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const aumlok = await import(pathToFileURL(join(ROOT, 'plugins', 'aukora-aumlok', 'lib', 'index.mjs')).href)
@@ -80,21 +87,18 @@ const EMPTY_STATE = Object.freeze({
 
 const deny = (reason, detail, extra = {}) => ({ decision: 'DENY', reason, detail, ...extra })
 const sha256Hex = (bytes) => createHash('sha256').update(bytes).digest('hex')
+class KernelDidNotConsumeError extends Error {}
 
-/** Replace `path` with `text` so a reader sees the old bytes or the new ones, never a torn file. */
-function replaceAtomically(path, text) {
-  const temporary = join(dirname(path), `.${basename(path)}.${String(process.pid)}.tmp`)
-  const fd = openSync(temporary, 'wx', 0o600)
-  try { writeSync(fd, text); fsyncSync(fd) } finally { closeSync(fd) }
-  renameSync(temporary, path)
-  try { const dirFd = openSync(dirname(path), 'r'); try { fsyncSync(dirFd) } finally { closeSync(dirFd) } } catch { /* best effort */ }
+export function resolveWitnessDir() {
+  return resolve(process.env.AUKORA_WITNESS_TEST === '1' && process.env.AUKORA_WITNESS_DIR !== undefined
+    ? process.env.AUKORA_WITNESS_DIR : join(userInfo().homedir, '.aukora-witness'))
 }
 
 /**
- * Decide one approval. Writes the consumed-ids file only on ALLOW.
+ * Decide one approval. Commit consumption and the external witness before ALLOW.
  * @returns {{decision: 'ALLOW'|'DENY', reason: string, detail: string, approvalId?: string, receiptDraft?: object}}
  */
-export function decideApproval({ approvalPath, approverDid, operationDigest, subject, controlDigest, consumedIdsPath, createConsumedIds = false, nowSeconds }) {
+export function decideApproval({ approvalPath, approverDid, operationDigest, subject, controlDigest, consumedIdsPath, stateRoot, createConsumedIds = false, nowSeconds }) {
   if (!HEX64.test(operationDigest ?? '')) return deny('usage:operation-digest', '--operation-digest must be 64 lowercase hex')
   if (!HEX64.test(controlDigest ?? '')) return deny('usage:control-digest', '--control-digest must be 64 lowercase hex')
   if (typeof subject !== 'string' || subject === '') return deny('usage:subject', '--subject is required')
@@ -163,28 +167,28 @@ export function decideApproval({ approvalPath, approverDid, operationDigest, sub
   if (nowS < receipt.issuedAt) return deny('adapter:approval-not-yet-valid', `now ${String(nowS)} is before issuedAt ${String(receipt.issuedAt)}`)
   if (!(receipt.expiresAt > nowS)) return deny('adapter:approval-expired', `now ${String(nowS)} is not before expiresAt ${String(receipt.expiresAt)}`)
 
-  // 5. The kernel, with the consumed-ids file locked for the whole read-decide-write.
+  // 5. The ported transaction is the only writer of consumed ids and receipt head.
   const approvalId = `approval:${receipt.challenge}`
   const statePath = resolve(consumedIdsPath)
-  const lockPath = `${statePath}.lock`
-  let lockFd
+  const witnessDir = resolveWitnessDir()
+  const witnessPath = join(witnessDir, 'kernel-high-water.json')
+  let store, result, kernelFailure
   try {
-    lockFd = openSync(lockPath, 'wx', 0o600)
-  } catch (error) {
-    if (error?.code === 'EEXIST') {
-      return deny('adapter:consumed-ids-locked', `${lockPath} exists: another decision holds it, or one died holding it — remove it only after checking`)
-    }
-    return deny('adapter:consumed-ids-unreadable', `cannot lock ${lockPath} (${error?.code ?? 'error'})`)
-  }
-  try {
-    let state
-    try {
-      state = readJsonStrictBytes(statePath, { label: 'the consumed-ids file' }).value
-    } catch (error) {
-      if (error?.code !== 'ENOENT') return deny('adapter:consumed-ids-unreadable', error instanceof Error ? error.message : String(error))
-      if (!createConsumedIds) return deny('adapter:consumed-ids-missing', `${statePath} does not exist; pass --create-consumed-ids to start an empty one`)
-      state = structuredClone(EMPTY_STATE)
-    }
+    const restoreRoot = stateRoot ?? (statePath.endsWith('/home/aura-code/consumed-ids.json') ? resolve(dirname(statePath), '..', '..') : dirname(statePath))
+    store = new ApprovalStateStore({
+      statePath, stateRoot: resolve(restoreRoot), witnessDir, createConsumedIds,
+      onMigration: (message) => process.stderr.write(`${message}\n`),
+      decide: (...args) => {
+        try {
+          result = kernel.decide(...args)
+          if (result.decision.status === 'allowed' && !result.nextState.consumedIds.includes(approvalId)) {
+            throw new KernelDidNotConsumeError('the kernel allowed without consuming the id; refusing')
+          }
+          return result
+        } catch (error) { kernelFailure = error; throw error }
+      },
+    })
+    store.open()
     const request = {
       schema: 'aukora-kernel-request-v1',
       requestId: `aumlok-approval:${signedBytesDigest}`,
@@ -197,30 +201,35 @@ export function decideApproval({ approvalPath, approverDid, operationDigest, sub
       authorization: null,
       evidenceRefs: [`control:${receipt.activeControlDigest}`, `signed-bytes:${signedBytesDigest}`],
     }
-    let result
-    try {
-      result = kernel.decide(request, state, kernel.canonicalBytes(KERNEL_POLICY), nowMs)
-    } catch (error) {
-      return deny(`kernel-input:${error?.code ?? 'error'}`, error instanceof Error ? error.message : String(error), { approvalId })
-    }
-    const { decision, nextState, receiptDraft } = result
-    if (decision.status !== 'allowed') {
+    const outcome = store.authorizeAndPrepare({
+      genesis: structuredClone(EMPTY_STATE), request, policyBytes: kernel.canonicalBytes(KERNEL_POLICY), nowMs,
+      effect: { effectId: signedBytesDigest, descriptorKind: 'aumlok-approved-operation', targetPath: receipt.subject, contentHash: operationDigest },
+    })
+    const { decision, receiptDraft } = result
+    if (!outcome.ok) {
       const detail = decision.code === 'replay' ? `${approvalId} is already consumed in ${statePath}` : `the kernel refused with ${decision.code}`
       return deny(`kernel:${decision.code}`, detail, { approvalId, receiptDraft })
     }
-    if (!nextState.consumedIds.includes(approvalId)) return deny('adapter:kernel-did-not-consume', 'the kernel allowed without consuming the id; refusing')
-    replaceAtomically(statePath, `${JSON.stringify(nextState, null, 2)}\n`)
     return {
       decision: 'ALLOW',
       reason: `kernel:${decision.code}`,
-      detail: `${approvalId} consumed in ${statePath} (${String(nextState.consumedIds.length)} consumed)`,
+      detail: `${approvalId} consumed in ${statePath} (${String(outcome.record.state.consumedIds.length)} consumed); external high-water retained`,
       approvalId,
       receiptDraft,
     }
-  } finally {
-    closeSync(lockFd)
-    unlinkSync(lockPath)
-  }
+  } catch (error) {
+    const reason = error instanceof RollbackRefusedError ? 'kernel:rollback-refused'
+      : error instanceof WriterLockedError ? 'adapter:consumed-ids-locked'
+      : error instanceof MissingTrustedStateError ? 'adapter:consumed-ids-missing'
+      : error instanceof WitnessUnreadableError ? 'adapter:witness-unreadable'
+      : error instanceof TrustedStoreUnsafePathError ? 'adapter:trusted-state-unsafe-path'
+      : error instanceof KernelDidNotConsumeError ? 'adapter:kernel-did-not-consume'
+      : error === kernelFailure ? `kernel-input:${error?.code ?? 'error'}` : 'adapter:consumed-ids-unreadable'
+    const detail = error instanceof RollbackRefusedError
+      ? `${error.message}\nRecovery: the state folder is older than the witness at ${witnessPath}; restore the newer state, or reset the witness only if you intend to accept the rollback.`
+      : error instanceof Error ? error.message : String(error)
+    return deny(reason, detail, { approvalId })
+  } finally { store?.close() }
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -230,7 +239,7 @@ if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(
   const missing = required.filter((name) => value(name) === undefined)
   const nowText = value('--now')
   if (missing.length > 0 || (nowText !== undefined && !/^\d+$/u.test(nowText))) {
-    process.stderr.write(`usage: node scripts/aukora/decide.mjs ${required.map((n) => `${n} <…>`).join(' ')} [--create-consumed-ids] [--now <unix seconds>] [--json]\n`)
+    process.stderr.write(`usage: node scripts/aukora/decide.mjs ${required.map((n) => `${n} <…>`).join(' ')} [--state-root <restore boundary>] [--create-consumed-ids] [--now <unix seconds>] [--json]\n`)
     if (missing.length > 0) process.stderr.write(`missing: ${missing.join(', ')}\n`)
     process.exit(2)
   }
@@ -241,9 +250,11 @@ if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(
     subject: value('--subject'),
     controlDigest: value('--control-digest'),
     consumedIdsPath: value('--consumed-ids'),
+    stateRoot: value('--state-root'),
     createConsumedIds: args.includes('--create-consumed-ids'),
     nowSeconds: nowText === undefined ? undefined : Number(nowText),
   })
+  process.stderr.write(`${outcome.decision} ${outcome.reason}; witness: ${join(resolveWitnessDir(), 'kernel-high-water.json')}\n`)
   process.stdout.write(`${outcome.decision} ${outcome.reason}\n  ${outcome.detail}\n`)
   if (outcome.approvalId !== undefined) process.stdout.write(`  approval id: ${outcome.approvalId}\n`)
   if (outcome.receiptDraft !== undefined) {

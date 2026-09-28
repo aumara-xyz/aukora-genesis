@@ -430,7 +430,7 @@ export function assertNoDuplicateKeys(text, label) {
  * (a FIFO cannot hang the open), `fstat` THE DESCRIPTOR (so the check and the read are about the same file), read
  * from that same fd, and a FATAL UTF-8 decode (a lossy decode reads different bytes as one document).
  *
- * @param {string} path @param {{label?: string}} [options]
+ * @param {string} path @param {{label?: string, maxBytes?: number, validateStat?: (stat: import('node:fs').Stats) => void}} [options]
  * @returns {{bytes: Buffer, text: string}}
  */
 export function readBytesStrict(path, options = {}) {
@@ -447,6 +447,7 @@ export function readBytesStrict(path, options = {}) {
   }
   try {
     const stat = fstatSync(handle)
+    options.validateStat?.(stat)
     if (stat.isFile() !== true) {
       throw new StrictReadRefusal(NONREGULAR_FILE,
         `${label} is not a regular file (${stat.isDirectory() ? 'directory' : stat.isFIFO() ? 'fifo' : 'other'}); `
@@ -556,7 +557,7 @@ function refuseUnsafeIntegers(value, label) {
   }
 }
 
-function parseStrictText(text, label) {
+export function parseStrictText(text, label) {
   // **THE LONE SURROGATE IS A PROPERTY OF THE TEXT, SO IT IS CHECKED BEFORE THE PARSE.** A high surrogate not
   // followed by a low one, or a low one not preceded by a high one, is `\uD800`-shaped damage that JSON accepts.
   if (/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(text)) {

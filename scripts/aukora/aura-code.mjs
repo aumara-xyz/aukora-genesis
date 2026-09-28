@@ -14,7 +14,8 @@
  *
  * THE SPENT SET CANNOT BE RESET BY DELETING IT: once the chain holds an entry consumed by the kernel, a missing
  * consumed-ids.json is refused (decide.mjs is called without --create-consumed-ids). The same user can still edit both
- * files; this makes a reset visible, not impossible.
+ * files; decide.mjs also compares against the witness outside state/. Rewriting state AND that witness as the same
+ * UID defeats rollback refusal; the planned Airlock witness owner is not enforced here.
  */
 import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, writeSync } from 'node:fs'
 import { join } from 'node:path'
@@ -25,7 +26,7 @@ export const DEFINITE = Object.freeze(new Set(['completed', 'not-completed']))
 
 export function codeChain(stateDir) {
   const dir = join(stateDir, 'home', 'aura-code')
-  mkdirSync(dir, { recursive: true })
+  mkdirSync(dir, { recursive: true, mode: 0o700 })
   const log = join(dir, 'aura.jsonl')
   const consumedIds = join(dir, 'consumed-ids.json')
   const read = () => (existsSync(log) ? readFileSync(log, 'utf8').split('\n').filter(Boolean).map((line) => JSON.parse(line)) : [])
@@ -47,7 +48,8 @@ export function codeChain(stateDir) {
     if (!existsSync(consumedIds)) return []
     const entries = read()
     const known = new Set(entries.filter((e) => e.approvalId !== undefined).map((e) => e.approvalId))
-    const spent = JSON.parse(readFileSync(consumedIds, 'utf8')).consumedIds ?? []
+    const record = JSON.parse(readFileSync(consumedIds, 'utf8'))
+    const spent = (record.storeSchema === 1 ? record.state : record).consumedIds ?? []
     const missing = spent.filter((id) => !known.has(id))
     if (!missing.length) return []
     const committed = new Map()
