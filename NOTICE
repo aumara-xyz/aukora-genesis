@@ -65,9 +65,8 @@ Other vendored material
 | `vendor/receipt/` | `upstream-receipt-v3.json` | AGPL-3.0-only |
 | `vendor/kira-export/` | `upstream-diamond.json` | AGPL-3.0-only |
 
-**Every `LICENSE` in this tree that claims to be the AGPL carries section 13 — *Remote Network Interaction* —
-as of 2026-09-27** (`LICENSE` and the three above; checked by hand when the court that checked it,
-`tests/aukora-agpl-section-13.test.mjs`, was archived with the test forest, `ARCHIVE.md`). **That court existed
-because one of these files was, until 2026-09-26, a paraphrase that omitted section 13 and carried the FSF's own
-"changing it is not allowed" notice while being a changed copy.** See
-`vendor/append-only/upstream-phase0.json` for the recorded reason that file departs from upstream bytes.
+**The root `LICENSE` and the `LICENSE` files in the three trees above carry section 13 — *Remote Network
+Interaction* — verified on 2026-09-28.** `vendor/aukora-membrane/LICENSE` is an exception: its 4,674-byte shortened
+AGPL-3.0 text omits section 13 and duplicates section numbers. It is kept byte for byte as pinned from upstream in
+`vendor/aukora-membrane/PROVENANCE.json`. The full AGPL-3.0 text, including section 13, is the root `LICENSE`.
+See `vendor/append-only/upstream-phase0.json` for the recorded reason `vendor/append-only/LICENSE` departs from upstream bytes.

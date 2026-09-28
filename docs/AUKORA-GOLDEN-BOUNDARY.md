@@ -23,7 +23,7 @@ Care grants no authority. **[DOCTRINE]** Peter Viviani's [Care Without Control](
 
 ## §4 — The running boundary
 
-Running release: `aukora-release-aeb631a1b`. Documentation baseline: GitHub `main` at `91994c3a1`. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” at that pin bounds every claim.
+Running-release clock (the installed app): `aukora-release-aeb631a1b`. Documentation clock: GitHub `main` at `ea97c0220`; later commits change documentation and one offline provenance script (`scripts/aukora/box-closure.mjs`), not what the app runs. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” at that pin bounds every claim.
 
 | Claim | Status | Scope and limit |
 | --- | --- | --- |

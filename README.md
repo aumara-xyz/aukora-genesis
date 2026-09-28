@@ -16,6 +16,7 @@ cannot read; a kernel decides; every governed decision is receipted and can be c
 - **Nothing on GitHub requires the approval routes.** The macOS user holds push credentials; a direct push to
   `main` is not stopped. The app's action gate is an in-process check, not isolation.
 - **Care grants no authority. Auma is not an authorizer.**
+- **Our own break corpus: 17 breaches, 11 open when frozen (2026-08-21), not re-measured on this tree.** [docs/BREAK-CORPUS.md](docs/BREAK-CORPUS.md)
 
 [Further limits and recorded evidence](#further-limits-and-recorded-evidence) below bound these claims.
 
@@ -52,8 +53,11 @@ Third-party components retain their own licenses and notices.
 
 ## Further limits and recorded evidence
 
-Source baseline: `aeb631a1b`. The installed results quoted here are earlier operator records, not live verification
-of this checkout. The last release named in those records is `aukora-release-25149f573`; source inspection and
+Running-release clock: the installed app runs `aukora-release-aeb631a1b` (operator-reported).
+Documentation clock: GitHub `main` from `ea97c0220` onward changes documentation and one offline provenance script
+(`scripts/aukora/box-closure.mjs`); none of it changes what the app runs.
+The installed results quoted here are earlier operator records, not live verification of this checkout.
+The last release named in those earlier records is `aukora-release-25149f573`; source inspection and
 disposable checks do not verify the installed app.
 
 - **Airlock custody is deployment-specific.** In the recorded owner deployment, the key was held by the separate

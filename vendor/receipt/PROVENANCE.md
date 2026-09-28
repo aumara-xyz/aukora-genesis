@@ -30,7 +30,7 @@ the kind string is the signature domain.
 | --- | --- |
 | repository | `github.com/aumara-xyz/aukora-toy` |
 | commit | `c512d0cbc35da8e0c410894a768a323fccac514d` (`c512d0c`, "Merge pull request #2") |
-| licence | **AGPL-3.0** — see `LICENSE`, sha256 `6ee2e371656b5d145196776174741c2cdcd2c0d22604ca79a1cb019cb8641a3b` |
+| licence | **AGPL-3.0** — see `LICENSE`; first-party pin: sha256 `1f7e2277a29ae557cc0c3ae44a50e51934045bc95bf1311ff933fb312aa0b27e`, 35,209 bytes |
 | vendored | the cold verifier's transitive import closure, plus the repo-root `LICENSE` |
 | manifest | `upstream-receipt-v3.json` (this directory), checked by `scripts/phase0-check-pins.py` |
 
@@ -38,21 +38,20 @@ the kind string is the signature domain.
 
 The previous pin recorded MIT, correctly: at `b288ff6` the `LICENSE` file opened "MIT License
 / Copyright (c) 2026 aukora-toy contributors". At `c512d0cb` the same path holds an
-**AGPL-3.0** header (`Copyright (c) 2026 Aumara and Peter Viviani`, then the GNU Affero
-General Public License v3). Nothing was relicensed by this repository; the vendored text is
-upstream's, and it is vendored with the bytes it covers.
+**AGPL-3.0** licence. Nothing was relicensed by this repository; the licence text from line 2
+onward is upstream's. The current copyright line is a local departure, recorded below; the
+local pin is in the table above.
 
 `scripts/distill-upstream.py` **refused to write this pin** while it was told `--license MIT`,
 because the licence family it reads in the file is not MIT. That refusal is the whole reason
 the tool exists: an inherited licence claim is exactly the error that was made twice on this
 project, and here the machine caught it instead of a reader.
 
-**2026-09-22 note.** `LICENSE`'s copyright line above was replaced with a placeholder pending
-counsel's decision on the holder (the real name is not published while that is unresolved). The
-upstream commit `c512d0cb` no longer holds these exact bytes as a result; the sha256 and byte
-count above are this repository's own pinned copy, not a claim that `c512d0cb` still matches
-byte-for-byte. Everything else in this file (lines 2 onward of `LICENSE`, the licence family
-itself, the vendored closure) is unaffected and still traces to that commit.
+**2026-09-22 note (corrected).** `LICENSE`'s first line is `Copyright (c) 2026 Aumara and Peter
+Viviani`, naming Aumara and Peter Viviani as the holders. The sha256 and byte count above are
+this repository's own first-party pin, not a claim that upstream `c512d0cb` matches byte for
+byte. Lines 2 onward of `LICENSE`, the licence family and the vendored closure trace to that
+commit; file-specific departures are recorded below.
 
 ## Vendored — the verifier's closure only
 
@@ -128,7 +127,7 @@ difference stays visible here, in the pin, and in the courts that would go red i
 
 ## SECOND RECORDED DEPARTURE: `toy/ed25519.py`, the modular negation (Codex's review, 2026-09-26)
 
-A reviewer (Codex, `~/aukora-private/reviews/codex-ed25519-smallorder-r1.md`) confirmed the small-order fix closed the
+A reviewer (Codex, review `codex-ed25519-smallorder-r1.md`) confirmed the small-order fix closed the
 flaw — all eight small-order points are rejected — and found one further defect in the same function, which is fixed
 here: `_decode_point` negated with `x = P - x`, and when `x` is 0 with the sign bit set that produces `P`, which is out
 of range. The point was still refused, by the re-encode check below it, so this was never a bypass; what it defeated was

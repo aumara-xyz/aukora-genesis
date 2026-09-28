@@ -215,7 +215,7 @@ async function main() {
     const copied = readFileSync(join(BOX, file)), original = join(sourceRoot, file)
     bytes += copied.length
     if (!row || row.length !== 3 || !existsSync(original) || !lstatSync(original).isFile()
-      || realpathSync(original) !== original || row[2] !== join(SOURCE, file)
+      || realpathSync(original) !== original || row[2] !== `aukora/${file}`
       || sha256(copied) !== row[1] || sha256(readFileSync(original)) !== row[1]) {
       console.log(`BYTE MISMATCH: ${file}`)
     } else identical++
