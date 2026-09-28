@@ -209,7 +209,10 @@ export function createOpenVikingRecall(input) {
   }
 
   const listIndexed = async () => {
-    const ids = new Set()
+    /** id -> EVERY uri that id was LISTED under. An id can appear under the A1 shape and the
+     *  legacy `governed/kira-<hex>.md` shape at once, and only a URI that was actually listed can
+     *  be deleted: a name rebuilt from the id removes the A1 file and leaves the other serving. */
+    const found = new Map()
     // List both leaf directories: an OpenViking `ls` at the shared root may return
     // only the `remembered/` and `governed/` child directories, not their files.
     for (const branch of ['remembered', 'governed']) for (let offset = 0; ; offset += 1000) {
@@ -222,16 +225,26 @@ export function createOpenVikingRecall(input) {
       }
       rows = Array.isArray(rows) ? rows : []
       for (const row of rows) {
-        const id = idFromUri(config.user, typeof row === 'string' ? row : String(row?.uri ?? ''))
-        if (id !== null) ids.add(id)
+        const uri = typeof row === 'string' ? row : String(row?.uri ?? '')
+        const id = idFromUri(config.user, uri)
+        if (id === null) continue
+        if (!found.has(id)) found.set(id, new Set())
+        found.get(id).add(uri)
       }
       if (rows.length < 1000) break
     }
-    return ids
+    return found
   }
 
-  const removeId = id => call('DELETE', `/api/v1/fs?uri=${encodeURIComponent(uriFor(config.user, id))}`)
-    .catch(error => { if (error?.code !== 'kira.semantic:not-found') throw error })
+  /** Delete ONE listed URI. Already absent is not a failure; could not be deleted is, and is
+   *  REPORTED rather than swallowed, because `sync` counts a removal only when the delete landed. */
+  const removeUri = async uri => {
+    try { await call('DELETE', `/api/v1/fs?uri=${encodeURIComponent(uri)}`); return { uri, ok: true } }
+    catch (error) {
+      if (error?.code === 'kira.semantic:not-found') return { uri, ok: true, absent: true }
+      return { uri, ok: false, because: String(error?.code ?? error?.message) }
+    }
+  }
 
   /** Reconcile OpenViking with the ledger: add at most `budget` missing notes now, remove every id the ledger no longer holds. */
   const sync = (ledger, options = {}) => inTurn(async () => {
@@ -239,12 +252,20 @@ export function createOpenVikingRecall(input) {
     if (indexed === null || now() - listedAt > 600_000) { indexed = await listIndexed(); listedAt = now() }
     const budget = Number.isFinite(options.budget) ? Number(options.budget) : Number.POSITIVE_INFINITY
     const missing = [...live.entries.values()].filter(note => !indexed.has(note.id) && typeof note.statement === 'string' && note.statement !== '')
-    const gone = live.complete === true ? [...indexed].filter(id => !live.entries.has(id)) : []
+    const gone = live.complete === true ? [...indexed.keys()].filter(id => !live.entries.has(id)) : []
     let added = 0
     let removed = 0
     const failed = []
     for (const id of gone) {
-      try { await removeId(id); indexed.delete(id); removed += 1 } catch (error) { failed.push(`remove ${id.slice(0, 12)}: ${String(error?.code)}`) }
+      // EVERY SHAPE LISTED FOR THIS ID, never one name rebuilt from the id.
+      const results = []
+      for (const uri of indexed.get(id) ?? []) results.push(await removeUri(uri))
+      const unreached = results.filter(one => one.ok !== true)
+      // A REMOVAL IS COUNTED ONLY WHEN EVERY LISTED SHAPE IS GONE. Counting the attempt reports a
+      // legacy file removed while it is still being served, and `indexed.delete` stops the retry.
+      if (results.length === 0) failed.push(`remove ${id.slice(0, 12)}: listed with no uri`)
+      else if (unreached.length === 0) { indexed.delete(id); removed += 1 }
+      else failed.push(`remove ${id.slice(0, 12)}: ${unreached.map(one => String(one.because)).join('; ')}`)
     }
     for (const note of missing.slice(0, budget)) {
       try {
@@ -253,7 +274,7 @@ export function createOpenVikingRecall(input) {
           timeout: Math.max(1, Math.round(config.timeoutMs / 1000)),
           tags: [`kira_id=${note.id}`, `tier=${note.tier === 'signed' ? 'signed' : 'remembered'}`],
         })
-        indexed.add(note.id)
+        indexed.set(note.id, new Set([uriFor(config.user, note.id)]))
         added += 1
       } catch (error) {
         failed.push(`add ${note.id.slice(0, 12)}: ${String(error?.code)}`)
@@ -265,23 +286,34 @@ export function createOpenVikingRecall(input) {
 
   /** Remove a forgotten id in its turn, after a reconcile already writing it. Never throws: the answer says whether OpenViking was reached. */
   const forgetNow = async id => {
-    if (!configured || (!NOTE_ID.test(String(id)) && !GOVERNED_ID.test(String(id)))) return { reached: false, because: configured ? 'not a Kira memory id' : String(config?.reason) }
-    const uri = uriFor(config.user, String(id))
-    try {
-      await removeId(String(id))
-      indexed?.delete(String(id))
-      return { reached: true, uri }
-    } catch (error) {
-      return { reached: false, uri, because: `${String(error?.message)}; the next reconcile removes it, and recall never shows an id the ledger does not hold` }
+    const value = String(id)
+    if (!configured || (!NOTE_ID.test(value) && !GOVERNED_ID.test(value))) return { reached: false, because: configured ? 'not a Kira memory id' : String(config?.reason) }
+    // BOTH SHAPES. The write shape is always known; the LEGACY shape is known only if this index
+    // listed it. A record written before the A1 rename lives at `governed/kira-<hex>.md`, and
+    // removing only the A1 name leaves it serving while the forget reports it reached the server.
+    const uris = new Set([uriFor(config.user, value), ...(indexed?.get(value) ?? [])])
+    const results = []
+    for (const uri of uris) results.push(await removeUri(uri))
+    const unreached = results.find(one => one.ok !== true)
+    if (unreached !== undefined) {
+      return { reached: false, uri: unreached.uri, because: `${String(unreached.because)}; the next reconcile removes it, and recall never shows an id the ledger does not hold` }
     }
+    indexed?.delete(value)
+    return { reached: true, uri: [...uris][0] }
   }
   const forget = id => inTurn(() => forgetNow(id))
 
   /** Ask OpenViking, then keep ONLY hits whose id the ledger holds, above the threshold and within the window of the best. */
   const recall = async ({ question, live: ledger }) => {
     const dropped = { unmapped: [], belowThreshold: 0 }
+    // WHETHER THE MEMORY STORE COULD BE READ IS REPORTED ON EVERY PATH, including the paths where
+    // OpenViking could not be reached at all. An unreachable INDEX and an unreadable LEDGER are
+    // different faults, and a caller that cannot tell them apart treats an unreadable store as an
+    // empty one. Read here for the report; read again after the search for the filter.
+    let ledgerComplete = false
+    try { ledgerComplete = ledgerShape(await ledgerNow(ledger)).complete === true } catch { ledgerComplete = false }
     const up = await available()
-    if (!up.ok) return { available: false, reason: up.reason, hits: [], dropped }
+    if (!up.ok) return { available: false, reason: up.reason, hits: [], dropped, ledgerComplete }
     let synced
     try { synced = await sync(ledger, { budget: config.syncBatch }) } catch (error) { synced = { error: String(error?.code ?? error?.message) } }
     let result
@@ -289,10 +321,11 @@ export function createOpenVikingRecall(input) {
       result = await call('POST', '/api/v1/search/find', { query: `${config.queryInstruction}${String(question)}`, target_uri: root, limit: config.candidates })
     } catch (error) {
       health = { at: now(), ok: false, reason: String(error?.message) }
-      return { available: false, reason: String(error?.message), hits: [], dropped, sync: synced }
+      return { available: false, reason: String(error?.message), hits: [], dropped, sync: synced, ledgerComplete }
     }
     // READ AFTER THE SEARCH, not before the wait for the reconcile: a note forgotten meanwhile is not shown.
     const live = ledgerShape(await ledgerNow(ledger))
+    ledgerComplete = live.complete === true
     const candidates = []
     for (const hit of [...(result?.memories ?? []), ...(result?.resources ?? [])]) {
       const id = idFromUri(config.user, hit?.uri)
@@ -321,7 +354,7 @@ export function createOpenVikingRecall(input) {
     })
     const byId = new Map(candidates.map(one => [one.id, one]))
     const hits = reserved.selected.map(slot => ({ ...byId.get(slot.id), slot: slot.slot }))
-    return { available: true, hits, dropped, reserved, sync: synced }
+    return { available: true, hits, dropped, reserved, sync: synced, ledgerComplete }
   }
 
   return Object.freeze({ configured, reason: configured ? undefined : config?.reason, available, sync, forget, recall })
