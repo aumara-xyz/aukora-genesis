@@ -22,6 +22,7 @@
  */
 import { dirname } from 'node:path'
 import { readJsonStrict, readTextStrict, stateExists } from './strict-read.mjs'
+import { GOVERNED_RESERVED_SLOTS, mergeReservedSlots } from './reserved-slots.mjs'
 
 /** The method name every semantic answer carries. */
 export const SEMANTIC_METHOD = 'openviking-semantic'
@@ -308,9 +309,19 @@ export function createOpenVikingRecall(input) {
     }
     candidates.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
     const best = candidates[0]?.score ?? 0
-    const hits = candidates.filter(one => best - one.score <= config.window).slice(0, config.limit)
-    dropped.belowThreshold += candidates.length - hits.length
-    return { available: true, hits, dropped, sync: synced }
+    const eligible = candidates.filter(one => best - one.score <= config.window)
+    dropped.belowThreshold += candidates.length - eligible.length
+    // Governance is a slot reservation, never a score multiplier. Both groups have
+    // already cleared the same threshold and window before this merge.
+    const reserved = mergeReservedSlots({
+      ambient: eligible.filter(one => one.tier !== 'signed'),
+      governed: eligible.filter(one => one.tier === 'signed'),
+      ceiling: config.limit,
+      reserved: GOVERNED_RESERVED_SLOTS,
+    })
+    const byId = new Map(candidates.map(one => [one.id, one]))
+    const hits = reserved.selected.map(slot => ({ ...byId.get(slot.id), slot: slot.slot }))
+    return { available: true, hits, dropped, reserved, sync: synced }
   }
 
   return Object.freeze({ configured, reason: configured ? undefined : config?.reason, available, sync, forget, recall })
@@ -323,12 +334,14 @@ export function createOpenVikingRecall(input) {
 export function semanticNotes(answer, chars = 600) {
   return Object.freeze({
     state: 'found', method: SEMANTIC_METHOD, grantsAuthority: false,
-    notes: answer.hits.map(({ id, score, note }) => ({
+    notes: answer.hits.map(({ id, score, note, slot }) => ({
       id, text: String(note.statement).slice(0, chars), observedAt: note.observedAt ?? null, score,
+      tier: note.tier === 'signed' ? 'signed' : 'remembered', slot,
       source: { sessionId: note.source?.sessionId ?? null, seq: note.source?.seq ?? null }, bodyAtCapture: note.bodyAtCapture ?? null,
       rememberedChain: { index: note.aura?.index ?? null, entryHash: note.aura?.entryHash ?? null },
     })),
     droppedUnmapped: answer.dropped.unmapped.length, droppedBelowThreshold: answer.dropped.belowThreshold,
+    ...(answer.reserved === undefined ? {} : { reserved: answer.reserved }),
     ...(answer.sync === undefined ? {} : { index: answer.sync }),
     ceiling: SEMANTIC_CEILING,
   })
