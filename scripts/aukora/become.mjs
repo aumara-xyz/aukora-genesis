@@ -143,7 +143,7 @@ function membraneObservation() {
     const checked = run('python3', [join(REPO, 'vendor/append-only/verify.py'), previous, current], { timeout: 10_000 })
     const verdict = /^VERDICT:\s*(APPEND_ONLY|OBSERVATION_CONFLICT|UNDETERMINED)\s*$/mu.exec(checked.text)?.[1]
     const reason = /^REASON\s*:\s*(\S+)/mu.exec(checked.text)?.[1]
-    return { verdict: verdict ?? 'UNDETERMINED', reason: reason ?? 'verifier_unavailable',
+    return { verdict: verdict ?? 'UNDETERMINED', reason: (verdict && reason) || 'verifier_unavailable',
       retainedSize, presentedSize: leaves.length, presentedRoot: presented.root }
     // The verifier reports POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE as UNDETERMINED, never conflict.
   } finally { rmSync(dir, { recursive: true, force: true }) }
@@ -157,8 +157,16 @@ function retainMembrane() {
     renameSync(path, RETAINED)
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }
+function membraneRefusal({ verdict, reason }) {
+  if (verdict === 'OBSERVATION_CONFLICT') return `${CONFLICT} (${reason})`
+  if (verdict === 'UNDETERMINED' && reason !== 'POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE') {
+    return `the code chain could not be verified (${reason})`
+  }
+  return null
+}
 function guardMembrane() {
-  if (membraneObservation().verdict === 'OBSERVATION_CONFLICT') finish('refused', CONFLICT)
+  const refusal = membraneRefusal(membraneObservation())
+  if (refusal) finish('refused', refusal)
 }
 
 // Unwind main immediately; finalization may need to await rollback before recording a refusal.
@@ -172,8 +180,9 @@ async function finishOutcome(outcome, note) {
   const chain = PLAN ? null : codeChain(STATE)
   const record = () => {
     const membrane = membraneObservation()
-    if (membrane.verdict === 'OBSERVATION_CONFLICT') {
-      outcome = 'refused'; note = CONFLICT
+    const refusal = membraneRefusal(membrane)
+    if (refusal) {
+      outcome = 'refused'; note = refusal
       if (rescue !== null && rescuing === null) return false
     }
     const running = outcome === 'live' ? result.release : result.previousRelease
