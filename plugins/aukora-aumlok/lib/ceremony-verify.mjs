@@ -50,7 +50,7 @@ export function normalizePhrase(s) {
  * **THIS IS THE RECOVERY PATH, AND IT IS ALSO THE CHEAPEST PLACE TO CHECK A GUESS (AUMLOK-113).** It hashes
  * seven normalised tokens against a salt, which is exactly what an offline attacker does — **and the salt here
  * is PUBLIC, so there is nothing in this function an attacker does not have.** Reviewer row 8: the root is worth
- * the drop-theme figure from `honestEntropyClause()`, which is not 128 bits, so enumerating the phrase
+ * the themed figure from `honestEntropyClause()`, which is not 128 bits and not 256 bits, so enumerating the phrase
  * space is a dictionary walk, not a search for a secret.
  *
  * **THE CEILING IS PRINTED ON EVERY CALL RATHER THAN ONCE AT STARTUP**, because a caller that reached this

@@ -44,8 +44,9 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomInt } from 'node:crypto'
 import {
+  THEME_BY_POSITION,
   admissibleLetters,
-  approvedPoolCounts,
+  bucketCounts,
   chooseAnchorLetters,
 } from '../../plugins/aukora-aumlok/lib/themed-entropy.mjs'
 import { mnemonicStory } from '../../plugins/aukora-aumlok/lib/mnemonic-story.mjs'
@@ -172,15 +173,15 @@ function readDataFile(releaseDir, name) {
 }
 
 /**
- * The approved pool for each letter: the union of the stored tables, each word once.
+ * The approved pool for each theme and letter.
  *
- * The file is still `{themes: {NATURE, PEOPLE, SPIRIT}}`. That is storage. A position does not
- * consult a theme. Anything else yields an empty table, and every draw then refuses by name.
+ * The file is `{themes: {NATURE, PEOPLE, SPIRIT}}`. A position draws from its own theme.
+ * Anything else yields empty theme tables, and every draw then refuses by name.
  * @param {unknown} themes - the parsed `aumlok-themes.json`.
- * @returns {Record<string, string[]>} letter → words.
+ * @returns {Record<string, Record<string, string[]>>} theme → letter → words.
  */
 export function indexLetterPools(themes) {
-  const pools = {}
+  const pools = { NATURE: {}, PEOPLE: {}, SPIRIT: {} }
   const source = themes !== null && typeof themes === 'object' ? themes.themes : undefined
   if (source === null || typeof source !== 'object') return pools
   for (const theme of ['NATURE', 'PEOPLE', 'SPIRIT']) {
@@ -191,11 +192,15 @@ export function indexLetterPools(themes) {
       if (!/^[a-z]$/u.test(key)) continue
       const words = buckets[letter]
       if (!Array.isArray(words)) continue
-      const list = pools[key] ?? []
+      const list = []
+      const seen = new Set()
       for (const word of words) {
-        if (typeof word === 'string' && WORD.test(word) && !list.includes(word)) list.push(word)
+        if (typeof word === 'string' && WORD.test(word) && !seen.has(word)) {
+          seen.add(word)
+          list.push(word)
+        }
       }
-      if (list.length > 0) pools[key] = list
+      if (list.length > 0) pools[theme][key] = list
     }
   }
   return pools
@@ -209,7 +214,7 @@ export function indexLetterPools(themes) {
  * times than its pool has words cannot be drawn without repeating a word, so that anchor is left
  * out rather than retried until something collides.
  * @param {unknown} anchors - the parsed `aumlok-anchors.json`.
- * @param {Record<string, string[]>} pools - the merged letter pools.
+ * @param {Record<string, Record<string, string[]>>} pools - theme → letter → words.
  * @param {ReadonlySet<string>} [letters] - letters the measurement still admits. Omitted means all.
  * @returns {string[]} the drawable anchors.
  */
@@ -223,12 +228,14 @@ export function drawableAnchors(anchors, pools, letters) {
     const seen = {}
     let ok = true
     for (let row = 0; row < ACROSTIC_POSITIONS && ok; row++) {
+      const theme = THEME_BY_POSITION[row]
       const letter = candidate[row]
       if (letters && !letters.has(letter)) ok = false
-      const pool = pools[letter]
-      const already = seen[letter] ?? 0
+      const pool = pools[theme]?.[letter]
+      const key = `${theme}:${letter}`
+      const already = seen[key] ?? 0
       if (!Array.isArray(pool) || pool.length - already <= 0) ok = false
-      seen[letter] = already + 1
+      seen[key] = already + 1
     }
     if (ok) usable.push(candidate)
   }
@@ -243,25 +250,26 @@ export function drawableAnchors(anchors, pools, letters) {
  * @returns {Set<string>}
  */
 export function admittedLetters(themes, anchors) {
-  const poolCounts = approvedPoolCounts(themes)
-  const chosen = chooseAnchorLetters(admissibleLetters(poolCounts), poolCounts, anchors)
+  const counts = bucketCounts(themes)
+  const chosen = chooseAnchorLetters(admissibleLetters(counts), counts, anchors)
   return new Set(chosen.evaluation.letters)
 }
 
 /**
- * Build one phrase from an anchor and the full pool for each of its letters.
+ * Build one phrase from an anchor and that position's theme pool.
  *
  * A REPEATED WORD IS NOT A PHRASE. A position whose remaining pool is empty refuses the phrase.
- * The pick is `node:crypto` `randomInt`, uniform, and it does not consult a theme.
+ * The pick is `node:crypto` `randomInt`, uniform. The theme is `THEME_BY_POSITION[row]`.
  * @param {string} anchor - the six-letter anchor.
- * @param {Record<string, string[]>} pools - the merged letter pools.
+ * @param {Record<string, Record<string, string[]>>} pools - theme → letter → words.
  * @param {(list: readonly string[]) => string} [pick] - the draw. Courts pass a fixed pick.
  * @returns {{ok: true, words: string[]}|{ok: false, reason: string}} the phrase, or a refusal.
  */
 export function composePhrase(anchor, pools, pick = drawOne) {
   const words = []
   for (let row = 0; row < ACROSTIC_POSITIONS; row++) {
-    const pool = pools[anchor[row]] ?? []
+    const theme = THEME_BY_POSITION[row]
+    const pool = pools[theme]?.[anchor[row]] ?? []
     const free = pool.filter(word => !words.includes(word))
     if (free.length === 0) return { ok: false, reason: DRAW_REFUSE.NO_ANCHOR }
     words.push(pick(free))

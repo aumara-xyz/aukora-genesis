@@ -170,12 +170,14 @@ Spelled in `plugins/aukora-aumlok/lib/ceilings.mjs`.
   custody or succession claim is made. A signature shows that a key signed, never that a person
   attended.
 - The owner's root key is derived with scrypt from the seven words and a public handle
-  (`plugins/aukora-aumlok/lib/derive-v3.mjs`). The desktop draw is a seven-word acrostic from the full
-  approved pool for each letter (`plugins/aukora-aumlok/lib/themed-entropy.mjs`,
-  `apps/aukora-desktop/aumlok-draw.mjs`). `measure()` prints the weakest and strongest anchors. That
-  figure is not 128 bits. Because the handle is public, someone who has the public key can search for
-  the words offline; the scrypt cost slows each guess but does not stop the search. An old themed
-  phrase still derives: the key is the seven words, and those words remain in the approved pools.
+  (`plugins/aukora-aumlok/lib/derive-v3.mjs`). The desktop draw is a seven-word acrostic: a six-letter
+  anchor, then Nature, Nature, People, People, Spirit, Spirit
+  (`plugins/aukora-aumlok/lib/themed-entropy.mjs`, `apps/aukora-desktop/aumlok-draw.mjs`). `measure()`
+  prints the weakest and strongest anchors. That figure is not 128 bits and not 256 bits. scrypt's
+  output length is not the phrase entropy. The theme only groups the words. Because the handle is
+  public, someone who has the public key can search for the words offline; the scrypt cost slows
+  each guess but does not stop the search. An old phrase still derives: the key is the seven words
+  and the handle, not a lookup in the current theme pools.
 
 ### Aura
 

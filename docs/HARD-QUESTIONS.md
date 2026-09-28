@@ -56,9 +56,10 @@ agent only when no credential it can reach may push to `main` or edit protection
 ### 4. Who holds the key?
 
 Two layers. The root key is not stored: it is re-derived with scrypt from a seven-word phrase and a public handle
-(`plugins/aukora-aumlok/lib/derive-v3.mjs:4-15`). The drop-theme draw's weakest and strongest
+(`plugins/aukora-aumlok/lib/derive-v3.mjs:4-15`). The themed draw's weakest and strongest
 anchors are what `measure()` reports (`plugins/aukora-aumlok/lib/themed-entropy.mjs`); that figure is
-not 128 bits. The old themed draw was about 34.14 bits. Approvals are signed by a machine key whose seed sits on the
+not 128 bits and not 256 bits. scrypt's output length is not the phrase entropy. The theme only groups
+the words. Approvals are signed by a machine key whose seed sits on the
 Mac, by default in `machine-seed-v3.json`, mode 0600 (`plugins/aukora-aumlok/lib/record-v3.mjs:69-82`); reading it
 asks no person for anything (`:277-281`). Receipts say key class `B`, `software-held`
 (`plugins/aukora-aumlok/lib/approval-receipt.mjs:47`). The approver that `self-change.mjs` and Kira trust is

@@ -127,8 +127,9 @@ export const CEILING_TEXTS = Object.freeze({
   // ── **PETER DECIDED TO DISCLOSE THIS NOW AND REDESIGN IT AFTER THE SHARE (AUMLOK-113)** ────────────────
   //
   // REVIEWER ROW 8. The root key is derived from the seven acrostic words plus a handle that is PUBLIC, and the
-  // pair is the drop-theme acrostic measured by `themed-entropy.mjs` (`honestEntropyClause()`). The
-  // 64-bit floor stays retired. The figure is not 128 bits.
+  // pair is the themed acrostic measured by `themed-entropy.mjs` (`honestEntropyClause()`). The
+  // theme is memorability and pool structure. scrypt's output length is not the phrase entropy.
+  // The 64-bit floor stays retired. The figure is not 128 bits and not 256 bits.
   // **A scrypt work factor of about one second per guess is a real cost and not a large one.** The search
   // parallelises perfectly — it is a dictionary, not a password, and every guess is independent.
   //

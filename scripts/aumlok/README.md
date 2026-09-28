@@ -26,11 +26,11 @@ no key.
 `node scripts/aumlok/bind --generate` is refused. It does not print a phrase.
 
 **THE CEREMONY DRAW IS NOT THIS COMMAND.** The seven words are drawn in the
-desktop shell (`apps/aukora-desktop/aumlok-draw.mjs`) from the full approved pool for each letter of
-the anchor. The words are still an acrostic. Nature, People and Spirit do not choose the row. The
-bits are what `measure()` in `plugins/aukora-aumlok/lib/themed-entropy.mjs` reports, and that figure
-is not 128 bits. The small tables in `ceremony-phrase.mjs` are the donor list, merged per letter,
-and they are not the ceremony draw.
+desktop shell (`apps/aukora-desktop/aumlok-draw.mjs`). Word 0 is a six-letter anchor. Words 1–2
+are Nature, 3–4 People, 5–6 Spirit, and each initial follows the anchor. The bits are what
+`measure()` in `plugins/aukora-aumlok/lib/themed-entropy.mjs` reports. That figure is not 128 bits
+and not 256 bits. The root is scrypt of the seven words and the public handle. The small tables in
+`ceremony-phrase.mjs` are the donor list, and they are not the ceremony draw.
 
 Binding takes `--directory` and `--handle` (required: the handle salts the KDF). The seven words are
 typed into the terminal for that command, or drawn and typed back on the ceremony screen. They are
