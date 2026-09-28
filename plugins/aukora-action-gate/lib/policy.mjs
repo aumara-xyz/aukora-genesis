@@ -29,6 +29,7 @@ import { compileAll, judge } from '../../../vendor/seed/src/law.mjs'
 import { analyse, realpathish } from '../../../vendor/seed/src/paths.mjs'
 import { SELF_CHANGE_ROUTE, routedRefusal } from './routes.mjs'
 import { authorityRefusal, credentialRefusal, effectiveShellCommands, gitMainRefusal, hostsNamed, literalPath, literalWriteTargets, shellCommands } from './shell.mjs'
+import { decidePartialFailure } from '../../aukora-kira/lib/partial-failure.mjs'
 
 /** Key material and credentials, as seed-guard patterns rooted at `/`: `**` + `/` finds them at any depth. */
 export const KEY_PATTERNS = Object.freeze([
@@ -81,6 +82,17 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '::1', '0.0.0.0'])
 const SPEND_NAME = /(^|[_-])(buy|purchase|pay|payment|checkout|transfer|withdraw|deposit|trade|spend|top_?up)([_-]|$)/iu
 const PUBLISH_NAME = /(^|[_-])(publish|deploy|merge)([_-]|$)/iu
 const WRITE_NAME = /(^|[^a-z0-9])(write|edit|create|delete|move|put|save|patch|append|replace)([^a-z0-9]|$)/iu
+
+/** Effects whose execution is unsafe when the latest memory picture is partial or unverified. */
+export const CONSEQUENTIAL_TOOL_NAMES = Object.freeze([
+  'memory.put', 'workspace.patch', 'kira_settle', 'commit', 'raise', 'door_send', 'become',
+])
+
+/** Apply the shared Phase 9 policy at the last gate before a consequential tool body. */
+export function consequentialPartialFailureDecision(tool, state) {
+  if (!CONSEQUENTIAL_TOOL_NAMES.includes(String(tool))) return null
+  return decidePartialFailure(state ?? {})
+}
 
 // Compile these existing allow outcomes for the kernel. New classes/outcomes need explicit rules.
 export const KERNEL_ALLOWS = Object.freeze([
@@ -177,7 +189,7 @@ export const DEFAULT_ALLOW_TOOLS = Object.freeze([
  * @param {object} settings - validated settings (see `index.mjs`).
  * @returns {{judge: (call: object) => {decision: 'allow'|'deny', rule: string, message: string|null}}}
  */
-export function createPolicy(settings, { definitionOf = null } = {}) {
+export function createPolicy(settings, { definitionOf = null, partialFailureOf = () => undefined } = {}) {
   const { home, supportRoot, dshHome, auraDir, repoRoots, releaseRoots, extraWritableRoots, networkAllow, allowLoopback, mainBranch } = settings
   const governingRoots = [...new Set([...repoRoots, ...releaseRoots])]
   const keyLaw = { root: '/', rules: compileAll(KEY_PATTERNS.map(([pattern]) => pattern)) }
@@ -376,6 +388,17 @@ export function createPolicy(settings, { definitionOf = null } = {}) {
     const args = call.args !== null && typeof call.args === 'object' ? call.args : {}
     const tool = String(call.tool)
     const first = (...verdicts) => verdicts.find(v => v !== null && v !== undefined && v.decision === 'deny') ?? null
+    // The state comes from Kira's in-process ledger, never from model-written effect arguments. A missing
+    // or malformed handoff becomes outer=undetermined and therefore STOPs by the shared policy.
+    if (CONSEQUENTIAL_TOOL_NAMES.includes(tool)) {
+      let state
+      try { state = partialFailureOf(call) } catch { state = undefined }
+      const partial = consequentialPartialFailureDecision(tool, state)
+      if (partial.action !== 'proceed') {
+        const duty = partial.action === 'ask' ? 'ASK the owner before this effect' : 'STOP: memory must be verified before this effect'
+        return deny(`memory:partial-failure:${partial.action}`, `${duty}; ${partial.reason}`)
+      }
+    }
     const paths = (list, kind) => first(...list.filter(p => p !== undefined).map(p => judgePath(p, kind, call)))
 
     const switched = (() => {

@@ -163,11 +163,11 @@ export function presetOf(ctx, agent) {
 /**
  * Build the guard function: judge, receipt, and return the refusal text (or undefined to leave the call allowed).
  * Exported so the check can drive the exact function the plugin registers.
- * @param {{settings: object, lookupPreset?: (agent: object|undefined) => unknown, logger?: object}} options
+ * @param {{settings: object, lookupPreset?: (agent: object|undefined) => unknown, partialFailureOf?: (agent: object|undefined, exec?: object) => unknown, logger?: object}} options
  * @returns {(exec: object) => string|undefined}
  */
-export function createGuard({ settings, lookupPreset = () => null, logger, definitionOf = null }) {
-  const policy = createPolicy(settings, { definitionOf })
+export function createGuard({ settings, lookupPreset = () => null, partialFailureOf = () => undefined, logger, definitionOf = null }) {
+  const policy = createPolicy(settings, { definitionOf, partialFailureOf: call => partialFailureOf(call?.agent, call) })
   const receipts = createReceiptLog({ auraDir: settings.auraDir, ...settings.rotateBytes === undefined ? {} : { rotateBytes: settings.rotateBytes } })
   return function actionGate(exec) {
     const agent = exec?.agent
@@ -227,7 +227,15 @@ export function apply(ctx, config) {
   const definitionOf = (name, agent) => {
     try { return ctx.tools.get(name, agent) } catch { return undefined }
   }
-  const guard = createGuard({ settings, lookupPreset: agent => presetOf(ctx, agent), logger, definitionOf })
+  // Kira owns the verified recall result. Resolve the service lazily because plugin row order is not a
+  // trust boundary; a missing service is intentionally handled as an unverified memory picture.
+  const partialFailureOf = agent => {
+    try {
+      const ledger = ctx.get('kira.partialFailure')
+      return ledger?.forAgent?.(agent)
+    } catch { return undefined }
+  }
+  const guard = createGuard({ settings, lookupPreset: agent => presetOf(ctx, agent), partialFailureOf, logger, definitionOf })
   ctx.tools.guard(guard)
   logger?.info?.(`aukora-action-gate: guarding every tool call; receipts in ${settings.auraDir}`)
   if (settings.worktreesRoot !== undefined) {
