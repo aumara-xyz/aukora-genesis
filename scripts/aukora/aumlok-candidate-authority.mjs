@@ -18,6 +18,7 @@ import { closeSync, constants, existsSync, fchmodSync, fstatSync, fsyncSync, lst
 import { dirname, join, resolve, sep } from 'node:path'
 import { tmpdir } from 'node:os'
 import { decideApproval } from './decide.mjs'
+import { writeCandidateCommit } from './commit-ssh-candidate.mjs'
 import { ReactiveMemoryStore } from '../../vendor/aukora-seed-app/lib/apps/brain/src/reactiveStore.js'
 import { buildMemoryRecord } from '../../vendor/aukora-seed-app/lib/packages/memory/index.js'
 import { classifyPath, candidateAllowed } from '../../vendor/aukora-seed-app/lib/apps/seed/src/pathFence.js'
@@ -370,7 +371,7 @@ export function commitCandidateTree(record, { why, approverDid, approvalDigest, 
   const tree = treeFor(repo, record.base, candidate, join(record.directory, 'commit.index'))
   if (tree !== record.tree) deny('candidate:commit-tree-mismatch')
   const message = `${why}\n\nApproved-by: ${approverDid}\nApproval-digest: ${approvalDigest}\nOperation-digest: ${operationDigest}\nCandidate-digest: ${record.digest}\n`
-  const commit = git(repo, ['-c', 'user.name=Auma Approved Change', '-c', 'user.email=approved@localhost', 'commit-tree', tree, '-p', record.base], { input: message }).trim()
+  const commit = writeCandidateCommit(repo, { tree, base: record.base, message })
   if (git(repo, ['rev-parse', `${commit}^{tree}`]).trim() !== record.tree) deny('candidate:commit-tree-mismatch')
   git(repo, ['update-ref', 'HEAD', commit, record.base])
   snapshot.committed = true
