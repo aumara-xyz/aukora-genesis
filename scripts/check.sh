@@ -103,6 +103,7 @@ check 'node tests/aukora-restore-scope.test.mjs'
 check 'node tests/kira-consolidate.test.mjs'
 check 'python3 vendor/aukora-membrane/minimal/tour.py'
 check 'node vendor/authority/conformance.mjs'
+check 'node scripts/aukora/box-confinement-check.mjs'
 
 index=0
 for pid in $pids; do
