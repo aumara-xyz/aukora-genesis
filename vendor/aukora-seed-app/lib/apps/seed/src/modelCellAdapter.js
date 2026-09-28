@@ -16,7 +16,7 @@
  * (halts before signature) → Fu advisory → fresh AUMLOK owner halt → R37 reference monitor → byte-bound isolated
  * candidate. Nothing here signs, applies, or creates a second workflow.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { scanForSecrets } from '../../../packages/evidence/src/index.js';
 import { scanForbiddenKeys, scanForbiddenValues } from './forbiddenContent.js';
 import { PENDING_INTENT_SCHEMA } from './governedCrossing.js';

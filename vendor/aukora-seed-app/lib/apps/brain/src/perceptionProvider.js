@@ -12,7 +12,7 @@
  *   - NO API KEY IN THE BROWSER: credentials are injected server-side only; the contract carries no key and the
  *     deterministic provider needs none. A browser adapter must proxy through a server — never embed a key.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 export const DEFAULT_PERCEPTION_CAPS = {
     maxFrameBytes: 2_000_000, // ~2 MB per frame
     maxAudioMs: 15_000, // 15 s per bounded voice turn

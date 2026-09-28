@@ -17,7 +17,7 @@
  * fixtures — the only holders are the OS credential store (MacKeychainAdapter) or the in-memory test double
  * (disposable test credentials only). No credential grants authority by existing; AUMLOK stays above.
  */
-import { canonicalHash } from '../../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../../authority/lib/canonical.js';
 import { scanForSecrets } from '../../../../packages/evidence/src/index.js';
 export function deriveCredentialRef(service, account) {
     return `secref:v1:${canonicalHash({ domain: 'aukora-keychain-ref-v1', service, account }).slice(0, 16)}`;

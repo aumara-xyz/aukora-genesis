@@ -10,7 +10,7 @@
  *
  * Pure: no I/O, no network, no clock, no authority.
  */
-import { bytesToHex } from '../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js';
+import { bytesToHex } from '../../../../../authority/deps/@noble/hashes@2.2.0/utils.js';
 /** A well-formed provisioned POST token: a non-empty string with no whitespace or control characters. */
 export function doorTokenIsWellFormed(t) {
     if (typeof t !== 'string' || t.length === 0)

@@ -36,8 +36,8 @@
  * signatures wrap sync compute so future call sites keep the existing await shape. Imports use explicit .js
  * subpaths (the only form @noble/hashes v2 exports — survives the planned hashes-v2 bump).
  */
-import { ml_dsa65 } from "../../../../../../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js";
-import { bytesToHex, hexToBytes } from "../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js";
+import { ml_dsa65 } from "../../../../../../authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js";
+import { bytesToHex, hexToBytes } from "../../../../../../authority/deps/@noble/hashes@2.2.0/utils.js";
 // ── Algorithm-id table (sign-off §8.4: dedicated byte at preimage[1], starting 0x04) ──
 // 0x00–0x03 are HISTORICAL/RESERVED (V2 version byte, CT tree_hash(1), chain_hash(2), chain_checkpoint(3)) and are
 // NEVER valid PQC alg-ids. Future entries (reserved, NOT implemented): 0x05 ml-dsa-87, 0x06 slh-dsa family.

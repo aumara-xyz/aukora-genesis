@@ -13,7 +13,7 @@
  * must equal the proposal's canonical intent id, its draftHash the exact draft bytes, and its rootId the trusted
  * owner root — so a valid signature for one target/draft can never authorize another.
  */
-import { verifyAumlokPromotionV2 } from '../../../../../aukora-kernel/lib/authority.js';
+import { verifyAumlokPromotionV2 } from '../../../../../authority/lib/authority.js';
 export const AUMLOK_MODE = 'software_hybrid';
 /**
  * Verify a hybrid owner authorization against the trusted owner root and the expected intent/draft binding.

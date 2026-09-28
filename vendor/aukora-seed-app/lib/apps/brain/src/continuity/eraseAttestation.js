@@ -26,9 +26,9 @@
  * AUTHORITY BOUNDARY: the OWNER's seed signs OUT HERE (kernel side). Convex verifies-and-refuses forgeries as a
  * store-integrity check and records the evidence — it decides nothing and can release nothing.
  */
-import { sha256 } from '../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js';
-import { bytesToHex, utf8ToBytes } from '../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js';
-import { canonicalJson } from '../../../../../../aukora-kernel/lib/canonical.js';
+import { sha256 } from '../../../../../../authority/deps/@noble/hashes@2.2.0/sha2.js';
+import { bytesToHex, utf8ToBytes } from '../../../../../../authority/deps/@noble/hashes@2.2.0/utils.js';
+import { canonicalJson } from '../../../../../../authority/lib/canonical.js';
 import { signChainHeadV3, verifyChainHeadV3 } from './aukoraSignedHead.js';
 import { mlDsa65PublicKeyFromSeed } from './aukoraPqcSigner.js';
 export const ERASE_DOMAIN_PREFIX = 'aukora-aumlok-memerase-v1'; // donor domain string, unchanged

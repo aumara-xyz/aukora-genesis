@@ -21,7 +21,7 @@
  */
 import { openSync, writeSync, fsyncSync, closeSync, renameSync, readFileSync, mkdirSync, rmSync, lstatSync, fstatSync, constants as FS } from 'node:fs';
 import { join } from 'node:path';
-import { decide as kernelDecide, assertTrustedState } from '../../../../../aukora-kernel/lib/index.js';
+import { decide as kernelDecide, assertTrustedState } from '../../../../../authority/lib/index.js';
 export const STORE_SCHEMA_VERSION = 1;
 // No-follow / directory open flags. On platforms lacking them (Windows) they degrade to 0 — Windows symlink
 // creation itself requires privilege, so the POSIX case is where the TOCTOU defense is load-bearing.

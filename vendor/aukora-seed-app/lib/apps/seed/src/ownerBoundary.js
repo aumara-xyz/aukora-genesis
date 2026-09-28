@@ -33,9 +33,9 @@
  * to test); it performs no I/O of its own and grants no authority — it only names the trust anchor the door
  * will VERIFY against.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
-import { aumlokRootId, aumlokRootIntegrity } from '../../../../../aukora-kernel/lib/authority.js';
-import { assertAuthorityRoot } from '../../../../../aukora-kernel/lib/schema.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
+import { aumlokRootId, aumlokRootIntegrity } from '../../../../../authority/lib/authority.js';
+import { assertAuthorityRoot } from '../../../../../authority/lib/schema.js';
 import { HybridOwnerAdapter } from './ownerFixture.js';
 /** The provisioning stamp domain — distinct from every kernel/candidate domain; versioned. */
 const PROVISIONING_DOMAIN = 'AUKORA-OWNER-ROOT-PROVISIONED/1';

@@ -11,7 +11,7 @@
  *
  * Pure/in-memory. Grants no authority.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { textHasSecret } from '../../../packages/evidence/src/index.js';
 import { FORBIDDEN_VALUE_RE, FALSE_AUTHORITY_CLAIM_RE, scanForbiddenValues, scanForbiddenAuthorityClaims } from './forbiddenContent.js';
 const MAX_DIFF_CHARS = 32_768;

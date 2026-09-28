@@ -17,7 +17,7 @@
  * The mind (`packages/mind`, PR #72) is treated as an untrusted black box: whatever bytes it emits, the body's
  * shape/fence/secret/authority-shape/staleness/council/budget gates are what actually contain it.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { deriveIntentId, deriveDraftHash, patchByteLength, LIMITS } from './proposal.js';
 import { classifyPath, candidateAllowed, isSelfProtecting } from './pathFence.js';
 import { scanForbiddenKeys, scanForbiddenValues } from './forbiddenContent.js';

@@ -21,8 +21,8 @@
  */
 import { sha256Hex, textHasSecret } from '../../../packages/evidence/src/index.js';
 import { buildMemoryRecord, deriveRecordId } from '../../../packages/memory/index.js';
-import { verifyReceiptChain } from '../../../../../aukora-kernel/lib/evidence.js';
-import { utf8ToBytes } from '../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js';
+import { verifyReceiptChain } from '../../../../../authority/lib/evidence.js';
+import { utf8ToBytes } from '../../../../../authority/deps/@noble/hashes@2.2.0/utils.js';
 import { ReactiveMemoryStore } from './reactiveStore.js';
 /** Raw sha256 hex of a UTF-8 string — the legacy Symbiote memory's `contentHash` shape. */
 export function legacyContentHash(content) {

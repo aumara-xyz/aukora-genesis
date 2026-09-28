@@ -24,7 +24,7 @@
  */
 import { textHasSecret } from '../../../packages/evidence/src/index.js';
 import { advisoryContainmentGrantsAuthority, buildMemoryRecord } from '../../../packages/memory/index.js';
-import { stalenessVerdict } from '../../../../../aukora-kernel/lib/staleness.js'; // canonical staleness law (single source)
+import { stalenessVerdict } from '../../../../../authority/lib/staleness.js'; // canonical staleness law (single source)
 import { LIMITS, validateProposalShape, deriveIntentId, deriveDraftHash, evaluateLineage, patchByteLength, } from './proposal.js';
 import { mockCouncilReview } from './mockCouncil.js';
 import { verifyOwnerPromotion, AUMLOK_MODE } from './aumlokGate.js';

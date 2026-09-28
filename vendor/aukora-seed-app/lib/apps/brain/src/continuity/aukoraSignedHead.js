@@ -22,8 +22,8 @@
  * PURE: no Convex, no Node APIs. @noble/post-quantum via aukoraPqcSigner + @noble/hashes, wired so it runs
  * identically in Convex's V8 isolate, the node test runner, and the extracted kit's TS clients.
  */
-import { sha256 } from "../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js";
-import { hexToBytes, concatBytes } from "../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js";
+import { sha256 } from "../../../../../../authority/deps/@noble/hashes@2.2.0/sha2.js";
+import { hexToBytes, concatBytes } from "../../../../../../authority/deps/@noble/hashes@2.2.0/utils.js";
 import { PQC_ALG_ML_DSA_65, pqcAlgInfo, pqcSign, pqcVerify, mlDsa65PublicKeyFromSeed, PQC_SIZES } from "./aukoraPqcSigner.js";
 export const SIGNED_HEAD_CHAIN_ID_PREFIX = "aukora-chain"; // domain-separation prefix for chain_id derivation
 /** Derive the 16-byte chain_id bound into every signature: SHA-256("aukora-chain" || chainKey)[:16]. 128-bit,

@@ -15,8 +15,8 @@
  *
  * This module is pure: no I/O, clock, randomness, signing, mutation, or authority grant.
  */
-import { utf8ToBytes } from '../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js';
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { utf8ToBytes } from '../../../../../authority/deps/@noble/hashes@2.2.0/utils.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 /** Hard stops. Every one is a fail-closed ceiling, not a hint. */
 export const LIMITS = Object.freeze({
     /** Governed self-change attempts per session (ledger-scoped). */

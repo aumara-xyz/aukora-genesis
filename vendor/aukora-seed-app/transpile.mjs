@@ -52,13 +52,13 @@ for (const path of sourceFiles.filter((path) => path.endsWith('/package.json')))
 const kernel = { '': 'index', authority: 'authority', canonical: 'canonical', evidence: 'evidence',
   merkle: 'merkle', reducer: 'reducer', registries: 'registry', schemas: 'schema', staleness: 'staleness' };
 for (const [subpath, file] of Object.entries(kernel)) {
-  workspace.set(`@aukora/kernel${subpath ? `/${subpath}` : ''}`, resolve(here, `../aukora-kernel/lib/${file}.js`));
+  workspace.set(`@aukora/kernel${subpath ? `/${subpath}` : ''}`, resolve(here, `../authority/lib/${file}.js`));
 }
 const noble = {
-  '@noble/curves/ed25519.js': '../aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js',
-  '@noble/hashes/sha2.js': '../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js',
-  '@noble/hashes/utils.js': '../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js',
-  '@noble/post-quantum/ml-dsa.js': '../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js',
+  '@noble/curves/ed25519.js': '../authority/deps/@noble/curves@2.2.0/ed25519.js',
+  '@noble/hashes/sha2.js': '../authority/deps/@noble/hashes@2.2.0/sha2.js',
+  '@noble/hashes/utils.js': '../authority/deps/@noble/hashes@2.2.0/utils.js',
+  '@noble/post-quantum/ml-dsa.js': '../authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js',
 };
 for (const [specifier, path] of Object.entries(noble)) workspace.set(specifier, resolve(here, path));
 const dependencies = new Map();

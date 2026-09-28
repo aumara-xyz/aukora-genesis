@@ -16,7 +16,7 @@
  * ([[capabilities]]) refuses anything else, so a ceremony can never sign, authorize, expand capabilities, merge,
  * deploy, or bypass owner consent.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { buildMemoryRecord } from '../../../packages/memory/index.js';
 import { validateProposalShape, deriveIntentId, deriveDraftHash } from './proposal.js';
 import { runGovernedRecursion } from './recursion.js';

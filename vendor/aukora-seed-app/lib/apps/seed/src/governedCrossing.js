@@ -22,7 +22,7 @@
  * The crossing NEVER signs, NEVER applies to the live tree, and holds no key. Materialization is the existing
  * disposable-worktree candidate stage; the donor `nativeLiveApply` is not imported and is not an alternate route.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { deriveDraftHash, patchByteLength } from './proposal.js';
 import { SUPERVISED_ENVELOPE_SCHEMA, PROPOSER_BUDGETS, assessEnvelope, } from './proposerQualification.js';
 import { runLocalRecursionCeremony } from './localCeremonyRunner.js';

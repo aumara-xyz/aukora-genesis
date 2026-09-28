@@ -12,7 +12,7 @@
  *   - NO AUTHORITY: the cell cannot sign, apply, merge, or touch GitHub/main — those verbs do not exist here,
  *     and `inklingGrantsAuthority()` is constant false. Advisory text out, nothing more.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 export const INKLING_MAX_DEADLINE_MS = 120_000;
 /** The cell can never grant authority. Constant. */
 export function inklingGrantsAuthority() {

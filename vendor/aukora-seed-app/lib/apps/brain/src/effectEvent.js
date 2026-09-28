@@ -14,7 +14,7 @@
  * `grantsAuthority:false`, carries no signature/key/authorization, and is secret-scanned — so a projection can
  * never smuggle authority material into the store, and a compromised backend row fails validation closed.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { textHasSecret } from '../../../packages/evidence/src/index.js';
 export const EFFECT_EVENT_SCHEMA = 'aukora-effect-event-v1';
 export const MAX_EFFECT_LEN = 4096;

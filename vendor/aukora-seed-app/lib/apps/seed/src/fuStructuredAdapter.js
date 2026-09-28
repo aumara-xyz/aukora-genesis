@@ -21,7 +21,7 @@
  * `env.review` — the gate then consumes REAL Fu evidence with zero changes to the gate itself.
  */
 import { runAukoraFuCouncil, CANONICAL_SEATS, SpendMeter, SpendCeilingExceeded, } from '../../../packages/council/index.js';
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { buildMemoryRecord } from '../../../packages/memory/index.js';
 import { RUNNER_CEILINGS, effectiveLimits, rosterExcludesExternalReviewers } from './councilRunnerBoundary.js';
 /** Pure digest over the outcome's decision-relevant projection (verdict, quorum, basis digest, votes, spend). */

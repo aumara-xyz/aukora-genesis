@@ -9,7 +9,7 @@
  * exact change — the registry holds no key and never signs). Gold is deliberately NOT literally immutable:
  * the owner can always amend the constitution — through ceremony, on the record, never silently.
  */
-import { receiptChainHash, verifyReceiptChain } from '../../../../../aukora-kernel/lib/evidence.js';
+import { receiptChainHash, verifyReceiptChain } from '../../../../../authority/lib/evidence.js';
 import { deriveRecordId } from '../../../packages/memory/index.js';
 export class GoldMemoryRegistry {
     versions = new Map();

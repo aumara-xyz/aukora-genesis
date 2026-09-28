@@ -18,8 +18,8 @@
  * Pure w.r.t. authority (verify-only): it never signs. It holds the trusted state (consumed ids + receipt head) so
  * the consumed-authority guard is durable across calls.
  */
-import { decide } from '../../../../../aukora-kernel/lib/reducer.js';
-import { canonicalBytes, canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { decide } from '../../../../../authority/lib/reducer.js';
+import { canonicalBytes, canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { deriveIntentId, deriveDraftHash } from './proposal.js';
 const CANDIDATE_ACTION = Object.freeze({ namespace: 'aukora', kind: 'candidate', verb: 'materialize' });
 /**

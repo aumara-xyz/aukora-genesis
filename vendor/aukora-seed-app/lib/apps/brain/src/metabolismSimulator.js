@@ -10,7 +10,7 @@
  * or DoS-to-zero). Dimensions are normalized per-sample by integer division and never summed together. The
  * "topological isomorphism" idea is treated as an UNPROVEN analogy — nothing rests on it.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 const DIMENSIONS = ['energy', 'load', 'temperature', 'io'];
 /** Canonical budget base for integer fixed-point normalization (no floats). */
 export const BUDGET_BASE = 1_000_000;

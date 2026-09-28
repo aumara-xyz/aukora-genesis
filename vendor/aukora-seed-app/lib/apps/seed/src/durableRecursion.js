@@ -28,7 +28,7 @@
  *
  * Pure/in-memory over injected contracts. Grants no authority.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { buildMemoryRecord } from '../../../packages/memory/index.js';
 import { runGovernedRecursion } from './recursion.js';
 import { validateProposalShape, deriveIntentId, deriveDraftHash, isHex64 } from './proposal.js';

@@ -14,7 +14,7 @@
  * (`instantiateNode`). A live (nebius) node is fail-closed: it becomes live only when the print's digests +
  * model checksum are really bound and a valid, enabled runtime manifest is supplied.
  */
-import { canonicalHash, canonicalJson } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash, canonicalJson } from '../../../../../authority/lib/canonical.js';
 import { textHasSecret } from '../../../packages/evidence/src/index.js';
 import { validateNebiusManifest } from './nebiusProvider.js';
 const HEX64 = /^[0-9a-f]{64}$/;

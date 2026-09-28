@@ -299,8 +299,8 @@
     },
     {
       "path": "transpile.mjs",
-      "sha256": "50f96c457bbcd0260079a8092748f04119f2777906c9badfa851a599bab03349",
-      "bytes": 9749
+      "sha256": "292ae965b178ed7cfa25be1531feb9605b12eb7ca6f49d4f65e185cae9cdd457",
+      "bytes": 9729
     },
     {
       "path": "run-tests.mjs",
@@ -1624,12 +1624,12 @@
       "path": "lib/apps/brain/src/brainProvider.js",
       "from": "src/apps/brain/src/brainProvider.ts",
       "transpiled": true,
-      "sha256": "98b227e5238f7510b8b692770bf6089296d4ce5527d806a4a1262e4cd0189dd5",
-      "bytes": 5099,
+      "sha256": "abb445376905a5474a1a16a416b5b31496bd9b55abdce9512fd603b822be9f07",
+      "bytes": 5095,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -1653,16 +1653,16 @@
       "path": "lib/apps/brain/src/continuity/aukoraPqcSigner.js",
       "from": "src/apps/brain/src/continuity/aukoraPqcSigner.ts",
       "transpiled": true,
-      "sha256": "c67d91647b764848e8145838947c5102732b69750092f5eba48ae660a8749f69",
-      "bytes": 12698,
+      "sha256": "d5952db45beca30b1a588534a80621da08e5e0d243ea178988e1819f90bda99e",
+      "bytes": 12690,
       "specifierRewrites": [
         {
           "from": "\"@noble/post-quantum/ml-dsa.js\"",
-          "to": "\"../../../../../../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
+          "to": "\"../../../../../../authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js\""
         },
         {
           "from": "\"@noble/hashes/utils.js\"",
-          "to": "\"../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js\""
+          "to": "\"../../../../../../authority/deps/@noble/hashes@2.2.0/utils.js\""
         }
       ]
     },
@@ -1670,16 +1670,16 @@
       "path": "lib/apps/brain/src/continuity/aukoraSignedHead.js",
       "from": "src/apps/brain/src/continuity/aukoraSignedHead.ts",
       "transpiled": true,
-      "sha256": "e7e0b545b9308faea26f9b2ccfeb3dea3089afc3fb86f91373acdd9e58b3d410",
-      "bytes": 17346,
+      "sha256": "f18504264f9b48c2a4352458d4118b1e7a14b035ffb967f47b2e78f082c164ea",
+      "bytes": 17338,
       "specifierRewrites": [
         {
           "from": "\"@noble/hashes/sha2.js\"",
-          "to": "\"../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js\""
+          "to": "\"../../../../../../authority/deps/@noble/hashes@2.2.0/sha2.js\""
         },
         {
           "from": "\"@noble/hashes/utils.js\"",
-          "to": "\"../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js\""
+          "to": "\"../../../../../../authority/deps/@noble/hashes@2.2.0/utils.js\""
         }
       ]
     },
@@ -1687,20 +1687,20 @@
       "path": "lib/apps/brain/src/continuity/eraseAttestation.js",
       "from": "src/apps/brain/src/continuity/eraseAttestation.ts",
       "transpiled": true,
-      "sha256": "5471c3ed8f4d111558c3fbb7d45fe322dd0caad24ce80de45cfb4f372f77687d",
-      "bytes": 7114,
+      "sha256": "a2b05300f546ca6984e43438461712ab7700f0707f3ca1d6e4579363c845f27d",
+      "bytes": 7102,
       "specifierRewrites": [
         {
           "from": "'@noble/hashes/sha2.js'",
-          "to": "'../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js'"
+          "to": "'../../../../../../authority/deps/@noble/hashes@2.2.0/sha2.js'"
         },
         {
           "from": "'@noble/hashes/utils.js'",
-          "to": "'../../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+          "to": "'../../../../../../authority/deps/@noble/hashes@2.2.0/utils.js'"
         },
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -1748,12 +1748,12 @@
       "path": "lib/apps/brain/src/effectEvent.js",
       "from": "src/apps/brain/src/effectEvent.ts",
       "transpiled": true,
-      "sha256": "abf03c3b22818e27dd52c68dd2cc7fd10a9e3da35d6eaf9c1970ef97e2be986c",
-      "bytes": 6652,
+      "sha256": "5fd1b7cf195b6faeb87e77ba03c7afb54704046517bf0dcfd7cc098bcddbafdf",
+      "bytes": 6648,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/evidence'",
@@ -1781,12 +1781,12 @@
       "path": "lib/apps/brain/src/goldRegistry.js",
       "from": "src/apps/brain/src/goldRegistry.ts",
       "transpiled": true,
-      "sha256": "845efecc23c8ef0712e104853404f2e4a602c084d562beedb96b7461a9b731ca",
-      "bytes": 3206,
+      "sha256": "b095ec110a12344eaf4dcccfce93417ec20dff985246068c47754b6acba2aceb",
+      "bytes": 3202,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/evidence'",
-          "to": "'../../../../../aukora-kernel/lib/evidence.js'"
+          "to": "'../../../../../authority/lib/evidence.js'"
         },
         {
           "from": "'@aukora/memory'",
@@ -1814,12 +1814,12 @@
       "path": "lib/apps/brain/src/inklingCell.js",
       "from": "src/apps/brain/src/inklingCell.ts",
       "transpiled": true,
-      "sha256": "e1d8962cd517d5434bacf798b0f4fff291b1011d3c208643e6309ec820def904",
-      "bytes": 4387,
+      "sha256": "e1b0c56aeee48e10b6cf757b19acc7f30c35a0849ac4e082e9423ca67a261b02",
+      "bytes": 4383,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -1827,12 +1827,12 @@
       "path": "lib/apps/brain/src/keychain/credentialStore.js",
       "from": "src/apps/brain/src/keychain/credentialStore.ts",
       "transpiled": true,
-      "sha256": "ae8c665af43f0ac04ec4cca9248114a418f6411a367cbadad6a2135710cb58ed",
-      "bytes": 5188,
+      "sha256": "e5b542394541d2155b088e395118bd6532db767f4988d9957501bd7475a2eb3d",
+      "bytes": 5184,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/evidence'",
@@ -1865,8 +1865,8 @@
       "path": "lib/apps/brain/src/memoryBridge.js",
       "from": "src/apps/brain/src/memoryBridge.ts",
       "transpiled": true,
-      "sha256": "91e5f9abe6fa55923fda64e5c5f97e47edd6419fbc18ff649cb205198500ddac",
-      "bytes": 12084,
+      "sha256": "5478e7fb6a0cc5eaf237295df5482e012df0592e4790f8120cc691625da94503",
+      "bytes": 12076,
       "specifierRewrites": [
         {
           "from": "'@aukora/evidence'",
@@ -1878,11 +1878,11 @@
         },
         {
           "from": "'@aukora/kernel/evidence'",
-          "to": "'../../../../../aukora-kernel/lib/evidence.js'"
+          "to": "'../../../../../authority/lib/evidence.js'"
         },
         {
           "from": "'@noble/hashes/utils.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+          "to": "'../../../../../authority/deps/@noble/hashes@2.2.0/utils.js'"
         }
       ]
     },
@@ -1890,12 +1890,12 @@
       "path": "lib/apps/brain/src/metabolismSimulator.js",
       "from": "src/apps/brain/src/metabolismSimulator.ts",
       "transpiled": true,
-      "sha256": "9c2aca4e81375cd9a2c4218f0d7cce5f23b39cd6f0db0c2e0c0e2513c747eeed",
-      "bytes": 4730,
+      "sha256": "5e120ca3c36b99527d6140b1b372de09c87a0e92b081827cc7c0e3e3f8ae07c4",
+      "bytes": 4726,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -1903,8 +1903,8 @@
       "path": "lib/apps/brain/src/mindProposer.js",
       "from": "src/apps/brain/src/mindProposer.ts",
       "transpiled": true,
-      "sha256": "e95ee5c63e5967112846389708266a7e8f3f33358e9efdc8441237bbfe47e0e0",
-      "bytes": 7856,
+      "sha256": "54e2ff575ef890108dbb38a3e7d0454a92a1c9c522e7f6018fe026e2d0229e30",
+      "bytes": 7852,
       "specifierRewrites": [
         {
           "from": "'@aukora/mind'",
@@ -1912,7 +1912,7 @@
         },
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -1928,12 +1928,12 @@
       "path": "lib/apps/brain/src/nodePrint.js",
       "from": "src/apps/brain/src/nodePrint.ts",
       "transpiled": true,
-      "sha256": "d2e56babade3c6e88c242a9e1babcc446efb5dc91fd295a3c63d7932b613336e",
-      "bytes": 7688,
+      "sha256": "928a8b9f8909569dc46a52b5b657567b2a0ab5461c933e0a05009d0c82ade189",
+      "bytes": 7684,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/evidence'",
@@ -1958,12 +1958,12 @@
       "path": "lib/apps/brain/src/perceptionProvider.js",
       "from": "src/apps/brain/src/perceptionProvider.ts",
       "transpiled": true,
-      "sha256": "a3613ece4699cde88a173e229510f0eba9d080543d92e012f756093a123b1fbe",
-      "bytes": 3045,
+      "sha256": "01656924f686026e0d797016ab9880ab38b5aa60ba0feea36bed25b778073885",
+      "bytes": 3041,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -1995,20 +1995,20 @@
       "path": "lib/apps/brain/src/reactiveStore.js",
       "from": "src/apps/brain/src/reactiveStore.ts",
       "transpiled": true,
-      "sha256": "0ab5bf0a33c9ea8eaadcb1e8309cf2500aef3b236ed022befc827043b054f8cf",
-      "bytes": 7865,
+      "sha256": "57614fab94f1c8cd999df793b65199b8b915da0f1a07d74e1ab884432ccf29c7",
+      "bytes": 7853,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/evidence'",
-          "to": "'../../../../../aukora-kernel/lib/evidence.js'"
+          "to": "'../../../../../authority/lib/evidence.js'"
         },
         {
           "from": "'@aukora/kernel/merkle'",
-          "to": "'../../../../../aukora-kernel/lib/merkle.js'"
+          "to": "'../../../../../authority/lib/merkle.js'"
         },
         {
           "from": "'@noble/hashes/utils.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+          "to": "'../../../../../authority/deps/@noble/hashes@2.2.0/utils.js'"
         },
         {
           "from": "'@aukora/evidence'",
@@ -2107,12 +2107,12 @@
       "path": "lib/apps/seed/src/aumlokGate.js",
       "from": "src/apps/seed/src/aumlokGate.ts",
       "transpiled": true,
-      "sha256": "654ef1ded29469b405ad307ac3fa3ad6b23573e09023195bcca378ab2d15d9eb",
-      "bytes": 2660,
+      "sha256": "1c893c96a460b21511c3ee800fc59acd2143e33c0fe15e69c7ea78b222737b0b",
+      "bytes": 2656,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/authority'",
-          "to": "'../../../../../aukora-kernel/lib/authority.js'"
+          "to": "'../../../../../authority/lib/authority.js'"
         }
       ]
     },
@@ -2144,16 +2144,16 @@
       "path": "lib/apps/seed/src/candidateReferenceMonitor.js",
       "from": "src/apps/seed/src/candidateReferenceMonitor.ts",
       "transpiled": true,
-      "sha256": "6325058753f26855e65120fb80b1afc381b9168cf6a7b8a995e3f3ef1bf37aff",
-      "bytes": 8104,
+      "sha256": "ae31c26f964f1a033f6c85197e616b150a428ca2f92edcf940ccc9680718d941",
+      "bytes": 8096,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/reducer'",
-          "to": "'../../../../../aukora-kernel/lib/reducer.js'"
+          "to": "'../../../../../authority/lib/reducer.js'"
         },
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2169,12 +2169,12 @@
       "path": "lib/apps/seed/src/ceremony.js",
       "from": "src/apps/seed/src/ceremony.ts",
       "transpiled": true,
-      "sha256": "b0059ac05e110c16f20c9267d2cc4bd4be084eb899a1ef9cbe8bb3960d410ab4",
-      "bytes": 9858,
+      "sha256": "f1b7740aae82b56445c017b7e00a939a9eaf0bd0dc9ff576e454f6e3c9ce314a",
+      "bytes": 9854,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/memory'",
@@ -2186,12 +2186,12 @@
       "path": "lib/apps/seed/src/ceremonyView.js",
       "from": "src/apps/seed/src/ceremonyView.ts",
       "transpiled": true,
-      "sha256": "b804bc5093e78389afc3ed28ab138b4aae1bed580809c547438171bb287d6729",
-      "bytes": 3278,
+      "sha256": "a1b44bed5e4a98e63b6516291bc3259a4e62b2f0a17d4da9c8b4cb704ed89781",
+      "bytes": 3274,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2207,12 +2207,12 @@
       "path": "lib/apps/seed/src/councilPack.js",
       "from": "src/apps/seed/src/councilPack.ts",
       "transpiled": true,
-      "sha256": "e3a8793968586856686b2e4aa85580ac3d9217ab8459fe96c6df2fd197e19f33",
-      "bytes": 4339,
+      "sha256": "64d4b7ba1215f01c26430ec043dc7ebf3e99048b5f3f4f8b04106b02ebf0ef35",
+      "bytes": 4335,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/evidence'",
@@ -2237,12 +2237,12 @@
       "path": "lib/apps/seed/src/doorGuards.js",
       "from": "src/apps/seed/src/doorGuards.ts",
       "transpiled": true,
-      "sha256": "0adddd3edc80f0023094237a498841d1b9dd7884b9f88b697f9cb634eb9e1dd6",
-      "bytes": 4798,
+      "sha256": "bd6071452d8b7fac0341d00f478009664b367a0a12a0a2432f655b8be818a2e2",
+      "bytes": 4794,
       "specifierRewrites": [
         {
           "from": "'@noble/hashes/utils.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+          "to": "'../../../../../authority/deps/@noble/hashes@2.2.0/utils.js'"
         }
       ]
     },
@@ -2263,12 +2263,12 @@
       "path": "lib/apps/seed/src/durableRecursion.js",
       "from": "src/apps/seed/src/durableRecursion.ts",
       "transpiled": true,
-      "sha256": "acffb53c017cbf0351ffcfa3fca21f841421c7ce85073d1dd5c51a48b5ab0bf4",
-      "bytes": 17483,
+      "sha256": "614eed6e112d8ffd3dcb1b4c5cedff3bc02e90a8b0291048491e876bacdd43fd",
+      "bytes": 17479,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/memory'",
@@ -2341,8 +2341,8 @@
       "path": "lib/apps/seed/src/fuStructuredAdapter.js",
       "from": "src/apps/seed/src/fuStructuredAdapter.ts",
       "transpiled": true,
-      "sha256": "f7eb66cf89131e85cd39fddb9c82a7dbf165aadc260cf7d372bd14ddc6afcbd8",
-      "bytes": 6887,
+      "sha256": "ede58b554ce615ef4ecf414c186999432cdf40b559021d766ccf4e6036f94eaf",
+      "bytes": 6883,
       "specifierRewrites": [
         {
           "from": "'@aukora/council'",
@@ -2350,7 +2350,7 @@
         },
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/memory'",
@@ -2378,12 +2378,12 @@
       "path": "lib/apps/seed/src/governedCrossing.js",
       "from": "src/apps/seed/src/governedCrossing.ts",
       "transpiled": true,
-      "sha256": "0d75f5eca32bfdd83890a990c02d664d225ce2ccdf33da12d4d4bd5679461dc2",
-      "bytes": 9239,
+      "sha256": "a3f537acbf0490104983c6fde0ab25d0489452c020acea266d4a17d8460bd68e",
+      "bytes": 9235,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2391,12 +2391,12 @@
       "path": "lib/apps/seed/src/hermeticRehearsal.js",
       "from": "src/apps/seed/src/hermeticRehearsal.ts",
       "transpiled": true,
-      "sha256": "a796771f441c8e42ec4704a6a2318d6a6d6f48945ff0ccc25bccc9055f450759",
-      "bytes": 5079,
+      "sha256": "520012749a2e7288632d55f39342464ecb7bc25b5f9c5e567803834b25c42abc",
+      "bytes": 5075,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2404,12 +2404,12 @@
       "path": "lib/apps/seed/src/ideEnvelope.js",
       "from": "src/apps/seed/src/ideEnvelope.ts",
       "transpiled": true,
-      "sha256": "bd07693f48c85827c518ab1c4de964c8fcb18acdaa975585196d3a89182bee32",
-      "bytes": 13247,
+      "sha256": "5ef8c48837295452dfe8fbd1ae30feb441134466ef4a1b7b1deef9f3567d2425",
+      "bytes": 13243,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2486,12 +2486,12 @@
       "path": "lib/apps/seed/src/memorySelection.js",
       "from": "src/apps/seed/src/memorySelection.ts",
       "transpiled": true,
-      "sha256": "1d96aaa3f5ad88220493f744ba900798ad9b29956d4ee167b52d1bcde0c21c80",
-      "bytes": 7792,
+      "sha256": "dedd8588f625224ceff6f5dc877a66903ce1f7008789bac3934c97605fad5fe6",
+      "bytes": 7788,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2533,12 +2533,12 @@
       "path": "lib/apps/seed/src/modelCellAdapter.js",
       "from": "src/apps/seed/src/modelCellAdapter.ts",
       "transpiled": true,
-      "sha256": "f6a45cc3eefef1a0c89d2b59ec55f67af1f9b87afd1623b59257c9ef10e78f87",
-      "bytes": 6373,
+      "sha256": "f7076780f2d1e9367b65126fd8f9a36d8c46482e9940bbc017ed7f2e36df6908",
+      "bytes": 6369,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/evidence'",
@@ -2550,20 +2550,20 @@
       "path": "lib/apps/seed/src/ownerBoundary.js",
       "from": "src/apps/seed/src/ownerBoundary.ts",
       "transpiled": true,
-      "sha256": "c5362bbbc91cdfbc95a4e9263cbab53f870d55023b093f3d4b48688dea18e990",
-      "bytes": 9943,
+      "sha256": "65f3f4a7c18fa31f69cde611030dac2b2b0fff5471e78a047029b6953650a3bf",
+      "bytes": 9931,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         },
         {
           "from": "'@aukora/kernel/authority'",
-          "to": "'../../../../../aukora-kernel/lib/authority.js'"
+          "to": "'../../../../../authority/lib/authority.js'"
         },
         {
           "from": "'@aukora/kernel/schemas'",
-          "to": "'../../../../../aukora-kernel/lib/schema.js'"
+          "to": "'../../../../../authority/lib/schema.js'"
         }
       ]
     },
@@ -2579,32 +2579,32 @@
       "path": "lib/apps/seed/src/ownerFixture.js",
       "from": "src/apps/seed/src/ownerFixture.ts",
       "transpiled": true,
-      "sha256": "1f8cb5d4f563dc12d36c64020f2611a2d2df57be0b897946b12380b03a209e68",
-      "bytes": 3626,
+      "sha256": "16d610bc486178011e734c368f24b3ed57fc7fc40af52ac455f4453b9ea7b0e7",
+      "bytes": 3602,
       "specifierRewrites": [
         {
           "from": "'@noble/curves/ed25519.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js'"
+          "to": "'../../../../../authority/deps/@noble/curves@2.2.0/ed25519.js'"
         },
         {
           "from": "'@noble/post-quantum/ml-dsa.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js'"
+          "to": "'../../../../../authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js'"
         },
         {
           "from": "'@noble/hashes/sha2.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js'"
+          "to": "'../../../../../authority/deps/@noble/hashes@2.2.0/sha2.js'"
         },
         {
           "from": "'@noble/hashes/utils.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+          "to": "'../../../../../authority/deps/@noble/hashes@2.2.0/utils.js'"
         },
         {
           "from": "'@aukora/kernel/authority'",
-          "to": "'../../../../../aukora-kernel/lib/authority.js'"
+          "to": "'../../../../../authority/lib/authority.js'"
         },
         {
           "from": "'@aukora/kernel/registries'",
-          "to": "'../../../../../aukora-kernel/lib/registry.js'"
+          "to": "'../../../../../authority/lib/registry.js'"
         }
       ]
     },
@@ -2620,16 +2620,16 @@
       "path": "lib/apps/seed/src/proposal.js",
       "from": "src/apps/seed/src/proposal.ts",
       "transpiled": true,
-      "sha256": "64bbfc567b6dd2ee5f76c78323b8c28fb6b7fe254be26c7927636f1607429e02",
-      "bytes": 7026,
+      "sha256": "6f7b8b187a002dd63305a0e722d248d940a781882c2d54c5173b55d7db244995",
+      "bytes": 7018,
       "specifierRewrites": [
         {
           "from": "'@noble/hashes/utils.js'",
-          "to": "'../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js'"
+          "to": "'../../../../../authority/deps/@noble/hashes@2.2.0/utils.js'"
         },
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2637,12 +2637,12 @@
       "path": "lib/apps/seed/src/proposerQualification.js",
       "from": "src/apps/seed/src/proposerQualification.ts",
       "transpiled": true,
-      "sha256": "ea6bf6af291f2a4ad8ef3586207ebd14fdc9e9f2325ee1834730d28bfe76439a",
-      "bytes": 10216,
+      "sha256": "db32cae91ddca1774b1f9d33c7afa3ff26f9e08e59511588c3625adfb1232bfe",
+      "bytes": 10212,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -2679,8 +2679,8 @@
       "path": "lib/apps/seed/src/recursion.js",
       "from": "src/apps/seed/src/recursion.ts",
       "transpiled": true,
-      "sha256": "917cc09bb29317fdb8a3787b210163b3ec8d4d8f0577cbfb19f2bc74e5cff0da",
-      "bytes": 12471,
+      "sha256": "6f3f0abb463dae73f6fc892517a67f1e25c128bcbc65eb297eb4b4323c239580",
+      "bytes": 12467,
       "specifierRewrites": [
         {
           "from": "'@aukora/evidence'",
@@ -2692,7 +2692,7 @@
         },
         {
           "from": "'@aukora/kernel/staleness'",
-          "to": "'../../../../../aukora-kernel/lib/staleness.js'"
+          "to": "'../../../../../authority/lib/staleness.js'"
         }
       ]
     },
@@ -2989,12 +2989,12 @@
       "path": "lib/packages/kernel-node/src/trustedStateStore.js",
       "from": "src/packages/kernel-node/src/trustedStateStore.ts",
       "transpiled": true,
-      "sha256": "78a7b3687dcd0ff2a5bfbbdb13176b83b24bdb65458b6b18c05121753fa7a46d",
-      "bytes": 20239,
+      "sha256": "8e6b93c8b43b3e411f1cb7b877dbd7bade976d7e3dec1019314c2d2642cf2595",
+      "bytes": 20235,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel'",
-          "to": "'../../../../../aukora-kernel/lib/index.js'"
+          "to": "'../../../../../authority/lib/index.js'"
         }
       ]
     },
@@ -3018,12 +3018,12 @@
       "path": "lib/packages/memory/src/envelope.js",
       "from": "src/packages/memory/src/envelope.ts",
       "transpiled": true,
-      "sha256": "c44febe5438a99c61bde66df52c8f290f156f1056c07701ef3565ff192d308d8",
-      "bytes": 5398,
+      "sha256": "024cf31ba15d22639a65046e70f242c62127631ffe848b4567d36eaf89393525",
+      "bytes": 5394,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/canonical'",
-          "to": "'../../../../../aukora-kernel/lib/canonical.js'"
+          "to": "'../../../../../authority/lib/canonical.js'"
         }
       ]
     },
@@ -3055,12 +3055,12 @@
       "path": "lib/packages/memory/src/staleness.js",
       "from": "src/packages/memory/src/staleness.ts",
       "transpiled": true,
-      "sha256": "f5badc25d8d42aa5e7c7c69b17ad2bfb81f35b599e88fb24cf2d9b3cefe2f276",
-      "bytes": 767,
+      "sha256": "7d38d4563c0d1c9e52ceddabb019ffbef65bbd853604d6384d28cfd15f653d38",
+      "bytes": 763,
       "specifierRewrites": [
         {
           "from": "'@aukora/kernel/staleness'",
-          "to": "'../../../../../aukora-kernel/lib/staleness.js'"
+          "to": "'../../../../../authority/lib/staleness.js'"
         }
       ]
     },
@@ -3155,7 +3155,7 @@
     },
     {
       "specifier": "@aukora/kernel",
-      "resolvesTo": "../aukora-kernel/lib/index.js",
+      "resolvesTo": "../authority/lib/index.js",
       "sha256": "5fde41595703e3464d89882a39a4e6193ed709032e8040a09005ab7c7f941f4c"
     },
     {
@@ -3165,42 +3165,42 @@
     },
     {
       "specifier": "@aukora/kernel/authority",
-      "resolvesTo": "../aukora-kernel/lib/authority.js",
+      "resolvesTo": "../authority/lib/authority.js",
       "sha256": "ddda96d205796d84a0bf78f23c499a87ab5da9472b401adb39231c76c5de23de"
     },
     {
       "specifier": "@aukora/kernel/canonical",
-      "resolvesTo": "../aukora-kernel/lib/canonical.js",
+      "resolvesTo": "../authority/lib/canonical.js",
       "sha256": "b213762567fc959e419372e75454eaf320fd123f62aabb7538a080da11a5abf3"
     },
     {
       "specifier": "@aukora/kernel/evidence",
-      "resolvesTo": "../aukora-kernel/lib/evidence.js",
+      "resolvesTo": "../authority/lib/evidence.js",
       "sha256": "c9d01b7604edac0dc26b1bf8fb5d462c1770a3e536f4390ce83f4186727da96f"
     },
     {
       "specifier": "@aukora/kernel/merkle",
-      "resolvesTo": "../aukora-kernel/lib/merkle.js",
+      "resolvesTo": "../authority/lib/merkle.js",
       "sha256": "dad1426ebe55846017622de71d1ca49a41f17772c8b3b2e9a781a0f7f084f957"
     },
     {
       "specifier": "@aukora/kernel/reducer",
-      "resolvesTo": "../aukora-kernel/lib/reducer.js",
+      "resolvesTo": "../authority/lib/reducer.js",
       "sha256": "48c5593a0891f30dce73f2ead0b4b9f433056744ead5fe3d1d0184b521016240"
     },
     {
       "specifier": "@aukora/kernel/registries",
-      "resolvesTo": "../aukora-kernel/lib/registry.js",
+      "resolvesTo": "../authority/lib/registry.js",
       "sha256": "4f6d9ff9752485d39614a32e7a4044e017a82428420d0e65546e587b02058ee3"
     },
     {
       "specifier": "@aukora/kernel/schemas",
-      "resolvesTo": "../aukora-kernel/lib/schema.js",
+      "resolvesTo": "../authority/lib/schema.js",
       "sha256": "a1c1c0e37e743f7066058c97c14dcf60682a015b8e0cb1b4e193c8aac0d2ac68"
     },
     {
       "specifier": "@aukora/kernel/staleness",
-      "resolvesTo": "../aukora-kernel/lib/staleness.js",
+      "resolvesTo": "../authority/lib/staleness.js",
       "sha256": "aff97a35431e18b8bb634a8d27bad3ff199da21c0b4a56ba356ec8ceb10efd37"
     },
     {
@@ -3215,22 +3215,22 @@
     },
     {
       "specifier": "@noble/curves/ed25519.js",
-      "resolvesTo": "../aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js",
+      "resolvesTo": "../authority/deps/@noble/curves@2.2.0/ed25519.js",
       "sha256": "28c6fd6157fe2d1c69ea4751844c3d8fe3ee1a496b4f10fb7b48a51c48857a21"
     },
     {
       "specifier": "@noble/hashes/sha2.js",
-      "resolvesTo": "../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js",
+      "resolvesTo": "../authority/deps/@noble/hashes@2.2.0/sha2.js",
       "sha256": "0fb8e3c3f2c73a890be2524ac5d2542aaed4decff69e561231a86131203b3973"
     },
     {
       "specifier": "@noble/hashes/utils.js",
-      "resolvesTo": "../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js",
+      "resolvesTo": "../authority/deps/@noble/hashes@2.2.0/utils.js",
       "sha256": "e2adfc13c846487feff0410bd5508a1d66f5ebadc3188f3a40a6b55449981e2f"
     },
     {
       "specifier": "@noble/post-quantum/ml-dsa.js",
-      "resolvesTo": "../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js",
+      "resolvesTo": "../authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js",
       "sha256": "210a020b4933275edf89201e2a5168ee404190f2d5cfa676d0cb13b7a1072276"
     }
   ]

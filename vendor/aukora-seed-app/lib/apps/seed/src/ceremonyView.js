@@ -13,7 +13,7 @@
  *
  * Pure/in-memory. This module never signs and never touches the owner fixture.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { scanForbiddenKeys, scanForbiddenValues, scanForbiddenAuthorityClaims } from './forbiddenContent.js';
 /** Short PUBLIC fingerprint over the owner's PUBLIC hybrid keys (a hash — never the private material). */
 export function ownerFingerprint(root) {

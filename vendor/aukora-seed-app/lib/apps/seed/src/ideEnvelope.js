@@ -17,7 +17,7 @@
  * This module has NO filesystem/network import: the real repo arrives as an injected `RepoReadCapability`, so the
  * law is pure and testable against a fake repo, and it structurally cannot touch disk itself.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { classifyPath, readAllowed, candidateAllowed } from './pathFence.js';
 import { validateProposalShape, deriveIntentId, deriveDraftHash, LIMITS } from './proposal.js';
 import { runGovernedRecursion } from './recursion.js';

@@ -13,12 +13,12 @@
  * authorizations bound to an intent/draft. The signature payload and context are exactly what the kernel's
  * `verifyAumlokPromotionV2` expects.
  */
-import { ed25519 } from '../../../../../aukora-kernel/deps/@noble/curves@2.2.0/ed25519.js';
-import { ml_dsa65 } from '../../../../../aukora-kernel/deps/@noble/post-quantum@0.6.1/ml-dsa.js';
-import { sha256 } from '../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/sha2.js';
-import { bytesToHex, utf8ToBytes } from '../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js';
-import { aumlokRootId, aumlokRootIntegrity, canonicalAumlokPromotion } from '../../../../../aukora-kernel/lib/authority.js';
-import { PURPOSE_DOMAINS } from '../../../../../aukora-kernel/lib/registry.js';
+import { ed25519 } from '../../../../../authority/deps/@noble/curves@2.2.0/ed25519.js';
+import { ml_dsa65 } from '../../../../../authority/deps/@noble/post-quantum@0.6.1/ml-dsa.js';
+import { sha256 } from '../../../../../authority/deps/@noble/hashes@2.2.0/sha2.js';
+import { bytesToHex, utf8ToBytes } from '../../../../../authority/deps/@noble/hashes@2.2.0/utils.js';
+import { aumlokRootId, aumlokRootIntegrity, canonicalAumlokPromotion } from '../../../../../authority/lib/authority.js';
+import { PURPOSE_DOMAINS } from '../../../../../authority/lib/registry.js';
 const SUITE = 'aumlok-ed25519-ml-dsa-65-v1';
 export class HybridOwnerAdapter {
     edSeed;

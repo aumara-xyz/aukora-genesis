@@ -19,7 +19,7 @@
  *
  * Pure over an injected cell: this module spawns nothing and grants no authority.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 /** Map-only policy + binding consistency check. Renamed from "rehearsal" so a simulation is never mistaken for
  *  executed evidence. Verifies the bindings are well-shaped and self-consistent; runs nothing. */
 export function simulatePolicyBinding(bindings, allowedIntents) {

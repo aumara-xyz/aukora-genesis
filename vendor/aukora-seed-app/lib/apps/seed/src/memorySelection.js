@@ -13,7 +13,7 @@
  * Reasons are scrubbed (secret/authority lines redacted); a fail-closed final audit refuses a packet with residue.
  * Digest-verifiable so the approver reviews exactly what Auma built. Pure: no I/O, no authority.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 import { scanForbiddenKeys, scanForbiddenValues, scanForbiddenAuthorityClaims } from './forbiddenContent.js';
 import { scrubText } from './councilPack.js';
 import { isHex64 } from './proposal.js';

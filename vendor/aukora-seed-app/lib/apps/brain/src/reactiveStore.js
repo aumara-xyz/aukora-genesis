@@ -24,9 +24,9 @@
  * This is an APP ADAPTER (Node). It holds in-memory state; the Convex-backed variant in ./convex mirrors the
  * same contracts. Owner verification for forgetting is INJECTED — the store never holds a key or signs.
  */
-import { receiptChainHash, verifyReceiptChain } from '../../../../../aukora-kernel/lib/evidence.js';
-import { merkleRoot } from '../../../../../aukora-kernel/lib/merkle.js';
-import { bytesToHex, hexToBytes } from '../../../../../aukora-kernel/deps/@noble/hashes@2.2.0/utils.js';
+import { receiptChainHash, verifyReceiptChain } from '../../../../../authority/lib/evidence.js';
+import { merkleRoot } from '../../../../../authority/lib/merkle.js';
+import { bytesToHex, hexToBytes } from '../../../../../authority/deps/@noble/hashes@2.2.0/utils.js';
 import { textHasSecret } from '../../../packages/evidence/src/index.js';
 import { validateMemoryRecord, recall, recallScoped, liveMemoryCount, memoryCommitment, tombstoneCommitment, } from '../../../packages/memory/index.js';
 export class ReactiveMemoryStore {

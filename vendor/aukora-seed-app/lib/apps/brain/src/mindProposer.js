@@ -16,7 +16,7 @@
  * holds no endpoint and no credential. If no socket is injected, it returns an HONESTLY LABELLED model-free result.
  */
 import { renderFrame, buildTurnMessage, GOVERNOR_PROMPT, parseMindReply, validateAction, checkPlanExpectation, PLAN_MAX_STEPS, MEMO_MAX_CHARS, } from '../../../packages/mind/index.js';
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 /** Render the cited KIRA context as an advisory block — citations + uncertainty are SHOWN, never hidden. */
 function citedContextBlock(ctx) {
     if (ctx.length === 0)

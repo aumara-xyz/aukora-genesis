@@ -15,7 +15,7 @@
  * resolve to `UNVERIFIED_OR_PARKED` this round; the gate exists so a future committed manifest can earn
  * `AVAILABLE_PRIVATE` honestly. The manifest carries NO weights, endpoint IDs, job IDs, bucket IDs, or tokens.
  */
-import { canonicalHash } from '../../../../../aukora-kernel/lib/canonical.js';
+import { canonicalHash } from '../../../../../authority/lib/canonical.js';
 /** Deterministic, offline, no-network provider. Same prompt ⇒ same output, forever. */
 export class DeterministicOfflineProvider {
     id = 'deterministic-offline-v0';
