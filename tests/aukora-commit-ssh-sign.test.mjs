@@ -2,20 +2,20 @@
  * M2b metal — SSH-signed candidate commits (focused court).
  * Self-contained: generates an ephemeral ED25519 key in os.tmpdir(); does not
  * read ~/aukora-live or any owner key. Flag-off path stays unsigned.
+ * Hostile harden: BIND_DIGEST fixture only in MODE=test; non-test requires proof.
  */
 import assert from 'node:assert/strict'
-import { createHash } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import {
   assertCommitSignBind, signCommitBytes, sha256Hex,
 } from '../scripts/owner/commit-ssh-sign.mjs'
+import { _resetCommitBindSeenForTests } from '../scripts/owner/commit-ssh-airlock-bind.mjs'
 import { writeCandidateCommit } from '../scripts/aukora/commit-ssh-candidate.mjs'
 
-const source = dirname(dirname(fileURLToPath(import.meta.url)))
 const scratch = mkdtempSync(join(tmpdir(), 'aukora-commit-ssh-'))
 const key = join(scratch, 'commit-test')
 const allowed = join(scratch, 'allowed_signers')
@@ -32,6 +32,13 @@ const cleanEnv = {
   GIT_CONFIG_NOSYSTEM: '1',
   GIT_TERMINAL_PROMPT: '0',
 }
+
+const stubProof = (operationDigest) => ({
+  challenge: randomBytes(32).toString('hex'),
+  operationDigest,
+  decisionSignature: 'stub-decision-signature-' + 'x'.repeat(32),
+  expiresAt: Math.floor(Date.now() / 1000) + 120,
+})
 
 try {
   execFileSync('/usr/bin/ssh-keygen', ['-t', 'ed25519', '-f', key, '-N', '', '-C', 'aukora-m2b-test'], {
@@ -84,11 +91,41 @@ try {
   process.env.AUKORA_COMMIT_SIGN_MODE = 'test'
   console.log('PASS helper refuses missing key and non-spike/test mode')
 
+  // Fixture override: ONLY when MODE=test
+  process.env.AUKORA_COMMIT_SIGN_MODE = 'test'
   process.env.AUKORA_COMMIT_BIND_DIGEST = 'ef'.repeat(32)
   assert.throws(() => assertCommitSignBind(unsignedBytes, goodDigest), /bind-mismatch/)
   assertCommitSignBind(unsignedBytes, 'ef'.repeat(32))
   delete process.env.AUKORA_COMMIT_BIND_DIGEST
-  console.log('PASS AUKORA_COMMIT_BIND_DIGEST fixture override')
+  console.log('PASS AUKORA_COMMIT_BIND_DIGEST fixture override in MODE=test only')
+
+  // Hostile: BIND_DIGEST refused outside MODE=test (spike)
+  process.env.AUKORA_COMMIT_SIGN_MODE = 'spike'
+  process.env.AUKORA_COMMIT_BIND_DIGEST = 'ef'.repeat(32)
+  assert.throws(() => assertCommitSignBind(unsignedBytes, 'ef'.repeat(32)), /bind-digest-refused/)
+  assert.throws(
+    () => signCommitBytes({ unsignedBytes, approvalDigest: 'ef'.repeat(32), proof: stubProof('ef'.repeat(32)) }),
+    /bind-digest-refused/,
+  )
+  delete process.env.AUKORA_COMMIT_BIND_DIGEST
+  console.log('PASS AUKORA_COMMIT_BIND_DIGEST refused unless MODE=test')
+
+  // Non-test (spike): proof required; stub ok
+  _resetCommitBindSeenForTests()
+  process.env.AUKORA_COMMIT_SIGN_MODE = 'spike'
+  process.env.AUKORA_COMMIT_SIGN_KEY = key
+  assert.throws(() => signCommitBytes({ unsignedBytes, approvalDigest: goodDigest }), /proof-missing/)
+  const proof = stubProof(goodDigest)
+  const armorSpike = signCommitBytes({ unsignedBytes, approvalDigest: goodDigest, proof })
+  assert.match(armorSpike, /BEGIN SSH SIGNATURE/)
+  // replay same challenge refused
+  assert.throws(
+    () => signCommitBytes({ unsignedBytes, approvalDigest: goodDigest, proof }),
+    /proof-replay|commit-bind:proof-replay/,
+  )
+  console.log('PASS non-test mode requires proof (stub); replay refused')
+
+  process.env.AUKORA_COMMIT_SIGN_MODE = 'test'
 
   // --- writeCandidateCommit flag OFF (default unsigned) ---
   delete process.env.AUKORA_REQUIRE_COMMIT_SSH
@@ -112,11 +149,9 @@ try {
     + '\nOperation-digest: ' + 'b'.repeat(64) + '\nCandidate-digest: ' + 'c'.repeat(64) + '\n'
   const signed = writeCandidateCommit(repo, { tree, base: root, message: signedMessage })
   assert.match(signed, /^[0-9a-f]{40}$/)
-  const verifyOut = execFileSync('/usr/bin/git', [
+  execFileSync('/usr/bin/git', [
     '-C', repo, '-c', `gpg.ssh.allowedSignersFile=${allowed}`, 'verify-commit', signed,
   ], { encoding: 'utf8', env: cleanEnv, stdio: ['ignore', 'pipe', 'pipe'] })
-  // verify-commit prints to stderr; execFileSync merges? With stdio pipe both captured via error on fail.
-  // On success stdout may be empty; ensure exit 0 by reaching here.
   const signedCat = execFileSync('/usr/bin/git', ['-C', repo, 'cat-file', 'commit', signed], {
     encoding: 'utf8', env: cleanEnv,
   })
@@ -138,7 +173,6 @@ try {
 
   // --- refuse: wrong allowed signers → verify fails ---
   const badAllowed = join(scratch, 'bad_allowed')
-  // Different principal key so verify-commit cannot match.
   const decoy = join(scratch, 'decoy')
   execFileSync('/usr/bin/ssh-keygen', ['-t', 'ed25519', '-f', decoy, '-N', '', '-C', 'decoy'], {
     encoding: 'utf8', env: cleanEnv, stdio: ['ignore', 'pipe', 'pipe'],
