@@ -16,8 +16,8 @@ are there.
 - **The approval key is a software key on this Mac**, readable by that same user. A valid approval proves the key
   signed.
 - **Nothing server-side checks `main`.** On 2026-09-27 `aumara-xyz/aukora-genesis`'s `main` had no branch
-  protection at all, the archive's `main` required no status check and no review, and there is no CI
-  (`AGENTS.md:61`).
+  protection at all, and the archive's `main` required no status check and no review. CI runs after each push;
+  it does not require the approval routes.
 - **Attendance is reported, not proven.** No receipt shows that a person clicked.
 
 ### 1. Can the AI push to main without approval?
@@ -307,12 +307,14 @@ trees; no script re-checks the newer manifests.
 
 ### 20. What checks exist and how do I run them?
 
-The README's Reviewer packet: `sh scripts/check.sh` runs 15 keyless checks in parallel with only `python3`,
-Node.js 22 and `perl` (no keys, network, harness build or running app); the README's table names the line each must
-print, and `docs/CLAIMS.md` says what the first thirteen prove and do not. On 2026-09-27 all 15 passed at
+The README's Reviewer packet: `sh scripts/check.sh` runs 19 keyless checks in parallel in about 18 seconds with only `python3`,
+Node.js 22 or newer, `perl` and `/usr/bin/cc` (Xcode Command Line Tools; no keys, network, harness build or running app); the README's table names the output to look for,
+and `docs/CLAIMS.md` says what the original thirteen prove and do not. On 2026-09-27 all 15 passed at
 `1c569f8aa` from a tree with no `vendor/dsh` or `node_modules` (Node 22.23.0, Python 3.9.6):
 `TOTAL 6.02s | 15/15 passed`. The `--mutate` runs in questions 10 and 13 show those checks going red when their
-protection is removed. There is no CI. None measures the installed app: `remember.mjs`, `self-change.mjs` and `advance.mjs` need the app and a click in its popup
+protection is removed. CI runs `sh scripts/check.sh` on every push (`.github/workflows/check.yml`, a macOS runner); it checks the
+repository, not the installed app. The court forest that used to run here was archived on 2026-09-27
+(`ARCHIVE.md`). None measures the installed app: `remember.mjs`, `self-change.mjs` and `advance.mjs` need the app and a click in its popup
 (`LIVE-ONLY`). Run alone, the Aumlok checks need a short `TMPDIR` (`docs/CLAIMS.md:81-83`); `check.sh` sets one.
 
 ### 21. What leaves this machine?

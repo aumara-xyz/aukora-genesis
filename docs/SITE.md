@@ -14,7 +14,7 @@ AUKORA Genesis is a desktop AI where the software that proposes an action is not
 
 ## Check it yourself
 
-On macOS with Python 3, Node.js 22, Perl and a command-line C compiler:
+On macOS with Python 3, Node.js 22 or newer, Perl and `/usr/bin/cc` (Xcode Command Line Tools):
 
 ```sh
 git clone https://github.com/aumara-xyz/aukora-genesis && cd aukora-genesis && sh scripts/check.sh
@@ -23,19 +23,20 @@ git clone https://github.com/aumara-xyz/aukora-genesis && cd aukora-genesis && s
 Expected final line (elapsed time varies):
 
 ```text
-TOTAL <elapsed>s | 17/17 passed
+TOTAL <elapsed>s | 19/19 passed
 ```
 
 CI runs the same checks on every push. They check disposable repository fixtures, not an installed app. Read each result: PASS means exit zero, and the box check can report SKIPPED or NOT RUN. The verifiers are this project's own code, not independent implementations.
 
-## Two clocks
+## Running release
 
-The running-release clock is `aukora-release-aeb631a1b`, operator-reported. The documentation clock is GitHub `main` at `2da144fcd`; the commit that adds this page changes documentation only. Documentation and one offline provenance script changed after `aeb631a1b`; nothing the app runs changed. This page is not independent live verification of the installed app.
+The installed app runs `aukora-release-0496ba077`, built from main `0496ba077` (operator-reported). This page is not independent live verification of the installed app.
 
 ## Read
 
 - [AUKORA Golden Boundary — Rev 2.3 front](https://github.com/aumara-xyz/aukora-genesis/blob/main/docs/AUKORA-GOLDEN-BOUNDARY.md)
 - [Claims and their limits](https://github.com/aumara-xyz/aukora-genesis/blob/main/docs/CLAIMS.md)
+- [Running AUKORA on your Mac](https://github.com/aumara-xyz/aukora-genesis/blob/main/docs/RUNNING.md)
 - [Break corpus](https://github.com/aumara-xyz/aukora-genesis/blob/main/docs/BREAK-CORPUS.md)
 - [Care Without Control](https://github.com/aumara-xyz/aukora-genesis/blob/main/docs/CARE-WITHOUT-CONTROL.md) — a speculative design note
 

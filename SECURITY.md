@@ -225,5 +225,7 @@ Stated in `scripts/artifacts-coverage.json` (`limits`).
 
 A passing check is evidence about the revision and the machine it ran on. The checks in
 `docs/CLAIMS.md` use disposable state and test keys; none of them measures the owner's installed app.
-There is no CI. The court forest that used to run here was archived on 2026-09-27 (`ARCHIVE.md`).
+CI runs `sh scripts/check.sh` on every push (`.github/workflows/check.yml`, a macOS runner); it checks the
+repository, not the installed app. The court forest that used to run here was archived on 2026-09-27
+(`ARCHIVE.md`).
 

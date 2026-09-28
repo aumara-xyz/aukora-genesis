@@ -1,8 +1,8 @@
 # AUKORA Genesis
 
 AUKORA Genesis is a desktop AI where the software that proposes an action is not the authority that permits it.
-On its governed approval paths, the owner approves exact bytes with a key held in the Airlock that the agent
-cannot read; a kernel decides; every governed decision is receipted and can be checked cold, from an empty directory.
+On its governed approval paths, the owner approves exact bytes through Airlock, which holds the owner's approval key
+in a separate macOS account the agent cannot read; a kernel decides; every governed decision is receipted and can be checked cold, from an empty directory.
 
 ## What is not enforced
 
@@ -15,14 +15,14 @@ cannot read; a kernel decides; every governed decision is receipted and can be c
   wired to the live agent. Full-access sessions remain unconfined by Seatbelt.
 - **Nothing on GitHub requires the approval routes.** The macOS user holds push credentials; a direct push to
   `main` is not stopped. The app's action gate is an in-process check, not isolation.
-- **Care grants no authority. Auma is not an authorizer.**
+- **Care grants no authority. Auma, the app's assistant, is not an authorizer.**
 - **Our own break corpus: 17 breaches, 11 open when frozen (2026-08-21), not re-measured on this tree.** [docs/BREAK-CORPUS.md](docs/BREAK-CORPUS.md)
 
 [Further limits and recorded evidence](#further-limits-and-recorded-evidence) below bound these claims.
 
 ## Try it
 
-On macOS with Python 3, Node.js 22, Perl and a command-line C compiler:
+On macOS with Python 3, Node.js 22 or newer, Perl and `/usr/bin/cc` (Xcode Command Line Tools):
 
 ```sh
 git clone https://github.com/aumara-xyz/aukora-genesis && cd aukora-genesis && sh scripts/check.sh
@@ -31,7 +31,7 @@ git clone https://github.com/aumara-xyz/aukora-genesis && cd aukora-genesis && s
 Expected final line (elapsed time varies):
 
 ```text
-TOTAL <elapsed>s | 17/17 passed
+TOTAL <elapsed>s | 19/19 passed
 ```
 
 [CI](.github/workflows/check.yml) runs the same checks on every push. They check disposable repository fixtures,
@@ -42,6 +42,7 @@ not the installed app; see the [reviewer packet](#reviewer-packet) for scope and
 - [AUKORA Golden Boundary — Rev 2.3 front](docs/AUKORA-GOLDEN-BOUNDARY.md)
 - [Claims and their limits](docs/CLAIMS.md)
 - [Hard questions](docs/HARD-QUESTIONS.md)
+- [Running AUKORA on your Mac](docs/RUNNING.md)
 - [Care Without Control](docs/CARE-WITHOUT-CONTROL.md) — a speculative design note
 
 ## License
@@ -53,12 +54,9 @@ Third-party components retain their own licenses and notices.
 
 ## Further limits and recorded evidence
 
-Running-release clock: the installed app runs `aukora-release-aeb631a1b` (operator-reported).
-Documentation clock: GitHub `main` from `ea97c0220` onward changes documentation and one offline provenance script
-(`scripts/aukora/box-closure.mjs`); none of it changes what the app runs.
-The installed results quoted here are earlier operator records, not live verification of this checkout.
-The last release named in those earlier records is `aukora-release-25149f573`; source inspection and
-disposable checks do not verify the installed app.
+The installed app runs `aukora-release-0496ba077`, built from main `0496ba077` (operator-reported).
+The installed results quoted here are operator records, not independent live verification of this checkout;
+source inspection and disposable checks do not verify the installed app.
 
 - **Airlock custody is deployment-specific.** In the recorded owner deployment, the key was held by the separate
   macOS account `aukora-owner`. On 2026-09-28, `scripts/aukora/airlock-probe.mjs` reported
@@ -141,14 +139,16 @@ so the materializer refuses.
 ## Reviewer packet
 
 Run `sh scripts/check.sh` from the repository root with the prerequisites above. No keys, network, harness build
-or running app are needed. The 17 commands run in parallel, with a 55-second timeout per command including its
+or running app are needed. The 19 commands run in parallel, with a 55-second timeout per command including its
 subprocesses. Each row prints PASS or FAIL, elapsed time, the command and its last nonblank output line. Any
 failure or timeout makes the packet exit nonzero; the final `TOTAL` line then names the retained log directory.
+The packet takes about 18 seconds; the TrustedStateStore check waits out a bounded 15-second lock.
 
 PASS means exit zero, not a live-app measurement. In particular, the box check exits zero with `SKIPPED` off
 macOS or `NOT RUN (nested sandbox)` when sandbox admission is unavailable. Read its row, not only the TOTAL.
 [CLAIMS](docs/CLAIMS.md) describes the original 13 checks, their limits and dated results; the table below also
-includes the Airlock, membrane tour, kernel and box checks now in the runner.
+includes the TrustedStateStore, Airlock, four-history witness, membrane tour, kernel and box checks now in the runner,
+in `check.sh` order.
 
 | # | Check | Output to look for | What it shows |
 | --- | --- | --- | --- |
@@ -160,15 +160,17 @@ includes the Airlock, membrane tour, kernel and box checks now in the runner.
 | 6 | Receipt v3 | `RECEIPT V3 STRANGER TEST: all checks passed` | A receipt and public key reach the cold court's verdict from an empty directory; a wrong key is refused first. |
 | 7 | Aumlok approval verifier | `AUMLOK VERIFY APPROVAL: GREEN` | Approval bytes verify under the public key alone; forged or wrong keys, extra fields and preimage mismatches are refused. |
 | 8 | Approval round trip | `PASS — 13/13 arms` | Exact bytes round-trip through the shipped producer and desktop signer under the listed machine key; a scratch socket, no window, click or person. |
-| 9 | Airlock custody switch | `VERIFIED wrong kernel peer UID, bad signature, and wrong public-key pin refused` | Exact bytes reach a scratch signer without a local seed; wrong UID, signature and pin are refused. The stand-in shares the test UID: separate-account custody and EACCES remain live-only. |
-| 10 | Aumlok cold root | `AUMLOK COLD ROOT: GREEN` | Only a machine key is kept in disposable custody; the root is re-derived from the handle and words. |
-| 11 | Required grant | `AUMLOK GATE REQUIRE GRANT: GREEN` | The gate fails closed for an unusable required grant; this check exercises the one-use grant for `hello-governed`. |
-| 12 | Control admission | `# pass 7` and `# fail 0` | A stale control head refuses settlement and leaves the store unchanged; rotation state is modeled, no rotation event is performed. |
-| 13 | Restore scope | `AUMLOK RESTORE SCOPE: GREEN` | An external witness keeps a spent approval spent across a restore; without it, the restore un-spends the approval. This measures a gap. |
-| 14 | Consolidation | `kira-consolidate: ok` | Three agents repeating one false report create no evidence and no authority, and cannot undo a person's decision. |
-| 15 | Membrane guided tour | Guided tour verdicts and published-case scoreboard | Runs append-only, an honest decline, an earned accusation and the blind spot; 12 published cases. Teaching output, not an assertion suite. |
-| 16 | Kernel conformance | `KERNEL CONFORMANCE: 37/37 passed` | Source, generated code, dependency and vector pins hold; 37 upstream reducer, Merkle, hybrid-authority, downgrade, encoding, evidence and staleness cases pass. |
-| 17 | Box confinement | `BOX CONFINEMENT CHECK: GREEN` | Generated policy passes; unrestricted policy is refused with `confined:enforcement-unavailable`. Disposable guest probes only; may instead report SKIPPED or NOT RUN as described above. |
+| 9 | TrustedStateStore | `TRUSTED STATE: restore protection verified in scratch; installed app not verified` | A consumed approval stays spent across a restored-away store: the external high-water witness refuses the rollback; six parallel decides give one ALLOW and five replay refusals. Removing the high-water comparison makes the restore arm ALLOW and its refusal assertion fail. The same UID can rewrite state and witness. Every write stays in scratch; the installed app is not verified. |
+| 10 | Airlock custody switch | `VERIFIED wrong kernel peer UID, bad signature, and wrong public-key pin refused` | Exact bytes reach a scratch signer without a local seed; wrong UID, signature and pin are refused. The stand-in shares the test UID: separate-account custody and EACCES remain live-only. |
+| 11 | Aumlok cold root | `AUMLOK COLD ROOT: GREEN` | Only a machine key is kept in disposable custody; the root is re-derived from the handle and words. |
+| 12 | Required grant | `AUMLOK GATE REQUIRE GRANT: GREEN` | The gate fails closed for an unusable required grant; this check exercises the one-use grant for `hello-governed`. |
+| 13 | Control admission | `# pass 7` and `# fail 0` | A stale control head refuses settlement and leaves the store unchanged; rotation state is modeled, no rotation event is performed. |
+| 14 | Restore scope | `AUMLOK RESTORE SCOPE: GREEN` | An external witness keeps a spent approval spent across a restore; without it, the restore un-spends the approval. This measures a gap. |
+| 15 | Four-history witness | `PASS four-history witness check (<elapsed>s; scratch only)` | The four become histories (code, actions, memory and remembered notes) grow `APPEND_ONLY`; a rewritten memory chain, unavailable verifier, truncation and the power-of-two blind spot refuse. A refusal after the switch restores the old release. Removing the conflict check or first-refusal rollback makes those arms fail. Scratch only. |
+| 16 | Consolidation | `kira-consolidate: ok` | Three agents repeating one false report create no evidence and no authority, and cannot undo a person's decision. |
+| 17 | Membrane guided tour | Guided tour verdicts and published-case scoreboard | Runs append-only, an honest decline, an earned accusation and the blind spot; 12 published cases. Teaching output, not an assertion suite. |
+| 18 | Kernel conformance | `KERNEL CONFORMANCE: 37/37 passed` | Source, generated code, dependency and vector pins hold; 37 upstream reducer, Merkle, hybrid-authority, downgrade, encoding, evidence and staleness cases pass. |
+| 19 | Box confinement | `BOX CONFINEMENT CHECK: GREEN` | Generated policy passes; unrestricted policy is refused with `confined:enforcement-unavailable`. Disposable guest probes only; may instead report SKIPPED or NOT RUN as described above. |
 
 Every check uses disposable state and test keys; none of them measures the owner's installed app.
 

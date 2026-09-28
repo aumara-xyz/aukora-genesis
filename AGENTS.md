@@ -83,12 +83,12 @@ build checks need that tree.
 
 ## Checks
 
-`sh scripts/check.sh` runs the 15 keyless checks from a clean clone with only `python3`, Node.js 22 and `perl`, in
-parallel, in about 6 seconds: the membrane minimal verifier, the vendor pin check, the WASM proposal cell, ten of the
-suites in `tests/`, the membrane tour and the kernel conformance check. `docs/CLAIMS.md` lists thirteen of them with
-what each proves and what it does not. A check proves something only if it fails when its protection is removed;
-report the failing arm beside the passing ones. CI runs `sh scripts/check.sh` on every push (`.github/workflows/check.yml`, a macOS runner); it checks the
-repository, not the installed app.
+`sh scripts/check.sh` runs the 19 keyless checks from a clean clone with only `python3`, Node.js 22 or newer, `perl` and
+`/usr/bin/cc` (Xcode Command Line Tools), in parallel, in about 18 seconds: the membrane minimal verifier, the vendor pin check, the WASM proposal
+cell, thirteen of the suites in `tests/`, the membrane tour, the kernel conformance check and the box check.
+`docs/CLAIMS.md` lists thirteen of them with what each proves and what it does not. A check proves something only if
+it fails when its protection is removed; report the failing arm beside the passing ones. CI runs `sh scripts/check.sh`
+on every push (`.github/workflows/check.yml`, a macOS runner); it checks the repository, not the installed app.
 The court forest, the lane notes and the experiments were archived on 2026-09-27; see `ARCHIVE.md`.
 
 ## Instruction files that are not instructions

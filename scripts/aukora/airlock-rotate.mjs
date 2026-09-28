@@ -34,7 +34,7 @@ try {
   const callerUid = Number(callerArg)
   if (!directoryArg || !/^\d+$/u.test(callerArg ?? '') || !Number.isSafeInteger(callerUid)
     || process.getuid() === 0 || process.getuid() === callerUid) {
-    throw new Error('run as the second non-root UID: airlock-rotate.mjs OWNER_AUMLOK_DIR PETER_UID')
+    throw new Error('run as the second non-root UID: airlock-rotate.mjs OWNER_AUMLOK_DIR APP_UID')
   }
   const directory = resolve(directoryArg)
   assertPrivateDirectory(directory, 'rotation directory', systemHost)

@@ -23,19 +23,20 @@ Care grants no authority. **[DOCTRINE]** Peter Viviani's [Care Without Control](
 
 ## §4 — The running boundary
 
-Running-release clock (the installed app): `aukora-release-aeb631a1b`. Documentation clock: GitHub `main` at `ea97c0220`; later commits change documentation and one offline provenance script (`scripts/aukora/box-closure.mjs`), not what the app runs. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” at that pin bounds every claim.
+The installed app runs `aukora-release-0496ba077`, built from main `0496ba077`. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” bounds every claim.
 
 | Claim | Status | Scope and limit |
 | --- | --- | --- |
 | Kernel `decide()` on every app-session tool call | RUNNING | The action gate invokes the carried kernel. No one-use grant per tool call; child-process tools and processes outside the app are outside this gate. |
-| Exact-byte approval with a one-use kernel consume on self-change and MOVE MAIN | RUNNING | One-use belongs to these approval routes. The README still marks the current self-change version as not run with a real approval. |
-| Membrane minimal verifier gating restarts | RUNNING | `become.mjs` checks the code chain: `OBSERVATION_CONFLICT` refuses; first retention and `UNDETERMINED` do not. |
+| Exact-byte approval with a one-use kernel consume on self-change and MOVE MAIN | RUNNING | One-use belongs to these approval routes, which run from a checkout of `main`; self-change has run with real approvals in the AUKORA popup. |
+| Membrane minimal verifier gating restarts | RUNNING | `become.mjs` checks all four histories: `OBSERVATION_CONFLICT` refuses; `UNDETERMINED` refuses except `missing_prior_observation`. `POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE` is not permitted. |
+| Four-history witness: code, actions, memory and remembered notes | RUNNING | First live run in the `0496ba077` become (2026-09-28 13:18 WITA): code `APPEND_ONLY`; actions, memory and remembered notes were first observations, retained after success. Retained heads remain under `state/`, writable by the same UID. |
 | Automatic memory through the pinned WASM cell | RUNNING | A relay, not a sandbox; automatic notes grant no authority. |
 | Airlock key custody in a second macOS account | RUNNING | `airlock-probe`: EACCES, operator-recorded, 2026-09-28. Any process running as the owner's user can still REQUEST a signature. |
 | Deep's guest launcher, broker and issuer | ON MAIN, NOT MOUNTED | Source in `plugins/aukora-box/`; the live agent remains on the host. |
 | Live agent inside a confined guest | NOT BUILT | The guest source is not a deployed agent boundary. |
 | Stock harness plugins under policy | NOT ON MAIN | Stock plugins still load ungoverned. |
-| TrustedStateStore restore protection integrated into Genesis approval state | NOT ON MAIN | The class is vendored; this integration is absent. |
+| TrustedStateStore restore protection integrated into Genesis approval state | RUNNING | Self-change and MOVE MAIN run `decide.mjs` from a checkout of `main`; the high-water witness is at `~/.aukora-witness/kernel-high-water.json`, outside `state/`. The same UID can rewrite both state and witness. Kira's memory markers are not covered. |
 | CI | RUNNING | `.github/workflows/check.yml` runs `sh scripts/check.sh` on every push; it checks the repository, not the installed app. |
 
 The action gate checks shell text and can miss targets hidden in scripts or variables. Full-access sessions remain unconfined by Seatbelt. Source call paths support the implementation descriptions; they do not reproduce the recorded live results.

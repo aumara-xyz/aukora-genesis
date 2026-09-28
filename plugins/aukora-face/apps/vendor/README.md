@@ -8,7 +8,7 @@ This directory is the source of record for the stock applications mounted by `@d
 |---|---|---|
 | `zeta-harp/` | `aumara-xyz/zeta-harp` commit `aa1100fa56e2a86ccd181cb39d13122e62abdf9f`, tree `8c2f47d67479c19ce98e0c8d57916fd6d86feb34` | Complete 13-file tracked tree for the Riemann–Siegel instrument, Fold explainer, reference fixtures, renderer, and Truth Audio. |
 | `auma-lingwa/` | Aukora revision `b413a89b109900a9037a9ed725b0d1b474e4f550` | Exact 84-day, 948-word browser runtime plus canon v14.1/v15/v16 history, readers, lint/tooling source, and original tests. |
-| `auma-live/` | Aukora revision `b413a89b109900a9037a9ed725b0d1b474e4f550` | Exact browser source; 69 presence, memory, governance, authority, and runtime source files plus 17 relevant original tests; Python duplex sidecar source; and the Aurora prompt. |
+| `auma-live/` | Aukora revision `b413a89b109900a9037a9ed725b0d1b474e4f550` | Exact browser source; 69 presence, memory, governance, authority, and runtime source files plus 17 relevant original tests; Python duplex sidecar source; and the Aurora prompt setup. |
 
 `manifest.json` records the pinned revisions and a stable SHA-256 and byte count for every preserved file. It deliberately omits itself and this explanatory README. Regenerate or verify it from the package root:
 
@@ -31,14 +31,14 @@ The five shell surfaces are always-mounted same-origin iframes. Four contain an 
 
 ## Local duplex setup
 
-The browser speech fallback and typed input require no Python setup. Full local duplex voice uses the code and prompt already under `auma-live/voice/`; install its managed environment and model weights in place:
+The browser speech fallback and typed input require no Python setup. Local duplex voice uses the code under `auma-live/voice/`; install its managed environment and model weights in the clone. Do not run setup inside a release: added files break its strip manifest and the launcher refuses it. From the clone root:
 
 ```sh
-cd ~/aukora-release-local/plugins/aukora-face-apps/vendor/auma-live/voice   # the copy the running app supervises
-bash setup.sh                                                             # needs uv
+cd plugins/aukora-face/apps/vendor/auma-live/voice
+bash setup.sh   # needs uv
 ```
 
-The running Host looks for `.venv/bin/python` in the RELEASE's copy of this directory (it logs that path at boot), and a release does not carry `.venv/` or `models/`, so a setup run in the checkout's `plugins/aukora-face/apps/vendor/auma-live/voice` is not seen unless `voiceRuntimeDirectory` in the `aukora-face-apps` config points there. The setup creates `.venv/` (Python 3.12 through `uv`, packages from PyPI per `requirements.txt`) and downloads model weights under this directory: `kokoro-v1.0.onnx` and `voices-v1.0.bin` from `github.com/thewh1teagle/kokoro-onnx` release `model-files-v1.0`, and `mlx-community/whisper-base.en-mlx` from Hugging Face; its warm-up then lets Pocket TTS fetch its own weights from Hugging Face. Those generated files are intentionally untracked and are not read from another repository. The Aurora prompt is not committed: setup derives it from two stock Kokoro voices. Cloning with Pocket TTS requires accepting that model's gated distribution terms. When `.venv/bin/python` exists, the stock-app Host may supervise `sidecar.py` and exposes it to the browser only through the same-origin WebSocket bridge.
+By default, the running Host looks for `.venv/bin/python` in the RELEASE's copy of this directory (it logs that path at boot), and a release does not carry `.venv/` or `models/`, so point `voiceRuntimeDirectory` in the `aukora-face-apps` config at the clone's `plugins/aukora-face/apps/vendor/auma-live/voice`. See [RUNNING.md](../../../../docs/RUNNING.md) for the overlay; a fresh install is NOT VERIFIED. The setup creates `.venv/` (Python 3.12 through `uv`, packages from PyPI per `requirements.txt`) and downloads model weights under this directory: `kokoro-v1.0.onnx` and `voices-v1.0.bin` from `github.com/thewh1teagle/kokoro-onnx` release `model-files-v1.0`, and `mlx-community/whisper-base.en-mlx` from Hugging Face; its warm-up then lets Pocket TTS fetch its own weights from Hugging Face. Those generated files are intentionally untracked and are not read from another repository. The Aurora prompt is not committed: setup derives it from two stock Kokoro voices under the app's state folder, while the sidecar reads the configured runtime's `models/` directory. The stock voice speaks; the cloned Aurora voice stays off. When `.venv/bin/python` exists, the stock-app Host may supervise `sidecar.py` and exposes it to the browser only through the same-origin WebSocket bridge.
 
 ## Dakini Code
 

@@ -1,8 +1,8 @@
 # The airlock: attended macOS runbook
 
-**NOT ENFORCED until Peter completes and probes this installation:** second-UID key custody.
-The key remains software. Root/admin access can cross the boundary. Socket credentials identify a UID,
-not a person or a popup click: another process with Peter's UID can request signatures directly.
+**NOT ENFORCED until the operator completes and probes this installation:** second-UID key custody.
+The owner's key remains software. Root/admin access can cross the boundary. Socket credentials identify a UID,
+not a person or a popup click: another process with the operator's UID can request signatures directly.
 There is no server-side check on GitHub main. Local digests identify reviewed bytes; they are not CI,
 independent provenance, or proof that a person reviewed them. Installed-app behavior is NOT VERIFIED here.
 
@@ -10,10 +10,10 @@ This runbook is for a first install. Stop if any named account, config, plist, o
 exists; inspect it instead of replacing an unknown installation. Quit AUKORA before rotation. The
 reviewed desktop signer change must be loaded through the normal release process before starting the
 app with this config; copying the daemon does not update the desktop app. Run no command as an agent.
-Every numbered step below is **Peter runs this (admin password)**; the first step computes bytes as
-Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separate from the app's state.
+Every numbered step below is **The operator runs this (admin password)**; the first step computes bytes as
+the operator before entering an admin shell. Paths containing `AUKORA-Owner` are separate from the app's state.
 
-1. **Peter runs this (admin password).** Review the source and build locally, without sudo:
+1. **The operator runs this (admin password).** Review the source and build locally, without sudo:
 
    ```sh
    cd ~/aukora-worktrees/airlock
@@ -29,7 +29,7 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
    reviewing and staging: a digest supplied by the same writable checkout is not an independent witness.
    No seed, app state, or phrase is in this bundle. These commands do not create an account or install.
 
-2. **Peter runs this (admin password).** Enter a clean admin shell and stage the exact reviewed bytes.
+2. **The operator runs this (admin password).** Enter a clean admin shell and stage the exact reviewed bytes.
    Set `WANT` to the manifest digest from step 1; do not compute its expected value inside this shell.
 
    ```sh
@@ -60,15 +60,15 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
    ```
 
    Keep this admin shell open through step 7. Nothing from the bundle executes before its staged digest
-   check. The code, runtime, helper and their ancestors must remain root-owned and not writable by Peter.
+   check. The code, runtime, helper and their ancestors must remain root-owned and not writable by the operator.
 
-3. **Peter runs this (admin password).** Create the account and groups. The password prompt below is
-   for the new account; its login is disabled immediately afterward. Substitute Peter's short name if
-   different. Neither add this account to `admin` nor add Peter to `aukora-owner`.
+3. **The operator runs this (admin password).** Create the account and groups. The password prompt below is
+   for the new account; its login is disabled immediately afterward. Set `APP_USER` to the app user's macOS short
+   name. Neither add this account to `admin` nor add the app user to `aukora-owner`.
 
    ```sh
-   PETER_USER=peterviviani
-   PETER_UID=$(/usr/bin/id -u "$PETER_USER")
+   APP_USER='<your macOS short name>'
+   APP_UID=$(/usr/bin/id -u "$APP_USER")
    OWNER_HOME=/private/var/aukora-owner-home
    test ! -e "$OWNER_HOME"
    test ! -L "$OWNER_HOME"
@@ -86,10 +86,10 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
    /bin/chmod -RN "$OWNER_HOME"
    /bin/chmod 0700 "$OWNER_HOME"
    /usr/sbin/dseditgroup -o create aukora-submit
-   /usr/sbin/dseditgroup -o edit -a "$PETER_USER" -t user aukora-submit
+   /usr/sbin/dseditgroup -o edit -a "$APP_USER" -t user aukora-submit
    /usr/sbin/dseditgroup -o edit -a aukora-owner -t user aukora-submit
    OWNER_UID=$(/usr/bin/id -u aukora-owner)
-   test "$OWNER_UID" != "$PETER_UID"
+   test "$OWNER_UID" != "$APP_UID"
    OWNER='/Library/Application Support/AUKORA-Owner'
    RUN='/Library/Application Support/AUKORA-Airlock/run'
    test ! -e "$OWNER"
@@ -99,18 +99,18 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
    /usr/bin/install -d -o root -g wheel -m 0755 /private/etc/aukora
    ```
 
-4. **Peter runs this (admin password).** Rotate, never transfer the old seed. Quit the app first.
+4. **The operator runs this (admin password).** Rotate, never transfer the old seed. Quit the app first.
    Copy only its public record, then run the existing `refreshBindingV3` ceremony as the new UID.
    Enter the current root phrase and a different new phrase twice; input is hidden, never an argument
    or environment variable. Keep the new phrase offline. A lost current phrase cannot authorize this
    succession; stop instead of creating an unrelated identity.
 
    ```sh
-   APP="/Users/$PETER_USER/Library/Application Support/AUKORA"
+   APP="/Users/$APP_USER/Library/Application Support/AUKORA"
    /usr/bin/install -o aukora-owner -g aukora-owner -m 0600 \
      "$APP/state/aumlok/local-control.json" "$OWNER/aumlok/local-control.json"
    /usr/bin/sudo -u aukora-owner "$CODE/bin/node" \
-     "$CODE/scripts/aukora/airlock-rotate.mjs" "$OWNER/aumlok" "$PETER_UID"
+     "$CODE/scripts/aukora/airlock-rotate.mjs" "$OWNER/aumlok" "$APP_UID"
    /usr/sbin/chown aukora-owner:aukora-owner "$OWNER/aumlok/machine-seed-v3.json"
    /bin/chmod 0600 "$OWNER/aumlok/machine-seed-v3.json"
    ```
@@ -121,14 +121,14 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
    Copies of an old key cease to authorize against this refreshed record. Old/offline records and
    separate pins still accept whatever they previously trusted until they too are updated.
 
-5. **Peter runs this (admin password).** Publish public data, update the live overlay, and pin the
+5. **The operator runs this (admin password).** Publish public data, update the live overlay, and pin the
    socket, daemon UID and new public key. This command reads no seed. The canonical root-owned config
    is `/private/etc/aukora/owner-daemon.json` (`/etc/aukora/owner-daemon.json` on macOS).
 
    ```sh
    test ! -e /private/etc/aukora/owner-daemon.json
    test ! -L /private/etc/aukora/owner-daemon.json
-   "$CODE/bin/node" --input-type=module - "$OWNER" "$RUN" "$APP" "$OWNER_UID" "$PETER_UID" <<'JS'
+   "$CODE/bin/node" --input-type=module - "$OWNER" "$RUN" "$APP" "$OWNER_UID" "$APP_UID" <<'JS'
    import { readFileSync, writeFileSync, chmodSync } from 'node:fs';
    import { recordProjection } from '/Library/Application Support/AUKORA-Airlock/code/plugins/aukora-aumlok/lib/record-v3.mjs';
    import { didKeyFromEd25519PublicKey } from '/Library/Application Support/AUKORA-Airlock/code/plugins/aukora-aumlok/lib/did-key.mjs';
@@ -158,10 +158,10 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
 
    Config presence makes the new shell refuse local seed loading and fail closed on an unavailable,
    wrong-UID or incorrectly signing daemon. Do not remove config to recover: that restores legacy local
-   signing. App-owned records/overlays can still be rolled back by Peter's UID; the protected copy does
+   signing. App-owned records/overlays can still be rolled back by the operator's UID; the protected copy does
    not automatically change every verifier's trust source. Historical evidence retains its old keys.
 
-6. **Peter runs this (admin password).** Install this launchd job. `GroupName` makes the new socket
+6. **The operator runs this (admin password).** Install this launchd job. `GroupName` makes the new socket
    `aukora-submit`; the daemon enforces `0660`, checks key `0600`, private directory `0700`, run directory
    `0750`, and obtains the caller UID from the accepted socket through the measured native helper.
 
@@ -192,8 +192,8 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
    /bin/launchctl print system/com.aukora.airlock
    ```
 
-7. **Peter runs this (admin password).** End the admin shell, log out and in to refresh group
-   membership, then probe **as Peter, without sudo**:
+7. **The operator runs this (admin password).** End the admin shell, log out and in to refresh group
+   membership, then probe **as the operator, without sudo**:
 
    ```sh
    exit
@@ -202,14 +202,14 @@ Peter before entering an admin shell. Paths containing `AUKORA-Owner` are separa
 
    The probe must get `EACCES` opening the configured key and require a different configured owner UID. Any other
    result retains `SAME_UID`; an absent file (`ENOENT`) is not proof. The probe never reads key bytes.
-   Then reopen the updated AUKORA and exercise an actual approval. Until that output is observed, the
+   Then reopen the updated AUKORA and have the owner approve an actual request. Until that output is observed, the
    installed flow is NOT VERIFIED. The source call path is `apps/aukora-desktop/main.mjs` →
    `aumlok-signer.mjs` → `aumlok-signer-airlock.mjs` → Unix socket →
    `plugins/aukora-owner-daemon/bin/airlock-daemon.mjs` → `lib/airlock-server.mjs` →
    `lib/airlock-protocol.mjs`. Both peers use `lib/peer-uid.mjs` → `native/peer-uid.c` for the kernel UID.
    This is a source trace, not evidence of an installed execution.
 
-8. **Peter runs this (admin password).** Retire separate current verifier pins before claiming the old
+8. **The operator runs this (admin password).** Retire separate current verifier pins before claiming the old
    seed's copies no longer count everywhere. `docs/owner-pin.json` is the repository advance pin, read
    from the previous committed tree; `refreshBindingV3` does not update it. After the updated shell is
    running, these future commands stage and then ask the app to commit/push the pin update. They are
