@@ -3,6 +3,9 @@
  * Verify one approval receipt from its bytes and the registered public key — as a stranger.
  *
  *   scripts/aumlok/verify-approval <receipt.json> --pub <key>
+ *   Optional route bindings: --approver-did DID --operation FILE --operation-digest HEX
+ *   --subject SUBJECT --control-digest HEX --now SECONDS (historical clock when auditing)
+ *   --max-window SECONDS --max-skew SECONDS (optional owner-route time bounds).
  *
  * WHO THIS IS FOR. Someone who was handed a receipt and a public key and has nothing else: no
  * Genesis checkout, no repository state, no network, no controller, no key of their own. Run it
@@ -49,6 +52,14 @@ const REFUSE = Object.freeze({
   HUMAN_CEREMONY_CLASS_C: 'aukora:verify-human-ceremony-with-class-c',
   HUMAN_CEREMONY_UNESTABLISHABLE: 'aukora:verify-human-ceremony-not-establishable',
   CLASS_UNKNOWN: 'aukora:verify-class-unknown',
+  ATTENDANCE_UNSUPPORTED: 'aukora:verify-attendance-unsupported',
+  IDENTITY_BOUND_UNSUPPORTED: 'aukora:verify-identity-bound-unsupported',
+  OPERATION_MISMATCH: 'aukora:verify-operation-mismatch',
+  SUBJECT_MISMATCH: 'aukora:verify-subject-mismatch',
+  CONTROL_MISMATCH: 'aukora:verify-control-mismatch',
+  EXPIRED: 'aukora:verify-expired',
+  FUTURE: 'aukora:verify-issued-in-future',
+  WINDOW_EXCEEDED: 'aukora:verify-window-exceeded',
   PREIMAGE_MISMATCH: 'aukora:verify-preimage-mismatch',
   SIGNATURE_INVALID: 'aukora:verify-signature-invalid',
 })
@@ -114,6 +125,63 @@ if (pubIndex === -1 || process.argv[pubIndex + 1] === undefined) {
   process.stderr.write('usage: scripts/aumlok/verify-approval <receipt.json> --pub <public key file>\n')
   process.exit(2)
 }
+const option = (name) => {
+  const index = process.argv.indexOf(name, 3)
+  if (index === -1) return undefined
+  const value = process.argv[index + 1]
+  if (!value || value.startsWith('--') || process.argv.indexOf(name, index + 1) !== -1) {
+    refuse('scope', REFUSE.USAGE, `${name} requires one value`)
+  }
+  return value
+}
+const expectedDid = option('--approver-did')
+const operationPath = option('--operation')
+const expectedOperation = option('--operation-digest')
+const expectedSubject = option('--subject')
+const expectedControl = option('--control-digest')
+const nowText = option('--now')
+const maxWindowText = option('--max-window')
+const maxSkewText = option('--max-skew')
+for (const digest of [expectedOperation, expectedControl]) {
+  if (digest !== undefined && !/^[0-9a-f]{64}$/u.test(digest)) refuse('scope', REFUSE.USAGE, 'invalid expected digest')
+}
+if (expectedSubject !== undefined && !/^aukora:1:[0-9a-f]{64}$/u.test(expectedSubject)) refuse('scope', REFUSE.USAGE, 'invalid expected subject')
+for (const [name, value] of [['--now', nowText], ['--max-window', maxWindowText], ['--max-skew', maxSkewText]]) {
+  if (value !== undefined && (!/^(0|[1-9][0-9]*)$/u.test(value) || !Number.isSafeInteger(Number(value)))) {
+    refuse('scope', REFUSE.USAGE, `${name} must be non-negative safe integer seconds`)
+  }
+}
+
+// The strict reader rejects invalid JSON and duplicate keys, but JSON.parse normalizes 2e9 and
+// 2000000000.0 to integers. Check these receipt tokens in the same read's original text. Walk
+// strings and nesting so escaped key names work and quoted text cannot impersonate a field.
+function assertIntegerTokens(text) {
+  let depth = 0
+  for (let index = 0; index < text.length; index += 1) {
+    const character = text[index]
+    if (character === '{' || character === '[') { depth += 1; continue }
+    if (character === '}' || character === ']') { depth -= 1; continue }
+    if (character !== '"') continue
+    const start = index
+    index += 1
+    while (index < text.length && text[index] !== '"') {
+      index += text[index] === '\\' ? 2 : 1
+    }
+    if (depth !== 1) continue
+    let probe = index + 1
+    while (/[ \t\r\n]/u.test(text[probe] ?? '')) probe += 1
+    if (text[probe] !== ':') continue
+    const key = JSON.parse(text.slice(start, index + 1))
+    if (!['issuedAt', 'expiresAt', 'verifiedAt'].includes(key)) continue
+    probe += 1
+    while (/[ \t\r\n]/u.test(text[probe] ?? '')) probe += 1
+    const tokenStart = probe
+    while (probe < text.length && !/[ \t\r\n,}]/u.test(text[probe])) probe += 1
+    if (!/^(0|[1-9][0-9]*)$/u.test(text.slice(tokenStart, probe))) {
+      throw new Error(`${key} must be written as a non-negative integer JSON token`)
+    }
+  }
+}
 
 // ── 1. parse — is this a closed, well-formed receipt? ────────────────────────────────────────
 let receipt
@@ -127,7 +195,9 @@ try {
   // symlink, with no regular-file check and no `O_NONBLOCK`.** `readJsonStrictBytes` is the single open those
   // helpers are built on: `O_NOFOLLOW`, `O_NONBLOCK`, `fstat` the DESCRIPTOR, read from that fd, a depth
   // bound, a fatal decode, and the duplicate scan.
-  ;({ value: receipt } = readJsonStrictBytes(resolve(receiptPath), { label: 'the approval receipt' }))
+  const read = readJsonStrictBytes(resolve(receiptPath), { label: 'the approval receipt' })
+  assertIntegerTokens(read.text)
+  receipt = read.value
 } catch (error) {
   refuse('parse', REFUSE.RECEIPT_MALFORMED, error instanceof Error ? error.message : String(error))
 }
@@ -149,6 +219,9 @@ try {
   refuse('trusted_key', REFUSE.KEY_MALFORMED, error instanceof Error ? error.message : String(error))
 }
 const derivedDid = adapter.didKeyFromEd25519PublicKey(rawPublicKeyHex)
+if (expectedDid !== undefined && expectedDid !== derivedDid) {
+  refuse('trusted_key', REFUSE.DID_MISMATCH, 'the supplied key does not derive the pinned approver DID')
+}
 if (receipt.approvalKeyDid !== derivedDid) {
   // Refused HERE, before the preimage is derived and before the signature is touched: this receipt
   // names a different key, so there is nothing for that key to verify.
@@ -174,6 +247,36 @@ if (receipt.approvalClass === 'human-ceremony') {
   refuse('custody', REFUSE.HUMAN_CEREMONY_UNESTABLISHABLE,
     'a verifier holding only a public key has no binding register, so it cannot establish that a '
     + 'human ceremony bound this key; refusing the class rather than printing a claim it cannot check')
+}
+if (receipt.attendance !== 'reported-not-proven') {
+  refuse('attendance', REFUSE.ATTENDANCE_UNSUPPORTED, 'attendance is reported, never proven by this receipt')
+}
+if (receipt.identityBound !== false) {
+  refuse('custody', REFUSE.IDENTITY_BOUND_UNSUPPORTED, 'this route establishes no identity binding')
+}
+
+// The owner route supplies these expectations independently of the receipt. The kernel still
+// decides authorization; accepting a signature and its bindings here does not spend an approval.
+let operationDigest = expectedOperation
+if (operationPath !== undefined) {
+  try {
+    operationDigest = adapter.operationDigestOf(readFileSync(resolve(operationPath)))
+  } catch {
+    refuse('scope', REFUSE.USAGE, 'the operation bytes could not be read')
+  }
+  if (expectedOperation !== undefined && expectedOperation !== operationDigest) {
+    refuse('scope', REFUSE.OPERATION_MISMATCH, 'the supplied operation bytes differ from the expected digest')
+  }
+}
+if (operationDigest !== undefined && receipt.operationDigest !== operationDigest) refuse('scope', REFUSE.OPERATION_MISMATCH)
+if (expectedSubject !== undefined && receipt.subject !== expectedSubject) refuse('scope', REFUSE.SUBJECT_MISMATCH)
+if (expectedControl !== undefined && receipt.activeControlDigest !== expectedControl) refuse('scope', REFUSE.CONTROL_MISMATCH)
+if (nowText !== undefined && receipt.expiresAt <= Number(nowText)) refuse('scope', REFUSE.EXPIRED)
+if (maxSkewText !== undefined && receipt.issuedAt - (nowText === undefined ? Math.floor(Date.now() / 1000) : Number(nowText)) > Number(maxSkewText)) {
+  refuse('scope', REFUSE.FUTURE)
+}
+if (maxWindowText !== undefined && receipt.expiresAt - receipt.issuedAt > Number(maxWindowText)) {
+  refuse('scope', REFUSE.WINDOW_EXCEEDED)
 }
 
 // ── 4. digest — re-derive the exact bytes from the receipt's own request fields ──────────────
@@ -226,8 +329,10 @@ record('signature', STATES.VERIFIED,
 // shown as the record's own statements, never as anything this program established.
 const unsignedFields = adapter.APPROVAL_RECEIPT_FIELDS.filter(field => !SIGNED_FIELDS.includes(field))
 
-record('scope', STATES.REPORTED,
-  'the record carries an operation DIGEST, not the operation: what was authorized is not in these bytes')
+record('scope', operationDigest === undefined ? STATES.REPORTED : STATES.VERIFIED,
+  operationDigest === undefined
+    ? 'the record carries an operation DIGEST, not the operation: what was authorized is not in these bytes'
+    : 'the operation digest matches the caller-supplied expectation; authorization remains the kernel decision')
 record('attendance', STATES.REPORTED,
   `the record states "${receipt.attendance}"; the signature does not cover this field`)
 record('custody', STATES.REPORTED,

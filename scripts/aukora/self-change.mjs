@@ -17,9 +17,9 @@
  *                signature, granting no authority. Its operation digest is sha256("aukora:operation-content:v1" ‖ 0x00 ‖
  *                content). The complete rendered witness must fit within 11,800 characters; a binary change is refused.
  *   2. approve — the app's Aumlok signer shows that exact text; Approve signs it, Refuse signs nothing.
- *   3. verify  — before any authorized candidate is materialized, the approval is checked with scripts/aumlok/verify-approval
- *                against the PINNED approver key (the live Kira overlay's approverDid), and its signed fields must name
- *                this operation digest, this subject, this control digest, and an expiry that has not passed.
+ *   3. verify  — before any authorized candidate is materialized, BOTH scripts/aumlok/verify-approval and the independent
+ *                verify-approval-cold.py must accept the PINNED approver key (the live Kira overlay's approverDid),
+ *                operation bytes and digest, subject, control digest and current time. Both results are retained.
  *                The NAMED Aumlok candidate authority adapter consumes it through the verifier-only kernel, rechecks
  *                the preview, then invokes the ORIGINAL localCandidateStage. Original materialization stays AFTER
  *                approval. The untouched hybrid CLI continues to fail closed without hybrid authorization.
@@ -36,7 +36,7 @@
  */
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash, createPublicKey } from 'node:crypto'
-import { appendFileSync, closeSync, existsSync, lstatSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { appendFileSync, closeSync, existsSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -59,6 +59,7 @@ const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'A
 const STATE = join(SUPPORT, 'state')
 const CLIENT = join(HOME_REPO, 'scripts', 'aumlok', 'approve-operation')
 const VERIFY = join(HOME_REPO, 'scripts', 'aumlok', 'verify-approval')
+const COLD_VERIFY = join(HOME_REPO, 'scripts', 'aumlok', 'verify-approval-cold.py')
 const WINDOW_SECONDS = 300
 // The approval window shows at most WITNESS_DISPLAY_LIMIT characters (apps/aukora-desktop/aumlok-signer.mjs; being raised
 // from 1,800 to 12,000 on 2026-09-27) and truncates the rest, saying so. 11,800 leaves 200 for the window's own heading.
@@ -277,8 +278,9 @@ const subject = setting('subject')
 const controlDigest = setting('activeControlDigest')
 const approverDid = setting('approverDid')
 
-const evidence = join(STATE, 'home', 'code-evidence', `${new Date().toISOString().slice(0, 16).replace(/:/g, '')}-change-${operationDigest.slice(0, 8)}`)
-mkdirSync(evidence, { recursive: true })
+const evidenceRoot = join(STATE, 'home', 'code-evidence')
+mkdirSync(evidenceRoot, { recursive: true })
+const evidence = mkdtempSync(join(evidenceRoot, `${new Date().toISOString().slice(0, 19).replace(/:/g, '')}-change-${operationDigest.slice(0, 8)}-`))
 const journal = (state, detail = {}) => appendFileSync(join(evidence, 'journal.jsonl'), `${JSON.stringify({ at: new Date().toISOString(), state, ...detail })}\n`)
 const operationFile = join(evidence, 'operation.txt')
 writeFileSync(operationFile, bytes)
@@ -309,22 +311,29 @@ if (asked.status !== 0 || !existsSync(artifact)) {
 }
 
 // 3. VERIFY THE APPROVAL BEFORE ANYTHING IS COMMITTED
-const checked = spawnSync(process.execPath, [VERIFY, artifact, '--pub', pinnedPem], { cwd: evidence, encoding: 'utf8' })
-writeFileSync(join(evidence, 'verify-approval.txt'), `${checked.stdout ?? ''}${checked.stderr ?? ''}`)
-if (checked.status !== 0) {
-  journal('APPROVAL_REFUSED', { exit: checked.status })
-  fail(`the returned approval does not verify against the pinned key ${approverDid}. NOTHING was committed. See ${join(evidence, 'verify-approval.txt')}`)
+const approvalArgs = [artifact, '--approver-did', approverDid,
+  '--operation', operationFile, '--operation-digest', operationDigest,
+  '--subject', subject, '--control-digest', controlDigest, '--now', String(Math.floor(Date.now() / 1000)),
+  '--max-window', String(WINDOW_SECONDS), '--max-skew', '60']
+const verifyOptions = { cwd: evidence, encoding: 'utf8', timeout: 10_000, killSignal: 'SIGKILL' }
+const checked = spawnSync(process.execPath, [VERIFY, ...approvalArgs, '--pub', pinnedPem], verifyOptions)
+const coldChecked = spawnSync('/usr/bin/python3', ['-I', '-B', COLD_VERIFY, ...approvalArgs], {
+  ...verifyOptions, env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8' },
+})
+const verifierVerdict = (run, cold) => {
+  if (run.error || run.signal) return `ERROR ${run.error?.code ?? run.signal}`
+  const output = run.stdout ?? ''
+  if (run.status === 0 && (cold ? output.trim() === 'ACCEPT' : /^VERIFIED:/mu.test(output))) return 'ACCEPT'
+  return output.match(cold ? /^REFUSE (\S+)/mu : /^REFUSED: (\S+)/mu)?.[0] ?? `ERROR exit=${String(run.status)}`
 }
-const approval = JSON.parse(readFileSync(artifact, 'utf8'))
-const mismatch = [
-  approval.operationDigest !== operationDigest && 'operation digest',
-  approval.subject !== subject && 'subject',
-  approval.activeControlDigest !== controlDigest && 'control digest',
-  !(Number(approval.expiresAt) > Math.floor(Date.now() / 1000)) && 'expiry',
-].filter(Boolean)
-if (mismatch.length > 0) {
-  journal('APPROVAL_REFUSED', { mismatch })
-  fail(`the approval is signed but does not cover this change (${mismatch.join(', ')}). NOTHING was committed`)
+const nodeVerdict = verifierVerdict(checked, false)
+const coldVerdict = verifierVerdict(coldChecked, true)
+for (const [name, run, verdict] of [['verify-approval.txt', checked, nodeVerdict], ['verify-approval-cold.txt', coldChecked, coldVerdict]]) {
+  writeFileSync(join(evidence, name), `${run.stdout ?? ''}${run.stderr ?? ''}\nVERIFIER ${verdict}; exit=${String(run.status)}${run.error ? `; ${run.error.message}` : ''}\n`)
+}
+if (nodeVerdict !== 'ACCEPT' || coldVerdict !== 'ACCEPT') {
+  journal('APPROVAL_REFUSED', { node: nodeVerdict, cold: coldVerdict })
+  fail(`approval verifiers: Node=${nodeVerdict}; Python=${coldVerdict}. NOTHING was committed. Evidence: ${evidence}`)
 }
 try { checkCandidatePreview(candidate) } catch (error) {
   journal('MOVED', {})
