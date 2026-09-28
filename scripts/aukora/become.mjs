@@ -35,7 +35,8 @@
  * and this script runs as the owner's user, so it is the supported path, not an enforced one.
  */
 import { spawn, spawnSync } from 'node:child_process'
-import { closeSync, copyFileSync, existsSync, fstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, renameSync, rmSync,
+import { createHash } from 'node:crypto'
+import { closeSync, constants, copyFileSync, existsSync, fstatSync, fsyncSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, renameSync, rmSync,
   statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
 import { basename, dirname, join, posix, resolve } from 'node:path'
@@ -68,7 +69,7 @@ const why = flag('--why') ?? ''
 // The live backend's own channels. The launcher forwards exactly these into any backend it starts, so a boot smoke run
 // from a become started inside the app would be handed the live eye token and the live signer socket. A become is not the
 // backend; they are dropped before anything is spawned.
-for (const name of ['AUKORA_EYE_URL', 'AUKORA_EYE_TOKEN', 'AUKORA_SIGNER_SOCKET']) delete process.env[name]
+if (isMainModule(import.meta.url)) for (const name of ['AUKORA_EYE_URL', 'AUKORA_EYE_TOKEN', 'AUKORA_SIGNER_SOCKET']) delete process.env[name]
 
 const stamp = () => new Date().toISOString()
 const say = (line) => process.stdout.write(`${stamp()} ${line}\n`)
@@ -114,71 +115,219 @@ const chainHead = (rel) => {
 }
 /**
  * WHAT SHE IS, AT THE MOMENT A BECOME ENDS (the coherence record, 2026-09-27): the release that is running, the plugin set
- * it loads, and the heads of her three chains (code, actions, memory). Chained with every outcome, so each version of her
+ * it loads, and the heads of her four chains. Chained with every outcome, so each version of her
  * body is one entry, and a drift in any of them between two entries is visible.
  */
 function bodyState(running) {
   let pluginSet = null
   try { pluginSet = readJson(join(running, '.dsh-build', 'plugin-set.json')).setDigest ?? null } catch { /* none */ }
-  return { release: running, pluginSet, heads: { code: chainHead('aura-code/aura.jsonl'),
-    actions: chainHead('aura-actions/aura.jsonl'), memory: chainHead('kira-memory/aura.jsonl') } }
+  return { release: running, pluginSet,
+    heads: Object.fromEntries(Object.entries(chainPaths).map(([name, path]) => [name, chainHead(path)])) }
 }
 
-const RETAINED = join(HOME_DIR, 'membrane-retained.json')
-const CONFLICT = 'the code chain was rewritten since the last become'
-// LF separates records; hash every other byte, including whitespace/CR, without JSON reserialization.
-function auraLeaves() {
-  const path = join(STATE, 'home', 'aura-code', 'aura.jsonl')
-  const bytes = existsSync(path) ? readFileSync(path) : Buffer.alloc(0)
+export const chainPaths = Object.freeze({ code: 'aura-code/aura.jsonl', actions: 'aura-actions/aura.jsonl',
+  memory: 'kira-memory/aura.jsonl', remembered: 'kira-memory/remembered/aura.jsonl' })
+export const retainedPath = (support) => join(support, 'state/home/become/membrane-retained.json')
+const VERIFIER = join(REPO, 'vendor/append-only/verify.py')
+// Project one head only AFTER the carried verifier admits the original bytes. JSON.parse below is a proof-size hint,
+// not admission: reserializing there would erase duplicate keys and noncanonical numeric tokens.
+const projectHead = `
+import json, runpy, sys
+v = runpy.run_path(sys.argv[1])
+try:
+    r = json.loads(v['read_input_path'](sys.argv[2]).decode('utf-8'),
+        object_pairs_hook=v['no_duplicate_keys'], parse_int=v['check_canonical_int'],
+        parse_float=v['reject_float'], parse_constant=v['reject_constant'])
+    if not isinstance(r, dict): raise ValueError()
+    empty = {'treeSize': 0, 'root': v['hashlib'].sha256(b'').hexdigest()}
+    if 'chains' in r:
+        if not isinstance(r['chains'], dict): raise ValueError()
+        r = r['chains'].get(sys.argv[4], empty)
+    else:
+        if not v['is_size'](r.get('treeSize')) or not v['is_digest'](r.get('root')): raise ValueError()
+        if sys.argv[4] != 'code': r = empty
+    if not isinstance(r, dict): raise ValueError()
+    with open(sys.argv[2], 'w') as f: json.dump(r, f)
+except Exception:
+    print('VERDICT: UNDETERMINED\\nREASON : document_is_not_admissible'); sys.exit(0)
+sys.argv = sys.argv[1:4]
+v['main']()
+`
+
+// Only LF-terminated records are leaves. Preserve whitespace/CR; report a torn tail separately.
+function readAura(path, required = false) {
+  let bytes, fd
+  try {
+    fd = openSync(path, constants.O_RDONLY | constants.O_NONBLOCK | (required ? constants.O_NOFOLLOW : 0))
+    if (!fstatSync(fd).isFile()) throw Object.assign(new Error('chain is not a regular file'), { code: 'not_regular' })
+    bytes = readFileSync(fd)
+  }
+  catch (error) { if (error.code === 'ENOENT' && !required) bytes = Buffer.alloc(0); else throw error }
+  finally { if (fd !== undefined) closeSync(fd) }
   const leaves = []
   let start = 0
   for (let end = 0; end < bytes.length; end += 1) {
     if (bytes[end] === 10) { leaves.push(bytes.subarray(start, end)); start = end + 1 }
   }
-  if (start < bytes.length) leaves.push(bytes.subarray(start))
-  return leaves
+  return { bytes, leaves, unterminatedTailBytes: bytes.length - start }
 }
-function membraneObservation() {
-  if (!existsSync(RETAINED)) return { verdict: 'FIRST_RETENTION' }
-  const retainedBytes = readFileSync(RETAINED)
-  let retainedSize = null
-  try { retainedSize = JSON.parse(retainedBytes)?.treeSize ?? null } catch { /* cold parser decides */ }
-  const leaves = auraLeaves()
+export const auraLeaves = (support, name) => readAura(join(support, 'state/home', chainPaths[name])).leaves
+
+function observeHistory(history, name, retainedBytes, prior, verifier) {
+  const { leaves, unterminatedTailBytes } = history
+  const retainedSize = prior?.treeSize ?? 0
   const presented = { treeSize: leaves.length, root: root(leaves), proofFromPrevious: [] }
   if (Number.isSafeInteger(retainedSize) && retainedSize >= 0 && retainedSize <= leaves.length) {
     presented.proofFromPrevious = consistencyProof(leaves, retainedSize)
   }
   const dir = mkdtempSync(join(tmpdir(), 'aukora-membrane-'))
+  const observation = { retainedSize, retainedRoot: prior?.root ?? root([]),
+    presentedSize: leaves.length, presentedRoot: presented.root, unterminatedTailBytes }
+  const unavailable = (reason) => ({ ...observation, verdict: 'UNDETERMINED', reason })
   try {
+    try { if (!statSync(verifier).isFile()) return unavailable('verifier_not_regular') }
+    catch (error) { return unavailable(`verifier_${error.code ?? 'unavailable'}`) }
     const previous = join(dir, 'retained.json'), current = join(dir, 'presented.json')
     writeFileSync(previous, retainedBytes, { mode: 0o600 })
     writeFileSync(current, JSON.stringify(presented), { mode: 0o600 })
-    const checked = run('python3', [join(REPO, 'vendor/append-only/verify.py'), previous, current], { timeout: 10_000 })
-    const verdict = /^VERDICT:\s*(APPEND_ONLY|OBSERVATION_CONFLICT|UNDETERMINED)\s*$/mu.exec(checked.text)?.[1]
-    const reason = /^REASON\s*:\s*(\S+)/mu.exec(checked.text)?.[1]
-    return { verdict: verdict ?? 'UNDETERMINED', reason: (verdict && reason) || 'verifier_unavailable',
-      retainedSize, presentedSize: leaves.length, presentedRoot: presented.root }
+    const checked = spawnSync('python3', ['-B', '-c', projectHead, verifier, previous, current, name],
+      { encoding: 'utf8', timeout: 10_000, maxBuffer: 64 * 1024 })
+    if (checked.error || checked.signal || checked.status !== 0) {
+      return unavailable(`verifier_${checked.error?.code ?? checked.signal ?? `exit_${checked.status}`}`)
+    }
+    const output = checked.stdout ?? ''
+    const verdicts = [...output.matchAll(/^VERDICT:[ \t]*(APPEND_ONLY|OBSERVATION_CONFLICT|UNDETERMINED)[ \t]*$/gmu)]
+    const reasons = [...output.matchAll(/^REASON[ \t]*:[ \t]*(\S+)[ \t]*$/gmu)]
+    const verdict = verdicts[0]?.[1], reason = reasons[0]?.[1]
+    const knownLine = (line) => /^(?:RETAINED_SHA256 :|PRESENTED_SHA256:) [0-9a-f]{64}$/u.test(line)
+      || /^VERDICT:[ \t]*(APPEND_ONLY|OBSERVATION_CONFLICT|UNDETERMINED)[ \t]*$/u.test(line)
+      || /^REASON[ \t]*:[ \t]*\S+[ \t]*$/u.test(line)
+      || (verdict === 'OBSERVATION_CONFLICT' && line === `CLEAR: python3 verify.py ${previous}`)
+      || (reason === 'POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE' && line === 'LIMIT: Retained m is 2^k; root1 is fold seed.')
+    if (checked.stderr || verdicts.length !== 1 || reasons.length !== 1
+      || output.trimEnd().split('\n').some((line) => !knownLine(line))
+      || (output.match(/^VERDICT:/gmu) ?? []).length !== 1 || (output.match(/^REASON\b/gmu) ?? []).length !== 1
+      || (verdict === 'APPEND_ONLY' && !['identical_trees_match', 'valid_append_only_extension'].includes(reason))
+      || (verdict === 'OBSERVATION_CONFLICT' && !['same_size_root_mismatch', 'consistency:prefix-mismatch'].includes(reason))) {
+      return unavailable('verifier_unknown_output')
+    }
+    return { ...observation, verdict, reason }
     // The verifier reports POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE as UNDETERMINED, never conflict.
   } finally { rmSync(dir, { recursive: true, force: true }) }
 }
-function retainMembrane() {
-  const leaves = auraLeaves()
-  const dir = mkdtempSync(join(HOME_DIR, '.membrane-'))
+function observeChain(support, name, retainedBytes, prior, verifier) {
+  const path = join(support, 'state/home', chainPaths[name])
+  let history
+  try { history = readAura(path) }
+  catch (error) { return { verdict: 'UNDETERMINED', reason: `chain_${error.code ?? 'unreadable'}`, presentedSize: null } }
+  const check = (snapshot) => observeHistory(snapshot, name, retainedBytes, prior, verifier)
+  const seen = new Set(['aura.jsonl'])
+  const observeSegment = (snapshot) => {
+    const row = check(snapshot)
+    // Once a segment is retained, ordinary extension verification is sufficient. No prior is a first observation.
+    if (name !== 'actions' || row.verdict === 'APPEND_ONLY' || row.reason === 'missing_prior_observation') return row
+    let marker
+    try { marker = JSON.parse(snapshot.leaves[0]?.toString('utf8')) } catch { return row }
+    if (marker?.op !== 'segment') return row
+    const safeFile = typeof marker.previousFile === 'string' && /^aura-[\w.-]+\.jsonl$/u.test(marker.previousFile)
+    const rotation = { reason: marker.reason, previousFile: safeFile ? marker.previousFile : '(invalid previousFile)' }
+    const refused = (reason) => ({ ...row, verdict: 'UNDETERMINED', reason,
+      rotation: { ...rotation, failure: true } })
+    if (!['rotated', 'previous-tail-unusable'].includes(marker.reason)) return refused('rotation_unknown_reason')
+    if (!safeFile || seen.has(marker.previousFile) || seen.size >= 64) return refused('rotation_invalid_previous_file')
+    // A rotation cannot excuse a verifier/input failure; only a changed or smaller presentation can be bridged.
+    if (row.verdict !== 'OBSERVATION_CONFLICT'
+      && !['invalid_tree_sizes', 'POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE'].includes(row.reason)) return refused(row.reason)
+    seen.add(marker.previousFile)
+    let previous
+    try { previous = readAura(join(dirname(path), marker.previousFile), true) }
+    catch (error) { return refused(`rotation_previous_${error.code ?? 'unreadable'}`) }
+    if (marker.reason === 'rotated') {
+      let last
+      try { last = JSON.parse(previous.leaves.at(-1)?.toString('utf8')) } catch { return refused('rotation_previous_last_entry_invalid') }
+      if (!Number.isSafeInteger(marker.previousSequence) || typeof marker.previousHash !== 'string'
+        || marker.previousSequence !== last?.sequence || marker.previousHash !== last?.hash) return refused('rotation_previous_head_mismatch')
+    } else if (marker.previousSha256 !== createHash('sha256').update(previous.bytes).digest('hex')) {
+      return refused('rotation_previous_digest_mismatch')
+    }
+    const observed = observeSegment(previous)
+    if (observed.verdict !== 'APPEND_ONLY' && !observed.rotation?.verified) {
+      return refused(`rotation_previous_${observed.reason}`)
+    }
+    return { ...row, verdict: 'UNDETERMINED', reason: 'missing_prior_observation', rotation: { ...rotation,
+      verified: true, previousVerdict: observed.verdict, previousUnterminatedTailBytes: previous.unterminatedTailBytes } }
+  }
+  return observeSegment(history)
+}
+export function membraneObservation(support = SUPPORT, { verifier = VERIFIER } = {}) {
+  let raw, retained, failure
+  try {
+    const info = statSync(retainedPath(support))
+    if (!info.isFile() || info.size > 1_048_576) throw new Error('retained_input_invalid')
+    raw = readFileSync(retainedPath(support))
+  } catch (error) {
+    if (error.code === 'ENOENT') raw = '{"chains":{}}'
+    else failure = `retained_${error.code ?? 'input_invalid'}`
+  }
+  try { retained = JSON.parse(raw) } catch { /* the cold parser decides */ }
+  const chains = {}
+  for (const name of Object.keys(chainPaths)) {
+    const prior = retained?.chains ? retained.chains[name] : name === 'code' ? retained : undefined
+    try {
+      chains[name] = failure ? { verdict: 'UNDETERMINED', reason: failure, presentedSize: null }
+        : observeChain(support, name, raw, prior, verifier)
+    } catch (error) {
+      chains[name] = { verdict: 'UNDETERMINED', reason: `observation_${error.code ?? 'unavailable'}`, presentedSize: null }
+    }
+  }
+  return { chains }
+}
+
+export const membraneConflicts = ({ chains }) => Object.keys(chains).filter((name) => chains[name].verdict === 'OBSERVATION_CONFLICT')
+
+export function retainMembrane(support, membrane, outcome) {
+  if (outcome !== 'live' || membraneRefusal(membrane)) return false
+  const chains = Object.fromEntries(Object.entries(membrane.chains).map(([name, row]) => [name,
+    { treeSize: row.presentedSize, root: row.presentedRoot }]))
+  // The caller holds the code writer lock through verification, append and retention. Other histories retain snapshots.
+  const leaves = auraLeaves(support, 'code')
+  chains.code = { treeSize: leaves.length, root: root(leaves) }
+  const home = dirname(retainedPath(support))
+  mkdirSync(home, { recursive: true, mode: 0o700 })
+  const dir = mkdtempSync(join(home, '.membrane-'))
+  const syncDirectory = (path) => {
+    const fd = openSync(path, constants.O_RDONLY)
+    try { fsyncSync(fd) } finally { closeSync(fd) }
+  }
   try {
     const path = join(dir, 'head.json')
-    writeFileSync(path, `${JSON.stringify({ treeSize: leaves.length, root: root(leaves) })}\n`, { mode: 0o600 })
-    renameSync(path, RETAINED)
+    const fd = openSync(path, 'wx', 0o600)
+    try { writeFileSync(fd, `${JSON.stringify({ chains })}\n`); fsyncSync(fd) } finally { closeSync(fd) }
+    syncDirectory(dir)
+    syncDirectory(home)
+    renameSync(path, retainedPath(support))
+    syncDirectory(home)
   } finally { rmSync(dir, { recursive: true, force: true }) }
+  return true
 }
-function membraneRefusal({ verdict, reason }) {
-  if (verdict === 'OBSERVATION_CONFLICT') return `${CONFLICT} (${reason})`
-  if (verdict === 'UNDETERMINED' && reason !== 'POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE') {
-    return `the code chain could not be verified (${reason})`
+export function membraneRefusal({ chains }) {
+  for (const name of Object.keys(chainPaths)) {
+    const row = chains[name] ?? { verdict: 'UNDETERMINED', reason: 'observation_missing' }
+    if (row.rotation?.failure) return `the ${name} rotation (${row.rotation.reason}, ${row.rotation.previousFile}) could not be verified (${row.reason}). Recovery: restore the matching previous actions segment beside aura.jsonl and rerun become --plan.`
+    if (row.verdict === 'OBSERVATION_CONFLICT') return `OBSERVATION_CONFLICT: the ${name} chain was rewritten since the last become (${row.reason})`
+    if (row.verdict === 'UNDETERMINED' && row.reason !== 'missing_prior_observation') {
+      return `the ${name} chain could not be verified (${row.reason})`
+    }
+    if (!['APPEND_ONLY', 'UNDETERMINED', 'OBSERVATION_CONFLICT'].includes(row.verdict)) return `the ${name} chain could not be verified (unknown_verdict)`
   }
   return null
 }
 function guardMembrane() {
-  const refusal = membraneRefusal(membraneObservation())
+  const membrane = membraneObservation()
+  result.body = { ...result.body, membrane }
+  step('membrane', { note: Object.entries(membrane.chains).map(([name, row]) =>
+    `${name} size=${row.presentedSize ?? '?'} ${row.verdict} ${row.reason}${row.unterminatedTailBytes ? ` unterminated_tail_bytes=${row.unterminatedTailBytes}` : ''}`).join('; ') })
+  const refusal = membraneRefusal(membrane)
   if (refusal) finish('refused', refusal)
 }
 
@@ -189,6 +338,9 @@ class BecomeOutcome extends Error {
 function finish(outcome, note) { throw new BecomeOutcome(outcome, note) }
 async function finishOutcome(outcome, note) {
   dropHeavy()
+  // A guard may have refused after the live rows were repointed. Restore before observing again:
+  // a transient refusal must not be erased by a successful second observation.
+  if (outcome === 'refused') await putBack()
   // Plans and outcomes without a restart still get their own fresh observation.
   if (!confinementProbed) observeConfinement()
   if (outcome === 'rolled-back' && result.booted) outcome = 'booted'
@@ -208,7 +360,7 @@ async function finishOutcome(outcome, note) {
       try {
         chain.append({ verdict: 'observed', operation: 'code.become', commit: result.commit, release: result.release ?? null,
           outcome, note, previousRelease: result.previousRelease ?? null, body: result.body })
-        retainMembrane()
+        retainMembrane(SUPPORT, membrane, outcome)
       } catch (error) { say(`AURA APPEND FAILED: ${error.message}`) }
     }
     // Recorded: a signal or failure from here on must not put back a release that came up.
@@ -511,6 +663,7 @@ async function main() {
 
   // ── 5. RESTART INTO IT ─────────────────────────────────────────────────────────────────────────────
   observeConfinement()
+  guardMembrane()
   writeResult() // Preserve the observation before quitting; this launches no live guest.
   step('restart', { note: 'quitting the app' })
   if (!(await quitApp())) {
