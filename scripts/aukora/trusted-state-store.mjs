@@ -265,7 +265,11 @@ export class TrustedStateStore { // @source L76
         /** @type {string} */
         let raw; // @source L220
         try { raw = this.readNoFollow(lock).trim(); } // @source L221
-        catch (e) { this.releaseDirFd(); if (e.code === 'ELOOP') throw new TrustedStoreUnsafePathError('writer.lock is a symlink'); throw e; } // @source L222
+        catch (e) {
+          // PORT (Genesis, 2026-09-28): the holder released between our EEXIST and this read. Try the O_EXCL again;
+          // two losses end in WriterLockedError, which callers already treat as a held lock.
+          if (e.code === 'ENOENT') continue
+          this.releaseDirFd(); if (e.code === 'ELOOP') throw new TrustedStoreUnsafePathError('writer.lock is a symlink'); throw e; } // @source L222
         const holder = Number(raw); // @source L223
         // Single-writer: a lock held by ANY LIVE pid (including another instance in this same process) refuses.
         // Only a lock whose holder is a POSITIVE integer pid that is provably DEAD (a crashed writer) is reclaimed.
