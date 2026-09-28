@@ -4,12 +4,13 @@
  * OpenViking (AGPL-3.0, pinned in `vendor/openviking/upstream-openviking.json`, installed by `scripts/openviking-setup.sh`)
  * is Kira's semantic FINDER over remembered notes, and nothing more:
  *
- *   · INDEX. Every live remembered note is one file, `viking://user/<user>/memories/kira/remembered/rem-<hex>.md`, tagged
- *     `kira_id=rem:<hex>`. `sync` reconciles it with the ledger: a note the ledger holds and OpenViking does not is added; an
- *     id OpenViking holds and the ledger no longer does (forgotten, hidden, unchained) is removed. Capture never waits for
+ *   · INDEX. Every live note is one file below the shared semantic root: remembered notes use
+ *     `viking://user/<user>/memories/kira/remembered/rem-<hex>.md`; governed notes use `.../governed/kira-<hex>.md`.
+ *     Both carry `kira_id=...` and an explicit `tier=...` tag. `sync` reconciles them with the verified ledgers: a note the
+ *     id OpenViking holds and the ledger no longer does (forgotten, hidden, unchained, or unsettled) is removed. Capture never waits for
  *     it: the note is written and chained first, and indexed afterwards, so a server that is down only delays the index.
- *   · FIND. A question goes to OpenViking; each hit is mapped back by id to the LEDGER (`liveRemembered` in memory-deps.mjs:
- *     a readable note, not forgotten, not hidden, whose entry is in the remembered Aura chain). A hit the ledger does not hold
+ *   · FIND. A question goes to OpenViking; each hit is mapped back by id to the verified ambient/governed ledgers
+ *     (`liveRemembered` plus the owner's settled read in memory-deps.mjs). A hit the ledger does not hold
  *     is DROPPED, counted and removed. The text and `bodyAtCapture` a caller sees are the note file's, never OpenViking's.
  *   · FORGET. A forgotten note is removed at once, and by the next reconcile if that removal could not reach the server.
  *
@@ -25,8 +26,9 @@ import { readJsonStrict, readTextStrict, stateExists } from './strict-read.mjs'
 /** The method name every semantic answer carries. */
 export const SEMANTIC_METHOD = 'openviking-semantic'
 
-/** A remembered note's id. Anything else is not a Kira note and is never indexed or shown. */
+/** IDs accepted by the two semantic ledgers. Anything else is never indexed or shown. */
 const NOTE_ID = /^rem:[0-9a-f]{64}$/u
+const GOVERNED_ID = /^kira:[0-9a-f]{64}$/u
 
 /** Defaults; `aukora-bridge.json` overrides each. Thresholds measured on ten notes with Qwen3-Embedding-0.6B. */
 export const SEMANTIC_DEFAULTS = Object.freeze({
@@ -110,14 +112,19 @@ export function readBridgeConfig(home) {
 
 /** The OpenViking URI for one note id. */
 export function uriFor(user, id) {
-  if (!NOTE_ID.test(String(id))) throw new Error(`kira.semantic: ${String(id).slice(0, 24)} is not a remembered note id`)
-  return `viking://user/${user}/memories/kira/remembered/rem-${String(id).slice(4)}.md`
+  const value = String(id)
+  if (NOTE_ID.test(value)) return `viking://user/${user}/memories/kira/remembered/rem-${value.slice(4)}.md`
+  if (GOVERNED_ID.test(value)) return `viking://user/${user}/memories/kira/governed/kira-${value.slice(5)}.md`
+  throw new Error(`kira.semantic: ${value.slice(0, 24)} is not a Kira memory id`)
 }
 
-/** The note id a URI names, or null. */
+/** The note id a URI names, or null. Both tiers share one semantic target root. */
 export function idFromUri(user, uri) {
-  const match = String(uri).match(new RegExp(`^viking://user/${user}/memories/kira/remembered/rem-([0-9a-f]{64})\\.md$`, 'u'))
-  return match === null ? null : `rem:${match[1]}`
+  const value = String(uri)
+  const ambient = value.match(new RegExp(`^viking://user/${user}/memories/kira/remembered/rem-([0-9a-f]{64})\\.md$`, 'u'))
+  if (ambient !== null) return `rem:${ambient[1]}`
+  const governed = value.match(new RegExp(`^viking://user/${user}/memories/kira/governed/kira-([0-9a-f]{64})\\.md$`, 'u'))
+  return governed === null ? null : `kira:${governed[1]}`
 }
 
 /** A named failure talking to OpenViking. */
@@ -152,7 +159,18 @@ export function createOpenVikingRecall(input) {
   let queue = Promise.resolve()
   const inTurn = task => { const turn = queue.then(task); queue = turn.catch(() => {}); return turn }
   /** The ledger, or a function that reads it now. */
-  const ledgerNow = ledger => (typeof ledger === 'function' ? ledger() : ledger)
+  const ledgerNow = async ledger => (typeof ledger === 'function' ? await ledger() : ledger)
+  /** Normalize the two ledgers while accepting the old ambient-only `{entries}` shape. */
+  const ledgerShape = value => {
+    const ambient = value?.ambient instanceof Map
+      ? value.ambient
+      : value?.entries instanceof Map ? value.entries : new Map()
+    const governed = value?.governed instanceof Map
+      ? value.governed
+      : new Map([...ambient].filter(([, note]) => note?.tier === 'signed'))
+    const entries = new Map([...ambient, ...governed])
+    return { ambient, governed, entries, complete: value?.complete === true }
+  }
 
   const call = async (method, path, body) => {
     let response
@@ -191,10 +209,12 @@ export function createOpenVikingRecall(input) {
 
   const listIndexed = async () => {
     const ids = new Set()
-    for (let offset = 0; ; offset += 1000) {
+    // List both leaf directories: an OpenViking `ls` at the shared root may return
+    // only the `remembered/` and `governed/` child directories, not their files.
+    for (const branch of ['remembered', 'governed']) for (let offset = 0; ; offset += 1000) {
       let rows
       try {
-        rows = await call('GET', `/api/v1/fs/ls?uri=${encodeURIComponent(`${root}/remembered`)}&simple=true&sort_by=name&limit=1000&offset=${String(offset)}`)
+        rows = await call('GET', `/api/v1/fs/ls?uri=${encodeURIComponent(`${root}/${branch}`)}&simple=true&sort_by=name&limit=1000&offset=${String(offset)}`)
       } catch (error) {
         if (error?.code === 'kira.semantic:not-found') break // never written: an empty index, not a failure
         throw error
@@ -214,7 +234,7 @@ export function createOpenVikingRecall(input) {
 
   /** Reconcile OpenViking with the ledger: add at most `budget` missing notes now, remove every id the ledger no longer holds. */
   const sync = (ledger, options = {}) => inTurn(async () => {
-    const live = ledgerNow(ledger)
+    const live = ledgerShape(await ledgerNow(ledger))
     if (indexed === null || now() - listedAt > 600_000) { indexed = await listIndexed(); listedAt = now() }
     const budget = Number.isFinite(options.budget) ? Number(options.budget) : Number.POSITIVE_INFINITY
     const missing = [...live.entries.values()].filter(note => !indexed.has(note.id) && typeof note.statement === 'string' && note.statement !== '')
@@ -229,7 +249,8 @@ export function createOpenVikingRecall(input) {
       try {
         await call('POST', '/api/v1/content/write', {
           uri: uriFor(config.user, note.id), content: note.statement, mode: 'replace', wait: true,
-          timeout: Math.max(1, Math.round(config.timeoutMs / 1000)), tags: [`kira_id=${note.id}`],
+          timeout: Math.max(1, Math.round(config.timeoutMs / 1000)),
+          tags: [`kira_id=${note.id}`, `tier=${note.tier === 'signed' ? 'signed' : 'remembered'}`],
         })
         indexed.add(note.id)
         added += 1
@@ -243,7 +264,7 @@ export function createOpenVikingRecall(input) {
 
   /** Remove a forgotten id in its turn, after a reconcile already writing it. Never throws: the answer says whether OpenViking was reached. */
   const forgetNow = async id => {
-    if (!configured || !NOTE_ID.test(String(id))) return { reached: false, because: configured ? 'not a remembered note id' : String(config?.reason) }
+    if (!configured || (!NOTE_ID.test(String(id)) && !GOVERNED_ID.test(String(id)))) return { reached: false, because: configured ? 'not a Kira memory id' : String(config?.reason) }
     const uri = uriFor(config.user, String(id))
     try {
       await removeId(String(id))
@@ -270,7 +291,7 @@ export function createOpenVikingRecall(input) {
       return { available: false, reason: String(error?.message), hits: [], dropped, sync: synced }
     }
     // READ AFTER THE SEARCH, not before the wait for the reconcile: a note forgotten meanwhile is not shown.
-    const live = ledgerNow(ledger)
+    const live = ledgerShape(await ledgerNow(ledger))
     const candidates = []
     for (const hit of [...(result?.memories ?? []), ...(result?.resources ?? [])]) {
       const id = idFromUri(config.user, hit?.uri)
@@ -283,7 +304,7 @@ export function createOpenVikingRecall(input) {
       }
       const score = Number(hit?.score)
       if (!Number.isFinite(score) || score < config.scoreThreshold) { dropped.belowThreshold += 1; continue }
-      if (!candidates.some(one => one.id === id)) candidates.push({ id, score, note })
+      if (!candidates.some(one => one.id === id)) candidates.push({ id, score, note, tier: note.tier === 'signed' ? 'signed' : 'remembered' })
     }
     candidates.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
     const best = candidates[0]?.score ?? 0
