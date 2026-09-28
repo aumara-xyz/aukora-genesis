@@ -76,6 +76,7 @@ console.log('')
 const bridge = await import(pathToFileURL(join(DESKTOP, 'aumlok-bridge.mjs')).href)
 const signerModule = await import(pathToFileURL(join(DESKTOP, 'aumlok-signer.mjs')).href)
 const organ = await import(pathToFileURL(join(LIB, 'index.mjs')).href)
+const ownerDaemonConfigPath = join(scratch, 'absent-owner-daemon.json')
 
 // ── a real release directory, with a real `plugins/aukora-aumlok/lib` inside it ───────────────────
 const releaseDir = join(scratch, 'release')
@@ -137,6 +138,7 @@ const signerVerdict = await signerModule.startShellSigner({
   library,
   directory: controllerDir,
   socketPath,
+  ownerDaemonConfigPath,
   ask: async request => { asked.push(request); return { approve: true } },
   log: () => {},
   logDir: join(scratch, 'logs'),
