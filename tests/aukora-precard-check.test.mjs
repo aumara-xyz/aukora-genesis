@@ -10,6 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import { precardCheck } from '../scripts/aukora/precard-check.mjs'
 import * as scan from '../scripts/aukora/snapshot-scan.mjs'
+const ROOT_FOR_REASON = new URL('..', import.meta.url).pathname
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const scratch = fs.mkdtempSync(join(tmpdir(), 'precard-test-'))
@@ -184,7 +185,18 @@ try {
   assert.equal(mutant.popups, 1, 'removing advance call must expose red tree to popup')
   assert.throws(() => assert.equal(mutant.popups, 0, 'FAIL tree must not reach popup'), /FAIL tree must not reach popup/u)
   console.log('EXPECTED FAILURE with advance precard call removed: FAIL tree must not reach popup (actual: 1)')
-  console.log('PASS precard gate focused test')
+  {
+  // The restaged candidate's reason must be the reason presented at commit, or the adapter refuses
+  // candidate:commit-not-authorized after the kernel has spent the approval (seen live on 2026-09-28).
+  const source = fs.readFileSync(join(ROOT_FOR_REASON, 'scripts/aukora/self-change.mjs'), 'utf8')
+  const staged = /stageCandidatePreview\(\{[^}]*why: (\w+)[^}]*\}\)\)\s*\npreviews\.add/u.exec(source)?.[1]
+  const committed = /commitCandidateTree\(candidate, \{ why(?:: (\w+))?,/u.exec(source)
+  assert.ok(staged, 'self-change restages its candidate with a named reason')
+  assert.ok(committed, 'self-change commits the candidate')
+  assert.equal(committed[1] ?? 'why', staged, 'self-change commits with the same reason it restaged the candidate with')
+  console.log(`PASS self-change commits with the restaged reason (${staged})`)
+}
+console.log('PASS precard gate focused test')
 } finally {
   clearTimeout(deadline)
   fs.rmSync(scratch, { recursive: true, force: true })

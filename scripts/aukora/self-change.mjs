@@ -364,7 +364,8 @@ try {
       tree: candidate.tree, ceilings: CANDIDATE_CEILINGS,
     }
     // commit-tree never rereads mutable source files; update-ref compares against the approved base.
-    commit = commitCandidateTree(candidate, { why, approverDid, approvalDigest, operationDigest })
+    // The candidate was restaged with the checks line in its reason; the commit must present that same reason.
+    commit = commitCandidateTree(candidate, { why: checkedWhy, approverDid, approvalDigest, operationDigest })
     change.commit = commit
     journal('COMMITTED', { commit, tree: candidate.tree, candidateDigest: candidate.digest, change })
     entry = chain.append(change)
