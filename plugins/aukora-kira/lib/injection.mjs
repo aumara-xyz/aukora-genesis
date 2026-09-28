@@ -38,6 +38,8 @@
  * turn.
  */
 
+import { mayReturnPreviousDecisionOnMemoryFault, memoryFaultInjectionLine } from './partial-failure.mjs'
+
 /** The name this contribution carries in the context snapshot. */
 export const RECALL_SECTION = 'kira-recall'
 
@@ -356,20 +358,24 @@ export function recalledUserMessage(text, newId) {
  * fresh one are tracked apart, and a record already in the context is not re-appended on every turn —
  * which would spend the context budget on repetition and train a reader to skip the block.
  *
- * FAILURES ARE CONTAINED. A read that throws, refuses, or times out must not fail the step: the
- * listener catches, returns the delegate's decision unchanged, and never turns a memory fault into a
- * broken turn. That is deliberate — injection is an improvement to a session, and an improvement that
- * can break a session is worse than the absence it repairs.
+ * FAILURES ARE CONTAINED BUT NEVER SILENT (Phase 9). A read that throws, refuses, or times out must
+ * not fail the step by crashing it — and must not return the delegate's decision unchanged either
+ * (that was the January-shaped silence: turn continues as if memory had nothing to say). The catch
+ * path injects a named fault contribution so the model is told memory is unavailable and must ASK
+ * before any consequential effect. An improvement that can break a session is still worse than its
+ * absence; an improvement that fails quietly is worse than both.
  *
  * @param {Record<string, unknown>} ctx - the Cordis context.
  * @param {object} options
  * @param {{turn: (request: {action: string, text: string}) => Promise<object>}} options.conversation
  * @param {() => string} [options.newId] - message-id source; injectable so a court is deterministic.
  * @param {(line: string) => void} [options.onInjected] - observation hook for tests.
- * @param {(error: unknown) => void} [options.onFailure] - observation hook for tests.
+ * @param {(error: unknown, event?: object) => void} [options.onFailure] - observation hook for tests.
+ * @param {(agent: object|undefined) => void} [options.onTurnStart] - clears the previous turn's recall state.
+ * @param {(reply: object, recent: object|undefined, event?: object) => void} [options.onRecalled] - publishes a verified injection result.
  * @returns {() => void} a disposer.
  */
-export function registerRecallInjection(ctx, { conversation, newId, onInjected, onFailure, queries, lane, laneSeed, onAsked } = {}) {
+export function registerRecallInjection(ctx, { conversation, newId, onInjected, onFailure, onTurnStart, onRecalled, queries, lane, laneSeed, onAsked } = {}) {
   const id = newId ?? (() => globalThis.crypto.randomUUID())
   const seen = new WeakMap()
   /**
@@ -436,6 +442,7 @@ export function registerRecallInjection(ctx, { conversation, newId, onInjected, 
   }
 
   return ctx.on('agent/pre-step', async ({ agent }, next) => {
+    onTurnStart?.(agent)
     const decision = await next()
     if (decision?.kind === 'reject') return decision
     // A RECALL FAULT MUST NOT BREAK A TURN. Everything below is inside the guard for that reason.
@@ -449,9 +456,10 @@ export function registerRecallInjection(ctx, { conversation, newId, onInjected, 
       try {
         recent = await conversation.turn({ action: 'recent', text: '' })
       } catch (error) {
-        if (typeof onFailure === 'function') onFailure(error)
+        if (typeof onFailure === 'function') onFailure(error, { agent })
       }
       line = recalledContextLine(reply, recent)
+      onRecalled?.(reply, recent, { agent })
       // THE SEEN-KEY COVERS BOTH PARTS. Keyed on the query hits alone, a session that once saw an empty
       // store would never be shown the record that arrived afterwards: injection fires once per distinct
       // head, so the head that matters is the newest thing the store now holds.
@@ -463,12 +471,17 @@ export function registerRecallInjection(ctx, { conversation, newId, onInjected, 
       if (session !== undefined && seen.get(session) === head) return decision
       if (session !== undefined) seen.set(session, head)
     } catch (error) {
-      if (typeof onFailure === 'function') onFailure(error)
-      return decision
+      // PHASE 9: a recall fault must NOT return the previous decision unchanged.
+      // January-shaped silence was: catch → return decision (no contribution, turn continues
+      // as if memory had nothing to say). Named fault line + optional reject keeps the turn
+      // from pretending memory was fine.
+      if (typeof onFailure === 'function') onFailure(error, { agent })
+      if (mayReturnPreviousDecisionOnMemoryFault()) return decision
+      line = memoryFaultInjectionLine(error)
     }
     if (line === null) return decision
     if (typeof onInjected === 'function') onInjected(line)
     const text = `${line}\n`
-    return { ...decision, messages: [...decision.messages, recalledUserMessage(text, id)] }
+    return { ...decision, messages: [...(Array.isArray(decision?.messages) ? decision.messages : []), recalledUserMessage(text, id)] }
   }, { prepend: true })
 }
