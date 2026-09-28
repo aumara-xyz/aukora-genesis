@@ -7,8 +7,9 @@ plainly where the evidence is not public.
 
 ## How to read it
 
-- **Line** is the line of `AUKORA-GOLDEN-BOUNDARY.md` (Revision 2.2 with its evidence corrections
-  applied). Rows marked **‡** check a sentence that was corrected against this evidence.
+- **Line** is the historical Revision 2.2 line number (with its evidence corrections applied),
+  now preserved in [the archive](AUKORA-GOLDEN-BOUNDARY-ARCHIVE.md); it is not the current archive
+  line number. Rows marked **‡** check a sentence that was corrected against this evidence.
 - **Class** is the paper's label for the claim (§1): `SOURCE_PRESENT`, `TESTED_AT_PIN`, `MEASURED`,
   `BUILT`, `TOY`, `DOCTRINE`, operator-recorded, author-recorded/-reported, lab-recorded.
 - **Check it with** names repository-relative paths and commands to run from the root of the

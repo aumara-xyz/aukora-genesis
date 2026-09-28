@@ -6,6 +6,9 @@ sha256 and byte length of every file vendored from one upstream location; this s
 recomputes both from the bytes that would actually run and refuses when any file has
 drifted, gained an undeclared sibling, or gone missing.
 
+The Golden Boundary archive is separately pinned as authored history, while its
+live paper must remain below the candidate file cap imported from proposal law.
+
     python3 scripts/phase0-check-pins.py            check every tree
     python3 scripts/phase0-check-pins.py --mutate   check the check: pinned files are
                                                     altered in a disposable copy and
@@ -39,6 +42,7 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -57,6 +61,57 @@ VENDOR_TREES = (
     ("vendor/openviking", ("upstream-openviking.json",)),
 )
 BUILD_OUTPUT_DIRS = ("target",)
+BOUNDARY_LIVE = "docs/AUKORA-GOLDEN-BOUNDARY.md"
+BOUNDARY_ARCHIVE = "docs/AUKORA-GOLDEN-BOUNDARY-ARCHIVE.md"
+BOUNDARY_PIN = "docs/AUKORA-GOLDEN-BOUNDARY-ARCHIVE.pin.json"
+
+
+def check_boundary(root: str) -> tuple[list[str], dict]:
+    """Keep the live paper below the candidate ceiling and the archive byte-pinned.
+
+    The documents may be scratch copies; the cap always comes from this check's
+    checkout. Refuse if the authority stops using the imported proposal ceiling.
+    """
+    problems: list[str] = []
+    summary: dict = {}
+    try:
+        authority_path = os.path.join(ROOT, "scripts/aukora/aumlok-candidate-authority.mjs")
+        with open(authority_path, encoding="utf-8") as fh:
+            authority = fh.read()
+        bindings = (
+            "import { deriveIntentId, deriveDraftHash, LIMITS } from '../../vendor/aukora-seed-app/lib/apps/seed/src/proposal.js'",
+            "const byteLimit = (path, generated) => generated?.has(path) ? GENERATED_MAX_BYTES : LIMITS.MAX_PATCH_BYTES",
+            "function sourceBytes(repo, path, expectedMode, maxBytes = LIMITS.MAX_PATCH_BYTES)",
+            "if (!st.isFile() || st.size > maxBytes) deny('candidate:requires-regular-text')",
+        )
+        if not all(binding in authority for binding in bindings):
+            raise ValueError("candidate cap binding changed; review the paper ceiling check")
+        cap_run = subprocess.run([
+            "node", "--input-type=module", "-e",
+            "import { LIMITS } from './vendor/aukora-seed-app/lib/apps/seed/src/proposal.js'; "
+            "process.stdout.write(JSON.stringify(LIMITS.MAX_PATCH_BYTES))",
+        ], cwd=ROOT, capture_output=True, text=True, check=True)
+        cap = json.loads(cap_run.stdout)
+        if type(cap) is not int or cap <= 0:
+            raise ValueError("candidate cap is not a positive integer")
+        live_bytes = os.path.getsize(os.path.join(root, BOUNDARY_LIVE))
+        summary.update(cap=cap, liveBytes=live_bytes)
+        if live_bytes >= cap:
+            problems.append(f"{BOUNDARY_LIVE}: {live_bytes} bytes is not below candidate cap {cap}")
+    except Exception as exc:
+        problems.append(f"{BOUNDARY_LIVE}: candidate cap check failed: {exc}")
+    try:
+        with open(os.path.join(root, BOUNDARY_PIN), encoding="utf-8") as fh:
+            pin = json.load(fh)
+        digest, length = sha256_file(os.path.join(root, BOUNDARY_ARCHIVE))
+        summary["archiveBytes"] = length
+        if digest != pin.get("sha256"):
+            problems.append(f"{BOUNDARY_ARCHIVE}: sha256 {digest} != pinned {pin.get('sha256')}")
+        if length != pin.get("bytes"):
+            problems.append(f"{BOUNDARY_ARCHIVE}: {length} bytes != pinned {pin.get('bytes')}")
+    except Exception as exc:
+        problems.append(f"{BOUNDARY_ARCHIVE}: pin check failed: {exc}")
+    return problems, summary
 
 
 def sha256_file(path: str) -> tuple[str, int]:
@@ -193,10 +248,15 @@ def check(root: str) -> tuple[list[str], dict]:
         summary["authored"] += tree["authored"]
         summary["buildOutput"] += tree["buildOutput"]
 
+    boundary_problems, summary["boundary"] = check_boundary(root)
+    problems.extend(boundary_problems)
     return problems, summary
 
 
 def report(summary: dict) -> None:
+    boundary = summary["boundary"]
+    print(f"boundary    : live {boundary.get('liveBytes', '?')} bytes; candidate cap "
+          f"{boundary.get('cap', '?')}; archive {boundary.get('archiveBytes', '?')} bytes")
     for tree in summary["trees"]:
         print(f"vendor tree : {tree['vendor']} — {tree['pinned']} file(s) pinned; "
               f"genesis-authored {tree['authored']}; build output excluded "
@@ -218,6 +278,39 @@ def main(argv: list[str]) -> int:
             os.makedirs(work)
             for vendor_rel, _ in VENDOR_TREES:
                 shutil.copytree(os.path.join(ROOT, vendor_rel), os.path.join(work, vendor_rel))
+
+            os.makedirs(os.path.join(work, "docs"))
+            for rel in (BOUNDARY_LIVE, BOUNDARY_ARCHIVE, BOUNDARY_PIN):
+                shutil.copyfile(os.path.join(ROOT, rel), os.path.join(work, rel))
+            boundary_problems, boundary = check_boundary(work)
+            if boundary_problems:
+                print("BOUNDARY FAILED before mutation:")
+                for problem in boundary_problems:
+                    print(f"  {problem}")
+                return 1
+            for rel, mutation, expected in (
+                (BOUNDARY_ARCHIVE, b"\n", "sha256"),
+                (BOUNDARY_LIVE, b"x" * (boundary["cap"] + 1), "not below candidate cap"),
+            ):
+                target = os.path.join(work, rel)
+                with open(target, "rb") as fh:
+                    original = fh.read()
+                with open(target, "wb") as fh:
+                    fh.write(original + mutation if rel == BOUNDARY_ARCHIVE else mutation)
+                broken, _ = check_boundary(work)
+                matching = [p for p in broken if p.startswith(f"{rel}:") and expected in p]
+                if not matching:
+                    print(f"MUTATION MISSED: {rel} corruption was accepted: {broken}")
+                    return 1
+                for problem in broken:
+                    print(f"EXPECTED FAILURE: {problem}")
+                with open(target, "wb") as fh:
+                    fh.write(original)
+                restored, _ = check_boundary(work)
+                if restored:
+                    print(f"RESTORE FAILED: {restored}")
+                    return 1
+                print(f"RESTORED PASS: {rel}; live below candidate cap and archive pin matches")
 
             # Mutation 1: a file pinned by the first manifest.
             tree_rel = "vendor/append-only"
@@ -341,7 +434,7 @@ def main(argv: list[str]) -> int:
         for p in problems:
             print(f"  {p}")
         return 1
-    print("PINS OK: every vendored byte matches its upstream manifest")
+    print("PINS OK: vendored bytes and archive match their manifests; live paper below candidate cap")
     return 0
 
 
