@@ -1,6 +1,8 @@
 # AUMLOK v3 — the themed buckets: provenance, counts, and what the entropy actually is
 
-> **Superseded by item X2 (2026-09-23); historical below (banner added 2026-09-26).** Every number below
+> **Superseded by item X2 (2026-09-23); historical below (banner added 2026-09-26).** The ceremony no
+> longer draws by theme: each acrostic position uses the full approved pool for its letter, and the
+> live figure is `measure()` in `lib/themed-entropy.mjs` (not 128 bits). Every number below
 > was measured from the `aumlok-themes.json` of its day. The shipped file is now the X2 rebuild: every word
 > drawn from the EFF large wordlist with `wordfreq` 3.1.1 zipf as a filter, totals NATURE 683, PEOPLE 1,198,
 > SPIRIT 677, **18 usable letters** (`abcdefghlmoprstuvw`) at a minimum bucket of 12, **150** anchors, and a

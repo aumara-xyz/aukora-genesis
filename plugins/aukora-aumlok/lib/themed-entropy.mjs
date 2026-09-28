@@ -1,36 +1,29 @@
 /**
- * AUMLOK v3 — the themed buckets, the entropy they carry, and the 64-bit floor.
+ * AUMLOK v3 — the approved word pools, and the entropy a drop-theme acrostic actually carries.
  *
  * WHAT THIS FILE IS. The seven words are the identity and the recovery (plan §1-§2). Word 0 is the
- * ANCHOR, a six-letter word drawn uniformly from the shipped anchor list. Words 1-6 are themed
- * acrostic words: positions 0-1 NATURE (band ROOT, of the earth), 2-3 PEOPLE (band UNITE, of each
- * other), 4-5 SPIRIT (band RISE, of what lifts), each word drawn uniformly from the bucket of its
- * position's theme for the anchor's letter at that position. This module measures what that
- * generator actually carries and refuses to let it run below the plan's floor.
+ * ANCHOR, a six-letter word drawn uniformly from the shipped anchor list. Words 1-6 are an acrostic:
+ * each word's initial is the anchor's letter at that position. THEME RESTRICTION IS RETIRED. A
+ * position does not draw from NATURE, PEOPLE or SPIRIT. It draws from the full approved pool for
+ * its letter: the union of the three shipped tables, deduplicated. The tables remain on disk so an
+ * older phrase's words are still in the pool; they no longer choose the row.
  *
- * THE ARITHMETIC, STATED SO NOBODY HAS TO INFER IT (Symbiote's estimator, `ceremony.ts:72-77`):
+ * THE ARITHMETIC, STATED SO NOBODY HAS TO INFER IT:
  *
- *     bits = log2(A) + MIN over anchors w in A of  Σ  log2( s(theme(i), w[i]) )
+ *     bits = log2(A) + MIN over anchors w in A of  Σ  log2( |P(w[i])| − used(w[i]) )
  *                                              i=0..5
  *
- *   A          = the usable anchor pool: six-letter words all of whose letters are anchor letters.
- *   s(t, l)    = the number of words in theme t's bucket for letter l (the shipped count, measured).
+ *   A          = the usable anchor pool: six-letter words all of whose letters clear the gate.
+ *   P(l)       = the approved words for letter l (union of the three tables, duplicates once).
+ *   used(l)    = how many earlier positions of this anchor already drew that letter. A repeated
+ *                letter is drawn without replacement, which is what the generator does.
  *   log2(A)    = the bits spent choosing the anchor uniformly from A.
- *   log2(s)    = the bits spent choosing that position's themed word uniformly from its bucket.
- *   MIN over A = the GUARANTEED figure — the weakest anchor the generator can emit. Not an average,
- *                not a per-draw figure: the worst case the generator actually carries (the most
- *                likely output is the smallest-bucket anchor).
+ *   MIN over A = the GUARANTEED figure — the weakest anchor the generator can emit.
+ *   MAX over A = the strongest anchor, reported beside the minimum. Neither figure is 128 bits.
  *
- * MEASURED FIGURES (asserted by tests/aukora-aumlok-packaging.test.mjs): bits=34.14 ceiling=36.31 floor=none anchors=150 gate=12
- *
- * THE SHIPPED FIGURE IS BELOW WHAT THE PLAN PROMISED, AND THE 64-BIT FLOOR IS RETIRED RATHER THAN MET.
- * MEASURED at HEAD: `generatorMinEntropy()` = 34.142 bits at the weakest drawable anchor and
- * `entropyCeiling()` = 36.311 at best, over 150 anchors whose used letters are `abcdefghlmoprstuvw`,
- * with `MIN_WORDS_PER_BUCKET` = 12. The floor does not refuse and cannot: `REFUSAL_ENTROPY_BELOW_FLOOR`
- * is `aumlok:entropy-below-floor-retired`, `measure()` returns `floorBits: null, meetsFloor: null`, and
- * `formatEntropyLine()` prints `(floor RETIRED — not gated)`. 34.14 is below the plan's 60 and far below
- * the 64 the floor named, so the honest statement is that this data does not reach either figure and no
- * court is pretending otherwise.
+ * THE 64-BIT FLOOR STAYS RETIRED. `measure()` returns `floorBits: null, meetsFloor: null`. The
+ * drop-theme figure is higher than the old themed 34.14 bits and is still not 128. Nothing here
+ * claims a bit target, and nothing gates a phrase on the number.
  *
  * THIS PARAGRAPH WAS WRONG BY A WHOLE HARVEST, AND IT IS WORTH SAYING HOW WRONG. It read "30,692 words:
  * NATURE 8,656 / PEOPLE 17,753 / SPIRIT 4,283 … 510 drawable anchors over abcdefghlmprstw … min bucket
@@ -40,28 +33,21 @@
  * 58.98 would need. The figures above are now read by a court that parses this line and compares every
  * one of them to what the module computes, so the doc cannot drift from the data again in silence.
  *
- * WHAT WOULD RAISE IT IS WORDS, not a lower floor, not a padded bucket, not a dropped letter — and the
- * choice between raising the word count, dropping the acrostic letter rule, or stating 34 bits plainly
- * belongs to the owner of the design rather than to this module. `entropyCeiling()` is the measurement
- * that will say when a change actually reaches a figure.
+ * WHAT WOULD RAISE IT IS WORDS. A larger approved pool, not a lower floor and not a padded bucket.
+ * Dropping the acrostic letter rule would also raise it, and would stop the phrase being an acrostic.
+ * `measure()` is the figure. On the shipped tables it is about 44.87 bits at the weakest anchor and
+ * about 53.34 at the strongest (131 anchors; letters `abcdefghijklmnopqrstu`; `w` and `v` left by the
+ * anchor-pool search; `y` and `z` are under the drawability gate). A foundation note estimated 66–74
+ * bits for a larger pool than these files hold. This module does not print that estimate.
  *
- * THE LETTER RULE. A letter is ADMISSIBLE when it has at least MIN_WORDS_PER_BUCKET (100) words in
- * EVERY one of the three themes. Every letter of every usable anchor must be admissible (a thin
- * letter would make the phrase undrawable on the donor's `continue outer` path). Among admissible
- * letters the generator keeps the FLOOR-MAXIMISING subset: dropping an admissible letter costs its
- * share of log2(A) but can raise the worst bucket, so `anchorLetters` is chosen by search and the
- * refusal fires if the result is still under the floor. Nothing is padded to reach a count and no
- * threshold is lowered: a letter that cannot reach 100 in all three themes is excluded.
+ * THE LETTER RULE. A letter is ADMISSIBLE when the merged pool has at least MIN_WORDS_PER_BUCKET
+ * words. The old rule — at least that many in every theme — is the restriction selection no longer
+ * applies. Among admissible letters the search may still drop a letter when that raises the
+ * guaranteed bits and leaves at least MIN_ANCHOR_POOL anchors. Nothing is padded.
  *
- * THE ANCHOR LIST IS RE-FILTERED WITH THE LETTERS, AND IT HAS TO BE. `generatorMinEntropy()` is the
- * MINIMUM over ALL drawable anchors, so ONE anchor carrying a pool-less letter would collapse the
- * floor for every phrase the generator can emit. `data/aumlok-anchors.json` therefore ships only
- * words whose every letter clears the gate against the MERGED buckets (4,043 -> 906; letters
- * j k n o q u v x y z leave the anchor alphabet, x because it has no bucket at all).
- *
- * NO NUMBER HERE IS HARDCODED. Counts are read from `data/aumlok-themes.json` (the shipped buckets),
- * the anchor pool from `data/aumlok-anchors.json` when it is present and from the reference
- * dictionary otherwise. The only constants are the plan's floor, the letter rule, and the pin.
+ * NO NUMBER HERE IS HARDCODED AS THE ANSWER. Counts are read from `data/aumlok-themes.json`, the
+ * anchor pool from `data/aumlok-anchors.json` when it is present and from the reference dictionary
+ * otherwise. The screen copy is pinned to `measure()` by `tests/aukora-aumlok-drop-theme.test.mjs`.
  *
  * @module @aukora/dsh-plugin-aumlok/themed-entropy
  */
@@ -79,10 +65,16 @@ export const ANCHORS_PATH = join(DATA_DIR, 'aumlok-anchors.json')
 /** Apple's dictionary — the reference for "is this a real word" and the anchor pool's fallback source. */
 export const DICTIONARY_PATH = '/usr/share/dict/words'
 
-/** The three themes, in the plan's names (bands ROOT / UNITE / RISE). */
+/** The three tables the approved words are still stored under. Selection does not read this. */
 export const THEMES = Object.freeze(['NATURE', 'PEOPLE', 'SPIRIT'])
-/** Which theme draws the word at each of the six acrostic positions. */
+/**
+ * RETIRED. Positions used to draw NATURE, NATURE, PEOPLE, PEOPLE, SPIRIT, SPIRIT. The generator
+ * draws the full approved pool for the letter instead. Kept so a caller can see the old map; the
+ * measurement and the draw do not index it.
+ */
 export const THEME_BY_POSITION = Object.freeze(['NATURE', 'NATURE', 'PEOPLE', 'PEOPLE', 'SPIRIT', 'SPIRIT'])
+/** The selection this module measures. A themed draw is a different generator. */
+export const PHRASE_SELECTION = 'drop-theme-full-pool'
 /** Every anchor is exactly six letters, and its letters spell words 1-6. */
 export const ANCHOR_LENGTH = 6
 /** RETIRED, 2026-09-23, item X2 — THERE IS NO BIT FLOOR ANY MORE. The 60/64-bit target is what
@@ -95,16 +87,11 @@ export const ANCHOR_LENGTH = 6
  *  What replaces it: `measure()` still reports the honest figure, and nothing compares it to
  *  anything. The safety property the floor was reaching for is now carried by the vocabulary itself
  *  (tests/aukora-aumlok-common-words.test.mjs) rather than by an entropy target. */
-/** The letter rule: fewer than this in any theme excludes the letter from anchors.
+/** The letter rule: fewer than this in the merged pool excludes the letter from anchors.
  *
- *  12, NOT 30, AND THE NUMBER IS THE DRAWABILITY REQUIREMENT RATHER THAN A COMFORT MARGIN. X2's
- *  pleasantness pass cut the pool by an order of magnitude (14,945 -> 2,461 words at SOURCE=eff), and a
- *  gate calibrated on the fat pool then excluded letters that are perfectly drawable: MEASURED at the X2
- *  rebuild, a gate of 30 admitted 10 letters and 21 anchors, while the harvest's own drawability constant
- *  (MIN_BUCKET, 12 words in a theme/letter bucket) admitted 18 letters and 153 anchors. A phrase draws at
- *  most TWO words from any one theme/letter bucket — positions 0 and 1 are both NATURE, 2 and 3 both
- *  PEOPLE, 4 and 5 both SPIRIT — so 12 is six times what one phrase can consume, and the buckets are
- *  never drawn empty. The gate is a drawability rule, so it is set at the drawability requirement. */
+ *  12, NOT 30. The gate is drawability. A phrase draws at most six words, and a repeated letter draws
+ *  them from one pool without replacement, so 12 is twice a phrase that used the same letter in every
+ *  position. The old reading — at least 12 in every theme — is the restriction this selection drops. */
 export const MIN_WORDS_PER_BUCKET = 12
 /** THE ANCHOR POOL IS AN INTERFACE, SO THE LETTER SEARCH MAY NOT SPEND IT. A letter is dropped only when
  *  the resulting anchor pool is still at least this large. Without the guard the search MAXIMISES BITS and
@@ -168,35 +155,62 @@ export function bucketCounts(data) {
   return out
 }
 
-/** The number of words in one bucket: 0 when the theme or letter has no bucket at all. */
+/** The number of words in one theme bucket: 0 when the theme or letter has no bucket at all. */
 export function bucketSize(counts, theme, letter) {
   const n = counts && counts[theme] ? counts[theme][letter] : undefined
   return Number.isFinite(n) ? n : 0
 }
 
-/** The smallest bucket of a letter across the three themes — the letter rule's test. */
-export function letterFloor(counts, letter) {
-  return Math.min(...THEMES.map((theme) => bucketSize(counts, theme, letter)))
+/**
+ * The approved pool for each letter: every shipped word in any table, once.
+ * A word listed under two themes is one word. An empty letter is omitted.
+ */
+export function approvedPoolCounts(data) {
+  const tables = themeTables(data)
+  const sets = {}
+  for (const theme of THEMES) {
+    for (const [letter, words] of Object.entries(tables[theme])) {
+      if (!/^[a-z]$/u.test(letter) || !Array.isArray(words)) continue
+      if (!sets[letter]) sets[letter] = new Set()
+      for (const word of words) {
+        if (typeof word === 'string' && WORD_PATTERN.test(word)) sets[letter].add(word)
+      }
+    }
+  }
+  const counts = {}
+  for (const [letter, set] of Object.entries(sets)) {
+    if (set.size > 0) counts[letter] = set.size
+  }
+  return counts
 }
 
-/** Letters with at least `min` words in EVERY theme: the admission gate for anchors. */
-export function admissibleLetters(counts, min = MIN_WORDS_PER_BUCKET) {
-  const seen = new Set()
-  for (const theme of THEMES) for (const letter of Object.keys(counts[theme] || {})) seen.add(letter)
-  return [...seen].filter((letter) => /^[a-z]$/.test(letter) && letterFloor(counts, letter) >= min).sort()
+/** The merged pool size for one letter. 0 when the letter has no approved word. */
+export function letterPoolSize(poolCounts, letter) {
+  const n = poolCounts ? poolCounts[letter] : undefined
+  return Number.isFinite(n) ? n : 0
 }
 
-/** Letters that fail the gate, each with the theme and count that failed it — the honest exclusion list. */
-export function excludedLetters(counts, min = MIN_WORDS_PER_BUCKET) {
-  const seen = new Set()
-  for (const theme of THEMES) for (const letter of Object.keys(counts[theme] || {})) seen.add(letter)
-  return [...seen]
-    .filter((letter) => /^[a-z]$/.test(letter) && letterFloor(counts, letter) < min)
+/** The letter rule's test: the merged pool, not the thinnest theme. */
+export function letterFloor(poolCounts, letter) {
+  return letterPoolSize(poolCounts, letter)
+}
+
+/** Letters with at least `min` approved words. That is the admission gate for anchors. */
+export function admissibleLetters(poolCounts, min = MIN_WORDS_PER_BUCKET) {
+  return Object.keys(poolCounts || {})
+    .filter((letter) => /^[a-z]$/u.test(letter) && letterPoolSize(poolCounts, letter) >= min)
+    .sort()
+}
+
+/** Letters that fail the merged-pool gate — the honest exclusion list. */
+export function excludedLetters(poolCounts, min = MIN_WORDS_PER_BUCKET) {
+  return Object.keys(poolCounts || {})
+    .filter((letter) => /^[a-z]$/u.test(letter) && letterPoolSize(poolCounts, letter) < min)
     .sort()
     .map((letter) => ({
       letter,
-      counts: Object.fromEntries(THEMES.map((theme) => [theme, bucketSize(counts, theme, letter)])),
-      reason: `below ${min} in ${THEMES.filter((theme) => bucketSize(counts, theme, letter) < min).join(', ')}`,
+      count: letterPoolSize(poolCounts, letter),
+      reason: `merged pool below ${min}`,
     }))
 }
 
@@ -248,27 +262,32 @@ export function anchorSource(path = ANCHORS_PATH) {
  * position, is not drawable and is therefore not in the pool (the donor's `continue outer`, made
  * explicit) — it is counted in `droppedForLetters` rather than measured as if it could be drawn.
  */
-export function evaluateLetters(letters, counts, words) {
+export function evaluateLetters(letters, poolCounts, words) {
   const set = new Set(letters)
   let anchorCount = 0
   let droppedForLetters = 0
   let minAnchorBits = Infinity
+  let maxAnchorBits = 0
   let limitingAnchor = null
+  let strongestAnchor = null
   let minBucket = Infinity
   for (const word of words) {
     let sum = 0
     let drawable = true
+    const used = {}
     for (let i = 0; i < ANCHOR_LENGTH; i++) {
       const letter = word[i]
       if (!set.has(letter)) {
         drawable = false
         break
       }
-      const size = bucketSize(counts, THEME_BY_POSITION[i], letter)
+      const already = used[letter] ?? 0
+      const size = letterPoolSize(poolCounts, letter) - already
       if (size <= 0) {
         drawable = false
         break
       }
+      used[letter] = already + 1
       if (size < minBucket) minBucket = size
       sum += Math.log2(size)
     }
@@ -281,16 +300,25 @@ export function evaluateLetters(letters, counts, words) {
       minAnchorBits = sum
       limitingAnchor = word
     }
+    if (sum >= maxAnchorBits) {
+      maxAnchorBits = sum
+      strongestAnchor = word
+    }
   }
-  const bits = anchorCount > 0 ? Math.log2(anchorCount) + minAnchorBits : 0
+  const anchorBits = anchorCount > 0 ? Math.log2(anchorCount) : 0
+  const bits = anchorCount > 0 ? anchorBits + minAnchorBits : 0
+  const strongestBits = anchorCount > 0 ? anchorBits + maxAnchorBits : 0
   return {
     letters: [...letters].sort(),
     anchorCount,
     droppedForLetters,
     minAnchorBits: anchorCount > 0 ? minAnchorBits : 0,
+    maxAnchorBits: anchorCount > 0 ? maxAnchorBits : 0,
     limitingAnchor,
+    strongestAnchor,
     minBucket: Number.isFinite(minBucket) ? minBucket : 0,
     bits,
+    strongestBits,
   }
 }
 
@@ -341,24 +369,30 @@ export function chooseAnchorLetters(admissible, counts, words) {
 export function measure(data = loadThemes(), options = {}) {
   const present = data !== null && data !== undefined
   const counts = bucketCounts(data)
-  const admissible = admissibleLetters(counts)
+  const poolCounts = approvedPoolCounts(data)
+  const admissible = admissibleLetters(poolCounts)
   const anchors = options.anchorWords
     ? { source: 'explicit (court-supplied)', kind: 'explicit', words: normaliseAnchors(options.anchorWords) }
     : anchorSource()
   const chosen = options.letters
-    ? { evaluation: evaluateLetters(options.letters, counts, anchors.words), dropped: [] }
-    : chooseAnchorLetters(admissible, counts, anchors.words)
+    ? { evaluation: evaluateLetters(options.letters, poolCounts, anchors.words), dropped: [] }
+    : chooseAnchorLetters(admissible, poolCounts, anchors.words)
   const evaluation = chosen.evaluation
   return {
+    selection: PHRASE_SELECTION,
+    themeRestriction: false,
     bits: evaluation.bits,
+    strongestBits: evaluation.strongestBits,
     floorBits: null,      // RETIRED: no floor exists, so no floor verdict is reported
     meetsFloor: null,     // null, not false: "not gated" is not the same claim as "below the gate"
+    not128: true,
     minWordsPerBucket: MIN_WORDS_PER_BUCKET,
     dataPath: THEMES_PATH,
     dataPresent: present,
     counts,
+    poolCounts,
     admittedLetters: admissible,
-    excludedLetters: excludedLetters(counts),
+    excludedLetters: excludedLetters(poolCounts),
     anchorLetters: evaluation.letters,
     anchorLettersDropped: chosen.dropped,
     anchorSource: anchors.kind,
@@ -367,7 +401,9 @@ export function measure(data = loadThemes(), options = {}) {
     anchorsDroppedForLetters: evaluation.droppedForLetters,
     minBucket: evaluation.minBucket,
     minAnchorBits: evaluation.minAnchorBits,
+    maxAnchorBits: evaluation.maxAnchorBits,
     limitingAnchor: evaluation.limitingAnchor,
+    strongestAnchor: evaluation.strongestAnchor,
   }
 }
 
@@ -391,16 +427,16 @@ export function requiredAnchorCount(minBucket, floorBits) {
  * own gate (MIN_WORDS_PER_BUCKET) is one row of the same table, and `measure()` is what the generator uses.
  */
 export function entropyCeiling(data = loadThemes(), options = {}) {
-  const counts = bucketCounts(data)
-  const present = new Set()
-  for (const theme of THEMES) for (const letter of Object.keys(counts[theme] ?? {})) present.add(letter)
-  const gates = options.gates ?? [...new Set([...present].map((letter) => letterFloor(counts, letter)))].sort((a, b) => a - b)
+  const poolCounts = approvedPoolCounts(data)
+  const present = Object.keys(poolCounts)
+  const gates = options.gates ?? [...new Set(present.map((letter) => letterPoolSize(poolCounts, letter)))].sort((a, b) => a - b)
   let best = null
   const table = []
   for (const gate of gates) {
-    const letters = [...present].filter((letter) => letterFloor(counts, letter) >= gate).sort()
+    const letters = present.filter((letter) => letterPoolSize(poolCounts, letter) >= gate).sort()
     if (!letters.length) continue
     const m = measure(data, { ...options, letters })
+    if (m.anchorCount < MIN_ANCHOR_POOL) continue
     table.push({ gate, letters: letters.join(''), bits: Number(m.bits.toFixed(4)), anchors: m.anchorCount, minBucket: m.minBucket })
     if (!best || m.bits > best.bits) best = { ...m, gate }
   }
@@ -463,8 +499,17 @@ export function assertEntropyFloor(bits = generatorMinEntropy(), detail) {
 export function formatEntropyLine(measured = measure()) {
   const where = measured.dataPresent ? measured.dataPath : `${measured.dataPath} (ABSENT)`
   return (
-    `PHRASE_ENTROPY: ${measured.bits.toFixed(2)} bits (floor RETIRED — not gated) · anchors ` +
+    `PHRASE_ENTROPY: ${measured.bits.toFixed(2)} bits weakest, ${Number(measured.strongestBits).toFixed(2)} strongest ` +
+    `(floor RETIRED — not gated, not 128 bits) · ${measured.selection} · anchors ` +
     `${measured.anchorCount} from ${measured.anchorSource} · letters ${measured.anchorLetters.join('') || 'none'} · ` +
     `weakest anchor ${measured.limitingAnchor ?? 'none'} · buckets ${where}`
+  )
+}
+
+/** One clause for the ceilings. The number is measured, and it does not say 128 bits. */
+export function honestEntropyClause(measured = measure()) {
+  return (
+    `about ${measured.bits.toFixed(2)} bits at the weakest anchor and ` +
+    `${Number(measured.strongestBits).toFixed(2)} at the strongest, not 128 bits`
   )
 }

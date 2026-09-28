@@ -8,25 +8,26 @@
  *
  * THE PHRASE IS A TRUE ACROSTIC, AND THE ANCHOR IS WORD ZERO. The donor's header records the owner's
  * own correction (#284 follow-up): *the anchor is WORD ZERO of the phrase — it is SHOWN, TYPED, and
- * fingerprinted, followed by the six themed acrostic words.* Seven tokens, dash-joined. Draw the
+ * fingerprinted, followed by the six acrostic words.* Seven tokens, dash-joined. Draw the
  * anchor as a heading above six words and it stops being typeable, the fingerprint silently drops to
  * six, and typing the six-word tail starts to match. `ceremony-verify.mjs` is the half that refuses
- * that; this half only builds.
+ * that; this half only builds. The row themes are retired: each letter draws the union of the
+ * three stored bands.
  *
  * THE TABLES ARE READ AS TEXT BY TWO COURTS. The donor's header (`:29-40`) records a real failure
  * caused by a comment spelling out a table declaration: a non-greedy extraction matched the PROSE
  * before the code and tried to evaluate a sentence. So the literals below are line-anchored, carry no
  * annotation between the name and the `=`, and no comment in this file restates a table declaration.
  *
- * ENTROPY, STATED HERE SO NOBODY HAS TO INFER IT. Themed buckets hold 2–4 words per letter, so the
- * phrase is worth ~14.3 bits of min-entropy — about twice a 4-digit PIN. It is PRESENCE, not a vault
- * password, and `ceremony-recovery.ts` is where that number is measured rather than asserted.
+ * ENTROPY. These in-file tables are small. They are not the ceremony's lists and they are not 128
+ * bits. The ceremony's figure is `measure()` in `themed-entropy.mjs`.
  *
  * @module @aukora/dsh-plugin-aumlok/ceremony-phrase
  */
-import { randomBytes } from 'node:crypto'
+import { randomInt } from 'node:crypto'
 
-const THEME_BY_ROW = ['root', 'root', 'unite', 'unite', 'rise', 'rise']
+/** Band names, kept for the green / blue / purple face. They do not choose words. */
+const BANDS = ['root', 'unite', 'rise']
 const WORDS_THEMED = {
   root: { // green — nature, of the earth
     a: ['amber', 'aspen', 'alder', 'acorn'], b: ['birch', 'brook', 'bramble', 'basin'],
@@ -71,25 +72,35 @@ const WORDS_THEMED = {
     w: ['wisdom', 'wonder', 'worship'], y: ['yearn', 'yonder'], z: ['zenith', 'zen'],
   },
 }
-// 6-letter anchor words — every letter must have a bucket in EVERY theme (letters can land on any row).
+// 6-letter anchor words. Each letter draws the union of the three stored bands.
 const ANCHOR_WORDS = ['harbor', 'cinder', 'garnet', 'meadow', 'willow', 'timber', 'sorrel', 'frosty',
   'velvet', 'silver', 'copper', 'walnut', 'embers', 'thorns', 'ravens', 'pewter', 'corals', 'winter']
 
-/** The bucket for a themed row and an anchor letter, or empty. The donor's `?? []` fallback, kept. */
-function bucket(theme, letter) {
-  const table = WORDS_THEMED
-  return table[theme ?? '']?.[letter ?? ''] ?? []
+/** Every approved word in this file for one letter, from every band, once. */
+function letterPool(letter) {
+  const seen = []
+  for (const band of BANDS) {
+    const row = WORDS_THEMED[band]?.[letter] ?? []
+    for (const word of row) {
+      if (!seen.includes(word)) seen.push(word)
+    }
+  }
+  return seen
 }
 
-/** `randomBytes(1)[0]` is always a byte; the donor states that rather than inventing a fallback. */
+/** Uniform draw. `randomInt` is rejection-sampled; a byte modulo the length is not. */
 function pick(arr) {
-  return arr[randomBytes(1)[0] % arr.length]
+  return arr[randomInt(arr.length)]
 }
 
 /**
- * Build an acrostic: a 6-letter anchor (word zero) + one themed word per anchor letter, whose
- * initials spell the anchor, each drawn from its ROW's theme (root/root/unite/unite/rise/rise). No
+ * Build an acrostic: a 6-letter anchor (word zero) + one word per anchor letter, whose
+ * initials spell the anchor, each drawn from the full in-file pool for that letter. No
  * repeated words. The canonical phrase is the SEVEN tokens `[anchor, ...words]`.
+ *
+ * THESE TABLES ARE THE DONOR'S SMALL LIST, NOT THE CEREMONY DRAW. The ceremony reads
+ * `aumlok-themes.json` through `apps/aukora-desktop/aumlok-draw.mjs`. This function stays
+ * for the donor pin and does not claim the shipped entropy figure.
  * @returns {{anchor: string, words: string[], tokens: string[], phrase: string}} the phrase.
  */
 export function generateAcrosticPhrase() {
@@ -102,23 +113,22 @@ export function generateAcrosticPhrase() {
     const letters = anchor.split('')
     const words = []
     for (let i = 0; i < letters.length; i++) {
-      const pool = bucket(THEME_BY_ROW[i], letters[i]).filter((w) => !words.includes(w))
+      const pool = letterPool(letters[i]).filter((w) => !words.includes(w))
       if (!pool.length) continue outer
       words.push(pick(pool))
     }
     return build(anchor, words)
   }
   const anchor = 'harbor'
-  const words = anchor.split('').map((c, i) => bucket(THEME_BY_ROW[i], c)[0])
+  const words = anchor.split('').map((c) => letterPool(c)[0])
   return build(anchor, words)
 }
 
-/** The themed tables, exposed for the donor-pin court and the UI's band colours. Frozen. */
+/** The stored tables, exposed for the donor-pin court. Generation merges them per letter. */
 export const PHRASE_TABLES = Object.freeze({
-  THEME_BY_ROW: Object.freeze([...THEME_BY_ROW]),
   WORDS_THEMED,
   ANCHOR_WORDS: Object.freeze([...ANCHOR_WORDS]),
 })
 
-/** The three band names, in row order, as the face draws them. */
+/** The three band names, in row order, as the face draws the colours. Not a word filter. */
 export const PHRASE_BANDS = Object.freeze(['root', 'unite', 'rise'])

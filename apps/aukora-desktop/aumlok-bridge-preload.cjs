@@ -31,8 +31,9 @@ contextBridge.exposeInMainWorld('aukoraAumlok', {
   /**
    * Draw the seven words for one ceremony, once, for display on this page.
    * @param {string} intent - which ceremony is being started: `bind` or `refresh`.
-   * @returns {Promise<{ok: boolean, words?: string[], reason?: string}>} the words, or the shell's
-   *   own reason. The words are in order, anchor first, and are seven lower-case words or nothing.
+   * @returns {Promise<{ok: boolean, words?: string[], story?: string, reason?: string}>} the words,
+   *   or the shell's own reason. The words are in order, anchor first, and are seven lower-case words
+   *   or nothing. `story`, when present, is a local memory aid: it is not a word of the phrase.
    */
   draw: (intent) => ipcRenderer.invoke('aumlok:approval:draw', intent),
   /**

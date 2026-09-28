@@ -566,6 +566,7 @@ window.__ModuleLoader__.load({
 			const [refreshing, setRefreshing] = (0, react.useState)(false);
 			const [beat, setBeat] = (0, react.useState)("none");
 			const [words, setWords] = (0, react.useState)(void 0);
+			const [story, setStory] = (0, react.useState)(void 0);
 			const [typed, setTyped] = (0, react.useState)(emptyTyped);
 			const [handle, setHandle] = (0, react.useState)("");
 			const [busy, setBusy] = (0, react.useState)(false);
@@ -615,6 +616,7 @@ window.__ModuleLoader__.load({
 						return;
 					}
 					setWords(drawn.words);
+					setStory(drawn.story);
 					setTyped(emptyTyped());
 					setBeat("shown");
 				})();
@@ -626,6 +628,7 @@ window.__ModuleLoader__.load({
 					const result = await submitPhrase(intent, typed, handle);
 					setBusy(false);
 					setWords(void 0);
+					setStory(void 0);
 					setAcknowledged(false);
 					setOutcome(result);
 					if (!result.ok) {
@@ -641,6 +644,7 @@ window.__ModuleLoader__.load({
 				if (busy) return;
 				if (beat === "shown") {
 					setWords(void 0);
+					setStory(void 0);
 					setBeat("typed");
 					return;
 				}
@@ -945,6 +949,10 @@ window.__ModuleLoader__.load({
 											className: Aumlok_module_css_default.warning,
 											"data-aumlok-phrase-warning": true,
 											children: t("surface.warning.lost")
+										}) : null,
+										beat === "shown" && story !== void 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+											"data-aumlok-mnemonic-story": true,
+											children: story
 										}) : null,
 										redraw.offered ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: Aumlok_module_css_default.redraw,
@@ -1458,10 +1466,25 @@ window.__ModuleLoader__.load({
 			const words = record["words"];
 			if (!Array.isArray(words) || words.length !== PHRASE_LENGTH) return { ok: false };
 			if (!words.every((word) => typeof word === "string" && WORD.test(word))) return { ok: false };
-			return {
+			const drawn = {
 				ok: true,
 				words: words.map((word) => String(word))
 			};
+			const story = readMnemonicStory(record);
+			return story === void 0 ? drawn : {
+				...drawn,
+				story
+			};
+		}
+		function readMnemonicStory(record) {
+			if (record["storyAuthoritative"] === true) return void 0;
+			const bits = record["storyEntropyBits"];
+			if (bits !== void 0 && bits !== 0) return void 0;
+			const value = record["story"];
+			if (typeof value !== "string") return void 0;
+			const story = value.trim();
+			if (story.length === 0 || story.length > 400) return void 0;
+			return story;
 		}
 		/**
 		* Narrow one submit result without inventing a claim the shell did not make.
@@ -1720,13 +1743,13 @@ window.__ModuleLoader__.load({
 			"anchor.label": "词位零 · 锚词",
 			"anchor.detail": "六个字母 · 七个词中的第一个",
 			"band.root": "ROOT",
-			"band.root.detail": "第一对 · 与大地相系",
+			"band.root.detail": "第一对",
 			"band.unite": "UNITE",
-			"band.unite.detail": "第二对 · 与彼此相系",
+			"band.unite.detail": "第二对",
 			"band.rise": "RISE",
-			"band.rise.detail": "第三对 · 与托举相系",
+			"band.rise.detail": "第三对",
 			"token.anchorMasked": "已遮盖的六字母锚词",
-			"token.rowMasked": "已遮盖的主题词",
+			"token.rowMasked": "已遮盖的词",
 			"tile.empty": "空位",
 			"tile.input": "第 {position} 个词",
 			"surface.action.give": "给我我的密语",
@@ -1744,7 +1767,7 @@ window.__ModuleLoader__.load({
 			"surface.explanation.title": "AUMLOK 是什么",
 			"surface.explanation.install": "你不是安装 Aukora，而是绑定它。",
 			"surface.explanation.made": "密语在你的机器上生成，只向你显示一次，也只由你逐词输入。",
-			"surface.explanation.spirit": "像记住一个只回应你的灵的真名那样记住它。",
+			"surface.explanation.spirit": "最弱锚词约 44.87 比特，最强约 53.34 比特。不是 128 比特。出现的故事只帮助记忆，不进入密钥。",
 			"runtime.status": "没有控制器状态",
 			"runtime.detail": "此界面不持有任何密钥：它只在仪式中把七个词显示一次，并且不批准任何操作。",
 			"runtime.reason.no-controller-service": "此组合中没有控制器。这里没有任何行提供 ctx.aumlokControl，因此无从询问。加入 aukora-aumlok 插件的组合行才会有一个。",
@@ -1794,13 +1817,13 @@ window.__ModuleLoader__.load({
 			"anchor.label": "WORD ZERO · ANCHOR",
 			"anchor.detail": "six letters · word zero of the seven",
 			"band.root": "ROOT",
-			"band.root.detail": "first pair · of the earth",
+			"band.root.detail": "first pair",
 			"band.unite": "UNITE",
-			"band.unite.detail": "second pair · of each other",
+			"band.unite.detail": "second pair",
 			"band.rise": "RISE",
-			"band.rise.detail": "third pair · of what lifts",
+			"band.rise.detail": "third pair",
 			"token.anchorMasked": "masked six-letter anchor word",
-			"token.rowMasked": "masked themed word",
+			"token.rowMasked": "masked word",
 			"tile.empty": "empty",
 			"tile.input": "word {position}",
 			"surface.action.give": "Give me my phrase",
@@ -1818,7 +1841,7 @@ window.__ModuleLoader__.load({
 			"surface.explanation.title": "WHAT AUMLOK IS",
 			"surface.explanation.install": "You do not install Aukora, you bind it.",
 			"surface.explanation.made": "The phrase is made on your machine, shown to you exactly once, and typed back by you word by word.",
-			"surface.explanation.spirit": "Learn it like the true name of a spirit that only answers to you.",
+			"surface.explanation.spirit": "About 44.87 bits at the weakest anchor and 53.34 at the strongest. Not 128 bits. A story, if one is shown, is only a memory aid.",
 			"runtime.status": "No controller status",
 			"runtime.detail": "This screen holds no key: it shows the seven words once, for the ceremony, and approves nothing.",
 			"runtime.reason.no-controller-service": "No controller in this composition. Nothing provides ctx.aumlokControl here, so there is no controller to ask. A composition row for the aukora-aumlok plugin is what puts one in.",
