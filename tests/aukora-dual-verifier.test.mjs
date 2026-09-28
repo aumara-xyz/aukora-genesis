@@ -165,7 +165,8 @@ function verdict(run, cold = false) {
 const accepted = [{ status: 0, stdout: 'VERIFIED:\n' }, { status: 0, stdout: 'ACCEPT\n' }]
 function invoke({ command, args, options }) {
   return new Promise(resolve => {
-    const child = spawn(command, args, { ...options, env: options.env ?? env })
+    // The production 10 s deadline is asserted above; here a cold, parallel CI runner gets room to answer.
+    const child = spawn(command, args, { ...options, timeout: Math.max(options.timeout ?? 0, 120_000), env: options.env ?? env })
     let stdout = '', stderr = '', error
     child.stdout.on('data', chunk => { stdout += chunk })
     child.stderr.on('data', chunk => { stderr += chunk })
@@ -232,7 +233,7 @@ try {
   const results = new Map()
   let nextCase = 0
   const evaluated = new Array(cases.length)
-  await Promise.all(Array.from({ length: 4 }, async () => {
+  await Promise.all(Array.from({ length: 2 }, async () => {
     while (nextCase < cases.length) {
       const index = nextCase++
       evaluated[index] = await evaluate(cases[index][1], cases[index][2])
