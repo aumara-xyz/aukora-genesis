@@ -62,6 +62,7 @@ import { provideKiraCite } from './cite-service.mjs'
 import { RETRIEVAL_LIMITS, RETRIEVAL_OPTIONS } from './retrieval.mjs'
 import { queueTool, recallRemembered, recallTool, settleTool, stageTool } from './tools.mjs'
 import { createOpenVikingRecall, openVikingHome, readBridgeConfig, semanticNotes } from './recall-openviking.mjs'
+import { createPartialFailureLedger, PARTIAL_FAILURE_SERVICE, reconcileRecallAvailability } from './partial-failure.mjs'
 
 /** Cordis plugin name. */
 export const name = 'aukora-kira'
@@ -290,6 +291,11 @@ export async function apply(ctx, config) {
     })
     return
   }
+  // The action gate reads this trusted, per-agent handoff immediately before a consequential tool.
+  // It is intentionally not put into model-written tool arguments.
+  const partialFailureState = createPartialFailureLedger()
+  if (typeof ctx.provide === 'function') ctx.provide(PARTIAL_FAILURE_SERVICE, partialFailureState)
+
   // One owner instance when `memoryOwner` is configured: the same store backs
   // both the governed write and the read path, which is what makes a settled
   // record recallable in the same session.
@@ -345,10 +351,17 @@ export async function apply(ctx, config) {
     if (same !== semanticConfig) { semanticConfig = same; semantic = createOpenVikingRecall({ config, logger: ctx.logger }) }
     return semantic
   }
-  const semanticLedger = () => {
+  const semanticLedger = async () => {
     try {
-      return { entries: new Map(storeDepsForRecall().liveRemembered().notes.map(note => [String(note.id), note])), complete: true }
-    } catch { return { entries: new Map(), complete: false } }
+      const deps = storeDepsForRecall()
+      const ambient = deps.liveRemembered()
+      const governed = await deps.liveGoverned()
+      return {
+        ambient: new Map(ambient.notes.map(note => [String(note.id), note])),
+        governed: new Map(governed.map(note => [String(note.id), note])),
+        complete: true,
+      }
+    } catch { return { ambient: new Map(), governed: new Map(), complete: false } }
   }
   /** Reconcile in the background: a capture, the mount and a changed bridge all land here, so a note missed while down is indexed later. */
   const semanticIndex = () => {
@@ -388,7 +401,7 @@ export async function apply(ctx, config) {
     const lexical = await recallRemembered(listNotes, text)
     if (found.available === true) {
       semanticNotice = null
-      return { ...lexical, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold } }
+      return { ...lexical, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold, ...(found.reserved === undefined ? {} : { reserved: found.reserved }) } }
     }
     if (found.reason === semanticNotice) return lexical
     semanticNotice = found.reason
@@ -642,6 +655,13 @@ export async function apply(ctx, config) {
         return typeof newest?.content?.summary === 'string' ? newest.content.summary : ''
       } catch { return '' }
     },
+    // Clear the previous turn's healthy result before any new recall is attempted.
+    onTurnStart: agent => partialFailureState.failure(agent),
+    onFailure: (_error, event) => partialFailureState.failure(event?.agent),
+    onRecalled: (reply, _recent, event) => partialFailureState.record(event?.agent, {
+      outer: reply?.availability,
+      remembered: 'not-asked',
+    }),
   })
 
   /** @type {Map<string, {conversation: KiraConversation, scope: string, kind: string, agent: object | null}>} */
@@ -824,8 +844,24 @@ export async function apply(ctx, config) {
     }
     const conversation = sessionFor(exec, kind)
     const signal = /** @type {AbortSignal | undefined} */ (exec['signal'])
-    const answer = await conversation.turn(request, signal ?? new AbortController().signal)
-    return typeof request.text === 'string' && request.text !== '' ? { ...answer, remembered: await rememberedFor(rememberedNotes, request.text) } : answer
+    let answer
+    try {
+      answer = await conversation.turn(request, signal ?? new AbortController().signal)
+      // PHASE 9: reconcile remembered.state with outer availability — never attach an
+      // undetermined ambient picture beside a found governed answer without downgrading.
+      const result = typeof request.text !== 'string' || request.text === ''
+        ? answer
+        : reconcileRecallAvailability(answer, await rememberedFor(rememberedNotes, request.text))
+      partialFailureState.record(exec?.agent, result?.partialFailure ?? {
+        outer: result?.availability,
+        remembered: 'not-asked',
+      })
+      return result
+    } catch (error) {
+      // A failed recall invalidates the last healthy result before the error reaches the caller.
+      partialFailureState.failure(exec?.agent)
+      throw error
+    }
   }))
 }
 
