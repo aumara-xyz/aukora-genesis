@@ -515,6 +515,9 @@ export function buildRouteDeps(input) {
   // stub answering `{items: []}` would tell the owner he has nothing to approve when in fact nobody looked. ***
   return {
     listNotes, verifyNote, forgetNote, trustNotes, liveRemembered,
+    // The semantic bridge receives governed records only from this verified reader; it never
+    // reconstructs them from keys, objects, or receipt files.
+    liveGoverned: settledRecords,
     pendingReview: typeof input?.pendingReview === 'function' ? input.pendingReview : undefined,
     approvePending: typeof input?.approvePending === 'function' ? input.approvePending : undefined,
   }
