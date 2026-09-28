@@ -6,7 +6,6 @@ This directory is the source of record for the stock applications mounted by `@d
 
 | Directory | Pinned source | Preserved contents |
 |---|---|---|
-| `luminara-portal/` | `zeb23ediah/luminara-portal` commit `3d32c3ba675307774f6af9805cc4772f7501b720`, tree `e0fec13742804af16213cc527364546f4da6564f` | Complete 237-file tracked tree, including the spatial application, documents, assets, corpus, tooling, and tests. |
 | `zeta-harp/` | `aumara-xyz/zeta-harp` commit `aa1100fa56e2a86ccd181cb39d13122e62abdf9f`, tree `8c2f47d67479c19ce98e0c8d57916fd6d86feb34` | Complete 13-file tracked tree for the Riemann–Siegel instrument, Fold explainer, reference fixtures, renderer, and Truth Audio. |
 | `auma-lingwa/` | Aukora revision `b413a89b109900a9037a9ed725b0d1b474e4f550` | Exact 84-day, 948-word browser runtime plus canon v14.1/v15/v16 history, readers, lint/tooling source, and original tests. |
 | `auma-live/` | Aukora revision `b413a89b109900a9037a9ed725b0d1b474e4f550` | Exact browser source; 69 presence, memory, governance, authority, and runtime source files plus 17 relevant original tests; Python duplex sidecar source; and the Aurora prompt. |
@@ -21,8 +20,6 @@ pnpm vendor:check
 The package and these sources are distributed under `AGPL-3.0-or-later`.
 
 ## Runtime mapping
-
-Luminara's `spatial/app/` tree is served at `/app/*`, and its `docs/` tree is served at `/docs/*`. The Portal opens at `/app/luminara-read.html` with its original absolute links intact.
 
 Auma Lingwa's `runtime/auma-lingwa.html` is served at `/stock-apps/auma-lingwa.html`. Its application files occupy their original `/app/auma/*`, `/app/style.css`, `/app/aura-core.js`, and `/assets/aumara-icon-96.png` paths, byte-identical to the vendored source with one target-owned exception: `/app/auma/auma.js` is served with its lesson gate rewritten to `const isUnlocked = () => true;`, so every lesson opens for reading without prior-day completion. The rewrite happens in `serveOpenedLingwaModule`, leaving the vendored bytes and their manifest digest exact, and `assets.host.spec.ts` pins both the served result and the authored expression so a donor revision that moves the gate fails the suite. `canonical/` and `tooling/` preserve the application's source history and maintenance code without becoming external runtime inputs.
 
@@ -42,10 +39,6 @@ bash setup.sh                                                             # need
 ```
 
 The running Host looks for `.venv/bin/python` in the RELEASE's copy of this directory (it logs that path at boot), and a release does not carry `.venv/` or `models/`, so a setup run in the checkout's `plugins/aukora-face/apps/vendor/auma-live/voice` is not seen unless `voiceRuntimeDirectory` in the `aukora-face-apps` config points there. The setup creates `.venv/` (Python 3.12 through `uv`, packages from PyPI per `requirements.txt`) and downloads model weights under this directory: `kokoro-v1.0.onnx` and `voices-v1.0.bin` from `github.com/thewh1teagle/kokoro-onnx` release `model-files-v1.0`, and `mlx-community/whisper-base.en-mlx` from Hugging Face; its warm-up then lets Pocket TTS fetch its own weights from Hugging Face. Those generated files are intentionally untracked and are not read from another repository. The Aurora prompt is not committed: setup derives it from two stock Kokoro voices. Cloning with Pocket TTS requires accepting that model's gated distribution terms. When `.venv/bin/python` exists, the stock-app Host may supervise `sidecar.py` and exposes it to the browser only through the same-origin WebSocket bridge.
-
-## Preserved upstream gaps
-
-The exact Luminara tree references `/app/luminara-nav.css` from seven pages even though that file is absent, and its cards room links `/docs/luminara-deck.pdf`, a generated artifact excluded by the donor tree. The donor baseline reports 601 passing and four failing tests. These are recorded source gaps, not missing dependencies on the donor checkout.
 
 ## Dakini Code
 

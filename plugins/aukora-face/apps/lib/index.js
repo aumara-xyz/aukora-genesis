@@ -18,10 +18,6 @@ const VENDOR_ROOT = fileURLToPath(new URL("../vendor/", import.meta.url));
 const AUMA_LIVE_VOICE_ROOT = join(VENDOR_ROOT, "auma-live", "voice");
 //#endregion
 //#region lib/types/embedded-assets.js
-const PORTAL_ROOT = join(VENDOR_ROOT, "luminara-portal");
-const PORTAL_APP_ROOT = join(PORTAL_ROOT, "spatial", "app");
-const PORTAL_DOCS_ROOT = join(PORTAL_ROOT, "docs");
-const OWNED_ASSET_ROOT = fileURLToPath(new URL("../assets", import.meta.url));
 const LINGWA_ROOT = join(VENDOR_ROOT, "auma-lingwa", "runtime");
 const LINGWA_APP_ROOT = join(LINGWA_ROOT, "app");
 const LINGWA_ASSET_ROOT = join(LINGWA_ROOT, "assets");
@@ -133,18 +129,21 @@ async function serveOpenedLingwaModule(req, res) {
 */
 function createEmbeddedAssetHandlers(serveStatic) {
 	return {
-		/** Serve the overlay at `/app`: portal files plus exact Lingwa and Live runtime files. */
+		/** Serve the overlay at `/app`: the exact Lingwa and Live runtime files. */
 		async serveStockAppFile(req, res) {
 			const relative = mountedSuffix(req, "/app");
 			if (relative === LINGWA_MODULE_ROUTE) {
 				await serveOpenedLingwaModule(req, res);
 				return;
 			}
-			await serveFile(serveStatic, req, res, relative === "luminara-nav.css" ? OWNED_ASSET_ROOT : relative === "style.css" || relative === "aura-core.js" || relative.startsWith("auma/") ? LINGWA_APP_ROOT : LIVE_APP_FILES.has(relative) ? LIVE_APP_ROOT : PORTAL_APP_ROOT, relative);
-		},
-		/** Serve the complete Luminara authored-document tree at `/docs`. */
-		async serveLuminaraDocument(req, res) {
-			await serveFile(serveStatic, req, res, PORTAL_DOCS_ROOT, mountedSuffix(req, "/docs"));
+			const root = relative === "style.css" || relative === "aura-core.js" || relative.startsWith("auma/") ? LINGWA_APP_ROOT : LIVE_APP_FILES.has(relative) ? LIVE_APP_ROOT : void 0;
+			if (root === void 0) {
+				if (!acceptsStaticMethod(req, res)) return;
+				res.writeHead(404);
+				res.end();
+				return;
+			}
+			await serveFile(serveStatic, req, res, root, relative);
 		},
 		/** Serve the exact Aukora mark used by Lingwa. */
 		async serveAukoraIcon(req, res) {
@@ -7279,11 +7278,6 @@ async function apply(ctx, config) {
 			kind: "prefix",
 			path: "/app",
 			handler: assetHandlers.serveStockAppFile
-		},
-		{
-			kind: "prefix",
-			path: "/docs",
-			handler: assetHandlers.serveLuminaraDocument
 		},
 		{
 			kind: "exact",

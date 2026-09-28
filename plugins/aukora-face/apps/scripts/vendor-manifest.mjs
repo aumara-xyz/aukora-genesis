@@ -94,11 +94,6 @@ async function makeManifest() {
   return {
     schemaVersion: 1,
     sources: {
-      luminaraPortal: {
-        repository: 'zeb23ediah/luminara-portal',
-        commit: '3d32c3ba675307774f6af9805cc4772f7501b720',
-        tree: 'e0fec13742804af16213cc527364546f4da6564f',
-      },
       dakiniCode: {
         repository: 'aumara-xyz/dakini-code',
         commit: '1fc98117a9a6234e1179bc7c5084a58ade378963',

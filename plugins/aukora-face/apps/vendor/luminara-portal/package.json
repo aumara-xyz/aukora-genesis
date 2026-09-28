@@ -1,9 +1,0 @@
-{
-  "name": "luminara-portal",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "serve": "bun spatial/serve.ts",
-    "test": "bun test core/tests/"
-  }
-}

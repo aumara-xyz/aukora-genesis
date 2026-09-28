@@ -1,6 +1,6 @@
 {
   "face": "apps",
-  "srcDigest": "a6b59fb40697cf5abe8afe6e879dec1aa917f69cb14a85d07e71a0cf2e09b414",
+  "srcDigest": "74c9523632242a8d29c40bd83b7f08ad08e6d374adee101d53adb05689e1d41f",
   "files": [
     "package.json",
     "src/auma-canvas-tool.ts",
@@ -47,7 +47,6 @@
     "src/client/AumaLiveSurface.tsx",
     "src/client/DakiniCode.tsx",
     "src/client/EmbeddedAppSurface.tsx",
-    "src/client/LuminaraSurface.tsx",
     "src/client/StockAppMenu.tsx",
     "src/client/StockApps.module.css",
     "src/client/ZetaHarpSurface.tsx",
@@ -64,5 +63,5 @@
     "src/vendor/organism.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-27T05:24:10Z"
+  "builtAt": "2026-09-28T03:21:17Z"
 }

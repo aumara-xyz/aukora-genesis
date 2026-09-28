@@ -13,7 +13,6 @@
     "src/client/auma-live-session.ts",
     "src/client/DakiniCode.tsx",
     "src/client/EmbeddedAppSurface.tsx",
-    "src/client/LuminaraSurface.tsx",
     "src/client/StockAppMenu.tsx",
     "src/client/ZetaHarpSurface.tsx",
     "src/client/contract.ts",

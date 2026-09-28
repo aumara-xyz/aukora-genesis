@@ -2,9 +2,9 @@
 import type { StockAppMenuProps } from './contract.ts'
 import css from './StockApps.module.css'
 
-export type StockAppId = 'luminara' | 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas'
+export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas'
 
-type MenuCopyPrefix = 'luminara' | 'language' | 'live' | 'harp' | 'canvas'
+type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas'
 
 interface MenuSpec {
   id: StockAppId
@@ -13,14 +13,12 @@ interface MenuSpec {
 }
 
 /** Stock-app registry values shared by registration and component tests. */
-const LUMINARA_APP = { id: 'luminara', copy: 'luminara', presentation: 'full-bleed' } as const
 const AUMA_LANGUAGE_APP = { id: 'auma-language', copy: 'language', presentation: 'full-bleed' } as const
 const AUMA_LIVE_APP = { id: 'auma-live', copy: 'live', presentation: 'full-bleed' } as const
 const ZETA_HARP_APP = { id: 'zeta-harp', copy: 'harp', presentation: 'full-bleed' } as const
 const AUMA_CANVAS_APP = { id: 'auma-canvas', copy: 'canvas', presentation: 'full-bleed' } as const
 
 export const STOCK_APPS = [
-  LUMINARA_APP,
   AUMA_LANGUAGE_APP,
   AUMA_LIVE_APP,
   ZETA_HARP_APP,
@@ -42,11 +40,6 @@ function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps
       </span>
     </button>
   )
-}
-
-/** Render the Luminara launcher. */
-export function LuminaraMenu(props: StockAppMenuProps) {
-  return <StockAppMenu {...props} spec={LUMINARA_APP} />
 }
 
 /** Render the Auma Language launcher. */

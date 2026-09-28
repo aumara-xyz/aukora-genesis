@@ -6,13 +6,11 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@aukora/face-layout/client'
 import { AumaLanguageSurface } from './AumaLanguageSurface.tsx'
 import { AumaLiveSurface } from './AumaLiveSurface.tsx'
-import { LuminaraSurface } from './LuminaraSurface.tsx'
 import { ZetaHarpSurface } from './ZetaHarpSurface.tsx'
 import { DakiniCodeMenu, DakiniCodeSurface } from './DakiniCode.tsx'
 import {
   AumaLanguageMenu,
   AumaLiveMenu,
-  LuminaraMenu,
   STOCK_APPS,
   ZetaHarpMenu,
 } from './StockAppMenu.tsx'
@@ -58,10 +56,9 @@ export function apply(ctx: ClientContext): void {
   }, DakiniCodeSurface))
 
   const registrations = [
-    { app: STOCK_APPS[0], Menu: LuminaraMenu, Surface: LuminaraSurface },
-    { app: STOCK_APPS[1], Menu: AumaLanguageMenu, Surface: AumaLanguageSurface },
-    { app: STOCK_APPS[2], Menu: AumaLiveMenu, Surface: AumaLiveSurface },
-    { app: STOCK_APPS[3], Menu: ZetaHarpMenu, Surface: ZetaHarpSurface },
+    { app: STOCK_APPS[0], Menu: AumaLanguageMenu, Surface: AumaLanguageSurface },
+    { app: STOCK_APPS[1], Menu: AumaLiveMenu, Surface: AumaLiveSurface },
+    { app: STOCK_APPS[2], Menu: ZetaHarpMenu, Surface: ZetaHarpSurface },
   ] as const
   registrations.forEach(({ app, Menu, Surface }, index) => {
     ctx.slots.inject('shell.menu.apps', () => ctx.slots.register({

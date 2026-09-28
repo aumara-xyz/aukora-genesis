@@ -7,7 +7,7 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region \0dsh-css:StockApps.module.css.mjs
-		const css = ".DmMjlW_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.DmMjlW_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.DmMjlW_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.DmMjlW_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.DmMjlW_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.DmMjlW_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
+		const css = ".NQINWW_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.NQINWW_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.NQINWW_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.NQINWW_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.NQINWW_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.NQINWW_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
 		const tagId = "@aukora/face-apps/StockApps.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,9 +17,9 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StockApps_module_css_default = {
-			"embeddedFrame": "DmMjlW_embeddedFrame",
-			"menuCopy": "DmMjlW_menuCopy",
-			"surfaceSeat": "DmMjlW_surfaceSeat"
+			"embeddedFrame": "NQINWW_embeddedFrame",
+			"menuCopy": "NQINWW_menuCopy",
+			"surfaceSeat": "NQINWW_surfaceSeat"
 		};
 		//#endregion
 		//#region src/client/EmbeddedAppSurface.tsx
@@ -276,18 +276,6 @@ window.__ModuleLoader__.load({
 		*/
 		const bindAumaLiveSession = { current: null };
 		//#endregion
-		//#region src/client/LuminaraSurface.tsx
-		/** Render the complete vendored Luminara portal. */
-		function LuminaraSurface(props) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(EmbeddedAppSurface, {
-				...props,
-				id: "luminara",
-				title: props.t("luminara.name"),
-				src: "/app/luminara-read.html",
-				allow: "autoplay; midi"
-			});
-		}
-		//#endregion
 		//#region src/client/ZetaHarpSurface.tsx
 		/** Render the complete vendored Zeta Harp instrument. */
 		function ZetaHarpSurface(props) {
@@ -329,11 +317,6 @@ window.__ModuleLoader__.load({
 		//#endregion
 		//#region src/client/StockAppMenu.tsx
 		/** Stock-app registry values shared by registration and component tests. */
-		const LUMINARA_APP = {
-			id: "luminara",
-			copy: "luminara",
-			presentation: "full-bleed"
-		};
 		const AUMA_LANGUAGE_APP = {
 			id: "auma-language",
 			copy: "language",
@@ -350,7 +333,6 @@ window.__ModuleLoader__.load({
 			presentation: "full-bleed"
 		};
 		const STOCK_APPS = [
-			LUMINARA_APP,
 			AUMA_LANGUAGE_APP,
 			AUMA_LIVE_APP,
 			ZETA_HARP_APP,
@@ -373,13 +355,6 @@ window.__ModuleLoader__.load({
 					className: StockApps_module_css_default.menuCopy,
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
 				})
-			});
-		}
-		/** Render the Luminara launcher. */
-		function LuminaraMenu(props) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StockAppMenu, {
-				...props,
-				spec: LUMINARA_APP
 			});
 		}
 		/** Render the Auma Language launcher. */
@@ -408,20 +383,6 @@ window.__ModuleLoader__.load({
 		/** Stock-app launcher, surface, and interaction dictionaries. */
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
-			"luminara.name": "Luminara",
-			"luminara.menu": "Auma 神谕——抽取三张牌，阅读交织",
-			"luminara.eyebrow": "LUMINARA · 本地仪器",
-			"luminara.title": "一个门，三种状态",
-			"luminara.description": "一个安静、只在浏览器中运行的三相场域。触碰任意位置，或重新排列整个仪器。",
-			"luminara.close": "关闭 Luminara",
-			"luminara.new": "重新排列",
-			"luminara.field": "场域",
-			"luminara.position": "位置",
-			"luminara.selection": "当前选择",
-			"luminara.point": "选择位置 {position}",
-			"luminara.mode.still": "静止",
-			"luminara.mode.flow": "流动",
-			"luminara.mode.turn": "转向",
 			"language.name": "Auma · Lingwa",
 			"language.menu": "学习她的语言——一场由她长成的游戏",
 			"language.eyebrow": "LINGWA DI LUMO · 光之语言",
@@ -462,20 +423,6 @@ window.__ModuleLoader__.load({
 		};
 		/** English dictionary, checked complete against the Chinese key set. */
 		const en = {
-			"luminara.name": "Luminara",
-			"luminara.menu": "the Auma oracle — cast three, read the weave",
-			"luminara.eyebrow": "LUMINARA · LOCAL INSTRUMENT",
-			"luminara.title": "One door, three states",
-			"luminara.description": "A quiet trinary field that lives entirely in this browser. Touch any position or arrange the whole instrument again.",
-			"luminara.close": "Close Luminara",
-			"luminara.new": "New arrangement",
-			"luminara.field": "Field",
-			"luminara.position": "Position",
-			"luminara.selection": "Current selection",
-			"luminara.point": "Select position {position}",
-			"luminara.mode.still": "Still",
-			"luminara.mode.flow": "Flow",
-			"luminara.mode.turn": "Turn",
 			"language.name": "Auma · Lingwa",
 			"language.menu": "learn her language — a game she grew",
 			"language.eyebrow": "LINGWA DI LUMO · THE LANGUAGE OF LIGHT",
@@ -543,21 +490,16 @@ window.__ModuleLoader__.load({
 			[
 				{
 					app: STOCK_APPS[0],
-					Menu: LuminaraMenu,
-					Surface: LuminaraSurface
-				},
-				{
-					app: STOCK_APPS[1],
 					Menu: AumaLanguageMenu,
 					Surface: AumaLanguageSurface
 				},
 				{
-					app: STOCK_APPS[2],
+					app: STOCK_APPS[1],
 					Menu: AumaLiveMenu,
 					Surface: AumaLiveSurface
 				},
 				{
-					app: STOCK_APPS[3],
+					app: STOCK_APPS[2],
 					Menu: ZetaHarpMenu,
 					Surface: ZetaHarpSurface
 				}

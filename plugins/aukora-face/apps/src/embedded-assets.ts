@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { VENDOR_ROOT } from './vendor-paths.ts'
 
@@ -8,7 +7,6 @@ type ServeStatic = typeof import('@deepseek-ai/dsh-host-frontend-static')['serve
 
 interface EmbeddedAssetHandlers {
   serveStockAppFile(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
-  serveLuminaraDocument(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
   serveAukoraIcon(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
   serveLingwaEntry(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
   serveAumaLiveEntry(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
@@ -16,10 +14,6 @@ interface EmbeddedAssetHandlers {
   serveDakiniCodeFile(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
 }
 
-const PORTAL_ROOT = join(VENDOR_ROOT, 'luminara-portal')
-const PORTAL_APP_ROOT = join(PORTAL_ROOT, 'spatial', 'app')
-const PORTAL_DOCS_ROOT = join(PORTAL_ROOT, 'docs')
-const OWNED_ASSET_ROOT = fileURLToPath(new URL('../assets', import.meta.url))
 const LINGWA_ROOT = join(VENDOR_ROOT, 'auma-lingwa', 'runtime')
 const LINGWA_APP_ROOT = join(LINGWA_ROOT, 'app')
 const LINGWA_ASSET_ROOT = join(LINGWA_ROOT, 'assets')
@@ -157,26 +151,25 @@ async function serveOpenedLingwaModule(req: IncomingMessage, res: ServerResponse
  */
 export function createEmbeddedAssetHandlers(serveStatic: ServeStatic): EmbeddedAssetHandlers {
   return {
-    /** Serve the overlay at `/app`: portal files plus exact Lingwa and Live runtime files. */
+    /** Serve the overlay at `/app`: the exact Lingwa and Live runtime files. */
     async serveStockAppFile(req: IncomingMessage, res: ServerResponse): Promise<void> {
       const relative = mountedSuffix(req, '/app')
       if (relative === LINGWA_MODULE_ROUTE) {
         await serveOpenedLingwaModule(req, res)
         return
       }
-      const root = relative === 'luminara-nav.css'
-        ? OWNED_ASSET_ROOT
-        : relative === 'style.css' || relative === 'aura-core.js' || relative.startsWith('auma/')
-          ? LINGWA_APP_ROOT
-          : LIVE_APP_FILES.has(relative)
-            ? LIVE_APP_ROOT
-            : PORTAL_APP_ROOT
+      const root = relative === 'style.css' || relative === 'aura-core.js' || relative.startsWith('auma/')
+        ? LINGWA_APP_ROOT
+        : LIVE_APP_FILES.has(relative)
+          ? LIVE_APP_ROOT
+          : undefined
+      if (root === undefined) {
+        if (!acceptsStaticMethod(req, res)) return
+        res.writeHead(404)
+        res.end()
+        return
+      }
       await serveFile(serveStatic, req, res, root, relative)
-    },
-
-    /** Serve the complete Luminara authored-document tree at `/docs`. */
-    async serveLuminaraDocument(req: IncomingMessage, res: ServerResponse): Promise<void> {
-      await serveFile(serveStatic, req, res, PORTAL_DOCS_ROOT, mountedSuffix(req, '/docs'))
     },
 
     /** Serve the exact Aukora mark used by Lingwa. */

@@ -1,4 +1,0 @@
-node_modules/
-# pressed output: regenerate with bun scripts/pressCards.mjs, never committed
-# (a 12 MB deck PDF and 28 PNGs that any checkout can rebuild exactly)
-dist/

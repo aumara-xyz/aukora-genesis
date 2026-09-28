@@ -936,7 +936,6 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   })
   const routes = [
     { kind: 'prefix', path: '/app', handler: assetHandlers.serveStockAppFile },
-    { kind: 'prefix', path: '/docs', handler: assetHandlers.serveLuminaraDocument },
     { kind: 'exact', path: '/assets/aumara-icon-96.png', handler: assetHandlers.serveAukoraIcon },
     // The same bytes under the path the shell's own components ask for. Deep shipped
     // this file in its web app's public root; this composition runs the harness's web

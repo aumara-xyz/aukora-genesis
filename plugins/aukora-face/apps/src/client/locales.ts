@@ -2,20 +2,6 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'luminara.name': 'Luminara',
-  'luminara.menu': 'Auma 神谕——抽取三张牌，阅读交织',
-  'luminara.eyebrow': 'LUMINARA · 本地仪器',
-  'luminara.title': '一个门，三种状态',
-  'luminara.description': '一个安静、只在浏览器中运行的三相场域。触碰任意位置，或重新排列整个仪器。',
-  'luminara.close': '关闭 Luminara',
-  'luminara.new': '重新排列',
-  'luminara.field': '场域',
-  'luminara.position': '位置',
-  'luminara.selection': '当前选择',
-  'luminara.point': '选择位置 {position}',
-  'luminara.mode.still': '静止',
-  'luminara.mode.flow': '流动',
-  'luminara.mode.turn': '转向',
   'language.name': 'Auma · Lingwa',
   'language.menu': '学习她的语言——一场由她长成的游戏',
   'language.eyebrow': 'LINGWA DI LUMO · 光之语言',
@@ -60,20 +46,6 @@ export type StockAppsKey = keyof typeof zh
 
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
-  'luminara.name': 'Luminara',
-  'luminara.menu': 'the Auma oracle — cast three, read the weave',
-  'luminara.eyebrow': 'LUMINARA · LOCAL INSTRUMENT',
-  'luminara.title': 'One door, three states',
-  'luminara.description': 'A quiet trinary field that lives entirely in this browser. Touch any position or arrange the whole instrument again.',
-  'luminara.close': 'Close Luminara',
-  'luminara.new': 'New arrangement',
-  'luminara.field': 'Field',
-  'luminara.position': 'Position',
-  'luminara.selection': 'Current selection',
-  'luminara.point': 'Select position {position}',
-  'luminara.mode.still': 'Still',
-  'luminara.mode.flow': 'Flow',
-  'luminara.mode.turn': 'Turn',
   'language.name': 'Auma · Lingwa',
   'language.menu': 'learn her language — a game she grew',
   'language.eyebrow': 'LINGWA DI LUMO · THE LANGUAGE OF LIGHT',
