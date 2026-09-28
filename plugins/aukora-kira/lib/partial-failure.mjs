@@ -78,6 +78,30 @@ export function rememberedStateOf(remembered) {
 }
 
 /**
+ * The remembered picture to report when the ledger that fed the semantic bridge could not be read.
+ *
+ * AN UNREADABLE LEDGER IS NOT AN EMPTY ONE. `complete:false` means the memory store itself could
+ * not be read, so nothing in this answer was verified. Reporting the lexical fallback's own
+ * `found`/`empty` lets a failed read reach the gate as a determined picture, and the gate then
+ * PROCEEDS — the January-shaped silence, arriving through the availability field instead of
+ * through an exception. Unknown is treated as unverified, so only `complete === true` passes
+ * through: this fails closed.
+ *
+ * @param {{lexical?: unknown, ledgerComplete?: unknown}} [input]
+ * @returns {unknown} the lexical picture, or the same picture forced to `undetermined`.
+ */
+export function rememberedWithLedger({ lexical, ledgerComplete } = {}) {
+  if (ledgerComplete === true) return lexical
+  if (lexical === undefined || lexical === null) return lexical
+  return {
+    ...(/** @type {Record<string, unknown>} */ (lexical)),
+    state: 'undetermined',
+    grantsAuthority: false,
+    reason: 'the memory ledger could not be read, so nothing in this answer was verified',
+  }
+}
+
+/**
  * Normalize outer availability from a conversation / kira_recall answer.
  * @param {unknown} answer
  * @returns {'found'|'empty'|'undetermined'}

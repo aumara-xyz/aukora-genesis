@@ -62,7 +62,7 @@ import { provideKiraCite } from './cite-service.mjs'
 import { RETRIEVAL_LIMITS, RETRIEVAL_OPTIONS } from './retrieval.mjs'
 import { queueTool, recallRemembered, recallTool, settleTool, stageTool } from './tools.mjs'
 import { createOpenVikingRecall, openVikingHome, readBridgeConfig, semanticNotes } from './recall-openviking.mjs'
-import { createPartialFailureLedger, PARTIAL_FAILURE_SERVICE, reconcileRecallAvailability } from './partial-failure.mjs'
+import { createPartialFailureLedger, PARTIAL_FAILURE_SERVICE, reconcileRecallAvailability, rememberedWithLedger } from './partial-failure.mjs'
 
 /** Cordis plugin name. */
 export const name = 'aukora-kira'
@@ -397,16 +397,20 @@ export async function apply(ctx, config) {
     if (bridge.configured === true) {
       try { found = await bridge.recall({ question: text, live: semanticLedger }) } catch (error) { found = { available: false, reason: `semantic-recall-failed (${String(error?.code ?? error?.message ?? 'unknown')})` } }
     }
-    if (found.available === true && found.hits.length > 0) { semanticNotice = null; return semanticNotes(found) }
+    if (found.available === true && found.hits.length > 0 && found.ledgerComplete === true) { semanticNotice = null; return semanticNotes(found) }
     const lexical = await recallRemembered(listNotes, text)
+    // AN UNREADABLE LEDGER IS NOT AN EMPTY ONE: the lexical fallback's own `found`/`empty` would
+    // otherwise reach the phase 9 gate as a determined picture and the gate would proceed.
+    const remembered = rememberedWithLedger({ lexical, ledgerComplete: found.ledgerComplete })
+    const ledgerUnread = found.ledgerComplete !== true && lexical !== undefined && lexical !== null
     if (found.available === true) {
       semanticNotice = null
-      return { ...lexical, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold, ...(found.reserved === undefined ? {} : { reserved: found.reserved }) } }
+      return { ...remembered, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold, ...(ledgerUnread ? { ledgerUnread: true } : {}), ...(found.reserved === undefined ? {} : { reserved: found.reserved }) } }
     }
-    if (found.reason === semanticNotice) return lexical
+    if (found.reason === semanticNotice) return remembered
     semanticNotice = found.reason
     if (bridge.configured === true) ctx.logger?.warn?.(`aukora-kira: semantic recall is not available (${found.reason}); kira_recall answers lexically`)
-    return { ...lexical, semantic: { available: false, reason: found.reason, notice: 'semantic recall (OpenViking) is not available, so this answer is lexical; said once' } }
+    return { ...remembered, semantic: { available: false, reason: found.reason, ...(ledgerUnread ? { ledgerUnread: true } : {}), notice: 'semantic recall (OpenViking) is not available, so this answer is lexical; said once' } }
   }
 
   // ── `kira.recall`: THE READ-ONLY DOOR ONTO THE MEMORY ──────────────────────
