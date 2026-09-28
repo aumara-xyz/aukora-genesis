@@ -10,9 +10,9 @@
 // expects: $LIBEXEC/plugins/aukora-kira/lib/memory-owner.mjs beside
 // $LIBEXEC/plugins/aukora-owner-daemon/bin/owner-daemon.mjs.
 //
-// THE RESOLVER IS THE ONE THE MODULE COURT USES: the same three line-anchored import forms (a looser
-// pattern matched prose inside error strings and a DER prefix hex), relative specifiers resolved against
-// the importing file, bare specifiers resolved node-style by walking node_modules UP from the importer.
+// Imports are read as tokens, across lines and without treating comments or quoted prose as code.
+// Relative specifiers resolve against the importing file; bare specifiers resolve node-style by
+// walking node_modules UP from the importer.
 // Anything that resolves outside the tree refuses BY NAME.
 //
 //   node scripts/owner/owner-closure.mjs --repo . --entry plugins/aukora-owner-daemon/bin/owner-daemon.mjs ...
@@ -23,30 +23,118 @@ import { cpSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, re
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-const PATTERNS = [
-  /^\s*import\s+[^;\n]*?from\s*['"]([^'"]+)['"]/gm,
-  /^\s*import\s*['"]([^'"]+)['"]/gm,
-  /^\s*export\s+[^;\n]*?from\s*['"]([^'"]+)['"]/gm,
-  /import\(\s*['"]([^'"]+)['"]/g,
-]
 const CODE = /\.(?:mjs|cjs|js)$/u
 const sha = (file) => createHash('sha256').update(readFileSync(file)).digest('hex')
 
-/** Every specifier in one file, in source order, deduplicated. */
+// Keep strings as single tokens and skip comments, including inline and multiline comments.
+// Template text is skipped, but its ${...} expressions are code and may contain dynamic imports.
+function importTokens(text) {
+  const tokens = []
+  let i = 0
+  const scan = (interpolation = false) => {
+    let braces = 0, expression = true
+    const parens = []
+    while (i < text.length) {
+      const c = text[i], next = text[i + 1]
+      if (/\s/u.test(c)) { i++; continue }
+      if (c === '/' && next === '/') { while (i < text.length && text[i] !== '\n') i++; continue }
+      if (c === '/' && next === '*') {
+        const end = text.indexOf('*/', i + 2)
+        i = end < 0 ? text.length : end + 2
+        continue
+      }
+      if (c === '"' || c === "'" || (c === '`' && /^`(?:\\[\s\S]|[^`\\$]|\$(?!\{))*`/u.test(text.slice(i)))) {
+        const start = i++
+        while (i < text.length) {
+          if (text[i] === '\\') { i += 2; continue }
+          if (text[i++] === c) break
+        }
+        const value = text.slice(start + 1, i - 1).replace(
+          /\\(?:u\{[\da-f]+\}|u[\da-f]{4}|x[\da-f]{2}|\r\n|[\s\S])/giu,
+          escape => {
+            const e = escape.slice(1)
+            if (e[0] === 'u' || e[0] === 'x') return String.fromCodePoint(parseInt(e.replace(/^[ux]\{?|\}$/gu, ''), 16))
+            return ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v', 0: '\0', '\n': '', '\r': '', '\r\n': '' })[e] ?? e
+          })
+        tokens.push({ value, string: true })
+        expression = false
+        continue
+      }
+      if (c === '`') {
+        tokens.push({ value: '`' })
+        i++
+        while (i < text.length) {
+          if (text[i] === '\\') { i += 2; continue }
+          if (text[i] === '`') { i++; break }
+          if (text[i] === '$' && text[i + 1] === '{') { i += 2; scan(true); continue }
+          i++
+        }
+        tokens.push({ value: '`' })
+        expression = false
+        continue
+      }
+      // A regexp literal is data too. Division follows an expression; a regexp starts one.
+      if (c === '/' && expression) {
+        i++
+        let inClass = false
+        while (i < text.length) {
+          const r = text[i++]
+          if (r === '\\') { i++; continue }
+          if (r === '[') inClass = true
+          if (r === ']') inClass = false
+          if (r === '/' && !inClass) break
+        }
+        while (/[a-z]/iu.test(text[i] ?? '')) i++
+        tokens.push({ value: '/' })
+        expression = false
+        continue
+      }
+      const word = text.slice(i).match(/^[$\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*/u)?.[0]
+      if (word) {
+        tokens.push({ value: word, start: i })
+        i += word.length
+        expression = /^(?:return|throw|case|void|typeof|delete|new|in|of|yield|await|else|instanceof)$/u.test(word)
+        continue
+      }
+      if ((c === '+' || c === '-') && next === c) { tokens.push({ value: c + c }); i += 2; continue }
+      const previous = tokens.at(-1)?.value
+      if (c === '(') parens.push(/^(?:if|while|for|with|switch|catch)$/u.test(previous ?? ''))
+      const afterControl = c === ')' && parens.pop()
+      i++
+      if (c === '}' && interpolation && braces === 0) return
+      if (c === '{') braces++
+      if (c === '}') braces--
+      tokens.push({ value: c })
+      expression = afterControl || !/[\])}\d]/u.test(c)
+    }
+  }
+  scan()
+  return tokens
+}
+
+/** Every static import, re-export and literal dynamic import, in source order, deduplicated. */
 export function specifiersOf(file) {
-  const text = readFileSync(file, 'utf8')
+  const tokens = importTokens(readFileSync(file, 'utf8'))
   const out = []
-  // COMMENT LINES ARE SKIPPED, AND THAT IS NOT COSMETIC. The dynamic-import pattern has no `^` anchor (a
-  // real `import(` can appear mid-line), so prose inside a JSDoc block matched it: MEASURED 2026-09-25,
-  // composition-gate/src/artifact.mjs documents `import('../../types/client.js')` as a TYPE-ONLY reference
-  // in a comment, and the closure refused a file whose real graph is fine — `node -e "await
-  // import(...admission-grant.mjs)"` LOADS OK. A parser that fails on sentences is a parser nobody keeps,
-  // so lines whose first non-space characters are `//`, `*` or `/*` are not code.
-  const code = text.split('\n').filter((line) => {
-    const t = line.trim()
-    return !(t.startsWith('//') || t.startsWith('*') || t.startsWith('/*'))
-  }).join('\n')
-  for (const pat of PATTERNS) for (const m of code.matchAll(pat)) out.push(m[1])
+  for (let i = 0; i < tokens.length; i++) {
+    const token = tokens[i], kind = token.value, next = tokens[i + 1]
+    if (token.string || (kind !== 'import' && kind !== 'export') || tokens[i - 1]?.value === '.' || next?.value === '.') continue
+    if (kind === 'import' && next?.string) { out.push(next.value); continue }
+    if (kind === 'import' && next?.value === '(') {
+      if (tokens[i + 2]?.string && [')', ','].includes(tokens[i + 3]?.value)) out.push(tokens[i + 2].value)
+      continue
+    }
+    if (kind === 'export' && !['{', '*'].includes(next?.value)) continue
+    let braces = 0
+    for (let j = i + 1; j < tokens.length; j++) {
+      const t = tokens[j]
+      if (!t.string && t.value === '{') braces++
+      if (!t.string && t.value === '}') braces--
+      if (braces) continue
+      if (t.string || [';', '(', '=', 'import', 'export'].includes(t.value)) break
+      if (t.value === 'from' && tokens[j + 1]?.string) { out.push(tokens[j + 1].value); break }
+    }
+  }
   return [...new Set(out)]
 }
 
@@ -85,24 +173,30 @@ function resolveBare(spec, fromDir, root) {
 const UNSUPPORTED_LOADING = [
   { what: 'require(', re: /(^|[^.\w])require\s*\(/u },
   { what: 'createRequire', re: /createRequire\s*\(/u },
-  // `import(pathToFileURL(join(…)))` IS followed by this tool (see computedTargets) and is therefore not
-  // "unsupported" any more; everything else with a non-literal argument still is.
-  { what: 'a computed dynamic import this tool cannot resolve', re: /import\s*\(\s*(?!['"])(?!pathToFileURL\s*\()/u },
 ]
 export function unsupportedLoading(file) {
   const out = []
   const known = staticUrlConsts(file)
-  const lines = readFileSync(file, 'utf8').split('\n')
+  const text = readFileSync(file, 'utf8')
+  const lines = text.split('\n')
   for (const [i, line] of lines.entries()) {
     const code = line.trim()
     if (code.startsWith('//') || code.startsWith('*') || code.startsWith('/*')) continue
     for (const { what, re } of UNSUPPORTED_LOADING) {
       if (!re.test(line)) continue
-      // `import(VENDORED_ENTRY.href)` is followed when the constant is statically knowable in this file
-      const named = line.match(/import\(\s*([A-Za-z_$][\w$]*)(?:\.href)?\s*\)/u)
-      if (named && known.has(named[1])) continue
       out.push(`${i + 1}: ${what} — ${code.slice(0, 100)}`)
     }
+  }
+  const tokens = importTokens(text)
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i], arg = tokens[i + 2]
+    if (t.string || t.value !== 'import' || tokens[i - 1]?.value === '.' || tokens[i + 1]?.value !== '(') continue
+    if (arg?.string && [')', ','].includes(tokens[i + 3]?.value)) continue
+    // Exempt only the exact URL forms computedTargets can follow, never a computed suffix.
+    const dynamic = text.slice(t.start)
+    const named = dynamic.match(/^import\s*\(\s*([A-Za-z_$][\w$]*)(?:\.href)?\s*\)/u)
+    if ((named && known.has(named[1])) || new RegExp(`^${COMPUTED.source}`, 'u').test(dynamic)) continue
+    out.push('a computed dynamic import this tool cannot resolve')
   }
   return out
 }
@@ -176,7 +270,7 @@ export function computedTargets(file, label) {
     out.push(resolve(dir, ...segs))
   }
   const known = staticUrlConsts(file)
-  for (const m of text.matchAll(/import\(\s*([A-Za-z_$][\w$]*)(?:\.href)?\s*\)/gu)) {
+  for (const m of text.matchAll(/import\s*\(\s*([A-Za-z_$][\w$]*)(?:\.href)?\s*\)/gu)) {
     const target = known.get(m[1])
     if (target === undefined) {
       throw new Error(`${label}: a computed import uses '${m[1]}', which this tool cannot reduce to a path (it is not a literal or a statically knowable URL constant). Rewrite it, or load it through a literal import the closure can follow.`)
