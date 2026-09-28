@@ -1,18 +1,19 @@
 #!/usr/bin/env node
-// Scratch-only verification of the shipped self-change gate. No signer, Git, or live state is invoked.
+// Scratch-only verification of both shipped gates. No signer, commit, push, or live state is invoked.
 import assert from 'node:assert/strict'
 import { spawn, spawnSync } from 'node:child_process'
 import { createHash, generateKeyPairSync, sign } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import { createApprover } from './kira-approval-standin.mjs'
 import { childEnv } from './helpers/child-env.mjs'
 import { canonicalJSON } from '../plugins/aukora-aumlok/lib/canonical.mjs'
 import { didKeyFromEd25519PublicKey } from '../plugins/aukora-aumlok/lib/did-key.mjs'
 import { APPROVAL_REQUEST_DOMAIN, APPROVAL_SIGNATURE_DOMAIN } from '../plugins/aukora-aumlok/lib/owner-approval.mjs'
+import { dualVerifyApproval } from '../scripts/aumlok/dual-verify.mjs'
 
 // check.sh shows only a failing check's last line: make that line name the failure.
 process.on('uncaughtException', (error) => { console.log(`FAIL dual approval verifier: ${String(error?.message ?? error).split('\n')[0]}`); process.exit(1) })
@@ -20,6 +21,19 @@ process.on('uncaughtException', (error) => { console.log(`FAIL dual approval ver
 const started = performance.now()
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const scratch = mkdtempSync(join(tmpdir(), 'aukora-dual-'))
+const git = args => {
+  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', timeout: 10_000, killSignal: 'SIGKILL', env: childEnv() })
+  assert.equal(result.status, 0, result.stderr)
+  return result.stdout
+}
+const remote = join(scratch, 'remote.git')
+git(['init', '--bare', '--quiet', remote])
+writeFileSync(join(remote, 'objects', 'info', 'alternates'), `${git(['rev-parse', '--path-format=absolute', '--git-path', 'objects']).trim()}\n`)
+git(['--git-dir', remote, 'update-ref', 'refs/heads/main', git(['rev-parse', 'HEAD']).trim()])
+const mainRef = join(remote, 'refs', 'heads', 'main')
+const originalMain = readFileSync(mainRef, 'utf8')
+const consumedIds = join(scratch, 'support', 'state', 'home', 'aura-code', 'consumed-ids')
+mkdirSync(dirname(consumedIds), { recursive: true })
 const hash = value => createHash('sha256').update(value).digest('hex')
 const now = 2_000_000_000
 const subject = `aukora:1:${hash('dual-verifier disposable subject')}`
@@ -51,30 +65,53 @@ assert.ok(start >= 0 && end > start, 'the production approval gate must remain d
 assert.ok(end < route.indexOf('chain.locked(() =>', end), 'verification precedes authorization and commit')
 const gate = route.slice(start, end)
 const condition = "nodeVerdict !== 'ACCEPT' || coldVerdict !== 'ACCEPT'"
-assert.equal(gate.split(condition).length, 2, 'exactly one dual-verifier decision')
-const nodeOnly = gate.replace(condition, "nodeVerdict !== 'ACCEPT'")
+const moduleURL = new URL('../scripts/aumlok/dual-verify.mjs', import.meta.url)
+const sharedSource = readFileSync(moduleURL, 'utf8')
+assert.equal(sharedSource.split(condition).length, 2, 'exactly one shared dual-verifier decision')
+const mutantPath = join(scratch, 'node-only.mjs')
+writeFileSync(mutantPath, sharedSource.replace(condition, "nodeVerdict !== 'ACCEPT'").replaceAll('import.meta.url', JSON.stringify(moduleURL.href)))
+const { dualVerifyApproval: nodeOnly } = await import(pathToFileURL(mutantPath).href)
+const advance = readFileSync(join(root, 'scripts/aukora/advance.mjs'), 'utf8')
+const advanceStart = advance.indexOf('// 3. VERIFY, THEN ONE USE')
+const advanceEnd = advance.indexOf('// ONE USE,', advanceStart)
+assert.ok(advanceStart >= 0 && advanceEnd > advanceStart, 'advance production approval gate must remain discoverable')
+assert.ok(advanceEnd < advance.indexOf('chain.locked(() =>', advanceEnd), 'advance verification precedes kernel consume')
+assert.ok(advanceEnd < advance.indexOf("const pushed = git(['push'", advanceEnd), 'advance verification precedes push')
+const advanceGate = advance.slice(advanceStart, advanceEnd)
+for (const source of [route, advance]) assert.match(source, /import \{ dualVerifyApproval \} from '\.\.\/aumlok\/dual-verify\.mjs'/u)
+for (const source of [gate, advanceGate]) {
+  assert.equal(source.split('dualVerifyApproval(').length, 2, 'each route invokes the shared gate once')
+  assert.match(source, /if \(!accepted\)/u, 'both routes obey the shared decision')
+}
+// The HEAD implementation is the existing contract: compare every captured byte,
+// journal and refusal over identical subprocess results and evidence paths.
+const baseline = git(['show', 'HEAD:scripts/aukora/self-change.mjs'])
+const baselineStart = baseline.indexOf('// 3. VERIFY THE APPROVAL BEFORE ANYTHING IS COMMITTED')
+const baselineGate = baseline.slice(baselineStart, baseline.indexOf('try { checkCandidatePreview(candidate)', baselineStart))
 const windowSeconds = Number(route.match(/^const WINDOW_SECONDS = (\d+)$/mu)?.[1])
 assert.equal(windowSeconds, 300, 'production card window')
+assert.equal(Number(advance.match(/^const WINDOW_SECONDS = (\d+)$/mu)?.[1]), windowSeconds, 'advance uses its popup issuance window')
 const env = childEnv({ PYTHONDONTWRITEBYTECODE: '1' })
 let sequence = 0
 
-// Only the actual pre-commit gate runs. A marker stands for reaching the next step;
-// a refusal must throw before it. Cached subprocess results allow decision fault injection.
-function runGate(text, source = gate, cached = null, at = now) {
-  const evidence = join(scratch, String(sequence++))
-  mkdirSync(evidence)
+// The actual route gates run. The next-step marker writes a scratch consumed id;
+// refusal must precede it. Cached subprocess results allow decision fault injection.
+function runGate(text, source = gate, cached = null, at = now, verify = dualVerifyApproval, evidencePath = null) {
+  const evidence = evidencePath ?? join(scratch, String(sequence++))
+  mkdirSync(evidence, { recursive: true })
   const artifact = join(evidence, 'approval.json')
   writeFileSync(artifact, text)
   const runs = []
   const calls = []
   const journals = []
   const context = {
-    artifact, evidence, operationFile, operationDigest, subject, pinnedPem,
+    artifact, evidence, operationFile, operationDigest, subject, pinnedPem, consumedIds,
     approverDid: approver.did, controlDigest: approver.projection.activeControlDigest,
     VERIFY: join(root, 'scripts/aumlok/verify-approval'),
     COLD_VERIFY: join(root, 'scripts/aumlok/verify-approval-cold.py'),
     WINDOW_SECONDS: windowSeconds,
     process: { execPath: process.execPath }, Date: { now: () => at * 1000 }, join, writeFileSync,
+    dualVerifyApproval(options) { return verify({ ...options, now: at }, context.spawnSync) },
     spawnSync(command, args, options) {
       calls.push({ command, args: Array.from(args), options: { ...options } })
       assert.equal(options.killSignal, 'SIGKILL', 'both verifier deadlines must hard-kill')
@@ -95,17 +132,25 @@ function runGate(text, source = gate, cached = null, at = now) {
     reachedNextStep: false,
   }
   let refusal = null
-  try { runInNewContext(`${source}\nreachedNextStep = true`, context) }
+  try { runInNewContext(`${source}\nreachedNextStep = true; writeFileSync(consumedIds, 'scratch-next-step\\n')`, context) }
   catch (error) { if (!error.gateRefusal) throw error; refusal = error.message }
   assert.equal(runs.length, 2, 'both independent implementations must run even when one refuses')
+  const outputs = []
   for (const name of ['verify-approval.txt', 'verify-approval-cold.txt']) {
-    assert.match(readFileSync(join(evidence, name), 'utf8'), /VERIFIER .+; exit=/u)
+    const output = readFileSync(join(evidence, name), 'utf8')
+    assert.match(output, /VERIFIER .+; exit=/u)
+    outputs.push(output)
   }
   if (refusal) {
     assert.match(refusal, /Node=.+; Python=.+/u, 'refusal names both verdicts')
     assert.equal(journals[0]?.[0], 'APPROVAL_REFUSED')
   }
-  return { runs, calls, refusal, reachedNextStep: context.reachedNextStep }
+  assert.equal(readFileSync(mainRef, 'utf8'), originalMain, 'scratch remote main did not move')
+  const consumed = existsSync(consumedIds)
+  if (refusal) assert.equal(consumed, false, 'no approval id was consumed on refusal')
+  else assert.equal(consumed, true, 'accepted gate reaches the scratch consume marker')
+  rmSync(consumedIds, { force: true })
+  return { runs, calls, refusal, reachedNextStep: context.reachedNextStep, consumed, evidence, outputs, journals: JSON.stringify(journals) }
 }
 
 function verdict(run, cold = false) {
@@ -131,7 +176,10 @@ function invoke({ command, args, options }) {
 async function evaluate(text, at = now) {
   const prepared = runGate(text, gate, accepted, at)
   const runs = await Promise.all(prepared.calls.map(invoke))
-  return runGate(text, gate, runs, at)
+  const result = runGate(text, gate, runs, at)
+  const prior = runGate(text, baselineGate, runs, at, dualVerifyApproval, result.evidence)
+  for (const field of ['outputs', 'journals', 'refusal', 'reachedNextStep']) assert.deepEqual(result[field], prior[field], `unchanged self-change ${field}`)
+  return result
 }
 
 try {
@@ -200,6 +248,11 @@ try {
     assert.equal(result.reachedNextStep, name === 'base', `${name}: production decision`)
     results.set(name, result)
     console.log(`${name} | Node ${node} | Python ${cold} | gate ${result.refusal ? 'REFUSE' : 'ACCEPT'}`)
+    const moved = runGate(cases[index][1], advanceGate, result.runs, cases[index][2] ?? now)
+    assert.equal(moved.reachedNextStep, name === 'base', `${name}: advance production decision`)
+    assert.equal(moved.consumed, name === 'base', `${name}: advance scratch consume marker`)
+    assert.deepEqual(moved.outputs, result.outputs, `${name}: shared evidence bytes`)
+    console.log(`advance ${name} | gate ${moved.refusal ? 'REFUSE before consume/push; no consumed id' : 'ACCEPT; next step reached'} | scratch remote main unchanged`)
   }
 
   const unsigned = await evaluate(JSON.stringify({ ...base, approvalClass: 'scripted', keyClass: 'A', keyClassMeaning: 'device-bound',
@@ -219,8 +272,15 @@ try {
 
   const expectedFailure = (name, text, runs) => {
     assert.equal(runGate(text, gate, runs).reachedNextStep, false)
-    assert.throws(() => assert.equal(runGate(text, nodeOnly, runs).reachedNextStep, false), assert.AssertionError)
+    assert.throws(() => assert.equal(runGate(text, gate, runs, now, nodeOnly).reachedNextStep, false), assert.AssertionError)
     console.log(`EXPECTED FAILURE: cold decision removed: ${name} reaches next step`)
+    const protectedAdvance = runGate(text, advanceGate, runs)
+    assert.equal(protectedAdvance.reachedNextStep, false)
+    assert.equal(protectedAdvance.consumed, false)
+    const unprotectedAdvance = runGate(text, advanceGate, runs, now, nodeOnly)
+    assert.throws(() => assert.equal(unprotectedAdvance.reachedNextStep, false), assert.AssertionError)
+    assert.equal(unprotectedAdvance.consumed, true)
+    console.log(`EXPECTED FAILURE: advance cold decision removed: ${name} reaches next step and scratch consume marker`)
   }
   // Inject the former Node numeric-reader regression; the independent cold refusal still gates it.
   expectedFailure('verifiedAt decimal WITH injected Node numeric-reader regression', cases.find(([name]) => name === 'verifiedAt decimal token')[1],
@@ -246,6 +306,10 @@ try {
       const result = runGate(serialized, gate, injected)
       assert.equal(result.reachedNextStep, false)
       console.log(`${index === 0 ? 'Node' : 'Python'} injected ${name} | ${result.refusal.split('. NOTHING')[0]} | gate REFUSE before kernel/Git`)
+      const moved = runGate(serialized, advanceGate, injected)
+      assert.equal(moved.reachedNextStep, false)
+      assert.equal(moved.consumed, false)
+      console.log(`advance ${index === 0 ? 'Node' : 'Python'} injected ${name} | gate REFUSE before consume/push; no consumed id; scratch remote main unchanged`)
       if (index === 1) expectedFailure(name, serialized, injected)
     }
   }
@@ -286,7 +350,8 @@ try {
   }
   assert.equal(evidencePaths.size, 2, 'same-second reraises must reserve distinct evidence directories')
   console.log('same-second same-operation reraises | unique scratch evidence directories; no reused wx path')
-  console.log(`PASS dual approval verifier: ${(performance.now() - started).toFixed(0)} ms; pinned isolated Python, SIGKILL deadlines; scratch only, no Git or live app effects`)
+  console.log('self-change compatibility | original HEAD gate evidence, journal and refusal outputs byte-for-byte unchanged')
+  console.log(`PASS dual approval verifier: ${(performance.now() - started).toFixed(0)} ms; both real route gates; pinned isolated Python, SIGKILL deadlines; scratch only, no commit, push or live app effects`)
 } finally {
   rmSync(scratch, { recursive: true, force: true })
 }

@@ -20,8 +20,9 @@
  *                commits it adds (and drops), the files it adds, modifies and deletes against main now, and why. Its
  *                digest is sha256("aukora:operation-content:v1" ‖ 0x00 ‖ content), as in self-change.mjs.
  *   2. approve — the app's Aumlok signer shows that exact text; Approve signs it, Refuse signs nothing.
- *   3. verify  — scripts/aumlok/verify-approval against the PINNED approver key (the live Kira overlay's approverDid);
- *                the signed fields must name this operation, subject and control digest, unexpired; then the
+ *   3. verify  — BOTH scripts/aumlok/verify-approval and verify-approval-cold.py must accept the PINNED approver key
+ *                (the live Kira overlay's approverDid), operation bytes and digest, subject, control digest and time;
+ *                both results are retained, then the
  *                verifier-only kernel (scripts/aukora/decide.mjs) consumes the approval once.
  *   4. apply   — one Aura entry in state/home/aura-code/aura.jsonl, then the push, leased on the main it showed: if main
  *                moved after the popup, the push fails instead of overwriting.
@@ -40,6 +41,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { dualVerifyApproval } from '../aumlok/dual-verify.mjs'
 import { approvalIdFrom, codeChain } from './aura-code.mjs'
 import { ALLOWLIST_PATH, emailIsPlaceholder, fileChanges, gitIn, scanPublished, treeFiles } from './snapshot-scan.mjs'
 import { shownLimit } from './shown-limit.mjs'
@@ -48,7 +50,6 @@ const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
 const STATE = join(SUPPORT, 'state')
 const CLIENT = join(REPO, 'scripts', 'aumlok', 'approve-operation')
-const VERIFY = join(REPO, 'scripts', 'aumlok', 'verify-approval')
 const WINDOW_SECONDS = 300
 // The approval window shows 1,800 characters (aumlok-signer.mjs WITNESS_DISPLAY_LIMIT); stay under it.
 const MAX_SHOWN_CHARS = shownLimit(STATE)
@@ -288,22 +289,13 @@ if (asked.status !== 0 || !existsSync(artifact)) {
 }
 
 // 3. VERIFY, THEN ONE USE
-const checked = spawnSync(process.execPath, [VERIFY, artifact, '--pub', pinnedPem], { cwd: evidence, encoding: 'utf8' })
-writeFileSync(join(evidence, 'verify-approval.txt'), `${checked.stdout ?? ''}${checked.stderr ?? ''}`)
-if (checked.status !== 0) {
-  journal('APPROVAL_REFUSED', { exit: checked.status })
-  fail(`the returned approval does not verify against the pinned key ${approverDid}. main was NOT moved. See ${join(evidence, 'verify-approval.txt')}`)
-}
-const approval = JSON.parse(readFileSync(artifact, 'utf8'))
-const mismatch = [
-  approval.operationDigest !== operationDigest && 'operation digest',
-  approval.subject !== subject && 'subject',
-  approval.activeControlDigest !== controlDigest && 'control digest',
-  !(Number(approval.expiresAt) > Math.floor(Date.now() / 1000)) && 'expiry',
-].filter(Boolean)
-if (mismatch.length > 0) {
-  journal('APPROVAL_REFUSED', { mismatch })
-  fail(`the approval is signed but does not cover this move (${mismatch.join(', ')}). main was NOT moved`)
+const { accepted, nodeVerdict, coldVerdict } = dualVerifyApproval({
+  artifact, evidence, operationFile, operationDigest, subject, approverDid, controlDigest, pinnedPem,
+  maxWindow: WINDOW_SECONDS,
+})
+if (!accepted) {
+  journal('APPROVAL_REFUSED', { node: nodeVerdict, cold: coldVerdict })
+  fail(`approval verifiers: Node=${nodeVerdict}; Python=${coldVerdict}. main was NOT moved. Evidence: ${evidence}`)
 }
 // ONE USE, and the approved entry, under the chain's lock: an id the kernel spends is recorded in the same locked region,
 // so a later run can tell a spent-and-applied approval from a spent-and-unused one.

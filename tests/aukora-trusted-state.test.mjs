@@ -234,11 +234,12 @@ try {
     const parallelArgs = fixture('parallel', '9')
     const parallel = await Promise.all(Array.from({ length: 6 }, () => runChild(cliArgs(parallelArgs))))
     assert.equal(parallel.filter(result => result.status === 0 && /^ALLOW kernel:allowed$/mu.test(result.stdout)).length, 1, JSON.stringify(parallel))
-    assert.equal(parallel.filter(result => result.status === 1 && /^DENY kernel:replay$/mu.test(result.stdout)).length, 5, JSON.stringify(parallel))
+    // Under contention a loser may meet the held state lock before it can see the spend: both are named refusals.
+    assert.equal(parallel.filter(result => result.status === 1 && /^DENY (?:kernel:replay|adapter:consumed-ids-locked)$/mu.test(result.stdout)).length, 5, JSON.stringify(parallel))
     for (const result of parallel) {
       assert.ok(result.stderr.split('\n').some(line => /^(?:ALLOW|DENY) /u.test(line) && line.includes(witnessPath)), result.stderr)
     }
-    console.log('PASS six parallel decides: 1 ALLOW, 5 DENY kernel:replay; every CLI decision stderr names the witness')
+    console.log('PASS six parallel decides: 1 ALLOW, 5 DENY (kernel:replay or adapter:consumed-ids-locked); every CLI decision stderr names the witness')
 
     const noConsumeAdapter = adapterCopy('kernel-without-consume', undefined, source => {
       const kernelLine = "const kernel = await import(pathToFileURL(join(ROOT, 'vendor', 'authority', 'lib', 'index.js')).href)"

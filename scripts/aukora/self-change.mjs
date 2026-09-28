@@ -40,6 +40,7 @@ import { appendFileSync, closeSync, existsSync, lstatSync, mkdirSync, mkdtempSyn
 import { homedir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { dualVerifyApproval } from '../aumlok/dual-verify.mjs'
 import { codeChain } from './aura-code.mjs'
 import { shownLimit } from './shown-limit.mjs'
 import { WITNESS_DISPLAY_LIMIT, deriveApprovalWitness } from '../../apps/aukora-desktop/aumlok-signer.mjs'
@@ -58,8 +59,6 @@ const REPO = process.env.AUKORA_SELF_CHANGE_SOURCE ? realpathSync(process.env.AU
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
 const STATE = join(SUPPORT, 'state')
 const CLIENT = join(HOME_REPO, 'scripts', 'aumlok', 'approve-operation')
-const VERIFY = join(HOME_REPO, 'scripts', 'aumlok', 'verify-approval')
-const COLD_VERIFY = join(HOME_REPO, 'scripts', 'aumlok', 'verify-approval-cold.py')
 const WINDOW_SECONDS = 300
 // The approval window shows at most WITNESS_DISPLAY_LIMIT characters (apps/aukora-desktop/aumlok-signer.mjs; being raised
 // from 1,800 to 12,000 on 2026-09-27) and truncates the rest, saying so. 11,800 leaves 200 for the window's own heading.
@@ -311,27 +310,11 @@ if (asked.status !== 0 || !existsSync(artifact)) {
 }
 
 // 3. VERIFY THE APPROVAL BEFORE ANYTHING IS COMMITTED
-const approvalArgs = [artifact, '--approver-did', approverDid,
-  '--operation', operationFile, '--operation-digest', operationDigest,
-  '--subject', subject, '--control-digest', controlDigest, '--now', String(Math.floor(Date.now() / 1000)),
-  '--max-window', String(WINDOW_SECONDS), '--max-skew', '60']
-const verifyOptions = { cwd: evidence, encoding: 'utf8', timeout: 10_000, killSignal: 'SIGKILL' }
-const checked = spawnSync(process.execPath, [VERIFY, ...approvalArgs, '--pub', pinnedPem], verifyOptions)
-const coldChecked = spawnSync('/usr/bin/python3', ['-I', '-B', COLD_VERIFY, ...approvalArgs], {
-  ...verifyOptions, env: { PATH: '/usr/bin:/bin', LANG: 'C.UTF-8' },
+const { accepted, nodeVerdict, coldVerdict } = dualVerifyApproval({
+  artifact, evidence, operationFile, operationDigest, subject, approverDid, controlDigest, pinnedPem,
+  maxWindow: WINDOW_SECONDS,
 })
-const verifierVerdict = (run, cold) => {
-  if (run.error || run.signal) return `ERROR ${run.error?.code ?? run.signal}`
-  const output = run.stdout ?? ''
-  if (run.status === 0 && (cold ? output.trim() === 'ACCEPT' : /^VERIFIED:/mu.test(output))) return 'ACCEPT'
-  return output.match(cold ? /^REFUSE (\S+)/mu : /^REFUSED: (\S+)/mu)?.[0] ?? `ERROR exit=${String(run.status)}`
-}
-const nodeVerdict = verifierVerdict(checked, false)
-const coldVerdict = verifierVerdict(coldChecked, true)
-for (const [name, run, verdict] of [['verify-approval.txt', checked, nodeVerdict], ['verify-approval-cold.txt', coldChecked, coldVerdict]]) {
-  writeFileSync(join(evidence, name), `${run.stdout ?? ''}${run.stderr ?? ''}\nVERIFIER ${verdict}; exit=${String(run.status)}${run.error ? `; ${run.error.message}` : ''}\n`)
-}
-if (nodeVerdict !== 'ACCEPT' || coldVerdict !== 'ACCEPT') {
+if (!accepted) {
   journal('APPROVAL_REFUSED', { node: nodeVerdict, cold: coldVerdict })
   fail(`approval verifiers: Node=${nodeVerdict}; Python=${coldVerdict}. NOTHING was committed. Evidence: ${evidence}`)
 }
