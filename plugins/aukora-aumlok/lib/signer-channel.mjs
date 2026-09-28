@@ -52,6 +52,7 @@ import {
 import { admitPublicControl } from './projection.mjs'
 import { readDigest, readNonNegativeInteger } from './validation.mjs'
 import { isNotReadyRefusal } from './signer-refusal.mjs'
+import { OWNER_ONLY_CODE, ownerOnlyDetail } from './prototype-status.mjs'
 
 /** The two names that mean "this machine is not ready to sign" rather than "the owner said no" live in
  * `signer-refusal.mjs`, beside the names themselves, so this reader and the shipped operator path
@@ -199,6 +200,10 @@ export function createOwnerApprovalSession({
       // "The owner declined" and "this machine holds no root to sign with" both arrive as `refused`,
       // and only one of them is true at a time. The not-ready names pass through as their OWN reasons
       // rather than being reported as a refusal that never happened.
+      // MISSING AIRLOCK OR THE SECOND ACCOUNT IS NOT "THE OWNER SAID NO", and it is not
+      // "bind this machine". The sentence is the status module's, shown beside the atom.
+      const ownerOnly = ownerOnlyDetail(parsed.refusal)
+      if (ownerOnly !== null) return refuse(OWNER_ONLY_CODE, ownerOnly)
       if (isNotReadyRefusal(parsed.refusal)) {
         return refuse(parsed.refusal, `the signer is not ready: ${parsed.refusal}`)
       }

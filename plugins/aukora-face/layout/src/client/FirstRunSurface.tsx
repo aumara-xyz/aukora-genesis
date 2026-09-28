@@ -134,6 +134,15 @@ export function FirstRunSurface({ t, onStart, facts, storedKeyTail, source: give
       {/* THE LAB LINE COMES FIRST, BEFORE ANYTHING IS ASKED FOR. A person deciding what to type deserves to know
           what they are typing into before they type it. */}
       <p className={css.firstRunLead} data-first-run-lab>{t('firstRun.lab')}</p>
+      <p className={css.firstRunNote} data-first-run-owner-only>{t('firstRun.ownerOnly')}</p>
+      <p className={css.firstRunNote} data-first-run-not-enforced>{t('firstRun.notEnforced')}</p>
+      <ol className={css.firstRunList} data-first-run-gatekeeper>
+        <li>{t('firstRun.gatekeeper.1')}</li>
+        <li>{t('firstRun.gatekeeper.2')}</li>
+        <li>{t('firstRun.gatekeeper.3')}</li>
+        <li>{t('firstRun.gatekeeper.4')}</li>
+      </ol>
+      <pre className={css.firstRunRaise} data-first-run-raise>{t('firstRun.raise')}</pre>
 
       <label className={css.firstRunField}>
         <span>{t('firstRun.name.label')}</span>
