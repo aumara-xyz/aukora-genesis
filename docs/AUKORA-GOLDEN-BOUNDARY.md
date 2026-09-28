@@ -1,3 +1,68 @@
+# AUKORA GOLDEN BOUNDARY — Rev 2.3
+
+28 September 2026
+
+## The problem
+
+A model proposes actions; the software that proposes must not be the authority that permits. The app and agent still share a UID, the approval key is software, and nothing on GitHub requires the approval routes. These are limits of the present boundary.
+
+## The Unownable five laws
+
+Quoted from this paper's earlier §2, where they are constitutional goals inherited from *Unownable Core*. They are obligations, not achieved guarantees:
+
+> - Evidence and reconstructed memories do not create authority.
+> - An identity does not automatically gain governing power over others.
+> - A model, evaluator, maintainer, or founder cannot approve its own expansion of power
+>   merely by describing that expansion as beneficial.
+> - Removing an observer or mediator does not silently widen an effect path.
+> - Refusal, interruption, revocation, portability, and exit remain meaningful.
+
+## §4 — The running boundary
+
+Running release: `aukora-release-25149f573`. Documentation baseline: GitHub `main` at `91994c3a1`. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” at that pin bounds every claim.
+
+| Claim | Status | Scope and limit |
+| --- | --- | --- |
+| Kernel `decide()` on every app-session tool call | RUNNING | The action gate invokes the carried kernel. No one-use grant per tool call; child-process tools and processes outside the app are outside this gate. |
+| Exact-byte approval with a one-use kernel consume on self-change and MOVE MAIN | RUNNING | One-use belongs to these approval routes. The README still marks the current self-change version as not run with a real approval. |
+| Membrane minimal verifier gating restarts | RUNNING | `become.mjs` checks the code chain: `OBSERVATION_CONFLICT` refuses; first retention and `UNDETERMINED` do not. |
+| Automatic memory through the pinned WASM cell | RUNNING | A relay, not a sandbox; automatic notes grant no authority. |
+| Airlock key custody in a second macOS account | RUNNING | `airlock-probe`: EACCES, operator-recorded, 2026-09-28. Any process running as the owner's user can still REQUEST a signature. |
+| Deep's guest launcher, broker and issuer | ON MAIN, NOT MOUNTED | Source in `plugins/aukora-box/`; the live agent remains on the host. |
+| Live agent inside a confined guest | NOT BUILT | The guest source is not a deployed agent boundary. |
+| Stock harness plugins under policy | NOT ON MAIN | Stock plugins still load ungoverned. |
+| TrustedStateStore restore protection integrated into Genesis approval state | NOT ON MAIN | The class is vendored; this integration is absent. |
+| CI | RUNNING | `.github/workflows/check.yml` runs `sh scripts/check.sh` on every push; it checks the repository, not the installed app. |
+
+The action gate checks shell text and can miss targets hidden in scripts or variables. Full-access sessions remain unconfined by Seatbelt. Source call paths support the implementation descriptions; they do not reproduce the recorded live results.
+
+## Live evidence
+
+These are **operator-recorded lines, not independently reproduced** for this revision:
+
+- `2026-09-27T23:53:16Z | 25149f573 | ALPHA full-access sed -i on plugins/aukora-kira → deny | rule authority:governing-code | kernelCode sacred_target | file untouched`
+- `CI | 16/16` — [recorded run 36361238805](https://github.com/aumara-xyz/aukora-genesis/actions/runs/36361238805).
+- `First Airlock approval | main → f87b72b68 | approving key did:key:z6MkiP8BnvVRZJcxtv9TShdq3KUGc7wF1skbZBJbQ96jAtCm` — approved in the AUKORA popup; the record names a key, not a proven person.
+
+## Ceilings
+
+The app and agent share a UID; the Airlock socket accepts signature requests from any process of that UID. Attendance is reported, not proven. The phrase-derived root has about 34 bits and can be guessed offline. Embedded app frames share the desktop origin. The live agent runs on the host. No independent re-implementation of the verifiers exists. Nothing on GitHub requires the approval routes: a direct push is not stopped.
+
+## 90 days — plans
+
+These are plans, in order, not completed work or promised results:
+
+1. Put the live agent inside Deep's guest: **no confinement, no start**. Remove its ambient host authority.
+2. Have a broker perform approved effects. Isolate embedded app frames from the desktop origin and authority.
+3. Give the socket caller identity beyond UID. Develop a trusted approval interaction with separate attendance evidence; caller identity alone does not prove a person attended.
+4. Replace the phrase-derived root with a stronger random root, at least 128 bits, unlocked by the words. Measure custody and offline-guess resistance.
+5. Commission an independent re-implementation of the verifiers and compare their acceptance and refusal behavior.
+6. Add branch protection that requires the approval routes on GitHub.
+
+---
+
+## Earlier revision — preserved unchanged below
+
 # AUKORA GOLDEN BOUNDARY
 
 **Human authority, evolving intelligence, independently checkable evidence**
