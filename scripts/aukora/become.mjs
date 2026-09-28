@@ -23,7 +23,8 @@
  *      with everything put back;
  *   4. under the heavy-run lock: repoint the live rows that name the running release (config.json patch rows, the App
  *      Support patch files, state/gate-state/gate-config.json), then `desktop-cutover prepare` (the live check);
- *   5. quit the app, `desktop-cutover apply`, swap the shell if one was built, reopen, and wait for the desktop log to
+ *   5. record the fixture confinement probe (no live guest; its verdict does not block this restart), then quit the app,
+ *      `desktop-cutover apply`, swap the shell if one was built, reopen, and wait for the desktop log to
  *      say the new release loaded. If it does not within the timeout, everything is restored from step 3's backups
  *      (and the old shell), and the app is reopened on the release it was running.
  * From the first live write on, ANY exit (a refusal, a crash, a signal) puts back what was changed and reopens the app
@@ -43,6 +44,7 @@ import { codeChain } from './aura-code.mjs'
 import { root, consistencyProof } from './aura-merkle.mjs'
 import { acquireHeavyRun } from '../lib/heavy-run.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
+import { probeConfinement } from './guest-start.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -81,8 +83,19 @@ const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
 const tail = (text, n = 12) => text.trim().split('\n').slice(-n).join('\n')
 
 let result = { commit: commitArg ?? null, why, startedAt: stamp(), outcome: 'running', steps: [] }
+let confinement = { verdict: 'NOT_RUN', detail: 'become ended before the confinement probe' }
+let confinementProbed = false
 const step = (name, detail = {}) => { result.steps.push({ at: stamp(), name, ...detail }); say(`STEP ${name}${detail.note ? `: ${detail.note}` : ''}`) }
-const writeResult = () => writeFileSync(join(HOME_DIR, 'last.json'), `${JSON.stringify(result, null, 2)}\n`)
+const writeResult = () => {
+  // Also covers crashes before the probe; finishOutcome chains this same body.
+  result.body = { ...result.body, confinement }
+  writeFileSync(join(HOME_DIR, 'last.json'), `${JSON.stringify(result, null, 2)}\n`)
+}
+const observeConfinement = () => {
+  confinement = probeConfinement()
+  confinementProbed = true
+  step('confinement', { note: `${confinement.verdict}: ${confinement.detail}` })
+}
 /** Set once the first live file is about to change: puts back everything, reopens the app if it was quit. */
 let rescue = null
 let rescuing = null
@@ -176,6 +189,8 @@ class BecomeOutcome extends Error {
 function finish(outcome, note) { throw new BecomeOutcome(outcome, note) }
 async function finishOutcome(outcome, note) {
   dropHeavy()
+  // Plans and outcomes without a restart still get their own fresh observation.
+  if (!confinementProbed) observeConfinement()
   if (outcome === 'rolled-back' && result.booted) outcome = 'booted'
   const chain = PLAN ? null : codeChain(STATE)
   const record = () => {
@@ -495,6 +510,8 @@ async function main() {
   step('prepare', { note: 'the live check passed' })
 
   // ── 5. RESTART INTO IT ─────────────────────────────────────────────────────────────────────────────
+  observeConfinement()
+  writeResult() // Preserve the observation before quitting; this launches no live guest.
   step('restart', { note: 'quitting the app' })
   if (!(await quitApp())) {
     await giveUp('failed', `the app did not quit, so ${basename(target)} was not applied; every live file was restored. If the app is stuck, quit it by hand and reopen it`)
