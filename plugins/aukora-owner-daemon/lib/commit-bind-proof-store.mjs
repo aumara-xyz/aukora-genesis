@@ -15,6 +15,7 @@ import { mkdirSync, openSync, closeSync, writeSync, readFileSync, renameSync,
 import { join, isAbsolute } from 'node:path'
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
+import { assertProofDirCustody } from './commit-bind-custody.mjs'
 
 const HEX64 = /^[0-9a-f]{64}$/u
 const MAX_PENDING = 4096
@@ -32,6 +33,8 @@ export function sha256Hex(bytes) {
 function storeRoot(explicit) {
   const dir = explicit ?? process.env.AUKORA_COMMIT_BIND_PROOF_DIR
   if (typeof dir !== 'string' || dir.length === 0 || !isAbsolute(dir)) fail('proof-store:dir-missing')
+  // R1: optional separate-UID refuse; when enabled, the issuer UID pin is required. Default off.
+  assertProofDirCustody({ storeDir: dir })
   return dir
 }
 

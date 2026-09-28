@@ -16,6 +16,7 @@
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
 import { consumeCommitBindProof } from '../../plugins/aukora-owner-daemon/lib/commit-bind-proof-store.mjs'
+import { separateUidRequired } from '../../plugins/aukora-owner-daemon/lib/commit-bind-custody.mjs'
 
 const HEX64 = /^[0-9a-f]{64}$/u
 const fail = (code) => {
@@ -52,6 +53,10 @@ export function assertOneUseCommitBind({ unsignedBytes, approvalDigest, proof })
   if (typeof challenge !== 'string' || !HEX64.test(challenge)) fail('commit-bind:proof-invalid')
 
   const storeDir = process.env.AUKORA_COMMIT_BIND_PROOF_DIR
+  // Separate-UID mode is store-only; never downgrade to the caller-authored stub.
+  if (separateUidRequired() && (typeof storeDir !== 'string' || storeDir.length === 0)) {
+    fail('commit-bind:proof-dir-missing')
+  }
   if (typeof storeDir === 'string' && storeDir.length > 0) {
     let consumed
     try {

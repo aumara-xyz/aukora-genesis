@@ -37,6 +37,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { assertOneUseCommitBind } from './commit-ssh-airlock-bind.mjs'
+import { assertCommitKeyCustody } from '../../plugins/aukora-owner-daemon/lib/commit-bind-custody.mjs'
 
 const HEX64 = /^[0-9a-f]{64}$/u
 const fail = (code) => {
@@ -93,6 +94,8 @@ export function signCommitBytes({ unsignedBytes, approvalDigest, proof }) {
   const key = process.env.AUKORA_COMMIT_SIGN_KEY
   if (typeof key !== 'string' || key.length === 0) fail('commit-sign:key-missing')
   if (!existsSync(key)) fail('commit-sign:key-missing')
+  // R1: optional separate-UID/key custody refuse; UID pin is shared with PROOF_DIR. Default off.
+  assertCommitKeyCustody({ keyPath: key })
 
   const dir = mkdtempSync(join(tmpdir(), 'aukora-commit-sign-'))
   try {
