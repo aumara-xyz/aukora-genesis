@@ -9,7 +9,7 @@ in a separate macOS account the agent cannot read; a kernel decides; every gover
 - **The app and agent share a macOS UID.** The Airlock keeps the software approval key in a separate account,
   but its socket accepts signature requests from any process of the app's UID.
 - **Attendance is reported, not proven.** A recorded click and a signature do not establish that a person approved.
-- **The phrase-derived root has about 34 bits.** Its seven-word phrase and public handle permit offline guessing.
+- **The phrase-derived root is pool math, not 256 bits.** Its seven-word acrostic is local story memorability only. The public handle permits offline guessing. The figure is `measure()` in `plugins/aukora-aumlok/lib/themed-entropy.mjs`.
 - **Embedded app frames share the desktop origin.** The null-origin sandbox is off.
 - **The live agent runs on the host.** Deep's box, guest launcher, broker and issuer are in the tree, but are not
   wired to the live agent. Full-access sessions remain unconfined by Seatbelt.

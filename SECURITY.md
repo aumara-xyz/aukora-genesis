@@ -170,8 +170,8 @@ Spelled in `plugins/aukora-aumlok/lib/ceilings.mjs`.
   custody or succession claim is made. A signature shows that a key signed, never that a person
   attended.
 - Not printed as a ceiling yet: the owner's root key is derived with scrypt from the seven words and a
-  public handle (`plugins/aukora-aumlok/lib/derive-v3.mjs`). The desktop app's generator gives about 34
-  bits at its weakest anchor (`plugins/aukora-aumlok/lib/themed-entropy.mjs`), and
+  public handle (`plugins/aukora-aumlok/lib/derive-v3.mjs`). The desktop app's generator gives the pool-math
+  figure at its weakest anchor, not 256 bits; the acrostic is local story memorability only (`plugins/aukora-aumlok/lib/themed-entropy.mjs`), and
   `scripts/aumlok/bind --generate` about 14.3 bits (`plugins/aukora-aumlok/lib/ceremony-phrase.mjs`).
   Because the handle is public, someone who has the public key can search for the words offline; the
   scrypt cost slows each guess but does not stop the search. A redesign is planned.

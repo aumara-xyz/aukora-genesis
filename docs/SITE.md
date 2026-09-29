@@ -6,7 +6,7 @@ AUKORA Genesis is a desktop AI where the software that proposes an action is not
 
 - The app and agent share a macOS UID. Airlock holds the software approval key in a separate account, but its socket accepts signature requests from any process of the app's UID.
 - Attendance is reported, not proven. A recorded click and signature do not establish that a person approved.
-- The phrase-derived root has about 34 bits. Its seven-word phrase and public handle permit offline guessing.
+- The phrase-derived root is pool math, not 256 bits. Its seven-word acrostic is local story memorability only, and the public handle permits offline guessing.
 - Embedded app frames share the desktop origin; the null-origin sandbox is off.
 - The live agent runs on the host. Deep's box is in the tree, not wired to the live agent. Full-access sessions remain unconfined by Seatbelt.
 - Nothing on GitHub requires the approval routes. The macOS user holds push credentials; a direct push to `main` is not stopped. The app's action gate is an in-process check, not isolation.
