@@ -14,7 +14,7 @@ PR #9 (`cursor/openshell-aukora-fit-a427`) wrote the first version of this file.
 - OpenShell filesystem rules are Landlock inside a Linux guest. They are not a Darwin Seatbelt profile. A bind mount of the Mac home can negate them.
 - `landlock.compatibility: best_effort` can continue without a required extra restriction. The sample worker policy asks for `hard_requirement`. That choice is not verified on Apple Silicon.
 - An OpenShell `access:` preset is an egress rule for a binary and a host. It is not an AUKORA grant.
-- The inspected OpenShell `main` (`1358941b818d4126a7374aaf5216d87fc960e122`) and tag `v0.1.2` (`6648bd0c290efbc41ba131ee9831ee45cd431f94`) are different commits. This note does not pick one.
+- The inspected OpenShell `main` (`1358941b818d4126a7374aaf5216d87fc960e122`) and tag `v0.1.2` (`6648bd0c290efbc41ba131ee9831ee45cd431f94`) are different commits. The prove profile pins 0.1.2 and Docker (`PROFILES.md`). Peter reported that bring-up (`SPIKE-FINDINGS.md`). This note did not re-run it.
 
 Sources for the OpenShell side of PR #9, 2026-09-29: [NVIDIA/OpenShell](https://github.com/NVIDIA/OpenShell) (Apache-2.0), the policy schema and sandbox-policy pages under `docs.nvidia.com/openshell/dev/`, and the sandbox compute-driver page. Two published install pages disagree on the Homebrew gateway bind address (`https://localhost:17670` and `https://[::1]:17670`). Trust `openshell status` on the machine, not either sentence. The v0.2 spec's own inspection scope is N00–N14 in `SPEC-v0.2-INTAKE.md`.
 
@@ -122,7 +122,10 @@ The v0.2 profile adds requirements this YAML does not express: `enforcement: enf
 - `INCREMENT-MAP.md` — the first three later tasks and their gates.
 - `O-CASES.md` — O01–O40 and the B cases those increments name. All UNRUN.
 - `RESIDUAL-RISKS.md` — attendance, trusted display, same-UID mis-placement, telemetry, provider-use.
-- `memory-metal-worker.policy.yaml` — schema version 1 sample carried forward from PR #9. Host denies are comments. Not loaded.
-- `FIRST-SPIKE.md` — Apple Silicon throwaway sandbox. No live AUKORA writes. Not a measurement of a planted secret.
-- `NEXT-SPIKE.md` — the smallest runnable experiment after these docs.
+- `SPIKE-FINDINGS.md` — Peter's Mac bring-up: OpenShell 0.1.2, `host.docker.internal:17670`, `ubuntu:1000`. Not a reachability pass.
+- `PROFILES.md` — prove/Docker versus friend/light.
+- `CORE-EXTRACT.md` — contracts AUKORA owns; OpenShell on Docker is the first replaceable adapter.
+- `memory-metal-worker.policy.yaml` — schema version 1 sample. Host denies are comments. Process identity is UID `"1000"`. Not loaded by this agent.
+- `FIRST-SPIKE.md` — Apple Silicon throwaway sandbox. No live AUKORA writes.
+- `NEXT-SPIKE.md` — planted host secret and signer path. Still UNRUN.
 - `LICENSE-NOTE.md` — Apache-2.0 beside AGPL. Crown stays closed.

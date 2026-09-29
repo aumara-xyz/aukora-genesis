@@ -52,9 +52,9 @@ The spec says no OpenShell integration was observed in the v0.1 paths or in the 
 | Latest non-prerelease the spec's release API returned | `v0.1.2`, published `2026-09-28T03:58:00Z` |
 | Tag `v0.1.2` resolved in the spec (N13) | `6648bd0c290efbc41ba131ee9831ee45cd431f94` |
 
-**The inspected main and the v0.1.2 tag are different commits.** This intake does not pick a binary. A later qualification must select one exact build, check the extension capabilities that build actually advertises, and stop if a required interface is missing. A main-branch page must not be treated as present in the v0.1.2 artifact (§2.7).
+**The inspected main and the v0.1.2 tag are different commits.** The prove profile now pins the tag Peter ran: OpenShell 0.1.2, `6648bd0c290efbc41ba131ee9831ee45cd431f94`, Docker only (`PROFILES.md`, `SPIKE-FINDINGS.md`). Inspected `main` stays the spec's reading pin. A main-branch page must not be treated as present in the 0.1.2 artifact (§2.7).
 
-This intake did not re-fetch NVIDIA/OpenShell and did not run `openshell`.
+This update read the 0.1.2 policy schema and Docker driver README at that tag. It did not run `openshell`. The Mac bring-up is operator-reported.
 
 ## What §1.5 decides
 
@@ -132,7 +132,10 @@ That spike is the right outer-cage sketch and the wrong scope for v0.2. It has n
 | Fit note pointed at this intake | `OPENSHELL-AUKORA-FIT.md` |
 | Throwaway sandbox kept separate from the next measurement | `FIRST-SPIKE.md`, `NEXT-SPIKE.md` |
 | License note pointed at §20.21 | `LICENSE-NOTE.md` |
+| Mac bring-up Peter reported | `SPIKE-FINDINGS.md` |
+| prove/Docker versus friend/light | `PROFILES.md` |
+| Contracts AUKORA owns; Docker adapter is replaceable | `CORE-EXTRACT.md` |
 
 ## What this intake does not do
 
-It does not choose the OpenShell build. It does not write a gateway interceptor, a middleware adapter, or a policy compiler. It does not move `workspace.patch`, the issuer, the broker, or checkpoint custody. It does not run B01–B52 or O01–O40. It does not preview UI. Peter's screens are unchanged.
+The prove profile names OpenShell 0.1.2 and Docker. This branch does not install that binary, write a gateway interceptor, or add the adapter. It does not move `workspace.patch`, the issuer, the broker, or checkpoint custody. It does not run B01–B52 or O01–O40. It does not preview UI. Peter's screens are unchanged.

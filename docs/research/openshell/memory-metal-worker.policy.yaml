@@ -4,7 +4,12 @@
 # https://github.com/NVIDIA/OpenShell
 #
 # Carried forward from PR #9. Direction: SPEC-v0.2-INTAKE.md.
-# This file is a design sample. It has not been loaded by `openshell`. UNRUN.
+# Prove profile: PROFILES.md. Bring-up: SPIKE-FINDINGS.md.
+# This file is a design sample. This agent has not loaded it in `openshell`.
+#
+# Peter reported the default image has no user named sandbox. Use the Ubuntu
+# image identity, UID 1000. The 0.1.2 schema accepts the name "sandbox" or a
+# numeric id, and rejects root. Explicit fields below are "1000".
 #
 # "Memory-metal" means the Mac that holds memory: Kira, OpenViking, remembered
 # notes, ~/aukora-live/jobs, and proof stores. This worker must not write them.
@@ -60,8 +65,9 @@ landlock:
   compatibility: hard_requirement
 
 process:
-  run_as_user: sandbox
-  run_as_group: sandbox
+  # Prove profile. Name "sandbox" is absent on the default image (SPIKE-FINDINGS.md).
+  run_as_user: "1000"
+  run_as_group: "1000"
 
 network_policies:
   github_fetch:

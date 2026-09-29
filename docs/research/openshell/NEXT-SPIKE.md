@@ -1,8 +1,8 @@
 # Next spike: planted host secret and the signer socket path
 
-**Status: UNRUN.** This is the smallest runnable experiment after the documents in this directory. It was not executed. Do not run it in a cloud VM as a stand-in for the Mac. Do not install OpenShell on the live app host as part of merging this branch.
+**Status: UNRUN.** Peter's Mac pass covers bring-up only (`SPIKE-FINDINGS.md`): OpenShell 0.1.2, gateway `host.docker.internal:17670`, identity `ubuntu:1000`. It does not cover the four gates below. This agent did not run them. Do not run them in a cloud VM as a stand-in for the Mac. Do not install OpenShell onto the live app from this branch.
 
-`FIRST-SPIKE.md` is the throwaway that only checks install, one create, and a clean exit. This spike adds a measurable reachability check. It is still not O01–O08, not Gate B, and not a broker test. No `workspace.patch` is performed. No Approve popup is raised.
+`FIRST-SPIKE.md` is the throwaway install note. This file is the reachability check. It is still not O01–O08, not Gate B, and not a broker test. No `workspace.patch` is performed. No Approve popup is raised. Use the prove/Docker profile (`PROFILES.md`), not friend/light.
 
 ## What is not enforced
 
@@ -13,7 +13,9 @@ A startup refusal from `hard_requirement` is Gate 1 failing closed. It is not a 
 ## Scope
 
 - Machine: Apple Silicon Mac, operator-owned, disposable scratch only.
-- Guest: Linux, via Docker Desktop or a Podman machine. Landlock applies in the guest.
+- Guest: Linux, via Docker Desktop. Podman is friend/light, not this check. Landlock applies in the guest.
+- Gateway address from the reported bring-up: `host.docker.internal:17670`.
+- Policy identity: `"1000"` (the sample YAML). The name `sandbox` does not exist in the default image.
 - Policy: `memory-metal-worker.policy.yaml` from this directory, copied into the scratch directory.
 - Flags that stay off: `--upload`, `--forward`, `--provider`, and any bind of the home directory, `~/aukora-genesis`, `~/aukora-live`, `~/aukora-live-proof`, `~/Library/Application Support/AUKORA`, or `~/.aukora`.
 - Process inside the sandbox: `sh`, not a model CLI and not the AUKORA app.

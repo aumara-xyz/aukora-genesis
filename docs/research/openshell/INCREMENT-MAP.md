@@ -23,7 +23,7 @@ The first protected effect stays the carried `workspace.patch`: one preimage-bou
 
 ## Increment 1 — One qualified worker, one closed effect path
 
-**Goal.** Pick one exact OpenShell artifact and driver. Run the Cordis agent, its ordinary tools, and its owned child processes inside that workload. Leave the `workspace.patch` contract, the protected target, the approval interfaces, and the broker outside the worker. Record a deployment identity and one minimal proposal route.
+**Goal.** Use the prove/Docker profile: OpenShell 0.1.2 and the Docker driver only (`PROFILES.md`). Run the Cordis agent, its ordinary tools, and its owned child processes inside that workload, as UID 1000. Leave the `workspace.patch` contract, the protected target, the approval interfaces, and the broker outside the worker. The six obligations the adapter must meet are in `CORE-EXTRACT.md`. Record a deployment identity and one minimal proposal route.
 
 **Why this is first.** It is the earliest measurement that replaces a diagram of the membrane with one observed separation (§22.1).
 
@@ -31,7 +31,7 @@ The first protected effect stays the carried `workspace.patch`: one preimage-bou
 
 | Surface | Later role |
 |---|---|
-| External OpenShell build, driver, workload image, and policy | The fence. Pinned. No floating `latest`. |
+| External OpenShell 0.1.2, Docker driver, workload image, and policy | The first adapter body (`CORE-EXTRACT.md`). Pinned. No floating `latest`. Podman, Kubernetes, and the VM driver are not this increment. |
 | `plugins/aukora-box/aukora/broker/effect-definition.mjs` | Keep `workspace.patch` as the closed effect. Do not add a universal shell effect to make the sandbox useful. |
 | `plugins/aukora-box/aukora/activation/statement.mjs` | Enrollment of the selected runtime identity beside the existing activation fields. |
 | A narrow proposal adapter, new only if the existing broker cannot speak the authenticated workload channel | Sits on the host side of the supervisor channel. Not an OpenShell `/v1/propose` invention (§20.11). |
