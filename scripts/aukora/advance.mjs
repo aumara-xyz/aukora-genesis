@@ -218,7 +218,8 @@ const evidenceRoot = join(homedir(), 'aukora-live-proof')
 mkdirSync(evidenceRoot, { recursive: true })
 const evidence = mkdtempSync(join(evidenceRoot, `${new Date().toISOString().slice(0, 19).replace(/:/g, '')}-advance-`))
 // PRECARD CHECK: no signer contact or approval consumption before this refusal.
-const checked = await precardCheck({ repo: REPO, tree: to, evidence })
+const checked = await precardCheck({ repo: REPO, tree: to, base: from, evidence })
+if (checked.proofRefused) { process.stderr.write(`${checked.failure}\n`); process.exit(1) }
 if (!checked.passed) fail(`${checked.failure}. Evidence: ${evidence}`)
 // PRECARD CHECK END
 const head = [
@@ -232,6 +233,7 @@ const head = [
   `tree        ${tree}`,
   `why         ${why}`,
   checked.summary,
+  checked.composition,
   `commits     ${String(added.length)} added:`,
   ...listed,
   `files       against main now: ${String(count('A'))} added, ${String(count('M'))} modified, ${String(count('D'))} deleted`,

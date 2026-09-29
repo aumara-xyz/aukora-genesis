@@ -257,14 +257,15 @@ const evidenceRoot = join(STATE, 'home', 'code-evidence')
 mkdirSync(evidenceRoot, { recursive: true })
 const evidence = mkdtempSync(join(evidenceRoot, `${new Date().toISOString().slice(0, 19).replace(/:/g, '')}-change-`))
 // PRECARD CHECK: no signer contact or approval consumption before this refusal.
-const checked = await precardCheck({ repo: candidate.worktree, tree: candidate.tree, evidence })
+const checked = await precardCheck({ repo: candidate.worktree, tree: candidate.tree, base: candidate.base, evidence })
+if (checked.proofRefused) { process.stderr.write(`${checked.failure}\n`); process.exit(1) }
 if (!checked.passed) fail(`${checked.failure}. Evidence: ${evidence}`)
 // PRECARD CHECK END
 
 // The adapter binds its saved reason to the entire operation. Restage with the check
 // line in that reason, then require identical bytes before qualifying this preview.
 const checkedCandidate = candidate
-const checkedWhy = `${why}\n${checked.summary}`
+const checkedWhy = `${why}\n${checked.summary}\n${checked.composition}`
 candidate = candidateStep(() => stageCandidatePreview({ repo: REPO, support: SUPPORT, paths, explicitlyNamedPaths: paths, why: checkedWhy, generated }))
 previews.add(candidate)
 if (candidate.base !== checkedCandidate.base || candidate.tree !== checkedCandidate.tree || candidate.digest !== checkedCandidate.digest) {

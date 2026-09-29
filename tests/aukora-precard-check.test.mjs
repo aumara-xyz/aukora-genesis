@@ -74,12 +74,13 @@ try {
   let checked
   try {
     Object.assign(process.env, poisoned)
-    checked = await precardCheck({ repo, tree: pass.tree, evidence, timeoutMs: 20_000 })
+    checked = await precardCheck({ repo, tree: pass.tree, base: base.commit, evidence, timeoutMs: 20_000 })
   } finally {
     for (const [name, value] of Object.entries(before)) { if (value === undefined) delete process.env[name]; else process.env[name] = value }
   }
   assert.equal(checked.passed, true, checked.failure)
   assert.equal(checked.summary, 'checks: TOTAL 1/1 passed on this exact tree')
+  assert.equal(checked.composition, 'product 1 lines, proof 0 lines')
   const output = evidenceOutput(evidence)
   assert.doesNotMatch(output, /^(?:AUKORA_|GIT_|NODE_OPTIONS=)/mu)
   assert.doesNotMatch(output, /no-precard-tools-here|no-precard-home-here/u)
@@ -133,6 +134,7 @@ try {
   const green = await advance(pass.commit)
   assert.equal(green.popups, 1)
   assert.match(green.card, /^checks: TOTAL 1\/1 passed on this exact tree$/mu)
+  assert.match(green.card, /^product 1 lines, proof 0 lines$/mu)
   assert.ok(green.card.length <= 1650)
   removedMaterialization(evidenceOutput(green.evidence))
   console.log('PASS advance PASS tree reaches stub popup with checks line within shown limit')
@@ -155,8 +157,9 @@ try {
       stageCandidatePreview: options => { state.reason = options.why; return { ...candidate } },
       qualifyCandidateCrossing: () => [], candidateOperation: (_candidate, why) => { assert.equal(why, state.reason); return why },
       deriveApprovalWitness: bytes => ({ words: bytes.toString() }),
+      process: { stderr: { write: () => {} }, exit: () => { throw Object.assign(new Error('composition refused'), { refused: true }) } },
       fail: message => { throw Object.assign(new Error(message), { refused: true }) },
-      popup: content => { state.popup = true; assert.match(content, /checks: TOTAL 1\/1 passed on this exact tree/u) },
+      popup: content => { state.popup = true; assert.match(content, /checks: TOTAL 1\/1 passed on this exact tree/u); assert.match(content, /^product 1 lines, proof 0 lines$/mu) },
     }
     try { await runInNewContext(`(async () => { ${sources['self-change'].slice(selfStart, selfEnd)}\npopup(content) })()`, context, { timeout: 30_000 }) }
     catch (error) { if (!error.refused) throw error }
@@ -179,7 +182,7 @@ try {
   }
   console.log('PASS malformed TOTAL and exit 7 despite passing TOTAL refused before popup')
 
-  const call = /const checked = await precardCheck\(\{ repo: REPO, tree: to, evidence \}\)/u
+  const call = /const checked = await precardCheck\(\{ repo: REPO, tree: to, base: from, evidence \}\)/u
   assert.match(sources.advance, call)
   const mutant = await advance(fail.commit, sources.advance.replace(call, "const checked = { passed: true, summary: '' }"))
   assert.equal(mutant.popups, 1, 'removing advance call must expose red tree to popup')
