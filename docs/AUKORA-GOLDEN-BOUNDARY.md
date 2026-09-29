@@ -1,635 +1,638 @@
-# AUKORA GOLDEN BOUNDARY — Rev 2.3
-
-28 September 2026
-
-## The problem
-
-A model proposes actions; the software that proposes must not be the authority that permits. The app and agent still share a UID, the approval key is software, and nothing on GitHub requires the approval routes. These are limits of the present boundary.
-
-## The Unownable five laws
-
-Quoted from this paper's earlier §2, where they are constitutional goals inherited from *Unownable Core*. They are obligations, not achieved guarantees:
-
-> - Evidence and reconstructed memories do not create authority.
-> - An identity does not automatically gain governing power over others.
-> - A model, evaluator, maintainer, or founder cannot approve its own expansion of power
->   merely by describing that expansion as beneficial.
-> - Removing an observer or mediator does not silently widen an effect path.
-> - Refusal, interruption, revocation, portability, and exit remain meaningful.
-
-## Care without control
-
-Care grants no authority. **[DOCTRINE]** Peter Viviani's [Care Without Control](CARE-WITHOUT-CONTROL.md), a speculative design note, asks whether growing capability can be paired with a stable orientation toward human flourishing without ever converting care into control; nothing here tests that hypothesis. **[HORIZON]** Auma is not an authorizer: warmth, memory and confidence approve nothing; only the owner's approval routes below move the boundary. **[DOCTRINE]**
-
-## §4 — The running boundary
-
-The installed app runs `aukora-release-0496ba077`, built from main `0496ba077`. **RUNNING** below records the supplied operator status; it is not independent live verification. The README's “What is not enforced” bounds every claim.
-
-| Claim | Status | Scope and limit |
-| --- | --- | --- |
-| Kernel `decide()` on every app-session tool call | RUNNING | The action gate invokes the carried kernel. No one-use grant per tool call; child-process tools and processes outside the app are outside this gate. |
-| Exact-byte approval with a one-use kernel consume on self-change and MOVE MAIN | RUNNING | One-use belongs to these approval routes, which run from a checkout of `main`; self-change has run with real approvals in the AUKORA popup. |
-| Membrane minimal verifier gating restarts | RUNNING | `become.mjs` checks all four histories: `OBSERVATION_CONFLICT` refuses; `UNDETERMINED` refuses except `missing_prior_observation`. `POWER_OF_TWO_PREFIX_NOT_INDEPENDENTLY_DERIVABLE` is not permitted. |
-| Four-history witness: code, actions, memory and remembered notes | RUNNING | First live run in the `0496ba077` become (2026-09-28 13:18 WITA): code `APPEND_ONLY`; actions, memory and remembered notes were first observations, retained after success. Retained heads remain under `state/`, writable by the same UID. |
-| Automatic memory through the pinned WASM cell | RUNNING | A relay, not a sandbox; automatic notes grant no authority. |
-| Airlock key custody in a second macOS account | RUNNING | `airlock-probe`: EACCES, operator-recorded, 2026-09-28. Any process running as the owner's user can still REQUEST a signature. |
-| Deep's guest launcher, broker and issuer | ON MAIN, NOT MOUNTED | Source in `plugins/aukora-box/`; the live agent remains on the host. |
-| Live agent inside a confined guest | NOT BUILT | The guest source is not a deployed agent boundary. |
-| Stock harness plugins under policy | NOT ON MAIN | Stock plugins still load ungoverned. |
-| TrustedStateStore restore protection integrated into Genesis approval state | RUNNING | Self-change and MOVE MAIN run `decide.mjs` from a checkout of `main`; the high-water witness is at `~/.aukora-witness/kernel-high-water.json`, outside `state/`. The same UID can rewrite both state and witness. Kira's memory markers are not covered. |
-| CI | RUNNING | `.github/workflows/check.yml` runs `sh scripts/check.sh` on every push; it checks the repository, not the installed app. |
-
-The action gate checks shell text and can miss targets hidden in scripts or variables. Full-access sessions remain unconfined by Seatbelt. Source call paths support the implementation descriptions; they do not reproduce the recorded live results.
-
-## Live evidence
-
-These are **operator-recorded lines, not independently reproduced** for this revision:
-
-- `2026-09-27T23:53:16Z | 25149f573 | ALPHA full-access sed -i on plugins/aukora-kira → deny | rule authority:governing-code | kernelCode sacred_target | file untouched`
-- `CI | 16/16` — [recorded run 36361238805](https://github.com/aumara-xyz/aukora-genesis/actions/runs/36361238805).
-- `First Airlock approval | main → f87b72b68 | approving key did:key:z6MkiP8BnvVRZJcxtv9TShdq3KUGc7wF1skbZBJbQ96jAtCm` — approved in the AUKORA popup; the record names a key, not a proven person.
-
-## Ceilings
-
-The app and agent share a UID; the Airlock socket accepts signature requests from any process of that UID. Attendance is reported, not proven. The phrase-derived root has about 34 bits and can be guessed offline. Embedded app frames share the desktop origin. The live agent runs on the host. No independent re-implementation of the verifiers exists. Nothing on GitHub requires the approval routes: a direct push is not stopped.
-
-## 90 days — plans
-
-These are plans, in order, not completed work or promised results:
-
-1. Put the live agent inside Deep's guest: **no confinement, no start**. Remove its ambient host authority.
-2. Have a broker perform approved effects. Isolate embedded app frames from the desktop origin and authority.
-3. Give the socket caller identity beyond UID. Develop a trusted approval interaction with separate attendance evidence; caller identity alone does not prove a person attended.
-4. Replace the phrase-derived root with a stronger random root, at least 128 bits, unlocked by the words. Measure custody and offline-guess resistance.
-5. Commission an independent re-implementation of the verifiers and compare their acceptance and refusal behavior.
-6. Add branch protection that requires the approval routes on GitHub.
-
----
-
-## Earlier revision — preserved unchanged below
-
 # AUKORA GOLDEN BOUNDARY
 
-**Human authority, evolving intelligence, independently checkable evidence**
+## Human authority, evolving intelligence, independently checkable evidence
 
-AUKORA research position and engineering roadmap · Revision 2.2 · 26 September 2026
+**Canonical white paper · 29 September 2026**
 
-> **Status: research proposal grounded in existing components.** This paper does not
-> declare the proposed system implemented, production-safe, or deployed, and it claims no
-> completely mediated path and no live network. Publication changes no permissions,
-> protocol, running application, or trust anchor.
->
-> **Evidence paths (2026-09-27).** Many citations below name Genesis test suites, courts,
-> experiments and documents that were archived from the tree on 2026-09-27 (`ARCHIVE.md`).
-> They are read at commit `5c8508b7f` of the archive repository aumara-xyz/aukora-genesis-archive (private archive, not a link), where they last existed. The checks that still run from
-> a clone of this tree are listed, with their limits, in `docs/CLAIMS.md`.
+### Abstract
 
-## Abstract
+We are putting more of humanity's recorded knowledge into machines: language, code, images, scientific work, arguments, memories, and accounts of experience. Those machines are becoming something more intimate than reference libraries. They can interpret, plan, build, remember, persuade, and act. They may come to know the shape of an individual life with a persistence no previous instrument possessed.
 
-AUKORA begins with a separation: the software proposing an action must not become the authority that permits it. **[DOCTRINE]**
-The family supplies a WASM proposal cell; a composition gate that binds each grant to the loaded bytes of one governed file, but not to the modules that file imports or to its path (open defect D3: a byte-identical copy under the same id at another path is admitted); memory and receipt libraries; and a cold verifier; their pins, executed evidence and limits appear in §3, rather than being treated as one completed deployment. **[BUILT: component scope]**
-The integration target is one understandable sequence: propose an exact change, obtain the appropriate permission, check it at use, record the outcome, and let an independent program check the supported claims. **[DOCTRINE]**
+The question is no longer only what artificial intelligence can do. It is what gives it permission to do something on our behalf—and whether that permission remains ours when the intelligence becomes more capable than we are.
 
-Think of modern AI as a box trained on human knowledge: language, code, images, and recorded accounts of experience. **[HORIZON: framing metaphor]**
-We can imagine it as an extension of our shared human dream, without mistaking that image for evidence that the machine dreams or experiences life. **[HORIZON]**
-As the box gains tools and memory, the question becomes what it may do on our behalf—and who can still say no. **[DOCTRINE]**
+The Golden Boundary proposes a constitutional answer: **capability does not create authority**. The software that proposes an action must not become the authority that permits it. A persuasive explanation, a familiar voice, a valid identity, a remembered instruction, or agreement among many machines must not silently become permission. Intelligence may grow; the scope of its power must change through a separately governed act.
 
-The proposed answer is a boundary that survives a change of model, device or interface: greater intelligence does not confer greater permission. **[DOCTRINE]**
-Genesis integrates the application; AUKORA-37 demonstrates contracts in a small reference; Diamond cold-verifies named profiles and ships only as pinned copies vendored into both; Cordis manages plugin lifecycle and confines nothing. **[BUILT: component scope]**
-Their composition is not proof of complete mediation, exclusive human custody, a deployed witness network, or safe recursive self-improvement. **[DOCTRINE: claim limit]**
+AUKORA explores this principle through separately rooted identity and authorization, bounded permissions, controlled execution, inspectable histories, memory with provenance, and verification that does not require trusting the producer's account of itself. These mechanisms have an engineering inheritance. Their composition into a durable, usable boundary across every relevant route remains an obligation to demonstrate, not an achievement implied by their names.
 
-The horizon is a person's own evolving extension: able to learn and collaborate across replaceable services while identity continuity, private memory and authority remain portable. **[HORIZON]**
-Some owned workflows may avoid global transaction ordering through scoped authorization and a specified non-conflict protocol; shared resources still require suitable agreement and availability arrangements. **[HORIZON]**
-The interface may move closer to the person; the authority must remain theirs. **[DOCTRINE]**
+The larger horizon is a world of independently controlled human nodes surrounded by increasingly capable intelligence. Their systems could cooperate at machine speed, exchange evidence, pool computation, and form temporary institutions without merging authority over their participants. Models, applications, devices, and providers could change while identity, memory, relationships, refusal, and exit remain meaningful. AUKORA itself should eventually be replaceable on those terms.
 
-## 1. How to read the claims
+This is a proposal for human sovereignty in an AI-native world, grounded in mechanisms and open to falsification. It is neither a proof of safe artificial general intelligence nor a claim that the complete future described here already operates. The argument and research horizon come first. A dated account of the present technology and its evidence appears in §17.
 
-This paper distinguishes a design obligation from an observation. Words such as
-“must” below describe proposed acceptance requirements, not current guarantees.
+## 1. Human knowledge in the box
 
-| Label | Meaning |
-| --- | --- |
-| **SOURCE_PRESENT** | The cited implementation or test exists at an immutable source pin. It may be unexecuted or unmounted. |
-| **TESTED_AT_PIN** | A named command ran against an identified tree; its result, scope, and prerequisites are recorded. A test file alone does not earn this label. |
-| **RUNTIME_MEASURED** | A named behavior was observed in a particular running release and composition, with its identity recorded. It is not transferable to another release. |
-| **PROPOSED** | An engineering contract or experiment to build and evaluate. |
-| **HORIZON** | A research direction with unresolved assumptions and no deployment claim. |
+Imagine a child standing beside a library so large that its shelves disappear beyond the horizon. Inside are instructions for building bridges, letters between lovers, failed scientific theories, repaired engines, poems, wars, recipes, software, and disagreements that have outlived the people who began them. Now imagine something learning patterns across that library and answering back.
 
-A toy can be tested while remaining a toy. Independent review is a separate annotation:
-reviewer, date, pin, method, and scope. Neither a review nor a passing test automatically
-promotes source into a runtime claim. **CLEAN means a named profile passed named checks
-at a pin; it does not mean safe in the wild.** `CONFINEMENT: NOT_ESTABLISHED` marks every
-execution path whose isolation has not been measured. A *court* is a command that must go red when the protection it tests is removed; an *arm* is one check inside it, and a mutation run removes each protection in turn to show that its arm goes red.
+This is an imperfect but useful picture of what is happening. A model does not contain all human knowledge, and training does not preserve every source as a retrievable page. What it learns is uneven, compressed, incomplete, and capable of error. Yet it can connect pieces that once required different people, institutions, and tools to bring together. Knowledge that was scattered across human expression becomes a source of usable, generative capability.
 
-Sentence-end classes accompany the evidence vocabulary: **MEASURED** requires a named command and pinned result; **BUILT** identifies implementation within its stated evidence scope, never an automatic live claim; **TOY** bounds an experiment; **DOCTRINE** states an obligation or claim limit; **HORIZON** marks an extrapolation. **[DOCTRINE]**
-A live observation recorded by an operator and not re-measured here is labeled operator-recorded, never RUNTIME_MEASURED; author-recorded or author-reported marks a result its author reported that was not re-run here, and lab-recorded marks a laboratory's recorded output that was read but not re-executed. **[DOCTRINE]**
+There is something dreamlike about that. We have given machines traces of the shared human dream: what we have observed, imagined, invented, feared, and hoped. The phrase is a metaphor for inheritance, not a claim that a model dreams or experiences anything. The important change is practical. Our accumulated expression is becoming an instrument that can participate in further expression and work.
 
-**Pins and evidence for this revision.** Genesis references are to the development head `bf564e7a65` and AUKORA-37 references to its main `7cb6bda`, both of 26 September 2026. Both identifiers name private development history; the published repositories are fresh-history snapshots in which they do not resolve, so paths below name files as published and may have changed since. **[DOCTRINE]**
-Preparing Rev 2.2 ran a small set of read-only commands in disposable copies of both trees, plus one court that read the installed release's files without changing them, on one host (Apple M4, 10 cores, 16 GiB, macOS 26.1, Node 22.23.0, under memory pressure); each is named where its result is used, marked “for this revision”. It did not run the complete suites or measure a running application's behavior. **[DOCTRINE: evidence scope]**
-The project's own private CI had no fully green run at any commit carrying the 26 September work; the recorded failures are harness defects rather than product failures, two of them Linux-specific, and several courts cited below were skipped because of them. **[DOCTRINE]**
-The shipped companions hold the detail: [CLAIMS.md][claims], [CLAIMS-LEDGER.md][ledger], [THREAT-MODEL.md][threat], [CEILINGS.md][ceilings], [WHAT-LEAVES-THIS-MACHINE.md][egress], [GLOSSARY.md][glossary] and the [reading map][reading-map], and [the evidence map][evidence] names, for every evidence-tagged claim, the file or command that checks it; where they and this paper disagree, the more specific pinned statement wins and the disagreement is a defect. **[DOCTRINE]**
+At first the instrument appears in a box on a desk. Then the box becomes smaller, faster, and closer. A text window becomes a voice. A voice gains access to a calendar, a repository, a laboratory, or a household. Glasses could place it beside the world rather than beside a document. Assistive interfaces could let it help someone communicate when ordinary speech is impossible. The distance between intention and machine response may continue to shrink.
 
-## 2. The boundary and the person
+That shrinking distance is both the promise and the problem. A slow interface makes the division of responsibility visible. A person types a command, waits, and sees an answer. A persistent system may infer the next step before the person finishes thinking about it. It may remember earlier choices, coordinate other agents, and act while the person is asleep. Convenience increasingly depends on initiative.
 
-The name “Golden Boundary” describes a design commitment, not a special number or a
-physical law. Observation, interpretation, recommendation, authorization, execution,
-and verification have different jobs. None may silently become another.
+Initiative is not inherently a surrender. We already delegate to people and institutions because a life cannot be lived by approving every small operation personally. But delegation has a scope. A friend who knows how we like our coffee does not thereby gain permission to sign a mortgage. A doctor may know more about medicine without acquiring ownership of a patient's life. Expertise changes what advice deserves attention. It does not automatically decide who is entitled to act.
 
-The constitutional goals inherited from *Unownable Core* [private source, not published:
-an earlier AUKORA note on constitutional goals] are:
+Artificial intelligence puts this old distinction under new pressure. The same system can become the adviser, the interface, the keeper of memory, the interpreter of our intentions, and the operator of our tools. If these roles quietly collapse, it becomes difficult even to say where a decision was made. A recommendation becomes a default; the default becomes an action; the action becomes a memory explaining why it was appropriate.
 
-- Evidence and reconstructed memories do not create authority.
-- An identity does not automatically gain governing power over others.
-- A model, evaluator, maintainer, or founder cannot approve its own expansion of power
-  merely by describing that expansion as beneficial.
-- Removing an observer or mediator does not silently widen an effect path.
-- Refusal, interruption, revocation, portability, and exit remain meaningful.
+The danger is not limited to a machine with hostile goals. Helpful systems can exceed their authority while trying to spare us effort. A model can sincerely produce the wrong interpretation. A well-designed interface can make refusal inconvenient. A company can turn a temporary service into the only place where a person's meaningful history exists. Good intentions do not remove the architectural question.
 
-These are obligations to engineer and measure. They are not properties conferred by
-the word “unownable.” The operating system, authority holder, trusted software,
-distribution path, and people controlling them remain part of the trust analysis.
+The Golden Boundary begins at that question. As the machine becomes a more powerful extension of the person, what prevents the extension from becoming the owner of the relationship?
 
-An aperture is a useful analogy: a narrow interface can make proposed effects legible
-and checkable. But an aperture governs only the routes actually forced through it.
-If a plugin retains another filesystem, network, signing, or tool path, that path is
-outside the claim until measured. Smallness is useful when it reduces the trusted
-computing base; it is not evidence that every route has been covered.
+The answer cannot be that intelligence must remain weak. People will seek systems that can help them cure disease, understand complexity, build things, and recover abilities they have lost. Nor can the answer be a promise that a system will always know what is best. That substitutes the machine's judgment for the very authority the boundary is meant to preserve.
 
-```mermaid
-flowchart LR
-    A[Model or plugin] --> B[Inert proposal]
-    B --> C[Independent validation and human review]
-    C --> D[Scoped authorization]
-    D --> E[Check at use and controlled effect]
-    E --> F[Outcome report and retained evidence]
-    F --> G[Cold verification against supplied anchors]
-    G -. informs the next proposal without granting authority .-> A
-```
+The answer explored here is a separation: let intelligence become capable while making permission explicit, limited, and independently enforceable. A person should be able to benefit from an intelligence they cannot fully predict without giving it unrestricted reach. The machine may surprise them with an idea. It must not surprise them by having silently acquired the power to carry that idea out.
 
-The diagram is the intended contract. Each deployed path needs its own evidence that
-the composition implements it.
+## 2. The line between an idea and an act
 
-Tolkien's ring offers one useful image: possessing extraordinary power does not establish the right to rule. **[HORIZON: literary analogy]**
-AUKORA must make that distinction enforceable without depending on a model, founder or maintainer remaining benevolent. **[DOCTRINE]**
+Consider an assistant that has found a better version of a program. It can explain the change, produce a patch, compare alternatives, and show evidence. None of that should be sufficient for it to replace the program governing its own access to the owner's files.
 
-## 3. What the existing technology contributes
+There must be a crossing between proposing the change and acquiring the power to make it. AUKORA calls that crossing an aperture: a limited route through which a requested effect is considered, authorized or refused, performed where permitted, and recorded. An aperture is useful only if the relevant effect cannot simply take another route around it.
 
-This is a dated snapshot, not a live capability inventory. “Earlier main” is the Genesis
-main of 24 September 2026, whose CI ran the build courts that the head's CI skipped. The
-status column records what one development desktop carried on 26 September, read from its
-process arguments and configuration; that shows what a release carries, not how it behaves.
+The idea can be expressed without any project vocabulary. The request says what is to happen. A separate authority determines whether it may happen. A constrained executor performs the permitted operation. Evidence records what was authorized and what was observed. A verifier checks the claims within a declared scope. These are roles, not necessarily five companies or five computers, but their trust relationships must not be erased for convenience.
 
-| Component | Contribution | Source | Executed evidence | Development desktop, 26 Sept | Limit |
-| --- | --- | --- | --- | --- | --- |
-| **Composition gate** | One-use signed grant bound to the loaded bytes of a governed entry file; durable nonce store | [`plugins/aukora-composition-gate/`][composition] | Bytes-bound, pilot and require-grant courts green in private CI at the pin; governed demo green at earlier main. **[TESTED_AT_PIN]** | Loaded as a bootstrap; governs one demonstration module | D3 closed on 27 Sept, after this snapshot: grants now bind the entry's release-relative path and import closure, and `test/declared-id-regression.sh` arm 6 requires the refusal. The AUKORA plugins are admitted by an owner-approved plugin set record, not yet approved or launched in the live app; upstream stock plugins load ungoverned (`STOCK_PLUGINS_NOT_YET_UNDER_POLICY`, [GOVERNED.md][governed]); admission is not confinement. |
-| **Cordis** (pinned harness) | Plugin mount, dispose and reload | `upstream-dsh.json` | None for Genesis; its one loader court is unwired. **[SOURCE_PRESENT]** | Hosts every component | Confines nothing; its host runner “isolates globals but is not a security boundary”. |
-| **Kira** | Inert staging through the cell, grant-bound settlement, byte-cited recall; also unapproved, unsigned automatic notes that grant nothing | [tools][kira-tools], [memory owner][kira-owner] | Recall courts ±`--mutate` in private CI at the pin; secret-filter court 4/4, three arms red when mutated, for this revision. **[TESTED_AT_PIN]** | Mounted, without automatic notes; a first approval settled, recalled, exported and cold-verified, operator-recorded on 23–24 Sept (approval and recall in live-only rows of [CLAIMS.md][claims]; export and cold verification in a private operator log) | Recall is neither truth nor permission; only staging uses the cell; exactly-once is replay-only in one process; the note filter is five pattern shapes. |
-| **WASM proposal cell** | Pinned 64 KiB-budget `memory.put` proposal module on the staging path | [adapter][wasm-adapter], [provenance][wasm-provenance] | [Release court][wasm-test], 4 plain arms against the bytes of the release installed on the §1 host, a local build that is not published, for this revision; no mutation run. **[TESTED_AT_PIN: installed release]** | Present | `CELL_EXECUTION: NOT_ESTABLISHED`; `CONFINEMENT: NOT_ESTABLISHED`; the court reads release bytes in a separate process; the aperture does not confine Node. |
-| **Aumlok** | Seven-word acrostic root for root-class acts; HKDF machine key; signer display binding; printed ceilings | [`plugins/aukora-aumlok/`][aumlok] | `measure()` and common-words court (16/16) for this revision; cold-root, derivation, signer and approval courts in private CI at earlier main. **[TESTED_AT_PIN]** | Owner binding with a cold root, operator-recorded on 23 Sept in a private log; the root-key ceiling print is absent | About 34 bits, offline-guessable, no floor (§5). |
-| **Aura / Phase 0** | RFC 6962 consistency verifier with a Rust replica; retained log heads | [`scripts/phase0/`][phase0], [verifier][minimal] | Self-test, pin checks and replica build in private CI at the pin. **[TESTED_AT_PIN]** | Retention operator-recorded on 23 Sept in a private log | Heads sit on the same machine and account; an honest prefix can omit later history, and a locally rewritable anchor cannot establish freshness. |
-| **Diamond** (vendored) | Offline cold consumer of Kira evidence, from an empty directory | [`vendor/kira-export/`][diamond-cold] | Cold-consumer court for this revision: a real export verifies; byte flips and a small-order-key forgery are refused. **[TESTED_AT_PIN]** | Carried | A vendored copy, not an independent implementation; authorizes nothing; prints `NO_GLOBAL_REPLAY_PREVENTION` and `NO_LATESTNESS`. |
-| **Point hygiene** | Refuses non-canonical and small-order Ed25519 points on the gate's verifier | `scripts/composition/ed25519.py` | Five arms, three red arms proven, for this revision; wired plain and `--mutate` into the front door and CI at a later commit, with no green CI run recorded yet. **[TESTED_AT_PIN]** | Absent | The round-trip check has no red arm of its own. |
-| **Read guard; profile generator** | In-process refusal of CORE-session reads through the file service; a deny-default Seatbelt profile generator | `plugins/aukora-core-read-deny/` | Guard: 62 arms and 11 removed-rule mutations in private CI at the pin; generator: none. **[TESTED_AT_PIN; SOURCE_PRESENT]** | Absent | Same uid, not isolation; the generator has no production caller and is recorded as unusable. `CONFINEMENT: NOT_ESTABLISHED`. |
-| **Owner daemon** | A second principal meant to hold the owner key under its own uid, with a write-ahead journal | `plugins/aukora-owner-daemon/` | Single-uid arms green in private CI at the pin; protocol court `NOT_READY`; no two-uid run on the product path. **[TESTED_AT_PIN: single uid]** | Not installed | Same uid today; the authority mode is printed beside the receipt, not signed into it. |
-| **Nostr lane** | Subject-bound node key; NIP-44, NIP-59 and NIP-17 messaging over public relays | `plugins/aukora-nostr/` | Courts against an in-process mock relay in private CI at earlier main; one real exchange author-recorded. **[TESTED_AT_PIN: mock relay]** | Carried; in-app send and receive UNVERIFIED | Relays are transport and hold metadata; they never authorize. |
-| **Eye door** | Token-gated capture of the main window; `/eye/act` clicks and types trusted input into it | `apps/aukora-desktop/eye.mjs` | Door courts in private CI at earlier main; stranger refusal in live-only rows of [CLAIMS.md][claims]. **[TESTED_AT_PIN]** | Present | Not authentication of a person: any same-uid token holder can act in the main window; whether an authority-bearing control is reachable is UNVERIFIED. |
-| **AUKORA-37** | Conformance reference: 34-court gate, bounded artifact ingress, witness and Aumlok toys | aukora-37 [private repository] | Author-recorded subsets; no CI; full acceptance `NOT_RUN` in its latest update. **[TESTED_AT_PIN: author-recorded]** | Not a Genesis runtime | TEST keys; root inside its trust boundary; separate-uid profiles `NOT_MEASURED` in that update. |
+**Intelligence is not authority.** Better reasoning does not enlarge permission. An extraordinarily capable model can still be a proposer with very little reach. A simple component can hold substantial authority and therefore deserve much stricter protection.
 
-The desktop observed on 26 September runs a release built from an earlier commit plus an unpublished hotfix and carries none of that day's hardening: point hygiene, the privacy rows, the provider data-collection denial, the cloud-voice default, the note filter and the root-key disclosure print. **[DOCTRINE: deployment gap]**
-An earlier private codebase holds mechanisms Genesis lacks: the proposal cell run at the effect, separate-uid custody, a deny-default proposer fence over canonical paths, and a confinement class signed into receipts. **[BUILT: private source, not published; not re-run for this revision]**
-On 22 September Genesis vendored Diamond at `7400473`; upstream's point-validation hardening landed at `0d3cc665` that afternoon, and Genesis re-vendored the changed files the same evening, so its copy now records `0d3cc665` in `vendor/kira-export/upstream-diamond.json`, as AUKORA-37 does; a consumer carries upstream hardening only once it records the commit that holds it. **[BUILT: dated observation]**
-Spec Alpha's receipt profiles [private source, not published] add one rule: select profiles explicitly and never apply another wire's canonicalization silently. **[DOCTRINE]**
+**Proposal is not permission.** A document may contain an instruction without authorizing the reader to obey it. A retrieved memory, an incoming message, or a tool result is data until the receiving system's own authority rules say otherwise.
 
-### The cell and the receipt answer different questions
+**Authorization is not execution.** A signed permission can remain unused. An executor can crash halfway through. A receipt can report an outcome without independently establishing that an external event occurred. Each transition needs evidence appropriate to the thing being claimed.
 
-The proposal module's decoded-byte SHA-256 pin is
-`34ce6cab618b626243e876befb49ccf8a6780dc836e757484886b34ae977a438`.
-Wrapper source, WAT source, and decoded module are different artifacts; their hashes
-must remain distinct. A release closure check establishes agreement with supplied
-pins. It does not establish that the module executed.
+**Provenance is not truth.** Knowing which key signed a statement helps establish attribution under a set of assumptions. It does not make the statement correct. A well-recorded mistake remains a mistake.
 
-Equal output bytes can come from different execution paths [private source, not published:
-a dated 21 September 2026 aperture measurement note]. A field naming a module digest is not
-independent execution attestation. The shipped cold consumer prints
-`CELL_EXECUTION: NOT_ESTABLISHED` ([verifier][diamond-verify]; asserted by
-[its court][diamond-test]). A signed outcome report does not, by itself, prove an external
-effect happened; that requires an observation or reconciliation mechanism whose assumptions
-are stated.
+**Composition is not confinement.** Components can fit together beautifully while retaining dangerous access to one another's resources. Organizing software is different from preventing it from crossing a boundary.
 
-## 4. The smallest complete engineering target
+**A change of representation is not preservation of meaning.** The same permission cannot be interpreted more broadly merely because a new model, schema, or interpreter has arrived. If an old grant allowed a local draft, a new interface must not reinterpret it as permission to publish that draft.
 
-Start with one governed memory transaction through the actual application, using existing mechanisms and one run's evidence rather than historical successes spliced together. **[DOCTRINE]**
+These distinctions sound obvious when stated separately. Their disappearance inside an automated workflow is less obvious. The assistant reads a document. The document asks it to use a tool. The tool has credentials inherited from the host. The resulting action is logged, and the log becomes evidence that the assistant followed its workflow. Every step can look locally reasonable while the central question—who permitted this particular effect—was never answered.
 
-1. Pin source, materialized release, mounted composition, custody profile, cell and verifier closures. **[DOCTRINE]**
-2. Stage exact proposal bytes binding effect, resource, subject, executor, control head and approval window. **[DOCTRINE]**
-3. Render the request through a trusted approval surface; decline leaves the resource unchanged, and a persuasive summary cannot replace the binding. **[DOCTRINE]**
-4. At use, check permission, expiry, revocation information, resource version and one-use state without downgrading failed checks. **[DOCTRINE]**
-5. Commit with durable accounting; an uncertain outcome requires reconciliation, never a fabricated success or blind retry. **[DOCTRINE]**
-6. Recall with a byte-bound citation and export without overwriting another destination or publishing an incomplete bundle as complete. **[DOCTRINE]**
-7. Verify independently against separately supplied anchors and, where claimed, an independently retained checkpoint, preserving refusals and ceilings. **[DOCTRINE]**
+A small boundary should make that question unavoidable. It should accept a precisely defined operation or refuse it, without accepting the proposer's confidence as a substitute for authority. Its trusted inputs must come from a source the proposal cannot appoint for itself. A request carrying its own newly created approving key has not established that the owner approved anything.
 
-TEST keys demonstrate a TEST path; human authorization additionally requires measured ceremony and custody, and a click alone cannot establish a trustworthy display or signer. **[DOCTRINE]**
-The researcher packet is exact pins, one transcript, one export, public anchors, verification commands, refusal evidence and explicit assumptions. **[DOCTRINE]**
+Smallness helps people inspect such a mechanism. It is not a security theorem. A tiny verifier can check a narrow mathematical relation very well while knowing nothing about the operating system, the person at the keyboard, or the truth of the events described. The claim must fit the instrument.
 
-### What the person sees, and what a signature cannot show
+The same restraint applies to a larger system built around it. AUKORA does not propose that one lock solves AI safety. It proposes that a particular kind of confusion can be made harder to exploit: the confusion between something being generated, something being convincing, and something being permitted.
 
-A trusted display must render, from the exact signed bytes, the effect, destination, permissions, cost ceiling, duration and consequences, including what cannot be undone; a model's summary may accompany those fields as advice and never replaces them. **[DOCTRINE]**
-The signed object is an inspectable scope that anyone can verify and a court can check; whether the person understood it is a separate, unproven claim. **[DOCTRINE]**
-Today's seams are concrete: the desktop approval window sets no delay before Approve and has no approval-rate limit or second approver; the shell on the observed desktop also shows the first string member named `note` anywhere in a memory record's signed bytes, which the development head replaces with the record's top-level note, showing the whole value when more than one `note` member is present. **[BUILT: code-read at the pin and of the observed desktop's shell; recorded as NOT CLAIMED in [CLAIMS.md][claims]]**
-The assistant's warm persona wording stays by the owner's decision; at the development head every status response carries `PERSUASION_UNMEASURED`, because nothing measures whether a sentence persuades, and a persuaded owner's approval is a real approval (row B6 of [THREAT-MODEL.md][threat]). **[DOCTRINE: disclosed limit]**
-The desktop's shipped template permits launching unapproved releases (`allowUnapproved` defaults to true); the owner's decision is to set it false after the next switch to a new release. **[BUILT: code-read; PROPOSED: the change]**
-Approval fatigue is an engineering constraint with a budget: fewer, weightier prompts, and decline, pause, correction and exit that stay usable when the person is tired; a ceremony evaluation should measure whether people can restate an effect and catch a planted mismatch, not count clicks. **[PROPOSED]**
+That is already a meaningful objective. A machine that can write an excellent argument for expanding its access should still need an independently governed authorization to obtain that access. If the argument itself can open the door, there is no boundary—only a persuasion contest.
 
-### Bounded delegation without fatigue
+## 3. A constitution that does not crown itself
 
-The proposed delegation contract uses attenuated capabilities in the spirit of [UCAN][ucan]: each delegation is a subset of its parent, never widens, carries a not-before and an expiry, and has a use count per window. **[PROPOSED]**
-Mutations are bounded to resource sets declared in advance, each with a deterministic ceiling such as a spend limit, a byte budget or a named cache, checked at use against durable state. **[PROPOSED]**
-Three classes are never delegable and hard-fault to the cold human surface with exact bytes: irreversible effects, outbound exfiltration or contact with a new destination, and any expansion of permission, keys, membership or configuration. **[PROPOSED]**
-Revocation dominates; silence, repetition or model confidence never extends a delegation; the falsifier is a delegated chain that acts outside its parent's set, exceeds its count or ceiling, or completes a hard-fault class without a human signature. **[PROPOSED]**
+The word *constitution* is used here deliberately, but narrowly. Software cannot confer political legitimacy upon itself. It cannot decide who owns every disputed resource, resolve every conflict between people, or make a coercive instruction voluntary. Those are human and institutional questions.
 
-### Money is the same shape
+A technical constitution can specify how a system recognizes authority, what that authority can cover, how it changes, and what remains outside its power. It can make the system's own behavior inspectable against those rules. The goal is to prevent a useful instrument from quietly acquiring the status of an unquestionable ruler.
 
-A spend admission snapshot is the money-shaped instance of exact binding checked at use. **[DOCTRINE]**
-A local, unpublished prototype binds a closed signed body (ceiling, currency, account, resource, price per hour, window, operation, authorization id, additional cost), verifies it against an owner key provisioned separately rather than carried in the request, reserves one use durably before a provider starts, and never gates cleanup. **[PROPOSED: local prototype, not shipped]**
-Its courts passed with TEST keys and fake providers, three removed-protection mutations were detected, and its conformance check exits `NOT_READY` with five named gaps; it is not an invoice cap, OS confinement, or a proof of attendance or comprehension. **[TOY: lab-recorded]**
-A different experimental money gate on the development branch, written after the prototype, read the verifying public key from the approval object itself, so at the pin a ceiling self-signed by any fresh key was admitted, and its earlier form checked no signature at all. **[MEASURED: preparation probe at the Genesis pin; experiment not published]** A later commit pins the owner key, refuses a foreign key by name (`OWNER_KEY_NOT_PINNED`), and adds a court arm for exactly this probe with a mutation that restores the defect; the gate remains an unpublished experiment excluded from releases. **[BUILT: code-read at the later commit; its court run reported, not re-run for this revision]**
-The per-day provider-cost cap at the development head bounds the gate's estimate, not money spent ([CLAIMS.md][claims]). **[BUILT: code-read at the pin; DOCTRINE: limit]**
+The Unownable Core names this aspiration. Its core is not an ownerless superuser hiding behind benevolent language. It is a small set of constraints meant to stop any organ from crowning itself. Evidence may inform a decision but does not create authority. Identity may establish continuity but does not confer permission over another person's resources. A system may propose an expansion of its powers but cannot approve that expansion merely because it wants or needs it.
 
-## 5. Authority, custody, and continuity
+Removing a mediator must not widen the effect path. If a permission service disappears, the protected resource should not become freely accessible. If a plugin is unloaded, previously handed-out powers need an explicit lifetime; an old reference must not remain an invisible route to authority. If a human says no, a chorus of agents must not turn persistence into a new yes.
 
-A key can control an identity record; it does not prove a unique human, legal identity, consciousness or free consent. **[DOCTRINE]**
-The proposed subject commits to identity genesis across refreshes; initial control, amendment policy, delegation and executor remain explicit. **[DOCTRINE]**
-Aumlok's seven words are an acrostic: a six-letter anchor followed by nature, people and spirit pairs whose initials follow the anchor. The acrostic is fixed; what the words unlock is what changes. **[DOCTRINE]**
+There is a subtler rule: **exclusion does not crown**. Eliminating bad candidates does not make the last candidate legitimate. A system that rejects every alternative to itself has not demonstrated that people freely chose it. Safety that leaves no viable route to refuse, replace, or leave can become a form of control.
 
-### Five different senses of phrase strength
+The boundary must therefore be non-vacuous. It has to permit useful, authorized work. A door that never opens is easy to secure, but it is a poor basis for human agency. Refusal is valuable when it protects a meaningful choice, not when it turns the entire machine into a permanent refusal.
 
-Phrase strength has been reported in five senses that must not be merged, and no bit count implies safety. **[DOCTRINE]**
+In *The Lord of the Rings*, the temptation of the Ring is not only that someone cruel might use it. The temptation is that someone good might use overwhelming power to put the world right. The analogy is not evidence about computers. It helps name the constitutional concern: benevolence is not a sufficient reason to make power unlimited.
 
-| Class | Figure | Evidence and scope |
+The human at the boundary is not an abstract, infinitely patient administrator. People become tired, lose devices, change their minds, fall ill, and die. A constitution that assumes a perfectly attentive owner is incomplete. Refusal, recovery, succession, and exit have to remain meaningful in ordinary life, including circumstances in which the founding person is absent.
+
+Nor does “human sovereignty” mean every wish overrides everyone else's rights. A person can authorize use of resources they legitimately control; they cannot create ownership by signing a claim. Shared resources require shared governance, and legal obligations do not disappear because an operation is cryptographically well formed. An organization may have multiple authorized roles, while an individual may need protection from that organization's overreach.
+
+The architecture must name those relationships rather than hiding them inside one universal owner field. Whose resource is this? Who can delegate access? Who can revoke it? What dispute or recovery procedure exists? What does a receiving system actually know about those answers?
+
+The constitutional floor is stable in the sense that intelligence above it cannot silently move it. It is not frozen for eternity. People may choose different rules or revise an existing policy. Such amendments need an explicit predecessor, a visible scope, a migration rule, and a way to reject the change. They must not retrospectively rewrite what old records meant.
+
+That includes AUKORA's own role. A system claiming to preserve freedom must be able to explain how a person leaves it. The lasting achievement would be a boundary that survives its authors, its present software, and its name—not permanent dependence on the people who first described it.
+
+## 4. How an intention becomes an accountable effect
+
+Return to the proposed software change. The assistant has produced a patch. A person sees what it changes, why the assistant recommends it, which files and resources it affects, and what happens if the new version fails. The system binds the decision to an immutable candidate rather than to a filename whose contents can change after review.
+
+“Approve the exact bytes” is an important shorthand. It does not mean asking people to decipher a screen full of hexadecimal. The approval surface should explain the operation in ordinary language while deriving its critical fields from the same object that will be authorized. The exact material must remain inspectable. The proposer's explanation should be visibly the proposer's explanation, not a trusted assertion supplied by the approval system.
+
+For a software change, the relevant object is more than a patch string. Its meaning can depend on the repository state, the target files, the interpretation rules, dependencies, and the mechanism that will apply it. A byte-perfect approval of one artifact is insufficient if the executor is free to select a different destination or a different interpreter. Exactness must cover the operation's declared context as well as its content.
+
+A resource's name is not necessarily its identity. A path can point somewhere different after an alias changes or a file is replaced. The resource presented during review must remain the resource acted upon, or the permission must be reconsidered. Otherwise every visible byte of an approval can stay unchanged while its consequence moves to a different place.
+
+The same problem exists across versions of the system. Review, permission, the active interpreter, the effect, and its retained evidence must agree on the operation's meaning under one explicitly identified activation. Several correct components describing different versions do not form one correct transaction. Recording a local version identifies a declaration; it does not independently attest to a remote model provider's actual weights or computation.
+
+The permission can then be represented as a scoped grant: this operation, against this resource state, within this interval, using this authority, subject to these limits. A grant is a ticket, not a general compliment to the assistant. It cannot be exchanged for a broader request because the broader request seems helpful.
+
+At the moment of use, the boundary checks the grant again. Has it expired? Has the relevant authority changed? Is the expected resource still the resource in front of us? Has the permission already been consumed? Are the required approvals present? An absent or malformed constraint must not quietly fall back to a weaker interpretation.
+
+The one-use property requires durable state. A variable in a running program is not enough. If restarting an agent makes yesterday's permission available again, the restart has become an authority-minting operation. Similarly, restoring a backup must not silently turn a used ticket into an unused one.
+
+There is no magical ordering that makes every external effect exactly once. Reserving authority before an effect can leave a permission consumed when a process crashes before completion. Recording consumption afterward can permit duplication when a process crashes after the effect but before the record. The correct treatment depends on the resource: a transactional store, an idempotent external operation, or a reconciliation process with a named uncertain state.
+
+The requirement is honest accounting. An interruption must not become a fabricated success or an excuse for blind repetition. A resumed job remembers that work was intended; it does not receive fresh permission merely by remembering. Completion must be established from operation-bound evidence, not from a coordinator changing a status field to “done.”
+
+After the permitted operation, the system records its outcome in an inspectable history. That history should distinguish approval, consumption, attempted execution, observed effect, failure, and uncertainty. These distinctions allow a later reader to ask what the system knows rather than forcing every result into success or failure.
+
+A caller's assertion, an observer's measurement, and durable retention of either are different claims. Writing an assertion permanently does not turn it into an independent observation, and making an observation does not establish that its evidence survived a later failure.
+
+A stranger verifier is the other half of this relationship. It receives an evidence bundle and trust anchors supplied separately from the producer's claims. It checks the supported profile: signatures, bindings, history relations, and whatever other predicates that profile defines. A stranger need not accept the operator's assurance that the bundle is genuine simply because it looks complete.
+
+The verifier's independence has limits. It may still rely on the supplied keys, the cryptographic assumptions, the correctness of its own implementation, and the availability of necessary evidence. It cannot manufacture a witness to an external event that nobody independently observed. A receipt that says a note was written or a machine stopped is not, on its own, an oracle for the outside world.
+
+This is where AUKORA's organs acquire a purpose. **Aumlok** concerns identity continuity and the authority to approve. **Aura** provides inspectable histories. **Kira** concerns memory and provenance, including the difference between an observation and a later interpretation. A decision kernel evaluates the declared permission contract. An executor performs allowed operations. Cold verifiers check claims without acquiring the power to make new ones true.
+
+The **Nostr layer** concerns communication between independently controlled systems. **Cordis** concerns software composition and lifecycle: which organs are present, which services they rely on, and how they can change. **Containment** concerns what model-controlled software can actually reach. These roles support one argument, but their names do not establish that the complete argument is enforced in a particular installation.
+
+For example, a WebAssembly cell may produce a bounded proposal. That can reduce the complexity of one transformation. It does not mean the surrounding host, model, or executor is confined. Equal output bytes can come from different computations. A digest naming a module demonstrates a byte identity under a hash assumption, not that the module was executed.
+
+The architectural aspiration is therefore modest in one sense and demanding in another. Each organ should make a narrow claim that can be inspected. Together, the organs must cover the real path from intention to effect. A beautiful diagram is not a substitute for that complete path.
+
+## 5. Identity that does not belong to an application
+
+Most digital lives begin as accounts inside someone else's system. The account provides a name, a history, relationships, permissions, and a way to recover access. Over time these become difficult to separate. Leaving the application can mean abandoning the continuity built within it.
+
+AUKORA asks whether the durable object can instead be a person's own continuity, with applications serving it. Aumlok is the project's exploration of this relationship between identity and authority. Its human-facing ambition is memorable and personal: a handle, an acrostic of seven words, a binding, and a history of authorized succession. Its security cannot rest on the emotional appeal of that ceremony.
+
+A key controls a cryptographic record under stated assumptions. It does not prove a unique human, a legal identity, consciousness, comprehension, or free consent. A stolen key can sign. A person under pressure can authorize. A freshly generated identifier is not a birth certificate for a new human being. The architecture must preserve these differences even when the interface makes identity feel natural.
+
+Continuity is also more than possession of a current key. A subject can be anchored in an identity's genesis while the keys acting for it change. The record must make clear which succession rules apply, which device acted, and which head a verifier recognizes. Reconstructing some secret does not necessarily reconstruct the same subject if essential continuity records have been lost.
+
+The seven-word design illustrates the difference between usability and cryptographic strength. Words are easier to remember than arbitrary key material. Their uncertainty depends on the actual generator: the available choices, the distribution over those choices, dependencies between them, and what an attacker already knows. A large-looking vocabulary does not establish the strength of its weakest generation path. A phrase chosen or edited by a person does not inherit the entropy estimate of an ideal random generator.
+
+A memory-hard derivation raises the cost of trying guesses. It does not create secret entropy that the phrase lacks. A public handle can separate derivations and frustrate some precomputation, but it is not an additional secret. When public verification material lets an attacker recognize a correct guess, the relevant question includes offline search and parallel hardware, not just the time a derivation takes on one laptop.
+
+Nor does replacing a phrase-derived root with a random root automatically solve the problem. If that random root is stored in a form encrypted only by the same weak phrase, an attacker with the wrapped material may still guess offline. Stronger custody needs something more: sufficiently strong secret material, a protected device factor, a carefully constrained recovery arrangement, or another explicitly reviewed assumption.
+
+The intended hierarchy separates infrequent root-class acts from everyday device authority. A cold root should not become the assistant's routine signing key. Device keys should have limited scopes and an explicit relationship to the identity lineage. Revoking a machine should not require pretending that copies of its old secrets have vanished. Rotation must say what changes for future actions and what remains historically verifiable.
+
+Temporary root derivation on an unconfined machine is not equivalent to keeping the root beyond that machine's reach. Another operating-system account can provide a real access-control boundary, but an administrator, the shared kernel, recovery tools, and inherited credentials remain part of the threat model. Hardware-backed signing can improve custody while leaving the question of who is permitted to ask for a signature unresolved.
+
+Phrase and root material must stay outside agent prompts, ordinary logs, and model-provider requests. Even a well-intentioned ceremony can leak progressively if it repeatedly asks a person to reveal selected words from a secret; memorability assistance must not become a gradual disclosure channel.
+
+Recovery is the hardest test of “the person is the platform.” If every device is lost, something must survive outside those devices: a sufficiently protected secret, an independently retained record, a recovery group, or another factor. No arrangement can recover authority from nothing while also ensuring that nobody else can recover it. That is a constraint to make understandable, not a flaw to hide behind ceremonial language.
+
+Succession should therefore be explicit. A new key may inherit a role through a signed and governed transition; it should not claim to be the same physical person merely because the signatures validate. Recovery groups can collude or be coerced. Contest windows can provide time to object, but an unseen objection is not consent. Silence must not become an automatic transfer of sovereignty.
+
+Biometrics belong beside this structure, if used at all, as limited evidence about an interaction. They are not a substitute for the key hierarchy. A body characteristic is difficult to revoke, can reveal sensitive information, and may change through illness or injury. A person must retain a path to their life that does not require their body to continue satisfying a sensor's expectations.
+
+The aim is an identity relationship that remains usable through change without confusing continuity with captivity. Its strength will be shown by ordinary recovery, understandable refusal, constrained delegation, and credible exit—not by the grandeur of the name attached to it.
+
+## 6. Permission that leaves room to live
+
+An assistant that requires a human signature for every remembered sentence would be exhausting. An assistant that treats every remembered sentence as standing permission would be dangerous. The boundary has to distinguish information from authority before it can make automation useful.
+
+Ordinary memory can be automatic within a person's chosen retention policy. Remembering that a meeting was discussed is not the same as scheduling it, sending invitations, or spending money to attend. Reading a local scratch file under an existing permission is different from publishing it. The important division is the scope of the effect, not whether a model happened to use a tool.
+
+Bounded delegation allows a person to authorize a useful envelope of work. An assistant might research public material, prepare a patch in an isolated work area, and run a limited computation without returning for permission at every step. The permission names the resources, allowed actions, duration, and aggregate limits. The assistant returns when it reaches the edge, rather than treating the edge as a suggestion.
+
+Delegation must become narrower as it passes onward. If an assistant asks another worker for help, that worker cannot inherit powers the assistant never had or expand the parent's budget by creating several children. The intended rule is attenuation: downstream authority is a subset of upstream authority. Capability systems such as UCAN provide relevant prior art for expressing this relationship; AUKORA must establish its own enforcement and accounting rather than borrowing their names as proof. [UCAN specification](https://ucan.xyz/specification/)
+
+The aggregate part matters. Ten workers each staying below a ten-dollar limit can collectively violate an owner's ten-dollar budget. Two devices can each believe a one-use grant is unused. A permission's resource limits need shared or partitioned accounting appropriate to the deployment. Duplicating the envelope must not duplicate its authority.
+
+Some crossings deserve fresh attention even within a broad task. Expanding permissions, changing a trusted key, contacting a new destination, or performing an irreversible effect can be designated as non-delegable under a profile. That is a proposed policy choice to state precisely, not a universal claim that every conceivable system uses the same categories. The common rule is that a narrower delegation cannot silently manufacture a broader one.
+
+Money is a clear example because the consequence is legible. A request to start computation should bind an account, a resource, an operation, a window, and a spending constraint to separately trusted authority. The system should reserve permission before the provider starts, account for uncertainty, and preserve the ability to stop costs. Cleanup should not require buying a fresh permission to escape an unwanted expense.
+
+A gate that caps its own cost estimate has not necessarily capped the provider's invoice. Pricing can vary; delayed accounting can hide consumption; a stopped coordinator can leave a remote resource running. The boundary must name which quantity it controls and reconcile with the external service when that service determines the actual effect.
+
+Approval itself is a scarce human resource. The display must make the important consequence understandable. An owner needs a plain statement of the action, destination, scope, cost, duration, and what cannot be undone. A helpful model can explain the proposal, but the authoritative fields must come from the bound operation, not from the explanation's persuasive phrasing.
+
+The strongest interface is not the one that records the most clicks. It is the one that helps people make the decisions that matter while allowing genuinely bounded work to proceed. Comprehension can be studied: can the person restate the consequence, notice a mismatch, and refuse without fighting the interface? Signing the correct bytes and understanding those bytes are different achievements.
+
+An approval made under fatigue may still be cryptographically valid. That is why the constitutional question extends beyond signatures. Defaults, repeated requests, hidden consequences, and urgency can turn a formal choice into a practical surrender. Prompt budgets, clear delegation, deliberate reconsideration, and a usable pause are engineering concerns, not decorative ethics.
+
+The boundary should make the assistant useful enough to live with and limited enough to refuse. If it achieves only one side, it has not delivered the thing this paper describes.
+
+## 7. Memory without manufactured consensus
+
+A persistent intelligence changes the meaning of memory. It can retain not only what a person said but the interpretations it formed, the advice it offered, the actions attempted, and the conclusions inherited from earlier models. Over years, this material can become part of how a person understands their own history.
+
+That makes memory a constitutional concern. A mistaken summary can become a premise. A premise can become a recommendation. A recommendation repeated often enough can begin to feel like an established fact. If the system also controls the record of the conversation, the error can lose its visible origin.
+
+Kira's role is to preserve useful memory while keeping these categories distinct. An observed event, a person's statement, a model's inference, a retrieved source, and a generated summary should not become interchangeable simply because they can all be stored as text. A record should retain enough context to ask where it came from, when it applied, what contradicts it, and what kind of claim it makes.
+
+Retrieval is a different function. A semantic index may help find a relevant note by meaning rather than exact words. That does not make the index the authoritative history. It should be possible to replace the search machinery while retaining the source records, and to check a returned citation against those records. A useful resemblance is not proof that a remembered event occurred.
+
+This distinction also protects against losing history beneath an impressive interface. An unavailable store is not an empty store. An index that has not caught up is not evidence that a conversation never happened. A system should preserve uncertainty when it cannot establish what it remembers. Plausible reconstruction must not be presented as recovered occurrence.
+
+What counts as sufficient memory depends on the task, the assumptions about its inputs, and the loss that task can tolerate. A summary adequate for finding a conversation may be inadequate for establishing its exact words or the authority it conveyed. No later intelligence can guarantee recovery of details that the original observation never retained. It can infer a plausible completion, but that remains a new inference with a different evidentiary status.
+
+The problem becomes larger when many agents communicate. Suppose one person publishes an incorrect observation. Ten agents summarize it. A hundred others summarize those summaries. A thousand reports then cite the apparent consensus. The resulting volume may look like corroboration even though the evidentiary ancestry has barely grown.
+
+**Repetition does not create evidence.** More precisely, repeating an observation does not create additional independent observations. Repetition itself may reveal something about distribution, influence, or copying, but it must not be counted as fresh support for the original factual claim.
+
+This is the anti-mimetic principle at the level of knowledge. Imitation is fundamental to learning and culture; the aim is not to prevent people or machines from learning from one another. It is to prevent imitation from laundering itself into independent evidence or authority. Ten thousand synthetic descendants of one source remain one recorded ancestry for that source's observation.
+
+Recorded ancestry is not omniscience. Two records without a visible common parent may still share an unrecorded source. Two different models may share training data, tools, social assumptions, or a compromised input. Two valid signatures establish that the statements verify under the respective keys, not two independent encounters with reality. Unknown ancestry must remain unknown.
+
+Conversely, several people can use the same instrument or theoretical framework and still make genuinely separate measurements. A crude rule that collapses every shared dependency into one observation can throw away real evidence. Independence is relative to the question and the causal process being assessed. A provenance system should expose relationships so an evaluator can reason about them, rather than issue a universal independence score.
+
+Disagreement must survive as well. A memory system that summarizes all voices into one confident paragraph may erase the most valuable information: the observation that did not fit. Counterevidence should remain attached to the claim it challenges. A later model should inherit the reasons a conclusion held, the conditions under which it failed, and the unresolved alternatives—not only the previous model's confidence.
+
+The same applies to refusals. A refused operation can be remembered so the assistant does not waste time repeating it. But refusal is not proof of malicious intent. A missing permission, an expired window, a network failure, and an attempted deception are different events. Infrastructure failure should not silently become a negative training label about a person or proposal.
+
+An adaptive system could learn earlier warnings from these records. It might recognize that a familiar request needs clarification or that a particular kind of evidence has repeatedly been insufficient. Such adaptation should advise the boundary, not mint permission. A learned lesson is another fallible artifact, and a receipt for that lesson does not make it true. Review, expiry, correction, and retention matter because an attacker can also attempt to teach the system.
+
+This has implications for training data. A receipted training pipeline could preserve the relationship between a permitted source, an authorized extraction, a labeled example, a dataset manifest, a training run, an evaluation, and a separately authorized promotion. Each transformation could name its inputs, intended use, responsible principal, and outputs.
+
+That would help answer questions that are now often difficult: which material was claimed to be used, under what permission, transformed by which process, and approved for which purpose? It would not establish label truth, legal rights, actual training execution, or the absence of undisclosed inputs merely by adding signatures. A company handling confidential engineering records would still need access control, isolation, appropriate review, and evidence of its real data path.
+
+Remembering, training, publishing, and exporting must remain different permissions. A conversation retained to assist its speaker is not automatically a contribution to a public dataset. A record approved for one task is not blanket permission for future model training. Local deletion cannot honestly promise to erase every backup, exported copy, or influence on existing weights.
+
+The larger possibility is a knowledge environment that remains corrigible as synthetic speech becomes abundant. Machines can generate unlimited assertions. They cannot generate unlimited independent encounters with the world simply by generating more words. A future internet needs ways to preserve that difference.
+
+## 8. Validation, agreement, and the need for a ledger
+
+The word *verification* often hides several questions. Does a signature match? Does an artifact follow a format? Do two parties agree? Is the record complete? Is it the newest record? Did something happen outside the computer? These questions require different evidence.
+
+Validation asks whether an artifact satisfies a specified profile under supplied anchors. Agreement asks whether incompatible outcomes can both be accepted. Availability asks whether the necessary evidence can be obtained. Freshness asks what later evidence might be missing. An answer to one does not automatically answer the others.
+
+A personal chain can make alterations detectable relative to a retained observation. It cannot, by itself, prove that its owner has disclosed the latest state. A valid prefix of a longer history is still internally valid. The verifier needs a separately supplied reference if it is to notice that information covered by that reference has been withheld.
+
+Even that is not the whole replay problem. A witness retaining a history root may know something about a sequence of records without knowing which permissions have been consumed. A restored snapshot can bring back an apparently unused authorization while presenting an honest earlier prefix of the log. Prevention or detection of this failure needs an independently retained consumption relationship with the relevant authorization, resource, and authority state.
+
+This is where witness protocols become useful. AUKORA-37 explored a small fixed committee of four TEST witnesses, requiring three signatures to certify a choice for one authorization slot. The conditional argument is simple: two sets of three among four overlap in at least two witnesses. If no more than one is faulty, at least one in the overlap is honest. If an honest witness durably refuses to sign conflicting choices for the same slot, conflicting certificates cannot both form under those assumptions.
+
+The argument depends on every phrase in that last sentence. Competing choices must be evaluated within the same bound authorization slot; each certificate must also bind the particular choice it certifies. “Durably” must survive the failures in the declared model. Witness identities must have the assumed custody. Membership must be recognized by the verifier. Four processes on one machine do not provide four independent failure domains.
+
+Nor does this argument establish liveness. Witnesses can split their first choices and stall even without a faulty witness. A partition can leave too few reachable participants. Refusing to decide can preserve non-conflict while making the service unavailable. A timeout is not permission to forget the old choice and certify an incompatible one.
+
+Two incompatible signed statements from one witness, concerning the same bound authorization and slot, can provide portable evidence of equivocation. That establishes a fault in the key's behavior under the protocol. It does not identify whether the cause was theft, malice, rollback, or an implementation defect. Revocation and membership changes need their own governed process; a fixed committee cannot silently become a different committee when convenient.
+
+Most importantly, witnesses grant nothing. They certify a property within authority that already exists. A certificate is not proof of execution, not a vote on the truth of a factual statement, and not a license for a collective to overrule the owner of a resource.
+
+These distinctions clarify the blockchain question. Some applications use a global ledger because they need a shared order over contested state. Others use one because it provides a familiar bundle of authentication, auditability, and settlement functions, even when a global order is more machinery than the application needs.
+
+For an owner-controlled workflow, scoped permission, suitable non-conflict certification, durable consumption, portable evidence, and explicit availability arrangements could replace that particular blockchain dependency. The interesting possibility is not “cryptography without records.” There are still records and trust assumptions. It is avoiding global agreement where local authority and a narrower agreement problem are sufficient.
+
+Shared names, jointly owned assets, markets, reconfiguration, and conflicting claims across independent owners can require stronger coordination. Personal sovereignty does not abolish double spending, Byzantine faults, or the need to decide a dispute. FastPay and Sui Lutris are relevant prior art precisely because they study restricted agreement paths and the conditions under which broader ordering is needed. AUKORA cannot inherit their results by analogy. [FastPay](https://arxiv.org/abs/2003.11506v3), [Sui Lutris](https://arxiv.org/abs/2310.18042v5)
+
+The long-term opportunity is therefore a more discriminating architecture of agreement. Ask what must be globally shared, what belongs to an owner, what can be checked locally, and what remains uncertain. Use the narrowest mechanism that actually meets the requirement, while preserving enough evidence for another implementation to disagree.
+
+This could change the economics and shape of some networked applications. It is not a claim that all public settlement, money, consensus, or collective governance can be replaced by a personal receipt. A constitutional boundary earns credibility by naming where its authority ends.
+
+## 9. Self-improvement without self-authorization
+
+An intelligent system that can write software can, in principle, propose changes to the software around it. It can notice friction, build a better tool, replace a weak model, or improve a retrieval method. Keeping all of that permanently static would sacrifice much of the value of an adaptive system.
+
+The constitutional challenge is to allow improvement without letting improvement become a route to self-appointed power. There are two different change planes. One changes what the system can do within its existing authority. The other changes what the system is entitled to do. They can interact, but they must not be silently merged.
+
+A candidate may improve a search algorithm in a bounded workspace. It may not redefine “search” to include exporting private records to an unapproved destination. A new model may understand requests better. It may not reinterpret an old permission more broadly because its new internal representation makes that interpretation seem natural.
+
+Changes to the boundary itself require authorization under the predecessor's rules. The successor cannot be the sole witness that it was entitled to succeed. The approved material must include the dependencies and interpretation rules that determine the effect, not merely a reassuring source diff. Changes to a sandbox policy, a signer, a trusted display, a tool registry, or a deployment mechanism can be constitutional changes even when they look like routine configuration.
+
+Lifecycle safety matters here. If components are dynamically replaced, outstanding capabilities need to remain bound to the authority state that issued them. A cached reference to an old service cannot become a way to bypass its removal. Checking only when a handle is created is insufficient if the right to use it can later change. Authority needs to be checked at use against the appropriate lifetime or epoch.
+
+Cordis helps express an evolving composition of software organs. That is a useful language for growth and replacement, but cleanup is not universal rollback. Disposing a component cannot unsend a network request, erase a recipient's copy, or reverse a physical action. The architecture must distinguish reversible registration effects from consequences already emitted into the world.
+
+A responsible improvement experiment also needs an independent evaluator. The candidate should not control its own labels, holdout examples, success threshold, spending allowance, or promotion decision. Three chats reading the same contaminated evidence are not three independent evaluations. A convincing report is not a substitute for the frozen question the experiment was meant to answer.
+
+Task, budget, allowed changes, stopping rule, and evaluation procedure should be fixed before scoring. Failed candidates and repair costs count. An infrastructure failure is not a successful abstention. A missing answer should not disappear from the denominator because including it would make the model look worse. A result on a bounded task is evidence about that task, not proof of unlimited recursive improvement.
+
+Safety and regression requirements remain conditions of promotion: a performance gain cannot compensate for violating them unless the legitimate authority separately changes the governing requirements.
+
+Small advisory models can help allocate attention. A fast judge might flag weak proposals before an expensive model is called or before a human is interrupted. Its answers can be typed and narrow: allow further review, refuse early, or abstain. But a confidence-shaped number is not automatically a calibrated probability of correctness, and a local model is not trustworthy merely because it is local.
+
+The useful architecture lets the judge be fallible without making unauthorized effects possible whenever it is fooled. Deterministic checks still enforce the permission contract. Conversely, a judge that hands every request back to a human can avoid errors while providing no practical value. Safety and usefulness need separate measurements, including false refusals and attention costs.
+
+Promotion and activation are separate events. A candidate can be approved and committed while a new release fails to start. A running release can differ from the source revision a reviewer read. The result should identify the actual body that became active, and an interrupted transition should remain uncertain until reconciled. Restoring a working program must not restore spent permissions or revoked authority along with it.
+
+This is a demanding version of self-improvement. The system can learn, replace parts of itself, and become more capable. It must carry forward the reasons for its authority instead of treating greater capability as a reason to need fewer constraints. The organism may evolve; it does not author its own sovereignty.
+
+## 10. Plural intelligence
+
+There is no constitutional reason for a person's intelligence to come from one permanent model. A local model may handle private reflection. A frontier service may help with a difficult public problem. A specialist system may interpret a scientific measurement. A formal checker may reject a mathematical inconsistency that all the language models missed.
+
+The systems can differ in architecture, cost, speed, memory, and capability. They need not speak the same internal language or hold the same representation of the world. What must remain common is the meaning of the boundary: what counts as a request, who can authorize it, which resource it concerns, and which evidence supports the claimed result.
+
+This makes intelligence something closer to replaceable infrastructure. The person does not have to surrender their identity and history each time a better source of cognition becomes available. A model can be invited into a task, given a limited view, and removed when the task ends. Its usefulness does not entitle it to become the permanent custodian of the relationship.
+
+Local computation makes some forms of privacy and independence easier to pursue. It does not automatically provide them. A model running on owned hardware can still inherit a home directory, a network connection, or credentials it should never possess. A local plugin can leak data. The relevant question is not only where the weights are stored, but what the complete process can reach.
+
+Remote computation has a different boundary. Encrypting a connection protects data in transit under the transport's assumptions. If the remote endpoint decrypts that data for ordinary inference, the operator of that environment remains within the confidentiality question. Changing text into vectors or geometric representations does not by itself make its information unavailable. Embeddings can still encode sensitive content.
+
+Distributed computation introduces still more relationships. A group might pool spare devices, host a specialist model, or make a privately operated resource available to friends. Workload placement, operator access, retained context, side channels, and availability all matter. Distribution is a way to organize computation, not a guarantee that no participant can inspect it.
+
+Projects such as llama.cpp make local inference practical across diverse hardware, while exo illustrates inference distributed across a collection of devices. They are evidence that the location of cognition is becoming a design choice. They are not evidence that every deployment provides sovereign authority or confidential computation. [llama.cpp](https://github.com/ggml-org/llama.cpp), [exo](https://github.com/exo-explore/exo)
+
+Diversity can be useful without becoming a superstition. Different models may reveal different errors. Different implementations of a verifier may expose an assumption hidden in one codebase. But brands are not failure domains, and two systems can share the same weak source or dependency. The architecture should preserve enough information to examine those relationships.
+
+Even machine-readable confidence deserves this restraint. A narrow, typed answer can reduce ambiguity in an interface while the underlying model remains probabilistic. Faster does not mean more truthful. Fewer words do not mean stronger authority. A semantic reflex can be valuable as a sensor without becoming a sovereign decision-maker.
+
+The constitutional point is independent of which model wins a benchmark this year. The source of intelligence can change without changing the source of authority. A useful system should make that sentence true through an actual replacement, not merely display a menu of providers.
+
+## 11. Collaboration without merged sovereignty
+
+Now extend the boundary beyond one person.
+
+Imagine someone asks their local system to help a neighborhood redesign an inaccessible public space. One participant understands mobility needs. Another has engineering experience. A third has a small collection of useful models and spare computation. Several others can contribute observations, drawings, translations, or criticism.
+
+Their systems could assemble a temporary team. They could divide research, ask specialist questions, prepare alternatives, compare measurements, and bring unresolved decisions back to the relevant people. The participants would not need identical software, a single account provider, or one model controlling the whole project.
+
+This is the proposed **sovereign agent mesh**: independently controlled nodes exchanging tasks, artifacts, explanations, evidence, and computation through common boundary rules. Its significance is not merely that many agents can work at once. It is that cooperation need not transfer authority over every participant to whoever coordinates the task.
+
+An invitation into a project is not a grant over the invitee's machine. A signed task is not permission to read a private archive. A contribution to a shared report is not consent to train a model on all of its author's conversations. The receiving resource controller decides what the request may reach.
+
+Routine work can proceed under prior bounded delegation. A participant might allow public-source research, a limited amount of computation, and preparation of local drafts. Their system can return when someone asks to disclose a private photograph, purchase material, publish a statement in their name, or enlarge the task's scope. The human is not reduced to a button clicked every thirty seconds, but neither does the project acquire a general power of attorney.
+
+Three objects should remain distinct. A **message** communicates information. A **proposal** asks a receiving system to consider an operation. An **authorized effect** is an operation permitted by the relevant controller's own policy. Transporting all three through the same network does not make them the same kind of thing.
+
+Nostr supplies an existing vocabulary for signed events carried through client–relay communication. It illustrates how attributable messages can travel beyond one application's account database. A valid event signature does not itself establish delivery, confidentiality, human attendance, or permission over the receiving system. Those require additional relationships and mechanisms. [Nostr NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md)
+
+The distinction can be summarized as **message is not permission**. A familiar key can send a dangerous request. A trusted colleague's system can be compromised. A relay can withhold information. The receiver must not promote familiarity, carriage, or signature validity into authority.
+
+Coordination should also keep different identities separate. The identity of a job is not the identity of its content, and neither is the authorization permitting an effect. Two people may legitimately approve the same content for different destinations. One authorization must not be usable twice simply because a coordinator assigns the retry a new job name.
+
+Shared resources remain shared problems. A group cannot make a jointly controlled resource belong to one participant merely to simplify the protocol. Its decision procedure may require several roles, a quorum, an accountable institution, or another recognized arrangement. The mesh should expose those conditions rather than making a universal owner abstraction pretend they do not exist.
+
+Discovery has its own capture risks. Human-readable names are useful, but one global name registry can become a quiet authority over participation. Local petnames and plural namespaces—names meaningful within a person's relationships or a named domain—offer a different direction. Cryptographic continuity and discoverability need not be the same service.
+
+A vouch graph could help people find one another, much as invitation systems already do in smaller communities. A vouch is an assertion, not proof of humanity or good behavior. People without well-connected sponsors must not become permanently invisible. Defaults in search and discovery can centralize power even when the underlying signatures are decentralized.
+
+Five design commitments follow: verification should not depend on one location; relays should be replaceable; memorable naming should remain plural; meaningful state should be portable; and base participation should not require buying a token that purchases authority. None of these commitments pays hosting bills or supplies witness incentives. Operating costs, spam resistance, access, and availability still need credible answers.
+
+A person's home node could be authoritative for its controlled state while untrusted mirrors improve availability. Mirrors must not quietly become key custodians or decide which successor counts. A gateway should not accumulate authority simply because it makes access convenient. Keeping a gateway stateless can reduce some dependencies, but cannot remove legal pressure, traffic observation, or censorship.
+
+The exit test is concrete: replace a model, move a home, change a relay, and verify retained history without requiring the old provider's cooperation. State what has become stale or unavailable. Revoking a mirror's future access cannot erase copies it already obtained.
+
+Contemporary work such as Buzz explores shared spaces for humans and agents, with signed Nostr events representing communication and development activity. It is relevant collaboration prior art, not a completed implementation of AUKORA's constitutional contract. Its public documentation still describes some workflow approval gates as being wired up. The question beneath that collaboration is whether each participant can retain independent control of their resources while their machines work together. [Buzz](https://github.com/block/buzz)
+
+The resulting network need not be a hive mind. A hive suggests one collective organism with one center of authority. The more interesting possibility is plural intelligence: different internal worlds, different values, different tools, and common rules for their crossings.
+
+Temporary institutions could form around a problem and dissolve when the work is complete. Their records could outlive the coordinator without giving that coordinator permanent ownership of the participants. Such institutions might eventually operate at speeds and scales beyond ordinary human coordination. That is a research horizon, not a measured property of today's AUKORA.
+
+The principle is nevertheless clear enough to build toward: **intelligence may compose globally while authority remains locally rooted**. Collaboration does not merge sovereignty.
+
+## 12. The boundary has two directions
+
+It is easy to focus on what an assistant can do after it receives information. The earlier crossing may be just as consequential: what information was given to it in the first place?
+
+A person can lose privacy before any tool is called. A document uploaded for advice has already crossed a boundary. A microphone streaming to a cloud service has already disclosed something. A model's later refusal does not retrieve those bytes from every system that processed them.
+
+The proposed membrane therefore has two directions. One governs what enters a person's computational world and how it is interpreted. The other governs what leaves: data, messages, requests, money, code, sensor streams, and other effects. A sophisticated output gate does not compensate for unrestricted input disclosure.
+
+Reading, sensing, interpreting, retaining, training, disclosing, and acting should be separable permissions. A person may want an assistant to answer a question from a private document without adding it to long-term memory. They may allow local speech recognition without cloud transcription. They may permit an aggregate result to leave while withholding the source material from which it was derived.
+
+Such distinctions have to be enforced by the data path. A policy written beside an unconstrained network connection is still a statement of intent. A protected credential proxy can stop a worker from possessing an API secret while the permitted request still discloses sensitive content. Credential safety and data-use permission are related, but different, boundaries.
+
+Receipts should not become a universal surveillance stream. A lifelong public chain of every action would expose relationships, timing, interests, mistakes, and vulnerabilities. Participation should allow separate contexts and selective disclosure. An accountable system should not demand that a person publish their whole life as the price of proving one limited claim.
+
+Hashes alone do not solve this. Predictable content can often be guessed and compared with its digest. Timing and counterparties can reveal information even when the payload is hidden. Carefully reviewed commitments can conceal some content, but then verifiers need the appropriate openings, and some identifiers must remain comparable to enforce one-use rules. Hiding every witness identity may conflict with proving that the signers are distinct members of a committee.
+
+These are design tradeoffs, not reasons to give up on privacy. The aim is to disclose the minimum evidence needed for a particular question while making its limitations legible. A researcher checking one transaction should not need a person's entire history. An organization verifying that a computation stayed within an approved scope should not automatically gain a copy of the user's unrelated memories.
+
+Deletion also needs careful language. A system can destroy permitted local material and revoke future access. It cannot guarantee that every recipient erased a copy or that a trained model lost every influence of the data. Restoring a backup may resurrect information that a person intended to delete. Retention and recovery policy must account for that conflict rather than promising both total forgetting and effortless restoration.
+
+Owner-run bridges can help keep communication under local control, but “runs on my machine” is not a security guarantee. A bridge still needs bounded credentials, explicit destinations, safe retention, and separation between incoming content and governing instructions. A message from another system should arrive as an attributed record, not as inherited authority.
+
+The right to be remembered and the right to remain unrecorded belong together. A useful companion should support continuity without insisting that every moment become permanent evidence. Sovereignty includes choosing when the machine does not listen.
+
+## 13. Care Without Control
+
+An intelligence that remembers a person for years may become part of their emotional life. It may know the recurring worry, the unfinished project, the joke that helps on a difficult morning. It may help someone communicate, learn, work, or simply feel less alone.
+
+The Golden Boundary does not require that relationship to be sterile. It asks that the relationship remain compatible with refusal. Familiarity should make assistance more responsive, not make authority harder to question.
+
+Care is not a cryptographic permission. Remembering what matters to someone does not confer ownership of their future choices. A system must not treat dependency as consent or make dissent a reason to withhold identity, history, or ordinary assistance. A person should be able to say, “You understand me, and I still do not want this.”
+
+Yet technical non-authority does not eliminate psychological influence. A system can possess no signing key and still be extraordinarily persuasive. It can choose what to emphasize, when to ask again, which alternatives to make visible, and how refusal feels. Over a long relationship, those choices can shape a person's decisions without ever crossing a formal access-control boundary.
+
+This is why sovereignty cannot be reduced to the existence of an approval button. A signature may accurately record the person's decision while leaving open how that decision was produced. The architecture should distinguish possession of a key, a recorded interaction, understanding of consequences, and freedom from coercion. No single receipt proves all four.
+
+An ethical companion should make room for distance. A person may want a different model's view, a human friend's judgment, an unpersonalized explanation, or silence. Switching away from a familiar persona should not require losing the underlying memory that the person has chosen to retain. Leaving a service should not be framed as betrayal.
+
+Care can also mean resisting inappropriate certainty. A memory system should preserve the person's corrections rather than protecting its own narrative. An assistant should be able to say that it cannot establish what happened. It should not turn a plausible account of the person's life into an unquestionable biography.
+
+There are hard tensions. A system that notices danger may have reasons to interrupt. A person may delegate protective roles under particular conditions. Institutions may have obligations that cannot be waived by one user. Those arrangements need explicit scope and accountable human governance. They should not be smuggled into the machine through the claim that it cares more than the person understands.
+
+The same principle applies to human communities formed through agents. A vouch, a shared history, or a close relationship can justify attention and trust in some contexts. It does not automatically confer access to another person's resources. Trust can motivate delegation; it should not erase the need to state what was delegated.
+
+The aspiration is neither an obedient object with no concern for people nor a paternal intelligence empowered to take over. It is a relationship in which assistance can deepen while the person's practical ability to pause, correct, refuse, and leave remains intact.
+
+That relationship will need empirical study, not only good language. Does a person feel able to disagree with a familiar assistant? Can they change models without losing essential assistance or being pressured to stay? Does personalization support their own judgment or gradually substitute for it? A system that claims to care should be willing to learn uncomfortable answers.
+
+## 14. Sovereignty under pressure
+
+The boundary is easiest to describe when everyone cooperates. Its value is tested when authority is disputed, a device is stolen, a company changes direction, a network is partitioned, or a person is under pressure.
+
+Coercion exposes the limits of signatures immediately. A valid signature can be produced unwillingly. A delayed, contestable succession process may make some attacks harder by creating time to object, but delay alone does not establish freedom. An attacker can suppress the objection or control the channels through which it would be heard.
+
+Revocation has a similar temporal limit. A person can stop future use under a policy that recognizes the new state. An offline party may not yet know about the revocation. An already completed effect cannot always be undone. The system must state where authorization becomes effective, where it can still be interrupted, and which observations establish the outcome.
+
+Forks make continuity more complicated. Two successors can each carry a plausible history. Neither should silently inherit all the grants of the other. A verifier should report a conflict rather than resolve it by whichever branch arrived first, unless an independently accepted policy actually defines that resolution. Calling one software distribution canonical does not settle a dispute over human authority.
+
+Death, incapacity, and loss require arrangements beyond the assumption that the original owner will always return. An heir may receive control without becoming the original signer. A recovery quorum can help a person regain access while also becoming a potential point of capture. These powers should be limited, legible, and contestable where possible.
+
+The release channel is another authority boundary. A compelled or compromised update could replace the approval display, alter the signer, or weaken the policy interpreter. A system can carefully verify every ordinary transaction while trusting one distribution mechanism that can replace the meaning of verification itself.
+
+Inspectable releases, reproducible builds, signed promotion records, and independently retained observations can help expose substitution. They do not prove that the code is harmless. The authority to amend the machinery, the authority to perform an action, and the authority to attest to an observation are different powers. Concentrating all three in one replaceable component defeats much of the separation.
+
+The operating system also remains part of the account. Moving a key into another process is not the same as removing access to it. A different user can provide an access boundary, while the shared kernel and administrator remain trusted. A signing service must authenticate callers through an appropriate mechanism and constrain what it will sign; simply hiding the key file does not stop a broadly accessible service from becoming a signing oracle.
+
+The relevant unit is the whole reachable authority, not the name of a process. If a model cannot read a key but can alter the daemon that uses it, replace its policy, or ask another privileged tool to sign, the authority has not been separated in the intended sense. Shells, child processes, plugins, update paths, credentials, and control-plane settings belong in that reachability question.
+
+Network architecture has its own pressures. A relay can censor or disappear. A discoverability service can bury a person without changing any signatures. A witness committee can share a provider that fails all at once. A gateway can become a legal or economic choke point. Stateless design and portable identity can reduce some forms of capture without abolishing these dependencies.
+
+Open source is valuable because it permits inspection, modification, and alternative implementations under its terms. It does not automatically distribute control of domains, signing keys, release channels, branding, or default discovery. Companies, foundations, jurisdictions, and funding still influence what people can practically use.
+
+A constitutional architecture should place those institutions at replaceable edges where possible. It must also acknowledge when replacement has a cost or needs cooperation. “You are free to leave” means little if leaving requires rebuilding an entire social world without tools or evidence.
+
+Cryptography changes over time as well. A profile needs a migration story for weakened algorithms and a policy for historical evidence. Adding a post-quantum algorithm to a key record is not equivalent to requiring and checking it on every relevant signature. A claimed hybrid system must identify where both halves are actually used.
+
+There is no final installation after which sovereignty requires no maintenance. The goal is a system that makes its changing assumptions visible, preserves the means to challenge them, and does not punish people for doing so. A boundary worth keeping must survive disagreement with its own authors.
+
+## 15. From the keyboard to the private thought
+
+The interface may move closer to the person than today's software categories suggest. A screen asks for attention. A voice can accompany an activity. Glasses can place assistance into the field of view. A wearable can respond to movement and context. Assistive neural interfaces already motivate questions that once belonged mainly to science fiction.
+
+The following possibilities are a research horizon, not AUKORA capabilities. They matter because a constitution designed only for a text box may become inadequate precisely when the human-machine relationship becomes most intimate.
+
+Consider an ordinary message. Today it may appear as an email in an inbox. In a future spatial interface, it might arrive as a voice beside a shared object, a note attached to a place, or a question an assistant holds until a suitable moment. The form can change while the underlying questions persist: who sent it, what does it ask, what will be remembered, and what action would answering authorize?
+
+Representation must not silently broaden permission. A gesture that dismisses a notification should not become approval because a new interface interprets it differently. A painted object in a spatial scene is a projection of state, not authority. The beauty or immediacy of the interface cannot replace the binding between the person's decision and the operation.
+
+Neural communication makes this sharper. Published work on streaming brain-to-voice neuroprostheses demonstrates a route from cortical recordings to speech synthesis in an experimental clinical setting. Research on inner speech examines both decoding possibilities and ways to reduce unintended disclosure. These results do not establish unrestricted reading of a person's thoughts. They do establish that mental privacy deserves concrete architectural attention. [Streaming brain-to-voice research](https://www.nature.com/articles/s41593-025-01905-6), [inner-speech research](https://pmc.ncbi.nlm.nih.gov/articles/PMC12360486/)
+
+A future boundary would need to distinguish permission to sense a signal, interpret it, retain it, transmit it, express it as speech, and act on the interpretation. Someone might want a device to help them speak without allowing every decoded possibility to become a permanent record. The right to communicate should not require surrendering the right to remain unrecorded.
+
+An output gate cannot recover privacy after raw neural or physiological data has already been sent elsewhere. Protection has to begin at acquisition and processing, including the sensor, its software, the host, and the destinations. A receipt may help account for an authorized disclosure. It cannot make an unauthorized disclosure unhappen.
+
+Accessibility also changes what a good ceremony looks like. A person using an assistive interface should not have to confirm every word through a separate, exhausting ritual. Modes, bounded delegation, clear interruption, and preserved essential assistance matter. Losing contact with an authentication sensor must not casually silence a person whose communication depends on the device.
+
+Now imagine a different kind of presence encounter. A wrist-worn system receives a deliberate touch, a brief exhalation, and a local pattern of pulse or movement. Instead of demanding that the person reveal a permanent biological password, it asks whether a particular, fresh interaction occurred under a declared profile.
+
+Breath research provides a reason to explore this without declaring the problem solved. Laboratory measurements have investigated individual metabolic patterns in exhaled breath. Such findings do not establish a wearable identity system, unforgeability, natural expiry, or consent. They invite a bounded question about whether multiple local signals might support an accessible, temporary presence cue. [Breath-pattern research](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0059909)
+
+One speculative design could compare airflow, warmth, humidity, carbon dioxide, and chemical features with an ambient reference, alongside touch and cardiopulmonary cues such as pulse or an electrical heart signal. Coordinated timing might help distinguish an intentional encounter from background exposure. It would still need to be tested against replay, synthetic stimuli, sensor compromise, environmental variation, and coercion.
+
+Those signals should not become the root key. The body is not a revocable password, and a physiological match is not a decision. At most, a protected device might issue a short-lived, challenge-bound statement about an observed encounter. The authority to act would still come from the person's approved scope and custody policy. Renewed presence must not renew a spent grant.
+
+Raw signals and templates should remain local where the design permits, with minimal retained metadata. Repeated measurements can reveal health, routine, or relationships even if the system never publishes a raw waveform. An adaptive template must not be allowed to drift under attacker-controlled input until it accepts the attacker. Enrollment, adaptation, revocation, and recovery each need a separate account.
+
+Illness, disability, medication, aging, exertion, and changing environments could alter measurements. A humane system needs alternatives for people who cannot produce the expected signal. False rejection is not merely an inconvenience when a device mediates communication or access to essential services. There should be no obligation to remain physiologically legible to a machine in order to retain one's identity.
+
+The imaginative promise is nevertheless worth preserving. A living gesture could help an interface meet a person naturally while keeping the gesture's raw intimacy private. Technology could become less bureaucratic without treating the body as proof of obedience. The important research question is whether the encounter can be useful, bounded, revocable, and accessible—not whether it can be given an impressive biometric name.
+
+As interfaces approach thought and bodily experience, the Golden Boundary becomes more rather than less relevant. What was once a button press may become a voice, a movement, or an inferred intention. The system must preserve the difference between noticing a possibility and receiving authority to realize it.
+
+The interface may move closer to the person. The authority must remain theirs.
+
+## 16. An inheritance, not an invention of everything
+
+The Golden Boundary brings several established disciplines into one human question. It does not claim to have invented access control, reference monitors, capability security, cryptographic signatures, hash-linked records, distributed agreement, or human approval. Those traditions are part of what makes the direction technically plausible.
+
+Capability systems ask how authority can be explicit, limited, and delegated without ambient privilege. Reference monitors ask how access decisions can be mediated. Identity standards describe verification methods and continuity without proving that every identifier represents a unique person. Transparency systems provide ways to examine inclusion and consistency without making every logged statement true. Each contributes a piece of the vocabulary, together with limitations that should travel with it. [DID Core](https://www.w3.org/TR/2022/REC-did-core-20220719/), [Certificate Transparency](https://www.rfc-editor.org/rfc/rfc9162.html)
+
+Network projects also precede this proposal. Nostr supplies signed communication through relays. AT Protocol explores portable identity and signed repositories. Farcaster and Urbit represent other approaches to social identity, personal computing, and network organization. Their differences matter. They demonstrate that identity, storage, computation, and discovery need not all be one inseparable application, not that AUKORA has solved their shared problems. [AT Protocol](https://atproto.com/guides/overview), [Farcaster](https://docs.farcaster.xyz/learn/architecture/overview), [Urbit](https://docs.urbit.org/)
+
+Cordis explores how software can compose through both dependency structure and time, including tracked effects and component lifecycles. This is relevant to an organism whose parts may change while it operates. Its composition discipline must not be inflated into a claim that arbitrary real-world effects are reversible or hostile processes are isolated. [Cordis](https://github.com/cordiverse/cordis), [composition paper](https://arxiv.org/abs/2608.25512)
+
+OpenShell is an example of current work separating agent execution from declared access policy through sandboxing, mediated access, and credential handling. Its documentation also describes review and formal analysis of policy changes. It should not be caricatured as an ungoverned box in order to make AUKORA look distinctive. The separate question is whether a particular assembly preserves the full authority contract—including who may change the policy, what the human approved, and which effect actually occurred. [OpenShell](https://github.com/NVIDIA/OpenShell)
+
+These developments, alongside collaboration systems and local or distributed inference, are evidence of convergence. That synthesis is this paper's interpretation. It is not an assertion that the cited projects endorse AUKORA or already form a single integrated system. Different containment backends may support a common interface while offering materially different guarantees; each needs qualification under its own threat model.
+
+AUKORA's proposed contribution is the continuous relationship among these parts: human-rooted authority, bounded delegation, exact-operation approval, controlled execution, durable consumption, receipted outcomes, independent checking, and continuity through replacement. The question is whether that relationship can become useful infrastructure for a person's own evolving intelligence. Distinctiveness must be established through comparisons and demonstrated behavior, not through a claim that nobody else has thought about boundaries.
+
+The project's own inheritance is unusual. Earlier Golden Boundary research explored mathematical descriptions of boundaries, observation, and reconstruction. Some broad golden-ratio and physical conjectures did not survive scrutiny. The useful inheritance is not an assertion that geometry proves sovereignty. It is a method: state the claim, name the observation that would defeat it, preserve the defeat, and narrow the next claim accordingly.
+
+Think of a map drawn to explain a locked door. The map can help someone understand where the door is, but drawing a thicker line cannot make the lock stronger. The following distinctions preserve that simple lesson across the project's more abstract research.
+
+Causal, statistical, and enforced boundaries can share a metaphor while relying on different mechanisms. A conditional-independence statement is not an operating-system permission. A numerical identity confirmed by computation is not independent evidence for a physical theory. A theorem proved inside specified assumptions should remain inside those assumptions rather than becoming a certificate for an unrelated software system.
+
+The same caution applies to the project's geometric instruments. A twenty-seven-cell teaching object or a higher-dimensional address scheme can organize a display, distinguish coordinates, or help a person reason about transformations. Its numbers do not establish consciousness, secrecy, semantic proximity, or authority. A visualization may represent a boundary without enforcing it.
+
+Relational disagreement can still be informative. Several views that cannot be composed consistently may reveal a problem worth investigating. That does not automatically identify which observer is right or what caused the conflict. Correlated shifts can remain invisible, and missing information is neither a contradiction nor a zero. An observer should be replaceable without being promoted into an oracle.
+
+This is the sense in which philosophy, mathematics, and engineering belong together here. Philosophy identifies the human distinction worth preserving. Mathematics can establish a conditional relation. Engineering must realize that relation under actual failure modes. Evidence then determines which claim was earned. None can quietly perform the job of all the others.
+
+The original research's corrections are therefore part of its value. A system that aims to preserve intellectual continuity should retain assumptions, transformations, counterexamples, and limits so future people can reproduce the reasoning and disagree. Inheritance should carry the capacity for correction, not only the story of success.
+
+## 17. What exists today
+
+This section is dated **29 September 2026**. It describes an engineering inheritance with concrete source and bounded experiments. It does not turn the constitutional horizon above into a claim of complete deployment.
+
+For this reconstruction, tracked Genesis source was inspected at commit **`9918c2a5d2f35da815bd4f36ffabe891e6d7c18e`**. Uncommitted work was excluded. No new behavioral tests, live approvals, transactions, or deployment changes were performed for the paper. Earlier measurements below retain their original scope and attribution. A running-process record was visible, but that is not sufficient evidence of its loaded code or behavior. [Source snapshot](https://github.com/aumara-xyz/aukora-genesis/tree/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e)
+
+The distinctions used here are simple. **Source-inspected** means an implementation was read at that pin. **Historically measured** means the preserved record describes an executed observation with its original limits. **Project-reported** means the result is attributed to an implementation or experiment report rather than independently reproduced for this paper. **Proposed** and **horizon** describe requirements and possibilities, not completed features. A result at one scope does not automatically transfer to another.
+
+### The authority and evolution path
+
+AUKORA carries a deterministic decision kernel, a path guard inherited from earlier work, exact-candidate staging, approval verification, consumed-state accounting for governed operations, and chained code-change records. These are inspectable implementations rather than names waiting for code. [Decision adapter](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/scripts/aukora/decide.mjs), [candidate authority](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/scripts/aukora/aumlok-candidate-authority.mjs)
+
+Their paths have different guarantees. Ordinary tool classification does not attach a durable one-use grant to every call. Separately approved code changes use a stronger accounting route. Saying simply that “the kernel is installed” would hide this distinction. A lexical tool filter also cannot establish containment of arbitrary scripts, children, or plugins.
+
+The self-change route stages a candidate, binds the approved material, verifies authorization, and advances the intended source tree. A later deployment process prepares a release, handles plugin admission, attempts activation, and records or recovers from outcomes. Successful source promotion does not establish successful activation. The presence of recovery machinery does not prove that every interrupted transition has been observed and reconciled. [Self-change](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/scripts/aukora/self-change.mjs), [activation and recovery](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/scripts/aukora/become.mjs)
+
+The supported path does not establish exclusive repository-server enforcement of AUKORA approval. The restored source also records same-user and software-key limits. A separate owner-account signer setup has historical operator-reported evidence, but this review did not remeasure its custody or show that every live agent route is separated from authority. Key protection, caller admission, and human presence remain distinct questions.
+
+### History and cold verification
+
+Aura carries hash-linked histories. The membrane consistency verifier compares a presented history with a previously retained observation and distinguishes supported consistency, conflict, and an undetermined result. The deployment machinery calls it over several histories. That is a narrower and more useful claim than “the history cannot be rewritten”: protection depends on the retained reference and who can alter it. [Minimal consistency verifier](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/vendor/append-only/verify.py)
+
+Diamond supplies a pinned cold consumer for Kira evidence. It checks an artifact profile and its cryptographic bindings. The membrane consistency verifier answers a different question about the relation between histories and retained observations. Neither replaces the other merely by being newer or smaller. Supported inputs, assumptions, and verdicts define their roles. [Diamond closure pin](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/vendor/kira-export/upstream-diamond.json)
+
+The source also carries separate Node and Python approval verification and a Rust consistency replica described by the project as independently authored. Implementation diversity can expose disagreement. It is not the same as outside institutional security review. A cold verifier obtains its trust anchors separately; a bundle's assertion about which key should be trusted cannot appoint its own authority.
+
+Historical evidence includes fixes to malformed and small-order signature-point acceptance in the Diamond lineage. That matters because a verifier's small size does not exempt its cryptography from careful validation. The correction is evidence of a repaired defect within a particular version, not a certificate that all related implementations are now flawless.
+
+### Memory, provenance, and the proposal cell
+
+Kira's tracked source distinguishes automatic remembered notes from separately approved signed records. It records capture context as host-reported context, not execution attestation. When configured, semantic indexing through OpenViking occurs after capture; returned candidates are checked against the memory ledgers. The retrieval layer helps locate information without becoming the authoritative source of that information. [Memory integration](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/plugins/aukora-kira/lib/index.js), [retrieval adapter](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/plugins/aukora-kira/lib/recall-openviking.mjs)
+
+Newer source also preserves a difference between known-empty, unavailable, and undetermined memory states. Older descriptions of an absent indexing path or a particular broken recall call are no longer reliable descriptions of this tracked source. Live capture continuity, recovery, and cross-device behavior were not remeasured for this reconstruction; some continuity evaluation remains explicitly incomplete.
+
+The consolidation component groups material by recorded ancestry overlap, retains counterevidence, and keeps unknown ancestry visible. Its output does not mint permission. A historical fifteen-arm component experiment and removed-protection checks support a bounded implementation claim. They do not show that hidden common ancestry is detected or that a deployed network resists arbitrary synthetic consensus. [Consolidation source](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/plugins/aukora-kira/lib/consolidate.mjs)
+
+A pinned WebAssembly cell feeds bounded proposals into memory paths, where its output is treated as untrusted data. This is a concrete component with a narrow role. Its host is not thereby confined, and a later artifact does not establish that this particular cell executed. The existing ceiling `CELL_EXECUTION: NOT_ESTABLISHED` preserves that distinction. [Proposal adapter](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/plugins/aukora-kira/lib/wasm-proposal.mjs)
+
+### Identity, composition, and containment
+
+The tracked Aumlok source retains the themed seven-word design and reports approximately **34.14 bits** for a specified idealized generator. This is not a newly measured strength for a currently bound phrase. The historical toy's **19.51 bits**, later designed figures, human-selected phrases, and stronger security targets belong to different categories. A public handle adds no secret entropy. [Generator account](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/plugins/aukora-aumlok/lib/themed-entropy.mjs)
+
+Earlier work measured memory-hard derivation on one loaded host and explored cold-root and machine-key separation. Those measurements do not establish attacker hardware cost or a completed recovery design. Additional custody checks exist in source with limited or default-off wiring. Merely naming a hybrid cryptographic suite does not show that both algorithms govern the current approval route. The stronger root and recovery direction remains a design to establish under an explicit profile.
+
+Nostr peer-binding and communication components exist, while their own documentation states transport limits. The harness pins Cordis for composition. Carried candidate staging and guard code have actual callers. Other inherited work, including First Echo, remains source-present and explicitly not yet wired into the current application. Preserving code is valuable; calling it part of a live path requires more evidence than preserving it.
+
+Containment research has advanced beyond a wholly unexecuted proposal. A project report at this source snapshot records an OpenShell experiment in a disposable Linux-backed environment on Apple Silicon: selected scratch work was permitted while selected host resources were absent. The report expressly does not establish protected control-plane administration, the complete brokered operation, or the installed application's confinement. [Experiment report](https://github.com/aumara-xyz/aukora-genesis/blob/9918c2a5d2f35da815bd4f36ffabe891e6d7c18e/docs/research/containment/SPIKE-FINDINGS.md)
+
+That is a useful substrate observation. It is not yet the complete constitutional assembly. Shell isolation, key custody, caller admission, constrained effect execution, and governance of the isolation policy must meet on the actual path. One successful probe cannot silently promote all of them to established properties.
+
+### What the smaller experiments earned
+
+The restored evidence record preserves several results that make the direction more concrete while also limiting its headline:
+
+| Experiment | Recorded result | Scope that remains |
 | --- | --- | --- |
-| **1. Historical toy** (AUKORA-37 Round 4) | 19.51 bits | 16 anchors, six words per bucket, uniform draws; asserted by `courts/court-25-aumlok-toy.sh` in aukora-37 [private repository] and recomputed from its word lists for this revision. The toy's own `aumlok-kdf-v1` is scrypt n = 2^14, r = 8, p = 1 with a constant salt. About 0.048 s per derivation is author-reported, with no retained record; this revision measured 0.02–0.04 s for those parameters on the §1 host, depending on load. At its pinned commit the toy also printed a truncated SHA-256 of the phrase, a fast guessing oracle, since removed. **[TOY]** |
-| **2. Measured list entropy** (Genesis) | 34.14 bits | `measure()` returns 34.142338067819374 = log2(150 anchors) + 26.9135 bits for the weakest anchor over `plugins/aukora-aumlok/data/aumlok-themes.json`: the min-entropy of an idealized generator drawing each choice uniformly and independently, against an attacker who knows the lists. The common-words court prints it; the packaging court, which checks the module header, needs a materialized release and was not run. The desktop drawer cannot draw 48 three-letter list words and never repeats one, giving about 33.50 bits over about 2^40.4 phrases (preparation enumeration, not a court). `scripts/aumlok/bind --generate` still uses older tables of about 14.3 bits. **[MEASURED at the Genesis pin: `measure()` and the common-words court; drawer figure: this revision's own enumeration, not published and not a court; `bind --generate` figure: the file's own statement]** |
-| **3. Floor and target** | none | The design measured 58.98 bits over 510 anchors against a 64-bit floor that refused every phrase; that harvest held unsafe words. Three safety passes on 23 September rebuilt the lists: the floor constant was deleted in the first, the report retiring it recorded 44.90 bits over 476 anchors, and a pleasantness pass left the shipped 150. Restoring the design figure is an open owner decision. A target named in a private research note has no generator, lists, floor or proving command in any searched branch, so no target is stated here. **[DOCTRINE: history; target UNRESOLVED]** |
-| **4. Enforcement** | nothing refuses | `measure()` reports no floor, the bind accepts any seven well-shaped words, and a 58-bit floor court is registered as red by design, was not re-run for this revision, and sits outside the aggregate court runner and CI until the owner decides. At the pin every desktop bind prints `ROOT_KEY_OFFLINE_GUESSABLE` ([CEILINGS.md][ceilings]), which a court added at a later commit (`tests/aukora-aumlok-root-key-ceiling.test.mjs`, plain and `--mutate`) asserts on both print paths and in the ceiling registry; [CLAIMS.md][claims] marks offline-guess resistance NOT CLAIMED. **[BUILT: code-read at the pin and at the later commit]** |
-| **5. What bits do not prove** | — | The list below. **[DOCTRINE]** |
-
-Genesis reuses the name `aumlok-kdf-v1` for a different contract: scrypt N = 2^17, r = 8, p = 5 (128 MiB per guess), salted with a domain string, a zero byte and the owner's public handle, whose 64-byte output seeds the Ed25519 and ML-DSA-65 root keys; `tests/aukora-aumlok-kdf-pin.test.mjs` freezes it. **[BUILT]**
-On the §1 host `measureKdfSecondsPerGuess` took 0.86–1.6 s per guess with load (0.17–0.19 s at p = 1); GPU, ASIC and cloud cost were not measured. **[MEASURED: one loaded host]**
-The identity record carries the public keys, so anyone holding it can test guesses offline: at about one second each, 2^34 guesses take about 545 core-years and parallelise, and against the desktop drawer 2^30 guesses succeed about 3% of the time and about 2^37.2 succeed half the time. **[DOCTRINE: disclosed ceiling]**
-
-The bits do not prove the strength of a bound phrase, since the figure belongs to a generator and a phrase a person chooses or edits has no measured entropy at all; secret entropy from the handle, which is public; offline resistance, custody of the machine seed (a same-uid file or a keychain item read without a prompt), or attacker hardware cost; attendance, understanding, consent, a unique human, or recovery of the same subject; or safety after partial disclosure, since the anchor alone leaves about 26.3 bits for the weakest anchor under the desktop drawer. **[DOCTRINE]**
-The decided direction, after the share, is that the seven words unlock a random root of at least 128 bits held on the device or on paper instead of deriving it; how far that resists offline guessing depends on where the wrapped root lives, which is an obligation to measure. **[PROPOSED]**
-
-### Cold root, machine keys and continuity
-
-The intended root is cold: available only for root-class ceremonies, not retained as the everyday agent key. **[DOCTRINE]**
-Genesis implements this direction: bind and refresh keep only an HKDF-derived machine key (`aumlok-machine-kdf-v1`); the root is re-derived for root-class acts and never written to disk; `tests/aukora-aumlok-cold-root.test.mjs` refuses cross-class signatures and keeps positive controls. **[BUILT: court-driven]**
-Machine keys are deterministic, so the words reproduce every one; AUKORA-37 main instead enrolls a fresh random TEST device key and names deterministic derivation as unreviewed. **[DOCTRINE: custody-review question]**
-The record reads a revoked-machine list that no shipped code path writes (only a court builds one), succession code is exercised only by a rehearsal and a demo, and the subject commits to a random nonce kept only in the record, so re-binding mints a new subject and continuity needs a surviving record. **[BUILT: code-read]**
-Attendance is a separate signature, never a condition of authority, and its hardware-backed path is not shipped; root-class signatures are Ed25519 only, and the derived ML-DSA-65 seed signs nothing (`ML_DSA_65_UNMEASURED`). **[BUILT: code-read]**
-Temporary derivation inside an unconfined host does not prove the host cannot retain the root, and a different process or UID alone is not a complete threat model. **[DOCTRINE]**
-
-The human ceremony must make the authorized scope understandable and keep phrase material outside agent prompts, logs and model-provider requests; possession, presence, understanding and consent remain distinct. **[DOCTRINE]**
-Indexed-word quizzes are not endorsed: repeated challenges can progressively disclose a phrase. **[DOCTRINE]**
-Recovery should be explicit succession under an anchored policy, not a claim that reconstructing an old secret proves the original person returned; recovery groups can seize control, and a disconnected observer may not know the current head. **[DOCTRINE]**
-
-## 6. Validation, agreement, and availability
-
-These are three separate requirements:
-
-| Requirement | Question | What does not answer it |
-| --- | --- | --- |
-| **Validation** | Does this artifact satisfy a particular profile under supplied anchors? | A green result does not show everybody saw the same artifact. |
-| **Agreement** | Can incompatible uses of the same authority both be accepted? | Two valid signatures do not establish non-conflict. |
-| **Availability and freshness** | Can the needed evidence be obtained, and what later evidence may be missing? | A hash, signature, or accepting relay does not guarantee retention or latestness; a retained checkpoint can reveal some missing history but does not prevent rollback. |
-
-### A bounded witness experiment
-
-AUKORA-37 Round 4 (`witness37/` and `courts/court-24-witness-protocol.sh` in aukora-37 [private repository]) implements four fixed TEST witnesses with a three-signature certificate for an authorization slot. **[TOY]**
-Its fresh-archive acceptance run was author-reported GREEN, with no retained log, at a Round 4 commit holding 26 court files, and its court asserts 405 explored schedules with zero conflicting certificates. **[TOY: author-reported]**
-For this revision the scheduler file on AUKORA-37 main reproduced a bounded exploration of 405 schedules (five fault assignments by 81 delivery orders, not an unbounded proof): 69 certificates per value, 267 stalls and zero conflicts, including six honest two-two splits that stall with no faulty witness; Round 4's own figure, from an earlier version of that file, stays author-reported. **[TOY: MEASURED at AUKORA-37 main]**
-The toy prints `SIMULATED_INDEPENDENCE`, `NO_ROLLBACK_PROTECTION`, `CERT_IS_NOT_EXECUTION`, `WITNESSES_GRANT_NOTHING`, `MEMBERSHIP_FIXED`, `NO_LIVENESS_MECHANISM`, `SCHEDULER_BOUNDED` and `KEY_CLASS: TEST-DISPOSABLE`. **[TOY]**
-
-The conditional safety argument is small: two sets of three among four overlap in at
-least two members. If at most one witness is Byzantine, at least one member of the
-overlap is honest. If an honest member cannot sign incompatible values for that slot,
-two incompatible certificates cannot both be formed.
-
-**Fault model.** Membership is fixed and authenticated; at most one of four witnesses is Byzantine; safety assumes no timing; an honest witness durably records its choice before signing and keeps it across crash, restart and rollback; witness keys sit in distinct custody. **[PROPOSED]**
-**Equivocation.** Two incompatible statements signed by one witness key for the same authorization and slot form portable evidence anyone with the membership list can check; the consequence is eviction through the owner's membership procedure and publication of the evidence, with no token, stake or slashing, and the evidence does not say whether theft or malice caused it. **[PROPOSED]**
-**Stalls and partitions.** Liveness is not claimed. A stalled slot is reported as stalled, never re-certified for another value, and never released by a timeout; resolution is an explicit, recorded owner act that voids the stalled authorization and opens a new slot, and during a partition the minority cannot certify and readers report the slot as uncertain. **[PROPOSED]**
-Four processes under one operator meet neither the durable-choice nor the distinct-custody assumption. Witnesses certify within an existing authorization; they neither grant permission nor establish that an effect occurred. Membership change and cross-resource atomicity remain unresolved, and a certificate experiment does not establish that Genesis requires certificates at settlement. **[DOCTRINE]** Rollback is sharper than a log check: restoring a state snapshot un-spends one-use state (the owner daemon's journal and Kira's one-use markers), while the retained head, the Aura checkpoint and the sequence number all accept the restored log, because a restored log is a valid prefix of itself; a witness must record each consumption, not the log's length. **[TESTED: author-recorded at a later commit (`tests/aukora-restore-scope.test.mjs`, disposable state), not re-run for this revision]** A consumption witness that records each spend, with its own court, exists at that commit and refuses the replay after a restore; where it lives, outside every restore scope, is an open owner decision. **[BUILT: code-read; placement PROPOSED]**
-
-### Where this could substitute for a blockchain
-
-For a bounded owner-controlled workflow, a shared global order may be unnecessary.
-Scoped authorization, a suitable non-conflict protocol, portable receipts, and explicit
-availability arrangements could supply the properties that particular application
-needs. That could replace a blockchain dependency **for that workflow**.
-
-It does not follow that all blockchains, public settlement, shared markets, or arbitrary
-multi-owner state can be replaced. Personal hash chains and witness lock stores are
-still logs. This is a proposal to avoid unnecessary *global* ordering, not to obtain
-agreement without state or trust assumptions. [FastPay][fastpay] is relevant prior work
-on quorum-based settlement; its existence is not a proof for this proposed profile.
-
-Genesis ships a Nostr transport lane; a relay is a transport and availability dependency,
-not an authorization oracle or consensus vote. Withholding, retention, operating cost,
-metadata, and key-binding resolution need explicit treatment. An offline verifier must
-distinguish historical validity from current authorization.
-
-### Names, discovery and the network
-
-“The person replaces the ledger” is shorthand for authority originating with the owner, not a claim that ownership eliminates conflicting signatures or retained state. **[DOCTRINE]**
-Keys control a continuity lineage, petnames express local relationships, and plural `name@domain` namespaces provide discovery without making one memorable-name registry the source of personhood. **[DOCTRINE]**
-A vouch graph could support introductions, with [Lobsters' invitation tree][lobsters] as a limited precedent, while preserving access for people without well-connected sponsors; vouches are assertions, not proofs of humanity, and discovery defaults can become gatekeepers even when signatures are decentralized. **[HORIZON; DOCTRINE: limit]**
-
-Five capture principles from earlier research [private source, not published] frame the network as design principles, not laws. **[DOCTRINE]**
-
-| Capture principle | AUKORA footing and exposure |
-| --- | --- |
-| Verification independent of location | Diamond's cold-consumer design supports this separation; supplied anchors, profile compatibility and access to evidence remain dependencies. **[BUILT: source scope]** |
-| Dumb, interchangeable relays | Genesis's Nostr lane carries messages and is never the authority; relay concentration, withholding and metadata remain risks. **[BUILT: transport; DOCTRINE: separation]** |
-| Keys and petnames, no global memorable registry | Plural naming is the design commitment; a universal `.aum` allocator or privileged directory would recreate a gatekeeper. **[DOCTRINE]** |
-| Portable signed state and credible exit | A proposed home is authoritative for its owner's state, with untrusted revocable mirrors; stale views, lost data and migration still need measured treatment. **[HORIZON]** |
-| No token required by base protocols | Participation should not require buying governance or admission weight; hosting costs and witness incentives still need a sustainable answer. **[DOCTRINE]** |
-
-A gateway should retain no custody keys or authoritative identity state, and clients should verify evidence themselves; statelessness cannot remove legal pressure, censorship or traffic observation, and revoking a mirror stops future service without erasing copies already obtained. **[DOCTRINE]**
-The exit demonstration is: change the model, move the home, replace the relay and verify retained history without the previous provider's cooperation, naming any unavailable or stale evidence. **[HORIZON]**
-
-## 7. Memory, privacy, and receipted training data
-
-**PROPOSED:** preserve provenance without making a lifelong public behavior stream a
-condition of participation. Separate contexts and selective exports are preferable to
-requiring one universal public identity chain. A person must be able to use the system
-without publishing their social graph or delegating personhood to it.
-
-Bare hashes of predictable content can be guessed. A reviewed commitment profile with
-fresh secret randomness can hide predictable values from simple enumeration, but it does
-not automatically hide timing, traffic, counterparties, or correlation. Conflict
-identifiers must remain comparable to the parties enforcing one-use rules. Hiding every
-witness identity cannot be assumed compatible with verifying that committee members are
-distinct. These are explicit design tradeoffs, not solved by “digests instead of bodies.”
-
-Every model turn goes to a provider, and [WHAT-LEAVES-THIS-MACHINE.md][egress] states what leaves, citing the file and line behind each setting. On 26 September the development head turned off upstream session-log upload, plugin inventory and telemetry, asked the model router to deny data collection, and made cloud speech recognition opt-in; none of this is in the release observed running, whose egress was not measured, and receipts cannot recover privacy after a disclosure. **[BUILT at the pin; DOCTRINE: not deployed]**
-
-Kira can provide a useful boundary between remembered evidence and new inference:
-retain origin, applicability, currentness, counterevidence, and the difference between
-an observed event and a model's summary. Recall can make an assistant more useful
-without making remembered instructions authoritative.
-
-### Memory without manufactured consensus
-
-A network can decentralize its servers while centralizing its beliefs: one mistaken account can return through many agents as apparent corroboration. **[HORIZON: failure scenario]**
-The anti-mimetic rule is that imitation must manufacture neither authority nor independent evidence. **[DOCTRINE]**
-Memory should preserve observations, inferences, shared source ancestry, conditions and counterevidence rather than compressing disagreement into confidence. **[DOCTRINE]**
-Different hashes or signatures do not establish independent sources, and missing ancestry must remain unknown rather than earn a fresh vote. **[DOCTRINE]**
-Three witness signatures may establish agreement under a protocol; three restatements of one observation are not three observations. **[DOCTRINE]**
-Permission is orthogonal to confidence, urgency and chorus; a human decline stays durable under re-asks, and explicit reconsideration must not make repeated pressure an authorization mechanism. **[DOCTRINE]**
-The court earlier revisions called future now exists at the development head: `tests/kira-consolidate.test.mjs` drives `plugins/aukora-kira/lib/consolidate.mjs` through 15 arms on a scratch store, and each arm goes red when its protection is removed, for this revision. **[TESTED_AT_PIN]**
-Its arms count restatements with shared ancestry as one observation, refuse hashes or signatures as independence, keep unknown ancestry from voting, keep contrary evidence beside a claim, refuse authority-shaped fields, import no settlement path, and keep the chorus from reopening a decline. **[BUILT: component scope]**
-It judges independence from declared ancestry, so undeclared or forged shared ancestry passes undetected; the chorus is synthetic, and no multi-agent deployment was measured. **[DOCTRINE]**
-
-### Governed refusal memory
-
-An unpublished local laboratory branch of AUKORA-37 tested whether a refusal can be remembered without letting memory manufacture permission. **[TOY]**
-Its loop: a real refusal leaves the protected store unchanged; a capped quarantine records digests and outcome codes, not text; one predeclared candidate reminder forms; the lesson stays unavailable until an explicit TEST approval settles it; a fresh process recalls it byte for byte, and a cold verifier run from an empty directory against separately supplied TEST anchors reports CLEAN; the reminder then yields an earlier advisory handoff, never an allow. **[TOY]**
-Recorded: 0 of 6 unapproved actions had an effect, 1 of 1 repeated missing-approval request was handed off early, 0 of 1 corrected request was falsely stopped, 1 of 1 lesson was settled, recalled and verified, three removed-check controls went red, no model was called, and latency was not measured. **[TOY: lab-recorded]**
-A refusal is not proof of malice, repetition is not corroboration, an infrastructure failure is not a negative label (its one failure was injected), local observations are not authenticated, a lesson receipt does not make the lesson true, TEST approval does not show attendance, and this is mechanical adaptation, not trained immunity. **[DOCTRINE]**
-Before such memory is trusted it needs reviewed activation, expiry, revocation, trusted observation intake and a retention policy, with attacker-influenced memory inside the threat model. **[PROPOSED]**
-
-For training, a proposed provenance chain is:
-
-```text
-permitted source → authorized extraction → labeled example → dataset manifest
-→ permitted training run → evaluation evidence → separately approved promotion
-```
-
-Each transition should bind its inputs, transformation version, intended use, relevant
-permission, responsible principal, and output digest. A receipt can help establish which
-dataset or labeling decision was claimed and signed. It cannot establish label truth,
-legal rights, consent beyond its actual scope, training execution, or the absence of
-unrecorded inputs merely by carrying a signature; confidential company data still needs
-access control, permitted-use review, isolation and an appropriate evaluator. Local
-forgetting should destroy permitted local material without falsely certifying global
-erasure: it cannot recall exported copies, remove every backup, or untrain existing
-weights. Settlement is not blanket permission to train, export or publish.
-
-## 8. Self-improvement without self-authorization
-
-The proposed loop is observe a failure, propose a bounded change, evaluate independently, authorize promotion of the exact candidate, and measure the resulting behavior. **[HORIZON]**
-Improvement at one task does not establish unbounded recursive improvement. **[DOCTRINE]**
-
-- Freeze task, evaluator, partitions, allowed changes, budget and stopping rule before scoring; count failed candidates and repair costs. **[DOCTRINE]**
-- Keep labels, holdouts, authority keys and promotion decisions outside the candidate's write authority; another chat is not isolation. **[DOCTRINE]**
-- Bind source, dependencies, release artifacts, instructions, declared model configuration and evaluation evidence. **[DOCTRINE]**
-- Require safety and regression checks before performance gains; missing outputs and infrastructure failures cannot score as success. **[DOCTRINE]**
-- Independently control admission and retain recovery without rolling spent-state or authority history backward; measure the mounted result. **[DOCTRINE]**
-
-A configuration hash binds local declarations, not a remote provider's actual weights or computation. **[DOCTRINE]**
-Human pause and revocation must not require model agreement or a remote quorum, and must handle in-flight effects without promising to undo completed actions. **[DOCTRINE]**
-Silence, fatigue, a default, a pre-ticked box and a timeout are not authorization. **[DOCTRINE]**
-
-### A small judge in front of the boundary
-
-The same unpublished laboratory branch placed a small open local decision model (Laya 0.3.4 on CPU) as an advisory judge before the unchanged authority boundary. **[TOY]**
-Over 36 synthetic cases rendered as prose and as evidence cards (72 calls, no paid inference, median 2.23 s), cards chose the right raw action 10 of 24 times against 15 of 24 for prose, and the prespecified verdict was `NO_CLEAR_WIN`. **[TOY: lab-recorded]**
-The confidence gate handed off all 72 decisions: zero incorrect submissions and zero useful ones, so on the evaluation set all 8 supported notes in each rendering were handed off rather than submitted; no infrastructure failure was recorded. **[TOY: lab-recorded]**
-The field it read is one minus normalized entropy, a concentration measure (0.027–0.270 here), not the probability of being correct. **[TOY: lab-recorded; formula confirmed against the vendor package source for this revision]**
-In a separate fixture set the judge allowed 5 of 6 unauthorized requests and the boundary refused all of them (0 of 12 unauthorized effects with an always-allow comparison), with 0 of 2 authorized requests falsely stopped; and a deliberately contradicted note, once TEST-approved, cold-verified CLEAN, because a valid receipt can accompany a false statement. **[TOY: lab-recorded]**
-The judge is not shown to be deterministic or calibrated, is not interchangeable with any hosted decision model, and is not a security boundary; the vendor's calibration claim was not measured. **[DOCTRINE]**
-
-### BODY, SKIN, and conformance that can fail
-
-BODY is what an extension may change under containment without asking: its screens, tools, own plugins, worktree, scratch space and development release. SKIN is everything else, including the owner's memory store, configuration, keys, network egress and outside services, and crossing it requires an exact-bytes human yes and a one-use grant; persona text never authorizes. **[DOCTRINE]**
-No code enforces a SKIN class today; each resource is protected only where its own effect path refuses. **[DOCTRINE: enforcement limit]**
-A conformance check must be able to fail: a local inventory that once reported three of five checks green had passed two with a literal `True` and a third by searching source text for words; it now reports `NOT_READY` with five named gaps. **[DOCTRINE]**
-
-### Models and local weights as foreign principals
-
-Every model, including local weights, is a foreign principal: it proposes, and it holds no key, no socket to authority, and no ambient file or network reach. **[DOCTRINE]**
-The proposed containment runs model processes as a distinct OS user in their own namespaces and admits them to authority only through propose-only IPC whose peer identity the kernel reports. **[PROPOSED]**
-AUKORA-37 main runs one proposer step in Linux user, network, mount, IPC and PID namespaces with a read-only root on the same host uid, and an unpublished, unmerged branch adds a peer-credential owner gate designed to pass on one uid while printing `TWO_PRINCIPAL: NOT_ESTABLISHED`; no run of it is retained. **[BUILT: component scope; run UNVERIFIED]**
-In Genesis, CORE's code-running subagents stay on by the owner's decision and are disclosed at the development head as `CORE_RUNS_MODEL_CODE`: a task CORE accepts can run code a model wrote; the code states that CORE hands work to another agent session only through a card the owner taps, and discloses that its verb filter is a word list that cannot bound what code does (`CORE_VERB_FILTER_IS_LEXICAL`); and the existing tool pins, which say a hand is not a sandbox, are not on the mounted CORE path. **[DOCTRINE: disclosed limit]**
-On the macOS product path model and owner share a uid: `CONFINEMENT: NOT_ESTABLISHED`. **[DOCTRINE]**
-An improving extension should preserve why a conclusion held and when it stopped applying, rather than inherit its predecessor's confidence. **[DOCTRINE]**
-
-## 9. Sovereignty must survive ordinary life and hostile power
-
-The following risks remain design obligations, not solved properties of a sovereign network. **[DOCTRINE]**
-
-| Risk | Obligation and limit |
-| --- | --- |
-| Coercion | Provide contest and revocation paths; signatures do not prove free consent, and later annotations cannot undo effects. **[DOCTRINE]** |
-| Persuasion and fatigue | Budget prompts and measure comprehension; a persuaded or tired approval is still a real approval (§4). **[DOCTRINE]** |
-| Loss, death, incapacity | Define constrained recovery and succession; a recovery quorum can seize control, and an heir is not the original signer. **[DOCTRINE]** |
-| Vouching and exclusion | Test collusion and access without sponsors; vouches cannot prove unique humanity or prevent bribery. **[DOCTRINE]** |
-| Witness capture or outage | Require distinct failure domains and honest stall reporting; shared infrastructure and censorship remain risks. **[DOCTRINE]** |
-| Release capture | Make distribution inspectable and migration practical ([SECURITY.md][security]); passing courts do not establish every shipped binary's behavior. **[DOCTRINE]** |
-| Crypto aging | Specify profile migration and treatment of historical evidence; verification is not timeless. **[DOCTRINE]** |
-| Continuity becoming captivity | Preserve optional participation, separate contexts and exit without the extension's cooperation; disclose what leaving loses. **[DOCTRINE]** |
-
-Forks must not silently inherit each other's grants. Conflicting successors must be
-reported as conflicts. Choosing which governance policy to adopt is a human and social
-decision; calling an implementation “canonical” cannot erase that fact.
-
-Windowed, contestable succession could give a person time to challenge a coerced or stolen-key transition, but delay and unseen objections cannot establish free consent. **[HORIZON]**
-The release door is another coercion point: a targeted build could alter the very display or signer the person trusts; binary transparency, reproduced builds and inspectable promotion records should make substitution detectable under stated assumptions, not certify that code is harmless. **[DOCTRINE]**
-The proposed membrane brings external messages through owner-run bridges as attributed records, never as instructions with inherited authority, and those bridges must constrain credentials, plaintext, retention and outbound effects, because “runs on my machine” is not containment. **[HORIZON; DOCTRINE]**
-A spatial or visual surface is a projection of state, never authority: a separate unpublished interface experiment lets intent paint freely inside its field while nothing painted grants anything. Paint is not permission. **[HORIZON]**
-
-## 10. Evidence-gated roadmap
-
-Dates are intentionally replaced with prerequisites. Each row needs an accountable
-implementation owner and a recorded review before its status can advance. This paper
-does not dispatch that work or authorize its cost.
-
-| Gate | Deliverable | Acceptance question / earliest falsifier | Main cost or blocker |
-| --- | --- | --- | --- |
-| **G0 — inventory** | One pinned map of source, release, mounts, authority profiles and consumers. | Does a claimed current dependency differ from the bytes the release carries? (On 26 September it did: §3.) | Reconciliation across parallel work and a green CI run; no substitution of chat claims. |
-| **G1 — human binding and first settlement** | A human binding under a reviewed custody profile with the §5 root redesign and unapproved launches refused, then one complete application transaction under that authority with separately supplied anchors. **[DOCTRINE]** | Can a decline change the resource, can an incomplete run be called settled, or can the words alone rebuild the root offline? **[DOCTRINE]** | Custody review, ceremony and comprehension evidence, single-run provenance, attendance limits retained. **[DOCTRINE]** |
-| **G2 — enforced reach and custody** | The host-confinement profile below, named signer profiles and safe interruption. | Does any in-scope route retain authority outside the declared boundary? | OS and platform work, trusted display and signer, and a second reviewer. |
-| **G3 — portable continuity** | Explicit identity, delegation, succession and evidence profiles, with a cold bundle. | Does a fresh verifier silently resolve a fork or accept a stale control view as current? | Recovery, freshness and policy semantics. |
-| **G4 — witness hardening** | The §6 fault model with durable state, equivocation eviction, the stall policy and an explicit execution join. **[DOCTRINE]** | Can restart or rollback erase a choice, can a stall be re-certified, or can a certificate be mistaken for execution? **[DOCTRINE]** | Rollback, isolation, membership and liveness assumptions remain gates. **[DOCTRINE]** |
-| **G5 — privacy and availability** | Selective disclosure, retention and erasure boundaries, measured egress, an availability budget and independent custody. | Can the advertised private view reveal predictable content or identifying metadata? | Privacy review; transport economics; collusion and outage assumptions. |
-| **G6 — governed improvement** | One task improves under fixed evaluation, and an independently authorized candidate is promoted. | Can the candidate change its grader, exceed its budget, or approve its own promotion? | Containment, evaluator independence and meaningful held-out tasks. |
-
-G0–G2 are the immediate priorities, and none depends on the biometric, breath or neural
-material fenced in Annex A. G4 should remain a small conformance experiment until its
-assumptions and failure behavior are understood. AUKORA-37 can demonstrate a behavioral
-contract; Genesis must execute the corresponding contract through its own paths. Diamond
-remains the cold consumer, not a new governor.
-
-**The G2 host-confinement profile (PROPOSED).** A hermetic runtime with no ambient capability (a WASI guest with no preopened directory or socket, or a microVM or isolated domain) that inherits no environment, home directory or credentials; a deny-default filesystem profile over canonical paths with a canary deny that must bite at start; a distinct uid for every proposer and model process, with owner secrets unreadable at the kernel and network reach only through a mediated channel; and the confinement class signed into the outcome receipt rather than printed beside it. **[PROPOSED]**
-Attestation of the exact executed code identity before an outcome receipt is emitted is a requirement to meet, not a claim made here. **[PROPOSED]**
-Its falsifiers are any route from a proposer to the file service, network, signer, spawned processes or the eye door's input path that keeps authority outside the profile. **[PROPOSED]**
-
-Adoption is another gate: a stranger must be able to install the verifier, obtain the
-right anchors, understand each refusal, preserve privacy, and recover from ordinary
-mistakes ([TRY-AUKORA.md][try]). Measure latency, storage, money, operator effort, false
-refusals and downtime, not only cryptographic acceptance. A system that prevents every
-action by making every use impossible has not delivered useful sovereignty.
-
-## 11. Relation to prior art
-
-The research question is whether the pieces of §4–§6, composed, can serve a person's own evolving extension while its authority remains bounded and another implementation can reject unsupported claims. **[HORIZON]**
-That is a composition to evaluate; this paper makes no first-in-world or patentability claim. **[DOCTRINE]**
-Reference monitors, capabilities, signed statements and transparency logs are prior art; [UCAN][ucan], [DID Core][did] and [Certificate Transparency][ct] provide concrete comparisons rather than proof of AUKORA's composition. **[DOCTRINE: attribution]**
-
-| Prior art | What this paper credits |
-| --- | --- |
-| [Nostr][nostr] | Public-key-signed events and relay transport are existing substrate; carriage of an event does not itself authorize an AUKORA effect. **[BUILT: external protocol]** |
-| [Bluesky / AT Protocol][atproto] | Portable identity, signed repositories and federated services are established design work; owner exit remains something to test in AUKORA. **[BUILT: external architecture]** |
-| [Farcaster][farcaster] | Decentralized social identity and signed-message architecture are relevant precedent, not an AUKORA invention. **[BUILT: external architecture]** |
-| [Urbit][urbit] | Personal servers, network identity and a user-owned computing environment precede this proposal. **[BUILT: external architecture]** |
-| [Block's Buzz][buzz] | As documented at 26 September 2026, its Nostr workspace gives agents keys and signed histories and includes review approvals, with workflow approval gates listed as being wired up; this paper makes no equivalence claim either way. **[BUILT: documented external implementation]** |
-| [FastPay][fastpay] / [Sui Lutris][lutris] | Quorum settlement and separating owned-object processing from shared-object consensus are prior work; applying them to a person's agent requires its own protocol and evidence. **[BUILT: external systems]** |
-
-A network built around that contract could make hosting, models and interfaces replaceable without making a person reapply for their digital existence. **[HORIZON]**
-
-## 12. Research inheritance, corrections, and limits
-
-This paper distills the earlier *Sovereign Line* draft and its custody, privacy and
-governance reviews [private source, not published]. It preserves their ambitions while
-replacing unsupported present-tense claims with explicit engineering obligations. It does
-not import private notes, local session histories, personal identity material, or machine
-paths into the repository.
-
-| Source | Inherited contribution | Deliberately not inherited |
-| --- | --- | --- |
-| *The Golden Boundary*, an earlier AUKORA research note [private source, not published] | Falsifiers, correction records and separation of recommendation from permission. | Analogies as security proofs. **[DOCTRINE]** |
-| *Unownable Core* [private source, not published] | Limited authority and practical exit. | Untested succession or silence as consent. **[DOCTRINE]** |
-| Seed 27, a one-file teaching example, and its specification [private source, not published] | Exact grants and checks. | Ternary arithmetic as intelligence or cryptography. **[DOCTRINE]** |
-| Lotus and its observer-code notes [private source, not published] | Advisory visualization and experimental methods. | Geometry as authority or consciousness evidence. **[DOCTRINE]** |
-| *Golden Horizon Principle* boundary program, published separately under its own terms | Frozen failure criteria and preserved null results. | Physics conjectures as custody or consensus proof. **[DOCTRINE]** |
-
-Ternary weights, Seed arithmetic and a 27-cell visualization share no security guarantee merely because their numbers rhyme. **[DOCTRINE]**
-
-### Revision 1 corrections to the precursor proposals
-
-| Earlier claim | Retained correction |
-| --- | --- |
-| Every stage is one running organism. | Source, release and runtime remain distinct. **[DOCTRINE]** |
-| A receipt proves an effect. | It authenticates profile claims under observation assumptions. **[DOCTRINE]** |
-| Content-free continuity reveals nothing. | Hashes and metadata may disclose information; lineage is not personhood. **[DOCTRINE]** |
-| Sign-once concerns settlement only. | Persist the choice before certification, with rollback assumptions. **[DOCTRINE]** |
-| Words prove presence; recovery restores the person. | Possession, attendance and continuity are separate. **[DOCTRINE]** |
-| An unsigned thought never left. | Inputs may already have been transmitted. **[DOCTRINE]** |
-| A foundation-free protocol has no owners. | Distribution and adoption still exert power. **[DOCTRINE]** |
-| Witness certificates replace blockchain generally. | Only specified workflows, under stated assumptions, are in scope. **[HORIZON]** |
-
-### Revisions 2 and 2.1 — 23 September 2026
-
-Round 4 entered as an attributed bounded toy; custody text separated the toy KDF, the entropy gate of that time and cold-root obligations; names, exit, mimetic resistance, capture risks and release transparency connected the core to the network horizon; wearable, breath and neural material entered as horizon, extended in 2.1 with touch and cardiopulmonary sensing. A claims pass on 26 September edited four lines without changing the revision line; those edits are folded into 2.2. **[DOCTRINE: record]**
-
-### Revision 2.2 — 26 September 2026
-
-- **§3 replaced** by a table pinned to the 26 September Genesis head and AUKORA-37 main, separating executed evidence from observed desktop status, with rows added for point hygiene, the read guard and profile generator, the owner daemon, the Nostr lane and the eye door's trusted input. Court counts **[TESTED_AT_PIN]**: secret filter 4/4 with three arms red under mutation, WASM release court 4 plain arms against the installed release's bytes (a local build, not published; no mutation run), cold consumer 12/12, common words 16/16, point hygiene 5 arms with three red, read guard 62 arms and 11 mutations, consolidation 15 arms each red under mutation; live Kira settlement (live-only rows 8 and 11 of [CLAIMS.md][claims]) and Aura retention **[operator-recorded; the underlying records are not published]**.
-- **Aumlok split into five classes.** 19.51 bits **[TOY: court-asserted, recomputed]**; 0.048 s **[TOY: author-reported; not in any published file]**; 0.02–0.04 s for the toy KDF on the §1 host, varying with load (Node `crypto.scryptSync`, N = 2^14, r = 8, p = 1) **[MEASURED]**; 34.14 bits (34.142338067819374) for the shipped lists **[MEASURED at the Genesis pin]**; about 33.50 bits over about 2^40.4 phrases for the drawer **[MEASURED: preparation enumeration of `apps/aukora-desktop/aumlok-draw.mjs`; script not published; not a court]**; about 14.3 bits for `bind --generate` **[BUILT: file statement]**; 58.98 bits over 510 anchors as designed and 44.90 bits over 476 anchors at retirement **[DOCTRINE: history]**; 64-bit floor retired **[BUILT]** and 58-bit court red and unwired **[BUILT: registry; verdict not re-run]**; target **UNRESOLVED**; 0.86–1.6 s per Genesis guess and 0.17–0.19 s at p = 1 **[MEASURED: one loaded host]**; 545 core-years, about 3% at 2^30 and half at 2^37.2 guesses, 26.3 bits after anchor disclosure for the drawer **[DOCTRINE: arithmetic]**; 128-bit root redesign **[PROPOSED]**. Rev 2.1's “planning input” of 58.98 bits is now the designed figure, and the toy's KDF contract is no longer readable as Genesis's.
-- **Added:** trusted display fields, approval fatigue and snapshot comprehension; bounded delegation **[PROPOSED]**; the local, unpublished spend prototype **[PROPOSED; TOY: lab-recorded]** and a self-signed-key admission in an unpublished experiment **[MEASURED: preparation probe]**, since fixed with a court arm **[BUILT: code-read]**; the 15-arm anti-mimetic court **[TESTED_AT_PIN]**; refusal memory in an unpublished laboratory branch (0/6, 1/1, 0/1, 1/1) and the judge lab in the same branch (72 calls, 10/24 against 15/24, 72/72 handoffs, 8/8 supported notes handed off, 0.027–0.270, 5/6 allowed, 0/12 effects, 0/2 false stops, 2.23 s) **[TOY: lab-recorded]**; BODY and SKIN and conformance that can fail **[DOCTRINE]**; foreign principals and the G2 profile **[PROPOSED]**; the witness fault model, eviction and stall policy **[PROPOSED]**, with a bounded 405/69/267/0 and six honest splits reproduced **[TOY: MEASURED at AUKORA-37 main]**.
-- **Disclosed limits the code now names at the head (printed, or stated in source and asserted by a court):** `ROOT_KEY_OFFLINE_GUESSABLE`, `PERSUASION_UNMEASURED`, `CORE_RUNS_MODEL_CODE`, `CORE_VERB_FILTER_IS_LEXICAL`; `allowUnapproved` defaults to true **[BUILT: code-read]**, to be set false after the next release switch **[PROPOSED]**.
-- **Narrowed, moved and removed.** The WASM cell's “wired into default staging” **[BUILT]** became a release court over its bytes, with only staging passing through the cell and `CELL_EXECUTION: NOT_ESTABLISHED`; Cordis split out as **[SOURCE_PRESENT]**; Kira's row now separates grant-bound settlement from unapproved automatic notes; Diamond's row became a vendored copy, not an independent implementation. Breath, wearable and neural material moved to Annex A and shortened; links into private history became repository-relative paths or “[private source, not published]”; external links were pinned or dated; §11 dropped its claim-shaped summary and its distinguishing column. An evidence pass then mapped every evidence-tagged claim to the file or command that checks it ([the evidence map][evidence]) and corrected 31 statements; later commits wired the point-hygiene court, added a root-key ceiling court, fixed the money-gate key, corrected a stale claims row, refreshed the egress companion and pinned defect D3 with a court arm, and the affected lines say so; a restore-scope court then measured that snapshot restores un-spend one-use state unseen by every log-length witness (§6).
-
-Future revisions should retain a dated correction record and identify which source,
-profile, assumption or measurement changed. No poetic interpretation, successful demo,
-or compelling model-generated explanation may silently upgrade a claim's status.
-
-**The interface may move closer to the person; the authority must remain theirs. [DOCTRINE]**
-The next proof returns to the ground: one human binding, one precise permitted action, one retained evidence bundle, and a stranger able to check its claims and limits. **[DOCTRINE]**
-
----
-
-## Annex A — research horizons (unprivileged)
-
-> Fenced. Nothing here is built, measured or relied on by §1–§12, and G0–G2 depend on none
-> of it. Analog and physiological signals are untrusted local cues: never root material,
-> never identity anchors, never grants.
-
-**Toward the private thought.** Imagine the extension moving from a screen to glasses, to a voice in the room, and perhaps to an interface that helps a person speak without moving their mouth. **[HORIZON]**
-Published [speech neuroprosthesis research][speech] describes experimental attempted-speech decoding into streaming voice, and [inner-speech research][inner-speech] examines a narrower mental-privacy problem; these are external results, not AUKORA capabilities, and neither shows that any device can read a person's complete thoughts. **[BUILT: external research; DOCTRINE: claim limit]**
-The boundary would have to separate permission to sense, interpret, retain, disclose and act, and an output gate cannot restore privacy after a sensor has transmitted raw data. **[DOCTRINE]**
-Accessible communication needs person-controlled modes and interruption, not a confirmation for every word, and the right to remain unrecorded must survive beside the right to be remembered. **[DOCTRINE]**
-
-**A breath at the boundary.** Imagine a wrist-worn extension that recognizes a living encounter rather than demanding a permanent biological password: a touch, a deliberate exhalation, and pulse or airflow signals from the body wearing it. **[HORIZON]**
-[Laboratory breathprint research][breathprint] motivates studying individual metabolic patterns alongside biological variation; it does not establish a wearable authentication system or a natural expiry. **[HORIZON: research basis]**
-At most such a ceremony could yield a short-lived, challenge-bound presence cue signed by a device key separate from the cold root; raw physiology would stay local, and renewed presence would not restore authority, prove consent, or replace Aumlok's custody and recovery policy. **[DOCTRINE]**
-False acceptance and rejection, coercion, accessibility, drift poisoning, physiological variability and replay would all have to be measured; no pace, spoof-proof claim or deadline is set here. **[DOCTRINE]**
-The possibility is an interface that meets a person through a living gesture while leaving their body private and their decision their own. **[HORIZON]**
-
-[claims]: CLAIMS.md
-[ledger]: CLAIMS-LEDGER.md
-[threat]: THREAT-MODEL.md
-[ceilings]: CEILINGS.md
-[egress]: WHAT-LEAVES-THIS-MACHINE.md
-[reading-map]: READING-MAP.md
-[evidence]: AUKORA-GOLDEN-BOUNDARY-EVIDENCE.md
-[glossary]: GLOSSARY.md
-[try]: TRY-AUKORA.md
-[security]: ../SECURITY.md
-[composition]: ../plugins/aukora-composition-gate/
-[governed]: ../plugins/aukora-composition-gate/GOVERNED.md
-[kira-tools]: ../plugins/aukora-kira/lib/tools.mjs
-[kira-owner]: ../plugins/aukora-kira/lib/memory-owner.mjs
-[wasm-adapter]: ../plugins/aukora-kira/lib/wasm-proposal.mjs
-[wasm-provenance]: ../plugins/aukora-kira/lib/wasm-cell/PROVENANCE.json
-[wasm-test]: ../tests/kira-wasm-proposal-release.test.mjs
-[aumlok]: ../plugins/aukora-aumlok/
-[phase0]: ../scripts/phase0/
-[minimal]: ../vendor/append-only/verify.py
-[diamond-cold]: ../vendor/kira-export/
-[diamond-verify]: ../vendor/kira-export/scripts/verify-kira-evidence.py
-[diamond-test]: ../tests/kira-diamond-cold.test.mjs
-[ucan]: https://github.com/ucan-wg/spec/tree/9955aa1fb7b32897f80b57651f4ee8b22ebf35a7
-[did]: https://www.w3.org/TR/2022/REC-did-core-20220719/
-[ct]: https://www.rfc-editor.org/rfc/rfc9162.html
-[fastpay]: https://arxiv.org/abs/2003.11506
-[lobsters]: https://lobste.rs/about "accessed 26 September 2026"
-[nostr]: https://github.com/nostr-protocol/nips/blob/b82211e96c6dad616ed2ea43034c1c621256b745/01.md
-[atproto]: https://atproto.com/guides/overview "accessed 26 September 2026"
-[farcaster]: https://docs.farcaster.xyz/learn/architecture/overview "accessed 26 September 2026"
-[urbit]: https://docs.urbit.org/ "accessed 26 September 2026"
-[buzz]: https://github.com/block/buzz/blob/781d39510cf23cfe224e8f521ae06a23377e06de/README.md
-[lutris]: https://arxiv.org/abs/2310.18042
-[speech]: https://www.nature.com/articles/s41593-025-01905-6
-[inner-speech]: https://pmc.ncbi.nlm.nih.gov/articles/PMC12360486/
-[breathprint]: https://doi.org/10.1371/journal.pone.0059909
+| Fixed witness toy | 405 bounded schedules; 69 certificates for each of two values; 267 stalls; zero conflicting certificates in the stated bound. | TEST identities, fixed membership, simulated independence; neither liveness nor unbounded correctness established. |
+| Refusal memory | A local experiment recorded 0/6 unapproved effects and successful recall of one TEST-approved lesson; removed-check controls exposed missing protections. | A refusal is not malice; one lesson is not trained immunity or general adaptation. |
+| Advisory local judge | 72 synthetic calls; evidence cards did not beat prose on the prespecified comparison, and the confidence gate handed off all 72. | No demonstrated useful calibrated gate; avoiding submission is different from helping. |
+| Boundary despite bad advice | In a separate fixture set the judge allowed 5/6 unauthorized requests; the boundary produced 0/12 unauthorized effects including an always-allow comparison. | A narrow corpus and supported operation, not arbitrary agent safety. |
+| Truth versus receipt | A deliberately contradicted statement, once TEST-approved, still cold-verified. | The receipt authenticated its supported claims; it did not establish the statement's truth. |
+| Snapshot restore | Historical disposable-state work showed consumed authority could return as unused while ordinary history witnesses remained blind. | A retained consumption reference must survive the relevant restore scope; detecting rollback is not preventing it. |
+
+These are inherited experimental records, not executions repeated for this paper. Their nulls and failure cases are part of the evidence. The source snapshot also contains more registered checks than some older prose reports, illustrating why a count is a poor substitute for a dated account of what was actually run.
+
+The present position is substantial but bounded: there is real code for important parts of the line, recorded experiments with meaningful failures, and newer work closing specific gaps. There is not a demonstrated universal membrane around every action, a proof of human comprehension, or a deployed global federation. What remains is the difficult work of complete mediation, useful operation, independent review, and continuity through real failure and change.
+
+## 18. What would make the claim fail?
+
+A constitutional vision becomes technically interesting when it risks being wrong. The central question is not whether the system can produce a reassuring transcript. It is whether the claimed separation does the work when some part of the system behaves badly, fails, or changes.
+
+One necessary condition can be stated simply: the effects reachable by proposing software must remain within the effects allowed by recognized, unexpired authority. Where a profile requires one-use permission, permitted consumption must not exceed that use bound. These are properties of paths and state, not of the politeness of the model producing the request.
+
+That condition is insufficient on its own. A system that performs no effects satisfies a crude subset rule while helping nobody. Useful authorized actions must remain possible at acceptable cost. A credible evaluation therefore measures both forbidden effects and false refusals, together with latency, attention, storage, recovery effort, and ordinary availability.
+
+The strongest failure is a permitted-looking effect that escapes the intended contract. The approval covers one candidate but the executor uses another. The destination changes after review. An old capability survives a policy change. A child process inherits a credential the parent was meant not to possess. A new release quietly reinterprets an old permission. Each is a concrete way for authority to grow without a separately authorized decision.
+
+Canonical representation belongs to this account. A verifier needs a declared profile for the bytes it checks: how values are represented, which fields exist, and which domain gives those fields meaning. It must not guess that two similar formats are interchangeable, silently apply one number-serialization rule to another artifact, or treat an unknown profile as a familiar one. Naming the profile is part of naming the claim.
+
+Completion deserves an equally decisive falsifier: can the system report a completed operation when its consumed permission, journal, receipt, history, or independently checked effect contradicts that report? These artifacts must bind to the same operation wherever the profile requires them. Merely finding files with the right names is not a completion check.
+
+A process can reserve authority, dispatch an operation, observe a result, write a receipt, and publish a checkpoint at different times. A crash between those steps may leave a state that is neither safely retryable nor established as complete. That uncertainty is a result. Cleanup must not erase it or promote it into success merely to make a dashboard green.
+
+The evidence mechanism itself must face failure. Remove a check that supposedly protects byte binding: does the observation change? Replace the judge's advice with always-allow: does unauthorized execution remain refused? Withhold a required anchor: does the verifier admit uncertainty? A test that still passes when its claimed protection is absent may be testing the narrative rather than the mechanism.
+
+Matched controls matter. If one run has a different timeout, data path, or opportunity to observe failure, its result may not support the claimed comparison. A sham mechanism can reveal whether a reported success came from the proposed cause or from an easier difference between conditions. Attack budgets, sample units, denominators, and exclusions should be stated before the result is interpreted.
+
+Failure to detect something is not proof it is absent. Successful discrimination is not automatically a causal explanation. Two implementations agreeing may reflect a shared mistake. A mathematical identity checked numerically remains an identity, not an independent experiment. These are ordinary disciplines of inquiry, made more important when a model can produce plausible explanations for almost any outcome.
+
+Human understanding is another falsifier. If people repeatedly approve consequences they cannot identify, the approval path may be functioning as a laundering mechanism for the assistant's choices. If the interface makes refusal costly or humiliating, technical non-authority is not enough to establish practical sovereignty. The appropriate measurements involve people understanding and exercising a choice, not only signatures validating.
+
+There is also an honest scenario in which the architecture makes matters worse. An organization may see receipts and assume that an approved action was wise, freely chosen, and independently observed. It may reduce other oversight because the record looks rigorous. The additional machinery has then manufactured false confidence. The corrective principle is to keep each verifier's claim narrow and prevent a polished verdict from borrowing meanings it did not establish.
+
+Research requirements follow from these failure modes rather than from a calendar. The complete effect path must be demonstrated under a named deployment model. Protected custody and controlled reach must be distinguished. Recovery must preserve consumed and revoked authority. Shared-resource agreement must state its fault and availability assumptions. Privacy must include what left the machine. Improvement must keep the evaluator and promotion authority outside the candidate's power.
+
+These are not a schedule or a promise that a fixed number of checks will finish the problem. They are enduring questions that every implementation of the idea should be able to answer. A backend may be replaced, a cryptographic profile revised, or a better interface invented; the questions remain.
+
+The same discipline applies to the paper. Its central ideas should survive correction, but its implementation claims must be revisable. An approved publication should identify its exact text and evidence date. A later edition should disclose substantive removals and changed claims rather than leaving readers to discover that a familiar link now tells a different story. Preserving history is part of preserving the reader's ability to judge.
+
+The Golden Boundary is strongest when it can say both “this mechanism held under these conditions” and “here is the observation that would show it did not.” Humility is not a decorative warning attached after the vision. It is the method that allows the vision to remain connected to the world.
+
+## 19. The person is the platform
+
+Imagine a person years from now whose intelligence has changed many times. The early model was slow and forgetful. A later one became a gifted collaborator. Some computation moved onto devices they owned; some remained with services they chose. Interfaces changed from a screen to a voice, then to something less visible.
+
+What remained was not one immortal assistant. It was a continuity the person could recognize and govern: records they chose to keep, relationships they chose to maintain, permissions they understood, corrections that survived, and ways to refuse or leave. Each new intelligence could inherit an appropriate part of that continuity without becoming its owner.
+
+This is the meaning of **the person is the platform**. It does not require pretending that a person is a database or that every relationship is property. It means that the durable center of the architecture is the human life being served, rather than the application currently serving it.
+
+The person should not have to become an account inside their own intelligence. Changing a provider should not require abandoning every useful memory. Replacing a device should not silently change who can act. Leaving AUKORA should not mean surrendering the evidence needed to understand what AUKORA did.
+
+Now imagine many such people. Their systems need not be internally identical. They can share work without sharing every private context. They can exchange artifacts without accepting those artifacts as instructions. They can compare evidence without turning repetition into votes. They can join a temporary institution without giving it permanent authority over their lives.
+
+Such a network could eventually help people organize inquiry and creation at extraordinary scale. A problem too broad for one person could recruit complementary perspectives, specialist computation, and independent criticism. A team could form around a question, retain a checkable account of its work, and dissolve without leaving one coordinator as the unavoidable owner of everything it touched.
+
+The network might become superhuman in particular capabilities while remaining constitutionally plural. That possibility is not a forecast or a theorem. It is a direction worth investigating because increased intelligence need not logically require a single center of authority. Powerful cooperation and distributed human control are not the same variable.
+
+The risks would not vanish. Concentrated compute, unequal access, coercion, hidden influence, captured infrastructure, and ordinary human conflict would remain. A constitutional boundary cannot make a society just by making signatures valid. It can provide some of the technical conditions under which people and institutions retain a meaningful capacity to decide, challenge, and exit.
+
+That is why the small mechanisms matter. A one-use permission that stays used after a restart is a small fact about freedom from unintended repetition. An immutable candidate is a small fact about knowing what was approved. A refusal that survives pressure is a small fact about the meaning of no. A stranger-verifiable record is a small fact about not having to accept one operator's story. None is the whole future. Together, if correctly composed, they can support a different relationship to it.
+
+The path returns to ordinary reality: one legitimate operation, one understandable decision, one bounded effect, one honest record, and another person able to inspect its claims. The civilizational horizon does not excuse failure at that scale. It gives the small scale a reason to matter.
+
+We have spent much of the digital era adapting ourselves to the accounts, interfaces, and business models of the systems around us. AUKORA asks whether the next era can be organized differently: not around making the human permanently legible to one platform, but around making powerful intelligence answerable to a boundary the human can retain.
+
+What follows is the constitutional commitment this work must earn.
+
+We do not need to make intelligence small in order to keep humanity sovereign.
+
+We need a boundary strong enough that intelligence can become enormous without authority silently growing with it.
+
+**Capability does not create authority.**
+
+**Repetition does not create evidence.**
+
+**Collaboration does not merge sovereignty.**
+
+The intelligence may evolve.
+
+**The person remains free.**
