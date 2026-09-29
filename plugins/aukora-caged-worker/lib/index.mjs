@@ -11,10 +11,6 @@ export function apply(ctx, config = {}) {
   const supportRoot = config.supportRoot ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
   const workspace = config.workspace ?? join(homedir(), 'aukora-live', 'workspace')
   if (!isAbsolute(workspace) || !isAbsolute(supportRoot)) throw new Error('adapter:absolute-owner-paths-required')
-  mkdirSync(workspace, { recursive: true, mode: 0o700 })
-  const settings = { supportRoot: realpathSync(supportRoot), workspace: realpathSync(workspace),
-    stateDir: join(supportRoot, 'state', 'home', 'caged-worker') }
-  mkdirSync(settings.stateDir, { recursive: true, mode: 0o700 })
   let busy = false
   const lifetime = new AbortController()
   ctx.effect(() => () => lifetime.abort(), 'aukora-caged-worker: stop worker')
@@ -28,11 +24,17 @@ export function apply(ctx, config = {}) {
     async execute(args, exec) {
       if (busy) return JSON.stringify({ ok: false, state: 'REFUSED', reason: 'adapter:busy' })
       busy = true
-      try { return JSON.stringify(await runPatch(settings, args,
-        exec?.signal ? AbortSignal.any([lifetime.signal, exec.signal]) : lifetime.signal)) }
+      try {
+        mkdirSync(workspace, { recursive: true, mode: 0o700 })
+        const settings = { supportRoot: realpathSync(supportRoot), workspace: realpathSync(workspace),
+          stateDir: join(supportRoot, 'state', 'home', 'caged-worker') }
+        mkdirSync(settings.stateDir, { recursive: true, mode: 0o700 })
+        return JSON.stringify(await runPatch(settings, args,
+          exec?.signal ? AbortSignal.any([lifetime.signal, exec.signal]) : lifetime.signal))
+      }
       catch (error) { return JSON.stringify({ ok: false, state: 'REFUSED', reason: String(error.message) }) }
       finally { busy = false }
     },
   })
-  console.info('AUKORA_CAGED_WORKER_REGISTERED', ctx.tools.get?.('aukora_workspace_patch')?.name === 'aukora_workspace_patch')
+  try { console.info('AUKORA_CAGED_WORKER_REGISTERED', ctx.tools.get?.('aukora_workspace_patch')?.name === 'aukora_workspace_patch') } catch { console.info('AUKORA_CAGED_WORKER_REGISTRY_UNVERIFIED') }
 }

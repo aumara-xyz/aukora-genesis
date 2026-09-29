@@ -1,3 +1,4 @@
+# Release-root record row; the default live composition mounts the absolute path.
 - insert:
     - id: aukora-caged-worker
       name: ./plugins/aukora-caged-worker/lib/index.mjs

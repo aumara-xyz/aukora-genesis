@@ -454,7 +454,7 @@ export function createPolicy(settings, { definitionOf = null, partialFailureOf =
         if (stale !== null) return stale
         // This tool's closed path is relative to its owner-configured broker root,
         // not the agent's cwd. Its signed review names the full absolute target.
-        if (tool === 'aukora_workspace_patch') return allow('allow:owner-reviewed-workspace')
+        if (tool === 'aukora_workspace_patch') return allow('allow:workspace-proposal')
         const loose = looseTargets(args)
         const kind = WRITE_NAME.test(tool.replace(/([a-z0-9])([A-Z])/gu, '$1_$2')) ? 'write' : 'read'
         const refused = first(...loose.paths.map(p => judgePath(p, kind, call)), ...loose.urls.map(url => judgeUrl(url, call)))
