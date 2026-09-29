@@ -28,10 +28,10 @@
 // the boundary's own strict reader (duplicate keys, oversized artifacts and excessive nesting refused where `JSON.parse` would
 // accept them).
 import { objectFileName } from './memory-store.mjs'
-import { listJsonFiles, readJsonStrict } from './strict-read.mjs'
+import { listJsonFiles, readJsonStrict, parseStrictText } from './strict-read.mjs'
 import { statementOf, turnReferenceOf } from './memory-migrate.mjs'
-import { migratedEntry } from './memory-journal.mjs'
-import { UNLINKED_RECEIPT, buildRememberedNote, sha256Hex } from './memory-tiers.mjs'
+import { migratedEntry, verifyChain } from './memory-journal.mjs'
+import { UNLINKED_RECEIPT, buildRememberedNote, canonicalOf, sha256Hex } from './memory-tiers.mjs'
 import { verifyRecord } from './memory-verify.mjs'
 
 /** A named refusal, so a caller can act on which precondition failed rather than on a stack. */
@@ -256,4 +256,81 @@ export async function proveMigrated(input) {
     failures: Object.freeze(failures),
     checked: notes.length,
   }
+}
+
+/** A pure inverse: the caller supplies a strict snapshot and owns all filesystem writes. */
+export function planBackfillRevert({ stateRoot, manifest, backupEntries, queue, notes, journal, aura }) {
+  const count = value => Number.isSafeInteger(value) && value >= 0
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)
+    || typeof manifest.at !== 'string' || !INSTANT.test(manifest.at) || !Number.isFinite(Date.parse(manifest.at))
+    || !count(manifest.copiedFromQueue) || !count(manifest.journalLinesBefore) || !count(manifest.auraLinesBefore)) {
+    refuse('backup-malformed', 'the migration manifest must contain a timestamp and nonnegative integer counts')
+  }
+  if (manifest.stateRoot !== stateRoot || manifest.queueDir !== `${stateRoot}/kira-memory/queue`) {
+    refuse('backup-wrong-state-root', 'the backup belongs to a different state root or queue')
+  }
+  if (!Array.isArray(backupEntries) || backupEntries.length !== manifest.copiedFromQueue) {
+    refuse('backup-incomplete', 'the backed-up queue count does not match its manifest')
+  }
+  const originals = new Map()
+  for (const entry of backupEntries) {
+    if (!/^kira:[a-f0-9]{64}$/u.test(entry.key) || originals.has(entry.key) || !entry.record || typeof entry.raw !== 'string') {
+      refuse('backup-malformed', 'queue keys must be unique and every original record readable')
+    }
+    originals.set(entry.key, entry)
+  }
+  for (const [name, raw] of queue) {
+    const entry = originals.get(name.replace(/\.json$/u, ''))
+    if (!entry || raw !== entry.raw) refuse('queue-moved-on', 'the queue contains a new or changed file; nothing may be overwritten')
+  }
+  // Keep the exact prefix bytes, including line endings. Never normalize a chain while truncating it.
+  const split = (text, name) => {
+    if (typeof text !== 'string' || (text !== '' && !text.endsWith('\n'))) refuse(`${name}-malformed`, 'the chain has a torn tail')
+    const raw = text === '' ? [] : text.slice(0, -1).split('\n')
+    let entries
+    try { entries = raw.map(line => parseStrictText(line, name)) } catch { refuse(`${name}-malformed`, 'the chain contains malformed JSON') }
+    if (entries.some(entry => !entry || typeof entry !== 'object' || Array.isArray(entry))) refuse(`${name}-malformed`, 'a chain line is not an object')
+    return { raw, entries, prefix: n => raw.slice(0, n).map(line => `${line}\n`).join('') }
+  }
+  const j = split(journal, 'journal'), a = split(aura, 'aura')
+  if (!verifyChain(j.entries).ok) refuse('journal-damaged', 'the journal sequence or hash chain does not verify')
+  const tail = j.entries.slice(manifest.journalLinesBefore)
+  if (j.entries.length < manifest.journalLinesBefore || a.entries.length < manifest.auraLinesBefore
+    || tail.length === 0 || tail.length > originals.size || a.entries.length !== manifest.auraLinesBefore + tail.length) {
+    refuse('journal-moved-on', 'the current journal and aura are not exactly a migration tail of this backup')
+  }
+  const ids = new Set(), keys = new Set(), removed = []
+  let previous = j.entries[manifest.journalLinesBefore - 1] ?? null
+  for (const [i, entry] of tail.entries()) {
+    if (entry.seq !== manifest.journalLinesBefore + i || entry.at !== manifest.at
+      || entry.actor !== 'migration/queue-v1' || entry.op !== 'add' || !/^rem:[a-f0-9]{64}$/u.test(entry.id)
+      || ids.has(entry.id) || j.entries.slice(0, manifest.journalLinesBefore).some(one => one.id === entry.id)) {
+      refuse('journal-moved-on', "the dropped entries must be only this migration's unique seq/id/at adds")
+    }
+    const note = notes.get(entry.id)
+    const original = originals.get(note?.origin?.fromQueue)
+    if (!original || keys.has(original.key) || note?.origin?.by !== 'migration/queue-v1') {
+      refuse('note-not-migration', 'a journal add is missing its unique original queue record')
+    }
+    // Re-derive from the original queue bytes, preserving the receipt the migration actually used.
+    const rebuilt = migrateNotesFromPlan({ entries: [original], observedAt: manifest.at,
+      auraIndex: manifest.auraLinesBefore + i,
+      linkable: note.receiptState === 'LINKED' ? new Map([[original.key, { source: note.source }]]) : new Map(),
+      becauseByKey: new Map([[original.key, note.source?.because]]),
+    }).notes[0]
+    if (!rebuilt || canonicalOf(note) !== canonicalOf(rebuilt) || entry.id !== rebuilt.id || entry.objectDigest !== rebuilt.id.slice(4)) {
+      refuse('note-changed', 'a migrated note no longer matches the original record and journal')
+    }
+    const lines = backfillLines([rebuilt], { previous, at: manifest.at, auraIndex: manifest.auraLinesBefore + i })
+    if (canonicalOf(entry) !== canonicalOf(JSON.parse(lines.journalLines[0]))
+      || canonicalOf(a.entries[manifest.auraLinesBefore + i]) !== canonicalOf(lines.auraAppends[0])) {
+      refuse('migration-tail-mismatch', 'a dropped journal/aura line is not exactly the migration output')
+    }
+    ids.add(entry.id); keys.add(original.key); removed.push({ seq: entry.seq, id: entry.id, at: entry.at })
+    previous = entry
+  }
+  return { removed, queue: new Map(backupEntries.map(entry => [`${entry.key}.json`, entry.raw])),
+    journal: j.prefix(manifest.journalLinesBefore), aura: a.prefix(manifest.auraLinesBefore),
+    before: { notes: notes.size, queue: queue.size, journal: j.entries.length, aura: a.entries.length },
+    after: { notes: notes.size - removed.length, queue: originals.size, journal: manifest.journalLinesBefore, aura: manifest.auraLinesBefore } }
 }

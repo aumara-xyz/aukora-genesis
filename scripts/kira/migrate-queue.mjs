@@ -1,22 +1,14 @@
 #!/usr/bin/env node
-/**
- * THE MIGRATION DRY RUN: how many of the queued records can be linked to a source event, and how many cannot.
- *
- * Fable's kira-121 item 6 asks for the migration AND for the count of what could not be linked. This prints the count
- * against the REAL store, and writes nothing: the design's journal (hash-chained, fsynced per append) is what makes a
- * migration reversible, and until it exists an apply would leave the store unable to say what happened to it.
- *
- *   node scripts/kira/migrate-queue.mjs                 # the dry run, on the canonical state root
- *   node scripts/kira/migrate-queue.mjs --state <dir>   # another state root
- *   node scripts/kira/migrate-queue.mjs --apply         # REFUSED, by name, until the journal exists
- *
- * WHY IT READS THE SESSION FILES ITSELF. The plugin's own reads go through `strict-read.mjs` (Fable's ruling A), and
- * this is not the plugin: it is a one-off maintenance script whose whole job is to find out whether a receipt is
- * possible. It reads, and it prints. It has no write path at all — not a disabled one, an absent one.
+/** Queue migration maintenance. Revert defaults to writing only after a proved inverse and fresh recovery backup.
+ *   --revert --backup <dir> --dry-run     validate and measure, without writes
+ *   --revert --backup <dir>               restore the pre-migration store
+ *   --undo-revert --backup <recovery-dir> restore the fresh pre-repair image (also accepts --dry-run)
  */
-import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync, lstatSync, realpathSync, mkdtempSync, chmodSync, unlinkSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve, dirname } from 'node:path'
 
 import { migrationSummary, planMigration } from '../../plugins/aukora-kira/lib/memory-migrate.mjs'
 // THE SESSION READERS MOVED (Fable's row 21): they live in `session-read.mjs` now, and this import follows them. My
@@ -26,26 +18,220 @@ import { readSessionEventsStreamed } from '../../plugins/aukora-kira/lib/session
 // THE STORE'S OWN WRITE PATH, NOT A NEW ONE: `planStoreWrite` refuses a note without its journal line, refuses when the counts
 // disagree, and refuses any path outside the state directory — which is the guarantee Fable's item 5 courted, reused here rather
 // than re-argued. The writers are the boundary's own durable append/write, so a migrated note is as durable as a captured one.
-import { STORE_PATHS, planStoreWrite } from '../../plugins/aukora-kira/lib/memory-store.mjs'
-import { migratedEntry } from '../../plugins/aukora-kira/lib/memory-journal.mjs'
-import { backfillLines, migrateNotesFromPlan, proveMigrated, storedNoteIds } from '../../plugins/aukora-kira/lib/memory-backfill.mjs'
-import { appendJournalLine, durableWrite, ensureDirectory, readLinesIfPresent } from '../../plugins/aukora-kira/lib/strict-read.mjs'
-import { buildRouteDeps } from '../../plugins/aukora-kira/lib/memory-deps.mjs'
+import { STORE_PATHS } from '../../plugins/aukora-kira/lib/memory-store.mjs'
+import { planBackfillRevert } from '../../plugins/aukora-kira/lib/memory-backfill.mjs'
+import { durableWrite, readTextStrict, readJsonStrict, parseStrictText, syncDirectory, withFileLock } from '../../plugins/aukora-kira/lib/strict-read.mjs'
 import { indexTurns, resolveCitedTurn } from '../../plugins/aukora-kira/lib/memory-turn-index.mjs'
 
 const argv = process.argv.slice(2)
 const flag = name => argv.includes(name)
 const value = name => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : undefined }
 
-// *** THE APPLY IS ALLOWED NOW, AND THE OBJECTION IT USED TO RAISE IS ANSWERED RATHER THAN OVERRULED. *** The old refusal was not
-// policy but measurement: linking would have minted receipts from a `.broken-single-frame` sibling the store does not call current,
-// "a receipt for bytes nobody can re-read". Fable's kira-122 decision 1 dissolves that by NOT minting one — the 137 records migrate
-// as REMEMBERED notes with receipt state UNLINKED: the source is cited, it is not found, and it is never verified. The refusal text
-// is kept in the git history of this line rather than in the file, because the plan below is the honest successor to it.
 const APPLY = flag('--apply')
 
-const stateRoot = value('--state') ?? join(homedir(), 'Library', 'Application Support', 'AUKORA', 'state', 'home')
+const stateRoot = resolve(value('--state') ?? join(homedir(), 'Library', 'Application Support', 'AUKORA', 'state', 'home'))
 const queueDir = join(stateRoot, 'kira-memory', 'queue')
+
+// Revert is planned without I/O in memory-backfill; this command owns its guarded transaction.
+const REVERT = flag('--revert')
+const UNDO = flag('--undo-revert')
+const DRY = flag('--dry-run')
+const fail = (code, message) => { const error = new Error(message); error.code = `kira.migrate:${code}`; throw error }
+for (let i = 0; i < argv.length; i += 1) {
+  const option = argv[i]
+  if (['--state', '--backup'].includes(option)) {
+    if (!argv[i + 1] || argv[i + 1].startsWith('--')) fail('invalid-option', `${option} requires a path`)
+    i += 1
+  } else if (!['--apply', '--revert', '--undo-revert', '--dry-run'].includes(option)) {
+    fail('invalid-option', `unknown option ${option}`)
+  }
+}
+const hash = text => createHash('sha256').update(text).digest('hex')
+const textAt = file => { try { return readTextStrict(file) } catch (error) { if (error.code === 'ENOENT') return null; throw error } }
+function directory(path) {
+  if (!lstatSync(path).isDirectory() || realpathSync(path) !== path) fail('unsafe-path', `not a real, unaliased directory: ${path}`)
+}
+function filesIn(dir, pattern) {
+  directory(dir)
+  return readdirSync(dir).sort().filter(name => {
+    if (pattern.test(name)) {
+      if (!lstatSync(join(dir, name)).isFile() || lstatSync(join(dir, name)).isSymbolicLink()) fail('unsafe-path', 'a store file is not regular')
+      return true
+    }
+    // Settlement receipts predate migration and are outside its queue-file inverse.
+    if (dir === queueDir && name === 'settlement' && lstatSync(join(dir, name)).isDirectory() && !lstatSync(join(dir, name)).isSymbolicLink()) return false
+    if (dir === queueDir) fail('queue-moved-on', 'unexpected queue entry')
+    if (name.endsWith('.json')) fail('unrecognized-note-file', 'an unrecognized note filename prevents a complete inventory')
+    return false
+  })
+}
+function snapshot() {
+  directory(stateRoot); directory(store); directory(join(store, 'remembered'))
+  const queue = new Map(filesIn(queueDir, /^kira:[a-f0-9]{64}\.json$/u).map(name => [name, readTextStrict(join(queueDir, name))]))
+  const notes = new Map(filesIn(join(store, 'remembered'), /^[a-f0-9]{64}\.json$/u).map(name => [name, readTextStrict(join(store, 'remembered', name))]))
+  return { queue, notes, journal: readTextStrict(journalFile), aura: readTextStrict(auraFile) }
+}
+function signature(snap) {
+  return hash(JSON.stringify({ queue: [...snap.queue], notes: [...snap.notes], journal: snap.journal, aura: snap.aura }))
+}
+function counts(snap) {
+  return { notes: snap.notes.size, queue: snap.queue.size, journal: snap.journal.split('\n').filter(Boolean).length, aura: snap.aura.split('\n').filter(Boolean).length }
+}
+function printCounts(label, snap) { console.log(`${label} ${JSON.stringify(counts(snap))}`) }
+function inverse(snap, backup) {
+  directory(backup)
+  let manifest
+  try { manifest = readJsonStrict(join(backup, 'backup-manifest.json')) }
+  catch { fail('backup-missing-or-malformed', 'a readable, strict backup-manifest.json is required') }
+  const names = readdirSync(backup).sort()
+  if (names.some(name => name !== 'backup-manifest.json' && !/^kira:[a-f0-9]{64}\.json$/u.test(name))) fail('backup-malformed', 'unexpected backup entry')
+  const backupEntries = names.filter(name => name !== 'backup-manifest.json').map(name => {
+    const raw = readTextStrict(join(backup, name)), parsed = parseStrictText(raw, name)
+    return { key: name.slice(0, -5), raw, record: parsed?.record ?? parsed?.value ?? parsed }
+  })
+  const notes = new Map([...snap.notes].map(([name, raw]) => [`rem:${name.slice(0, -5)}`, parseStrictText(raw, name)]))
+  return planBackfillRevert({ stateRoot, manifest, backupEntries, notes, queue: snap.queue, journal: snap.journal, aura: snap.aura })
+}
+function reverted(snap, plan) {
+  const notes = new Map(snap.notes)
+  for (const entry of plan.removed) notes.delete(`${entry.id.slice(4)}.json`)
+  return { notes, queue: plan.queue, journal: plan.journal, aura: plan.aura }
+}
+function fileMap(snap) {
+  return new Map([['remembered/journal.jsonl', snap.journal], ['remembered/aura.jsonl', snap.aura],
+    ...[...snap.queue].map(([name, raw]) => [`queue/${name}`, raw]), ...[...snap.notes].map(([name, raw]) => [`remembered/${name}`, raw])])
+}
+function assertQuiescent() {
+  // The installed launcher records the writer PID beside state/home. An offline copy has no launcher.
+  const launchFile = join(dirname(stateRoot), 'launch-url.json')
+  if (!existsSync(launchFile)) return
+  const launch = readJsonStrict(launchFile)
+  if (!Number.isSafeInteger(launch.pid) || launch.pid <= 1) fail('writer-unknown', 'the launcher does not identify its backend')
+  const status = spawnSync('ps', ['-p', String(launch.pid), '-o', 'stat='], { encoding: 'utf8' })
+  if (status.error || (status.status !== 0 && status.status !== 1)) fail('writer-unknown', 'the backend state could not be inspected')
+  if (status.status === 0 && !status.stdout.includes('T')) fail('writer-not-quiesced', 'pause the installed backend before changing memory; resume it after readback')
+}
+function writeValue(path, value) {
+  assertQuiescent()
+  const file = join(store, path)
+  if (value === null) { unlinkSync(file); syncDirectory(dirname(file)) }
+  else durableWrite(file, value)
+}
+// Both images are durable before the first store mutation. Recovery also works after a partial write.
+function transact(before, after, purpose) {
+  const a = fileMap(before), b = fileMap(after)
+  const names = [...new Set([...a.keys(), ...b.keys()])].sort()
+  const changes = names.filter(path => a.get(path) !== b.get(path))
+  if (!changes.length) fail('nothing-to-write', 'there is no state change')
+  const safety = mkdtempSync(join(store, 'revert-recovery-'))
+  chmodSync(safety, 0o700)
+  const entries = names.map((path, i) => {
+    const beforeText = a.get(path) ?? null, afterText = b.get(path) ?? null
+    // Retained notes need a digest, not another plaintext copy. Queue originals and every changed byte are backed up.
+    const retained = beforeText === afterText && path.startsWith('remembered/') && !path.endsWith('.jsonl')
+    if (!retained && beforeText !== null) durableWrite(join(safety, `${i}.before`), beforeText)
+    if (!retained && afterText !== null && afterText !== beforeText) durableWrite(join(safety, `${i}.after`), afterText)
+    return { path, retained, before: beforeText === null ? null : hash(beforeText), after: afterText === null ? null : hash(afterText) }
+  })
+  const manifest = { format: 'kira-revert-recovery/v1', stateRoot, purpose, before: counts(before), after: counts(after), entries }
+  durableWrite(join(safety, 'recovery-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+  // Read the durable backup back before trusting it, not just the buffers we passed to write().
+  readRecovery(safety)
+  console.log(`FRESH BACKUP ${safety}`)
+  console.log(`RECOVER node scripts/kira/migrate-queue.mjs --undo-revert --backup ${JSON.stringify(safety)} --state ${JSON.stringify(stateRoot)}`)
+  if (signature(snapshot()) !== signature(before)) fail('store-moved-on', 'the store changed while backing it up; no store files were written')
+  try {
+    // Queue first, notes next, chains last. Every file is rechecked immediately before mutation.
+    const ordered = [...changes.filter(path => path.startsWith('queue/')), ...changes.filter(path => /^remembered\/[a-f0-9]{64}\.json$/u.test(path)), ...changes.filter(path => path.endsWith('.jsonl'))]
+    for (const path of ordered) {
+      if (textAt(join(store, path)) !== (a.get(path) ?? null)) fail('store-moved-on', 'a target changed before writing; use the recovery backup')
+      // A journal advance is never overwritten, even if it arrived while notes were being removed.
+      for (const log of ['remembered/journal.jsonl', 'remembered/aura.jsonl']) {
+        const current = textAt(join(store, log))
+        if (current !== (a.get(log) ?? null) && current !== (b.get(log) ?? null)) fail('journal-moved-on', 'a chain moved during the transaction; recovery retained')
+      }
+      writeValue(path, b.get(path) ?? null)
+    }
+    const measured = snapshot()
+    printCounts('AFTER (read back)', measured)
+    if (signature(measured) !== signature(after)) fail('readback-mismatch', 'the full store does not match the planned inverse; recovery retained')
+    console.log('VERIFIED: exact queue JSON bytes, inventoried note bytes, removed IDs and both raw chain prefixes read back.')
+    return safety
+  } catch (error) {
+    console.error(`WRITE INCOMPLETE: ${error.code ?? error.message}; recovery snapshot retained at ${safety}`)
+    throw error
+  }
+}
+function readRecovery(backup) {
+  directory(backup)
+  const manifest = readJsonStrict(join(backup, 'recovery-manifest.json'))
+  if (manifest?.format !== 'kira-revert-recovery/v1' || manifest.stateRoot !== stateRoot || !Array.isArray(manifest.entries)) fail('recovery-malformed', 'recovery manifest format or state root does not match')
+  const paths = new Set()
+  const entries = manifest.entries.map((entry, i) => {
+    if (!/^(?:queue\/kira:[a-f0-9]{64}\.json|remembered\/(?:[a-f0-9]{64}\.json|journal\.jsonl|aura\.jsonl))$/u.test(entry.path) || paths.has(entry.path)) fail('recovery-malformed', 'duplicate or out-of-store recovery path')
+    paths.add(entry.path)
+    const read = side => {
+      if (entry[side] === null) return null
+      if (!/^[a-f0-9]{64}$/u.test(entry[side] ?? '')) fail('recovery-malformed', 'missing recovery digest')
+      if (entry.retained === true && (entry.before !== entry.after || entry.before === null)) fail('recovery-malformed', 'retained files must have identical nonempty digests')
+      const image = side === 'after' && entry.after === entry.before ? 'before' : side
+      const raw = readTextStrict(entry.retained === true ? join(store, entry.path) : join(backup, `${i}.${image}`))
+      if (hash(raw) !== entry[side]) fail('recovery-corrupt', 'recovery bytes do not match the recorded digest')
+      return raw
+    }
+    return { path: entry.path, before: read('before'), after: read('after') }
+  })
+  if (!paths.has('remembered/journal.jsonl') || !paths.has('remembered/aura.jsonl')) fail('recovery-malformed', 'recovery must contain both chains')
+  return entries
+}
+function undoPlan(before, backup) {
+  const entries = readRecovery(backup), current = fileMap(before), known = new Set(entries.map(entry => entry.path))
+  if ([...current.keys()].some(path => !known.has(path))) fail('store-moved-on', 'a new file appeared after this recovery snapshot')
+  const after = { queue: new Map(), notes: new Map(), journal: '', aura: '' }
+  for (const entry of entries) {
+    const now = current.get(entry.path) ?? null
+    if (now !== entry.before && now !== entry.after) fail('store-moved-on', 'a recovery target has moved beyond both recorded images')
+    if (entry.path === 'remembered/journal.jsonl') after.journal = entry.before
+    else if (entry.path === 'remembered/aura.jsonl') after.aura = entry.before
+    else if (entry.before !== null) (entry.path.startsWith('queue/') ? after.queue : after.notes).set(entry.path.split('/')[1], entry.before)
+  }
+  return after
+}
+const store = join(stateRoot, 'kira-memory')
+const journalFile = join(store, STORE_PATHS.journal)
+const auraFile = join(store, STORE_PATHS.rememberedAura)
+if (REVERT || UNDO) {
+  try {
+    if (APPLY || (REVERT && UNDO)) fail('flags-conflict', 'choose apply, revert, or undo-revert')
+    const backupArg = value('--backup')
+    if (!backupArg || backupArg.startsWith('--')) fail('backup-required', '--revert/--undo-revert requires --backup <dir>')
+    const backup = resolve(backupArg)
+    const run = () => {
+      const before = snapshot()
+      const after = UNDO ? undoPlan(before, backup) : reverted(before, inverse(before, backup))
+      printCounts('BEFORE (read)', before)
+      printCounts('PLANNED AFTER (not yet written)', after)
+      if (DRY) { console.log('DRY RUN: inverse verified; no writes.'); return }
+      assertQuiescent()
+      transact(before, after, UNDO ? 'undo-revert' : 'revert')
+    }
+    // Dry run does not even create lock files. Real writes use the capture lock and a second journal lock.
+    if (DRY) run()
+    else withFileLock(auraFile, () => withFileLock(journalFile, run))
+    process.exit(0)
+  } catch (error) {
+    console.error(`${error.code ?? 'kira.migrate:revert-refused'} — ${error.message}`)
+    process.exit(1)
+  }
+}
+
+
+// A completed-tail inverse is not proof that this legacy writer can recover a partial apply.
+// Keep its unsafe write path closed by name until that pre-write proof exists.
+if (APPLY) {
+  console.error('kira.migrate:revert-unproven — --apply refused: the legacy migration writer has no proven partial-apply recovery path. No store writes performed.')
+  process.exit(1)
+}
 
 if (!existsSync(queueDir)) {
   console.log(`kira.migrate:no-queue — ${queueDir} does not exist, so there is nothing to plan against.`)
@@ -129,7 +315,7 @@ const plan = planMigration(entries, {
 const sessionsFound = [...byTurnCache.values()].filter(one => one !== null && one !== undefined).length
 const sessionsCited = byTurnCache.size
 
-console.log(APPLY ? 'kira.migrate: APPLY — THIS WRITES, under the state dir, after backing the queue up.' : 'kira.migrate: DRY RUN — nothing is written.')
+console.log('kira.migrate: DRY RUN — nothing is written.')
 console.log(`  state root        ${stateRoot}`)
 console.log(`  queue entries     ${String(entries.length)} (${String(entries.filter(one => one.unreadable !== undefined).length)} unreadable)`)
 console.log(`  cited sessions    ${String(sessionsCited)} cited, ${String(sessionsFound)} found under this state root`)
@@ -150,64 +336,4 @@ for (const name of Object.keys(plan.counts)) {
 }
 const examples = plan.unlinkable.slice(0, 3)
 for (const one of examples) console.log(`    e.g. ${one.key.slice(0, 16)}… ${one.outcome}: ${one.why.slice(0, 90)}`)
-console.log('  and this plan is NOT a migration: no journal exists yet, so nothing above has been written.')
-
-// ── THE APPLY ───────────────────────────────────────────────────────────────────────────────────────────────────────────────
-// THE ORDER IS THE GUARANTEE: back the queue up FIRST, build every note, let `planStoreWrite` check that each note travels with
-// its journal line and that no path leaves the state directory, write, and then READ THE STORE BACK and prove what was written.
-// A migration that reports success without reading its own output is a migration nobody can trust.
-if (APPLY) {
-  const store = join(stateRoot, 'kira-memory')
-  const at = new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z')
-  const backup = join(store, `queue-backup-${at.replace(/[:]/gu, '-')}`)
-  ensureDirectory(backup)
-  let copied = 0
-  for (const name of readdirSync(queueDir)) {
-    if (!name.endsWith('.json')) continue
-    durableWrite(join(backup, name), readFileSync(join(queueDir, name), 'utf8'), { dir: store })
-    copied += 1
-  }
-  const auraFile = join(store, STORE_PATHS.rememberedAura)
-  const journalFile = join(store, STORE_PATHS.journal)
-  const auraBefore = readLinesIfPresent(auraFile).length
-  const journalBefore = readLinesIfPresent(journalFile).length
-  durableWrite(join(backup, 'backup-manifest.json'), `${JSON.stringify({
-    at, stateRoot, queueDir, copiedFromQueue: copied, auraLinesBefore: auraBefore, journalLinesBefore: journalBefore,
-    why: 'the queue as it stood before the migration, so a record can be re-derived rather than reconstructed from memory',
-  }, null, 2)}\n`, { dir: store })
-  console.log('')
-  console.log(`  BACKED UP ${String(copied)} queue file(s) and the chain lengths to ${backup}`)
-
-  const linkable = new Map(plan.linkable.map(one => [one.key, one]))
-  const becauseByKey = new Map(plan.unlinkable.map(one => [one.key, one.why]))
-  const built = migrateNotesFromPlan({ entries, linkable, becauseByKey, alreadyStored: storedNoteIds(store), observedAt: at, auraIndex: auraBefore })
-  // THE CHAIN CONTINUES RATHER THAN RESTARTING: the last journal entry, if there is one, is what the next entry hashes onto.
-  let previous = null
-  try {
-    const journalLines = readLinesIfPresent(journalFile)
-    if (journalLines.length > 0) previous = JSON.parse(journalLines[journalLines.length - 1])
-  } catch (error) {
-    console.log(`kira.migrate:journal-unreadable — ${String(error?.message ?? error)}`)
-    process.exit(1)
-  }
-  const lines = backfillLines(built.notes, { previous, at, auraIndex: auraBefore })
-  const storePlan = planStoreWrite({ stateDir: store, notes: built.notes, journalLines: lines.journalLines, auraAppends: lines.auraAppends })
-  for (const dir of storePlan.dirs) ensureDirectory(dir)
-  for (const write of storePlan.writes) durableWrite(write.file, write.contents, { dir: store })
-  // `appendJournalLine` IS THE SANCTIONED APPENDER: O_APPEND, `${line}\n`, fsync, and it REFUSES a line that already carries a
-  // newline — so a chain cannot be written as one long line by accident. `durableAppend` was the wrong tool: it concatenates raw
-  // bytes and terminates nothing, which is how 137 entries became one line.
-  for (const append of storePlan.appends) appendJournalLine({ file: append.file, line: append.line })
-  console.log(`  WROTE ${String(storePlan.counts.notes)} note(s) and ${String(storePlan.counts.appends)} journal/aura line(s)`)
-  console.log(`  migrated ${String(built.counts.migrated)} (linked ${String(built.counts.linked)}, unlinked ${String(built.counts.unlinked)}), already stored ${String(built.counts['already-stored'])}, no statement ${String(built.counts['statement-empty'])}`)
-
-  // THE PROOF, READ BACK FROM THE STORE RATHER THAN FROM WHAT WAS BUILT.
-  const deps = buildRouteDeps({ stateDir: store, sessionsRoot: stateRoot })
-  const proof = await proveMigrated({ stateDir: store, notes: built.notes, listNotes: deps.listNotes })
-  console.log(`  PROOF: ${String(proof.checked)} record(s) read back — every one answers MISSING/source-not-found: ${proof.allMissing ? 'yes' : 'NO'}; every one is in recall labelled 'remembered, source not found': ${proof.allLabelled ? 'yes' : 'NO'}`)
-  for (const failure of proof.failures.slice(0, 5)) console.log(`    ${failure}`)
-  console.log(proof.failures.length === 0
-    ? '  kira.migrate: the records are remembered, cited, and honest about not being verifiable.'
-    : `  kira.migrate: ${String(proof.failures.length)} FAILURE(S) — the store does not agree with the plan.`)
-  process.exit(proof.failures.length === 0 ? 0 : 1)
-}
+console.log('  This is a plan only; nothing above has been written.')
