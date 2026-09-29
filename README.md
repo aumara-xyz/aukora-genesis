@@ -1,3 +1,5 @@
+![AUKORA — Human first. AI next.](docs/assets/aukora-human-first.png)
+
 # AUKORA Genesis
 
 AUKORA Genesis is a desktop AI where the software that proposes an action is not the authority that permits it.
