@@ -1,0 +1,3 @@
+- insert:
+    - id: aukora-caged-worker
+      name: ./plugins/aukora-caged-worker/lib/index.mjs

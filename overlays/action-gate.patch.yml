@@ -85,6 +85,7 @@
           - list_*
           # The trusted host tool this plugin registers when worktreesRoot is set (lib/self-change-tool.mjs).
           - aukora_self_change
+          - aukora_workspace_patch
         repoRoots:
           - !!js process.env.HOME + '/aukora-genesis'
         # Registers `aukora_self_change`: the owner's self-change.mjs (the first repoRoot) run on the host against a

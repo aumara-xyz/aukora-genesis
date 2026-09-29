@@ -13,6 +13,7 @@
     "plugins/*/src/**/*",
     "plugins/*/assets/**/*",
     "plugins/*/lib/**/*",
+    "plugins/aukora-box/aukora/**/*",
     "plugins/aukora-aumlok/data/**/*",
     "plugins/*/hello-governed.mjs",
     "plugins/aukora-composition-gate/policy.json",
@@ -140,6 +141,9 @@
     "`aukora-nostr/**` is a HOST pattern and `plugins/aukora-nostr/**` its genesis twin, added 2026-09-22 so the tree the Messages host half resolves at runtime travels with the release and is tamper-evident. The two spellings differ because the TREES differ, and that difference is measured rather than stylistic: the face loads `<its own lib>/../../../aukora-nostr/lib/contact.mjs`, and the materializer keeps a release's faces FLATTENED at `plugins/aukora-face-messages/lib/index.js` — one directory shallower than the checkout's `plugins/aukora-face/messages/lib/index.js` — so the release-side copy sits at the release ROOT while the source it is copied from sits under `plugins/`. `plugins/*/lib/**/*` DOES NOT COVER IT: that pattern resolves against the release, where the copy is `aukora-nostr/lib/**`, so leaving it to that pattern would keep the bytes the release actually loads outside the record. Measured by importing a release's own face bytes and calling its exported `resolveContactModuleSpecifier()`: the root copy resolves to `<release>/aukora-nostr/lib/contact.mjs`; the same bytes under `plugins/aukora-nostr/` are not a candidate at all and the call refuses with `messages:nostr-tree-absent`. The materializer copies the WHOLE tree, so these two patterns are the complete boundary of it, and NO `strip.keep` entry accompanies them: no strip pattern selects `aukora-nostr/**`, and a keep for a path no pattern selects is refused as `strip-keep-matched-nothing`."
   ],
   "genesisPatterns": [
+    "plugins/aukora-caged-worker/lib/**/*",
+    "plugins/aukora-box/aukora/**/*",
+    "overlays/caged-worker.patch.yml",
     "plugins/aukora-foundation/src/**/*",
     "plugins/aukora-foundation/assets/**/*",
     "plugins/aukora-foundation/lib/**/*",

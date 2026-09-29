@@ -182,6 +182,7 @@ export const DEFAULT_ALLOW_TOOLS = Object.freeze([
   'kira_*', 'mcp__viking__*', 'cordis_inspect_*', 'subagent*', 'session_*', 'job_*', 'list_*',
   // The trusted host tool this plugin registers (self-change-tool.mjs): the one route a contained agent has to its own code.
   'aukora_self_change',
+  'aukora_workspace_patch',
 ])
 
 /**
@@ -451,6 +452,9 @@ export function createPolicy(settings, { definitionOf = null, partialFailureOf =
         }
         const stale = pinnedVerdict(tool, call)
         if (stale !== null) return stale
+        // This tool's closed path is relative to its owner-configured broker root,
+        // not the agent's cwd. Its signed review names the full absolute target.
+        if (tool === 'aukora_workspace_patch') return allow('allow:owner-reviewed-workspace')
         const loose = looseTargets(args)
         const kind = WRITE_NAME.test(tool.replace(/([a-z0-9])([A-Z])/gu, '$1_$2')) ? 'write' : 'read'
         const refused = first(...loose.paths.map(p => judgePath(p, kind, call)), ...loose.urls.map(url => judgeUrl(url, call)))

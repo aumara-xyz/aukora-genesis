@@ -5,6 +5,7 @@
     "aukora-aumlok",
     "aukora-aura-association",
     "aukora-board",
+    "aukora-caged-worker",
     "aukora-composition-gate",
     "aukora-core-read-deny",
     "aukora-eye",

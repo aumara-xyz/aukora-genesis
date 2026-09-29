@@ -232,7 +232,7 @@ def COPY_IGNORE(directory, names):
 #                 release that carries these bytes and mounts no row starts a backend whose model
 #                 cannot look at the app, while every eye court stays green — which is why
 #                 `tests/aukora-eye-row.test.mjs` holds this constant and the row below together.
-LANE_PLUGINS = ('aukora-kira', 'aukora-aumlok', 'aukora-board', 'aukora-eye',
+LANE_PLUGINS = ('aukora-kira', 'aukora-aumlok', 'aukora-board', 'aukora-eye', 'aukora-caged-worker',
                 # ── MEASURED OUTAGE, 2026-09-25: A RELEASE THAT COULD NOT START ──────────────────────
                 # The cutover died with `ERR_MODULE_NOT_FOUND`: `plugins/aukora-composition-gate/src/
                 # admission-grant.mjs:32` imports `../../aukora-owner-daemon/lib/binding.mjs`, and this
@@ -828,6 +828,37 @@ def release_import_gaps(release: Path) -> 'list[tuple[str, str]]':
     return sorted(gaps.items())
 
 
+def carry_worker_box(target: Path) -> None:
+    """Carry unchanged standalone box imports, including the spawned issuer.
+
+    The developer launcher is not in this closure and is never imported or copied.
+    """
+    box = ROOT / 'plugins/aukora-box'
+    for relative in ('PROVENANCE.md', 'aukora/package.json', 'aukora/supervisor/confinement.LICENSE',
+                     'aukora/supervisor/confinement-provenance.md'):
+        destination = target / 'plugins/aukora-box' / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(box / relative, destination)
+    queue = list((ROOT / 'plugins/aukora-caged-worker/lib').glob('*.mjs'))
+    queue.append(box / 'aukora/issuer/issuer.mjs')
+    seen = set()
+    while queue:
+        source = queue.pop().resolve()
+        if source in seen:
+            continue
+        seen.add(source)
+        if not source.is_file():
+            fail(f'worker-box-import-absent: {source}')
+        if source.is_relative_to(box):
+            destination = target / source.relative_to(ROOT)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+        for spec in _relative_imports(source.read_text(encoding='utf-8')):
+            dependency = (source.parent / spec).resolve()
+            if dependency.is_relative_to(box):
+                queue.append(dependency)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--from', dest='source', type=Path, default=ROOT / 'vendor/dsh')
@@ -1162,6 +1193,8 @@ def main() -> int:
                 shutil.copytree(source_plugin / name, lane_out / name, dirs_exist_ok=True,
                                 symlinks=True, ignore=COPY_IGNORE)
 
+    carry_worker_box(target)
+
     # THE CORE PRESET, INCLUDING ITS AGENT INSTRUCTIONS. A preset is a DIRECTORY of rows plus the
     # `AGENTS.md` the `agent-instructions` plugin reads (presets/core/agent.cordis.yml composes it with
     # `maxBytes: 65536`), so carrying the plugin without the preset is carrying half of CORE. This is a
@@ -1431,6 +1464,8 @@ def main() -> int:
         + '# are ABSOLUTE into the release; `!!js dshHomePath(...)` keeps per-deployment state the\n'
         + "# launcher's input rather than baking one machine's path into the artifact.\n"
         + '- insert:\n'
+        + '    - id: aukora-caged-worker\n'
+        + f'      name: {target / "plugins/aukora-caged-worker/lib/index.mjs"}\n'
         + '    - id: aukora-kira\n'
         + '      name: ./plugins/aukora-kira/lib/index.js\n'
         + '      config:\n'
@@ -1670,6 +1705,7 @@ def main() -> int:
     shutil.copy2(ROOT / 'overlays' / 'action-gate.patch.yml', target / 'action-gate.patch.yml')
     # The same, for the Seatbelt provider swap. Carrying the file mounts nothing; a deployment lists it to mount it.
     shutil.copy2(ROOT / 'overlays' / 'seatbelt.patch.yml', target / 'seatbelt.patch.yml')
+    shutil.copy2(ROOT / 'overlays' / 'caged-worker.patch.yml', target / 'caged-worker.patch.yml')
 
     strip = strip_release(target)
     strip_path = target / 'strip-manifest.json'
