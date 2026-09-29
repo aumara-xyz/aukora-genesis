@@ -22,6 +22,44 @@ in a separate macOS account the agent cannot read; a kernel decides; every gover
 
 [Further limits and recorded evidence](#further-limits-and-recorded-evidence) below bound these claims.
 
+## The combination
+
+A model may propose an act. On the governed path, permission is a signature
+over the exact bytes of that act, from a key the model does not hold.
+That permission is spent once, using a nonce and a spent set. Then the act may run.
+
+The primitives have separate jobs:
+
+- **Ed25519:** a stamp on exact bytes.
+- **One-use nonce:** that stamp cannot be replayed at an executor enforcing the spent set.
+- **Hash chain + retained head:** a later reader can tell “log grew” from
+  “log was rewritten,” within the history covered by a separately trusted retained head.
+- **Cold verifier:** a small program that is not the agent, run from an empty
+  directory with separately supplied trust anchors, to accept or refuse that bundle.
+
+This is not a new curve, a coin, or a world ledger.
+These are the same kinds of tools used in signed updates and transparency logs.
+
+A reason to use a chain is to let two parties who do not trust each other
+check an act without trusting one operator’s database.
+Here the acting program is supposed to carry the evidence with the act:
+exact bytes, a signature, a record of one-use consumption, and a new page in the log.
+The other party, or a stranger, runs the cold verifier. Checking is local;
+there is no global book. The bundle records consumption; it cannot by itself
+prove that no second execution happened elsewhere or after a spent-store rollback.
+
+This could replace the need for a blockchain for the narrower questions
+“was this act authorized?” and “was this covered history rewritten?”, under
+those trust and retention assumptions. It does not replace global agreement
+about one scarce thing, such as who can spend the same asset across the world.
+
+Today, this repo contains code for exact-byte approval, one-use consumption,
+governed effects, chained receipts, public export and standalone verification.
+Those components do not establish that every live action passes through them.
+The limits in **What is not enforced** above apply: the live agent is still
+on the host, and the box is not wired to that agent. This describes the
+combination and its intended boundary, not complete live containment.
+
 ## Try it
 
 On macOS with Python 3, Node.js 22 or newer, Perl and `/usr/bin/cc` (Xcode Command Line Tools):
@@ -33,7 +71,7 @@ git clone https://github.com/aumara-xyz/aukora-genesis && cd aukora-genesis && s
 Expected final line (elapsed time varies):
 
 ```text
-TOTAL <elapsed>s | 19/19 passed
+TOTAL <elapsed>s | 38/38 passed
 ```
 
 [CI](.github/workflows/check.yml) runs the same checks on every push. They check disposable repository fixtures,

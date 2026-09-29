@@ -4,6 +4,8 @@
 
 **Canonical white paper · 29 September 2026**
 
+The combination of primitives is stated in the README section The combination.
+
 ### Abstract
 
 We are putting more of humanity's recorded knowledge into machines: language, code, images, scientific work, arguments, memories, and accounts of experience. Those machines are becoming something more intimate than reference libraries. They can interpret, plan, build, remember, persuade, and act. They may come to know the shape of an individual life with a persistence no previous instrument possessed.
