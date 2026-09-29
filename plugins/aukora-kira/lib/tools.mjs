@@ -35,6 +35,10 @@ import {
 import { CONVERSATION_ACTIONS, KiraConversationError } from './conversation.mjs'
 import { readOwnerPolicy } from './read-owner.mjs'
 import { RETRIEVAL_LIMITS } from './retrieval.mjs'
+// The phase 9 policy's OWN vocabularies, so the declared output schema cannot drift from the values
+// `reconcileRecallAvailability` actually returns. A copy of the enum here would be one more thing to
+// forget; importing it means a new action breaks the import rather than the live tool.
+import { PARTIAL_FAILURE_ACTIONS, REMEMBERED_STATES, STORE_AVAILABILITY } from './partial-failure.mjs'
 
 /**
  * Model-facing tool names. DeepSeek and OpenAI-compatible APIs require
@@ -615,6 +619,25 @@ export function recallTool(dispatch) {
           state: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           counters: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           remembered: { type: 'object', additionalProperties: true, properties: {}, required: [] },
+          // *** DECLARED, NOT STRIPPED, AND THIS FIELD IS WHY. *** `reconcileRecallAvailability`
+          // returns `partialFailure` on every reconciled answer, and this schema's
+          // `additionalProperties: false` REJECTED THE WHOLE TOOL RESULT while the field was
+          // undeclared — so `kira_recall` failed live in the installed app for every non-empty
+          // query (2026-09-29, release 7933048d7: `"value.partialFailure" is not a declared
+          // property`). Every court was green. The enums are the policy's own arrays, so a new
+          // action or availability value breaks the import instead of the running tool.
+          partialFailure: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              action: { type: 'string', enum: [...PARTIAL_FAILURE_ACTIONS] },
+              reason: { type: 'string' },
+              outer: { type: 'string', enum: [...STORE_AVAILABILITY] },
+              remembered: { type: 'string', enum: [...REMEMBERED_STATES] },
+              reconciledAvailability: { type: 'string', enum: [...STORE_AVAILABILITY] },
+            },
+            required: ['action', 'reason', 'outer', 'remembered', 'reconciledAvailability'],
+          },
         },
         required: ['availability', 'status', 'snippets', 'relations', 'interpretation', 'retrieval', 'ceiling', 'state'],
       },
