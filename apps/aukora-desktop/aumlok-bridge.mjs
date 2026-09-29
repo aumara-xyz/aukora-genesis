@@ -55,6 +55,7 @@ function settleOperationOf(intent) {
     : (typeof intent?.ceremony === 'string' ? intent.ceremony : 'unknown')
   return { operation: `aumlok.${ceremony}`, scope: 'aukora-aumlok.ceremony' }
 }
+import { spawn } from 'node:child_process'
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
 // THE DRAW HALF OF THE CROSSING, imported rather than re-implemented: one module owns the phrase's
@@ -386,6 +387,27 @@ export function installApprovalBridge(deps) {
    * shows the PUBLIC facts of the pending question and returns ONE BIT. It draws no words, asks for
    * none, derives nothing and writes nothing: there is no phrase on this path to protect.
    */
+  /**
+   * THE SOUND A CARD MAKES WHEN IT ARRIVES.
+   *
+   * `afplay` is preferred because it is the mechanism ALREADY OBSERVED to be audible on this Mac; the
+   * system alert sound needs no asset of ours and no bundling step. `shell.beep` is not reachable from
+   * here and is not worth a second dependency, so a machine with no `afplay` is a machine that opens
+   * the sheet in silence - which is exactly the behaviour that shipped before, not a new failure.
+   *
+   * DETACHED AND UNREFERENCED, and every failure is swallowed: the player must never be a reason this
+   * app stays alive, must never hold an approval open, and must never fail an approval. A card that
+   * cannot beep is still a card that can be clicked.
+   */
+  function alert() {
+    try {
+      const player = spawn('/usr/bin/afplay', ['/System/Library/Sounds/Sosumi.aiff'],
+        { detached: true, stdio: 'ignore' })
+      player.on('error', () => { /* no player on this machine: the sheet still opens */ })
+      player.unref()
+    } catch { /* no audio at all: the sheet still opens */ }
+  }
+
   function openApprovalWindow() {
     if (approval !== null && !approval.webContents.isDestroyed()) {
       approval.webContents.focus()
@@ -435,6 +457,12 @@ export function installApprovalBridge(deps) {
       // THE GUARD RUNS FOR AS LONG AS THE SHEET IS DOCKED, and only then: a timer that outlived the sheet
       // would be a timer holding a destroyed view. `unref` so it can never be the reason this process stays
       // alive — the sheet is not a reason for the application to keep running.
+      // A CARD THAT OPENS IN SILENCE GETS MISSED, AND A MISSED CARD EXPIRES UNSIGNED. The sound belongs
+      // to the surface that owns the sheet, and it lives HERE rather than in `main.mjs` because this is
+      // the only module on the path that may be changed: `main.mjs` is a self-protecting path.
+      // IT IS INSIDE THE DOCKING GUARD ON PURPOSE. `headless` is the seam a court uses to open the real
+      // sheet without putting it on a person's screen; a court must never sound on his Mac either.
+      alert()
       composerRect = null
       cardHeight = 0
       measureDock()
