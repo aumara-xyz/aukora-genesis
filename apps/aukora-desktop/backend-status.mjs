@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto'
+
 // What the window says about the backend it is showing.
 //
 // THE WINDOW MUST ANSWER THREE QUESTIONS WITHOUT BEING ASKED. Which backend is this?
@@ -122,3 +124,27 @@ export function redactTokens(text) {
     // key has to be allowed between the name and the separator.
     .replace(/\btoken["']?\s*[:=]\s*["']?[A-Za-z0-9_-]{16,}["']?/gi, 'token=<redacted>')
 }
+
+// Cookies are host-scoped, not port-scoped. Old owned backends must not inflate
+// the next plugin request past Node's header limit. Attach sessions stay untouched.
+export async function pruneOwnedAuthCookies(cookies, url) {
+  const target = new URL(url)
+  if (!['127.0.0.1', 'localhost', '[::1]'].includes(target.hostname)) throw new Error('non-loopback cookie cleanup refused')
+  const keep = 'dsh-auth-' + createHash('sha256').update(target.host).digest('base64url')
+  let removed = 0
+  for (const cookie of await cookies.get({ url: target.origin })) {
+    if (cookie.domain !== target.hostname || cookie.path !== '/' ||
+        !/^dsh-auth-[A-Za-z0-9_-]{43}$/.test(cookie.name) || cookie.name === keep) continue
+    await cookies.remove(target.origin + '/', cookie.name)
+    removed++
+  }
+  await cookies.flushStore()
+  return removed
+}
+
+// Observed rendering only, never an attestation. No chat text leaves the renderer.
+export const INTERFACE_STATE_SCRIPT = `(() => {
+  const boot = document.querySelector('[data-dsh-boot]');
+  if (boot) return boot.textContent.includes('Failed to load plugins') ? 'failed' : 'loading';
+  return document.querySelector('button, [role="button"], input, textarea') ? 'ready' : 'loading';
+})()`

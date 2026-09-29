@@ -740,7 +740,13 @@ export function bootVerdict(text, release) {
   const bad = lines.find((l) => /^\S+ (error|uncaughtException) /u.test(l) && !/^\S+ error aukora-desktop: load failed /u.test(l))
   if (bad) return { ok: false, line: bad.trim().slice(0, 300) }
   const at = lines.findIndex((l) => l.includes(`release ${release} `) && l.includes('spatial frontend'))
-  if (at >= 0 && lines.slice(at + 1).some((l) => /^\S+ log aukora-desktop: window loaded /u.test(l))) return { ok: true, line: lines[at].trim().slice(0, 200) }
+  if (at >= 0) {
+    const origin = /backend (http:\/\/127\.0\.0\.1:\d+) /u.exec(lines[at])?.[1]
+    const loaded = lines.findLastIndex((l) => l.endsWith(` log aukora-desktop: window loaded ${origin}`))
+    if (origin && loaded > at && lines.slice(loaded + 1).some((l) => l.endsWith(` log aukora-desktop: interface ready ${origin}`))) {
+      return { ok: true, line: lines[at].trim().slice(0, 200) }
+    }
+  }
   return null
 }
 /** Wait for the desktop log, reading only what was written after `from`. */

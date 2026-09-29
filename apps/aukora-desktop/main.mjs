@@ -12,7 +12,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { startHarness, spawnedPid, stopSpawned, startRestartWatchdog } from './supervisor.mjs'
 import { resolveTarget } from './resolve.mjs'
 import { externalSchemeAllowed, loopbackOnly, permissionAllowed } from './url-policy.mjs'
-import { backendStatus, frontendFromBundleUrl, redactTokens, safeOrigin } from './backend-status.mjs'
+import { backendStatus, frontendFromBundleUrl, redactTokens, safeOrigin, pruneOwnedAuthCookies, INTERFACE_STATE_SCRIPT } from './backend-status.mjs'
 import { installApprovalBridge, loadOrganLibrary, resolveAumlokDirectory, signingSessionSource } from './aumlok-bridge.mjs'
 import { defaultAumlokDirectory } from './install-settings.mjs'
 import { installEyeDoor } from './eye.mjs'
@@ -103,9 +103,27 @@ function createWindow(ses, status) {
     if (externalSchemeAllowed(url)) shell.openExternal(url).catch(() => {})
     return { action: 'deny' }
   })
+  let navigation = 0
+  window.webContents.on('did-start-navigation', (_e, _url, inPlace, mainFrame) => {
+    if (mainFrame && !inPlace) navigation++
+  })
+  async function observeInterface() {
+    const generation = navigation
+    const origin = safeOrigin(window.webContents.getURL())
+    for (let attempt = 0; attempt < 60; attempt++) {
+      if (window.isDestroyed() || navigation !== generation) return
+      const state = await window.webContents.executeJavaScript(INTERFACE_STATE_SCRIPT).catch(() => 'loading')
+      if (window.isDestroyed() || navigation !== generation) return
+      if (state === 'ready') { console.log(`aukora-desktop: interface ready ${origin}`); return }
+      if (state === 'failed') { console.error(`aukora-desktop: interface failed ${origin}`); return }
+      await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+    console.error(`aukora-desktop: interface timed out ${origin}`)
+  }
   // Load outcomes are printed so a headless run can be measured rather than assumed.
   window.webContents.on('did-finish-load', async () => {
     console.log(`aukora-desktop: window loaded ${new URL(window.webContents.getURL()).origin}`)
+    void observeInterface().catch(() => console.error('aukora-desktop: interface observation failed'))
     const capture = process.env.AUKORA_DESKTOP_CAPTURE
     if (capture) {
       const settle = Number(process.env.AUKORA_DESKTOP_CAPTURE_DELAY_MS ?? 0)
@@ -350,6 +368,7 @@ app.whenReady().then(async () => {
         mode: 'own', url, release: target.release, commit: target.releaseCommit,
       })
     }
+    if (status.owned) console.log(`aukora-desktop: removed ${await pruneOwnedAuthCookies(ses.cookies, url)} stale login cookies`)
     console.log(`aukora-desktop: backend ${status.text}`)
     // ── THE GRACEFUL-RESTART WATCHDOG, ARMED WHERE A BACKEND EXISTS ──────────────────────────────────────────────
     // THE TWO SOURCES OF TRUTH. The footprint reader is the module default: `footprint(1)`'s `phys_footprint`, the
