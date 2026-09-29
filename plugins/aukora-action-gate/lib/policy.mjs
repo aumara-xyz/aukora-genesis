@@ -100,7 +100,14 @@ export const KERNEL_ALLOWS = Object.freeze([
   ['write', 'local-write', ['allow:ok', 'allow:approved', 'allow:approved-checked']],
   ['exec', 'external', ['allow:ok']],
   ['network', 'external', ['allow:ok', 'allow:non-network-uri', 'allow:search-provider']],
-  ['tool', 'external', ['allow:approved', 'allow:approved-checked']],
+  // `allow:workspace-proposal` IS RETURNED BY THIS FILE AND WAS NOT COMPILED HERE. `judge` below returns it
+  // for `aukora_workspace_patch` (see the closed-path branch), the kernel compiled only the two outcomes
+  // above for a tool call, so the kernel's own `decide` answered `policy_no_match` and every call to the
+  // confined worker was refused with "no kernel permission for this call" — while the tool was built,
+  // mounted, and named in the deployment's `allowTools`. Two halves of one gate disagreed on a label.
+  // Measured 2026-09-30 on the live release: `aukora_workspace_patch` refused `kernel:policy_no_match`.
+  // The rule stays narrow: it permits the workspace-proposal class and nothing else.
+  ['tool', 'external', ['allow:approved', 'allow:approved-checked', 'allow:workspace-proposal']],
 ])
 
 function actionClass(tool, args) {
