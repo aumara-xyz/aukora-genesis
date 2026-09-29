@@ -84,6 +84,7 @@ export const BIND_REFUSE = Object.freeze({
   PHRASE_MALFORMED: 'aumlok:bind-phrase-malformed',
   WRITE_FAILED: 'aumlok:bind-write-failed',
   RECORD_UNREADABLE: 'aumlok:bind-record-unreadable',
+  ALREADY_BOUND: 'aumlok:bind-already-bound',
 })
 
 /** How long a refusal name may be. The face drops anything over 128 characters, so this is its bound. */
@@ -339,21 +340,25 @@ export function createAumlokDraw(options = {}) {
      */
     async submit(owner, intent, words, context = {}) {
       if (intent !== 'bind' && intent !== 'refresh') return { ok: false, reason: DRAW_REFUSE.INTENT_UNKNOWN }
-      if (pending === null) return { ok: false, reason: DRAW_REFUSE.NO_PENDING_DRAW }
+      // `drawSpent: true` FROM HERE ON (2026-09-29): the words the screen holds can no longer bind, so the screen must
+      // ask for new ones rather than invite a retry that can only answer `no-pending-draw` (measured on a fresh Mac).
+      // It is set on EVERY answer after the slot is gone — shape, mismatch, verified, ceremony refusal alike — so it
+      // says nothing about how close a guess was. Decided here, at the moment of consumption, not read back later.
+      if (pending === null) return { ok: false, reason: DRAW_REFUSE.NO_PENDING_DRAW, drawSpent: true }
       if (pending.owner !== owner) return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
       if (pending.intent !== intent) return { ok: false, reason: DRAW_REFUSE.INTENT_UNKNOWN }
       const offered = Array.isArray(words) ? words : null
       if (offered === null || offered.length !== PHRASE_LENGTH
         || !offered.every(word => typeof word === 'string' && WORD.test(word))) {
         pending = null
-        return { ok: false, reason: DRAW_REFUSE.PHRASE_SHAPE }
+        return { ok: false, reason: DRAW_REFUSE.PHRASE_SHAPE, drawSpent: true }
       }
       const expected = pending.words
       // THE SLOT IS CONSUMED EITHER WAY, BEFORE THE COMPARISON IS ACTED ON. A submit that could be
       // repeated would be a guessing oracle against one drawn phrase, and the phrase is the key.
       pending = null
       for (let at = 0; at < PHRASE_LENGTH; at++) {
-        if (offered[at] !== expected[at]) return { ok: false, reason: DRAW_REFUSE.PHRASE_MISMATCH }
+        if (offered[at] !== expected[at]) return { ok: false, reason: DRAW_REFUSE.PHRASE_MISMATCH, drawSpent: true }
       }
 
       // ── THE WORDS MATCHED. NOW THE BINDING IS PERFORMED OR REFUSED BY NAME. ──────────────────────
@@ -363,7 +368,7 @@ export function createAumlokDraw(options = {}) {
         // NO CEREMONY, SO NO BINDING — AND THAT IS SAID, NOT SWALLOWED. A release that predates this
         // module carries no `bind-v3.mjs`, and the honest answer is this name rather than a verdict and
         // no write, which is precisely what Peter's screen did.
-        return { ok: false, reason: DRAW_REFUSE.CEREMONY_ABSENT }
+        return { ok: false, reason: DRAW_REFUSE.CEREMONY_ABSENT, drawSpent: true }
       }
       try {
         const bound = await bind({
@@ -376,7 +381,7 @@ export function createAumlokDraw(options = {}) {
           boundAt: typeof context?.boundAt === 'string' && context.boundAt.length > 0
             ? context.boundAt : new Date().toISOString(),
         })
-        return { ok: true, reason: DRAW_REFUSE.VERIFIED, subject: bound?.projection?.subject ?? null }
+        return { ok: true, reason: DRAW_REFUSE.VERIFIED, subject: bound?.projection?.subject ?? null, drawSpent: true }
       } catch (error) {
         // THE CEREMONY'S OWN NAME, PASSED THROUGH UNCHANGED. `bind-v3.mjs` refuses by name and appends
         // the errno when there is one; this is the single place that name becomes the screen's sentence.
@@ -385,6 +390,7 @@ export function createAumlokDraw(options = {}) {
         return {
           ok: false,
           reason: refusalName(error) ?? `${DRAW_REFUSE.WRITE_FAILED}${errnoSuffix(error)}`,
+          drawSpent: true,
         }
       }
     },
