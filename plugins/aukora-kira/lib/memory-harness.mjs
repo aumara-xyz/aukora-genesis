@@ -78,7 +78,7 @@ export function quoteCheck(item, turns) {
 
   const cited = turns.find(one => one.turn === quote.turn)
   if (cited === undefined) return { ok: false, rule: 'quote-turn-unknown', why: `the item cites turn ${String(quote.turn)}, which is not among the turns supplied` }
-  if (!OWNER_CHANNELS.includes(cited.channel)) {
+  if (!OWNER_CHANNELS.includes(cited.channel) && !(cited.channel === 'agent' && item.attributedTo === 'agent' && item.verbatim === true)) {
     return { ok: false, rule: 'quote-not-owner', why: `the cited turn's channel is ${JSON.stringify(cited.channel)}, and only the owner's own words are quotable` }
   }
   // A VERBATIM ITEM IS THE OWNER'S OWN TURN (the whole-turn note, `memory-capture.mjs`). The paraphrase rules below — five words,
@@ -125,7 +125,7 @@ export function quoteCheck(item, turns) {
 export function applyHarness(input, policy = {}) {
   const { items = [], turns = [], observationDate, known = {} } = input ?? {}
   const forbidden = policy.forbidden ?? []
-  const secretPatterns = policy.secretPatterns ?? []
+  const sensitivePatterns = policy.secretPatterns ?? []
   const accepted = []
   const dropped = []
   let usage = []
@@ -135,13 +135,13 @@ export function applyHarness(input, policy = {}) {
     const drop = (rule, why) => dropped.push({ statement, rule, why })
     if (statement === '') { drop('statement-empty', 'an item with no statement is not a memory'); continue }
 
-    const check = quoteCheck({ statement, quote: item.quote, explicit: item.explicit === true, verbatim: item.verbatim === true }, turns)
+    const check = quoteCheck({ statement, quote: item.quote, explicit: item.explicit === true, verbatim: item.verbatim === true, attributedTo: item.attributedTo }, turns)
     if (check.ok !== true) { drop(check.rule, check.why); continue }
 
     // §3.5 rule 3: filters. A secret or a forbidden phrase is dropped whether or not the quote checked out.
     const haystack = `${statement} ${normalize(item?.quote?.text)}`
-    const secret = secretPatterns.find(pattern => pattern.test(haystack))
-    if (secret !== undefined) { drop('filter-secret', `the text matches a secret pattern (${String(secret)})`); continue }
+    const sensitive = sensitivePatterns.find(pattern => pattern.test(haystack))
+    if (sensitive !== undefined) { drop('filter-secret', `the text matches a secret pattern (${String(sensitive)})`); continue }
     const banned = forbidden.find(phrase => haystack.toLowerCase().includes(normalize(phrase).toLowerCase()))
     if (banned !== undefined) { drop('filter-forbidden', `the text contains the forbidden phrase ${JSON.stringify(banned)}`); continue }
 

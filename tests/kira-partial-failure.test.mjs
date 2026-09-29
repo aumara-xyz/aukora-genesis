@@ -10,14 +10,35 @@
  * No live store writes. No merge. No door_send. No become.
  */
 import assert from 'node:assert/strict'
-import {
+import { spawnSync } from 'node:child_process'
+import { registerHooks } from 'node:module'
+import { fileURLToPath } from 'node:url'
+
+if (process.argv.includes('--mutate')) {
+  const run = args => spawnSync(process.execPath, [fileURLToPath(import.meta.url), ...args], { encoding: 'utf8', timeout: 30_000 })
+  const plain = run([]), mutant = run(['--mutant'])
+  process.stdout.write(plain.stdout + plain.stderr)
+  const caught = mutant.status === 1 && mutant.stdout.includes('FAIL  injection: throw path does not return previous decision unchanged')
+  console.log(`Phase 9: ${Number(caught)}/1 fault-policy reverts caught`)
+  if (!caught) process.stdout.write(mutant.stdout + mutant.stderr)
+  process.exit(plain.status === 0 && caught ? 0 : 1)
+}
+if (process.argv.includes('--mutant')) registerHooks({ load(url, context, nextLoad) {
+  const result = nextLoad(url, context)
+  if (!url.endsWith('/partial-failure.mjs')) return result
+  const source = Buffer.from(result.source).toString('utf8')
+  const from = 'export function mayReturnPreviousDecisionOnMemoryFault() {\n  return false\n}'
+  if (source.split(from).length !== 2) throw new Error('fault-policy mutant anchor missing')
+  return { ...result, source: source.replace(from, from.replace('return false', 'return true')) }
+} })
+const {
   decidePartialFailure,
   mayReturnPreviousDecisionOnMemoryFault,
   memoryFaultInjectionLine,
   reconcileRecallAvailability,
   rememberedStateOf,
-} from '../plugins/aukora-kira/lib/partial-failure.mjs'
-import { registerRecallInjection } from '../plugins/aukora-kira/lib/injection.mjs'
+} = await import('../plugins/aukora-kira/lib/partial-failure.mjs')
+const { registerRecallInjection, MAX_INJECTION_CHARS } = await import('../plugins/aukora-kira/lib/injection.mjs')
 
 let failures = 0
 let passed = 0
@@ -100,9 +121,16 @@ await arm('guard: mayReturnPreviousDecisionOnMemoryFault is always false', () =>
 })
 
 await arm('injection: throw path does not return previous decision unchanged', async () => {
+  for (const failedLeg of ['governed', 'remembered', 'newest']) {
   const prior = Object.freeze({ kind: 'continue', messages: Object.freeze([{ id: 'prior', role: 'user', content: 'hello' }]) })
   const injected = []
   const seenFailures = []
+  const reads = []
+  const read = leg => {
+    reads.push(leg)
+    if (leg === failedLeg) throw Object.assign(new Error('simulated-recall-fault'), { code: 'kira.phase9:fault' })
+    return { availability: 'found', snippets: [{ recordId: `fixture:${leg}`, text: `HEALTHY-SIBLING-${leg}` }] }
+  }
   let preStep
   registerRecallInjection(
     {
@@ -113,10 +141,10 @@ await arm('injection: throw path does not return previous decision unchanged', a
     },
     {
       conversation: {
-        async turn() {
-          throw Object.assign(new Error('simulated-recall-fault'), { code: 'kira.phase9:fault' })
-        },
+        async turn() { return read('governed') },
       },
+      remembered: async () => read('remembered'),
+      newest: async () => read('newest'),
       queries: ['phase9 probe'],
       newId: () => 'phase9-fault-msg',
       onInjected: line => injected.push(line),
@@ -130,8 +158,13 @@ await arm('injection: throw path does not return previous decision unchanged', a
   assert.equal(injected.length, 1, 'fault line must be injected')
   assert.match(injected[0], /FAILED before a verified answer/u)
   assert.match(injected[0], /ASK before any consequential effect/u)
+  assert.match(injected[0], /HEALTHY-SIBLING-/u, 'the healthy leg must survive a sibling fault')
+  assert.deepEqual(reads, ['governed', 'remembered', 'newest'])
+  assert.ok(injected[0].length <= MAX_INJECTION_CHARS)
+  assert.equal(result.messages.at(-1).source.form, 'snapshot')
   assert.ok(result.messages.length === prior.messages.length + 1)
   assert.equal(result.kind, 'continue', 'turn itself still continues (fault is named, not a crash)')
+  }
 })
 
 await arm('injection: fault line names stop/ask duty for consequential effects', () => {

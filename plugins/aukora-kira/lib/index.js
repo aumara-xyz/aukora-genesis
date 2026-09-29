@@ -28,7 +28,9 @@
  * @module @aukora/dsh-plugin-kira
  */
 import { KiraConversation, KiraConversationError } from './conversation.mjs'
-import { registerRecallInjection } from './injection.mjs'
+import { projectScopeOf, projectRecent, rememberedSnippet, visibleRemembered } from './project-memory.mjs'
+import { registerRecallInjection, recallDiagnostics } from './injection.mjs'
+import { recallFilter } from './memory-frame.mjs'
 import { laneForSession, readReflectFor } from './compaction-export-hook.mjs'
 import { sessionIdOfAgent } from './autostage-hook.mjs'
 import { registerAutoStage } from './autostage-hook.mjs'
@@ -355,9 +357,10 @@ export async function apply(ctx, config) {
     try {
       const deps = storeDepsForRecall()
       const ambient = deps.liveRemembered()
+      const policy = readOwnerPolicy(await owner.describe())
       const governed = await deps.liveGoverned()
       return {
-        ambient: new Map(ambient.notes.map(note => [String(note.id), note])),
+        ambient: new Map(ambient.notes.filter(note => note.subject === policy.subject && note.privacy === 'local' && policy.permittedPrivacy.includes('local')).map(note => [String(note.id), note])),
         governed: new Map(governed.map(note => [String(note.id), note])),
         complete: true,
       }
@@ -390,27 +393,35 @@ export async function apply(ctx, config) {
   /** The reason recall last said it answered lexically: said once per reason, not on every call. */
   let semanticNotice = null
   /** `kira_recall`'s remembered notes: by meaning through OpenViking when it answers, else lexical as before. */
-  const rememberedFor = async (listNotes, text) => {
+  const rememberedFor = async (listNotes, text, scope = null, preTurn = false) => {
+    const policy = readOwnerPolicy(await owner.describe())
+    const allowed = note => visibleRemembered([note], policy, scope).length > 0
+    const scopedList = typeof listNotes !== 'function' ? undefined : async args => (await listNotes(args)).filter(allowed)
     const bridge = semanticRecall()
-    if (bridge === undefined) return recallRemembered(listNotes, text)
+    if (bridge === undefined) {
+      const remembered = await recallRemembered(scopedList, text)
+      return preTurn ? { ...remembered, semantic: { available: false, reason: 'openviking-not-configured' } } : remembered
+    }
     let found = { available: false, reason: String(bridge.reason) }
     if (bridge.configured === true) {
-      try { found = await bridge.recall({ question: text, live: semanticLedger }) } catch (error) { found = { available: false, reason: `semantic-recall-failed (${String(error?.code ?? error?.message ?? 'unknown')})` } }
+      try { found = await bridge.recall({ question: text, live: semanticLedger, accept: note => note.tier === 'signed' || allowed(note) }) } catch (error) { found = { available: false, reason: `semantic-recall-failed (${String(error?.code ?? error?.message ?? 'unknown')})` } }
     }
-    if (found.available === true && found.hits.length > 0 && found.ledgerComplete === true) { semanticNotice = null; return semanticNotes(found) }
-    const lexical = await recallRemembered(listNotes, text)
+    if (found.available === true && found.hits.length > 0 && found.ledgerComplete === true) { if (!preTurn) semanticNotice = null; return { ...semanticNotes(found), semantic: { available: true } } }
+    const lexical = await recallRemembered(scopedList, text)
     // AN UNREADABLE LEDGER IS NOT AN EMPTY ONE: the lexical fallback's own `found`/`empty` would
     // otherwise reach the phase 9 gate as a determined picture and the gate would proceed.
-    const remembered = rememberedWithLedger({ lexical, ledgerComplete: found.ledgerComplete })
-    const ledgerUnread = found.ledgerComplete !== true && lexical !== undefined && lexical !== null
+    const remembered = bridge.configured === true ? rememberedWithLedger({ lexical, ledgerComplete: found.ledgerComplete }) : lexical
+    const ledgerUnread = bridge.configured === true && found.ledgerComplete !== true
     if (found.available === true) {
-      semanticNotice = null
-      return { ...remembered, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold, ...(ledgerUnread ? { ledgerUnread: true } : {}), ...(found.reserved === undefined ? {} : { reserved: found.reserved }) } }
+      if (!preTurn) semanticNotice = null
+      return { ...remembered, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold, diagnostics: found.diagnostics ?? [], outsideWindow: found.dropped.outsideWindow, threshold: found.threshold, window: found.window, ...(ledgerUnread ? { ledgerUnread: true } : {}), ...(found.reserved === undefined ? {} : { reserved: found.reserved }) } }
     }
-    if (found.reason === semanticNotice) return remembered
-    semanticNotice = found.reason
-    if (bridge.configured === true) ctx.logger?.warn?.(`aukora-kira: semantic recall is not available (${found.reason}); kira_recall answers lexically`)
-    return { ...remembered, semantic: { available: false, reason: found.reason, ...(ledgerUnread ? { ledgerUnread: true } : {}), notice: 'semantic recall (OpenViking) is not available, so this answer is lexical; said once' } }
+    if (!preTurn) {
+      if (found.reason === semanticNotice) return remembered
+      semanticNotice = found.reason
+      if (bridge.configured === true) ctx.logger?.warn?.(`aukora-kira: semantic recall is not available (${found.reason}); kira_recall answers lexically`)
+    }
+    return { ...remembered, semantic: { available: false, reason: found.reason, ...(ledgerUnread ? { ledgerUnread: true } : {}) } }
   }
 
   // ── `kira.recall`: THE READ-ONLY DOOR ONTO THE MEMORY ──────────────────────
@@ -531,7 +542,7 @@ export async function apply(ctx, config) {
   const capturePolicyOf = async () => {
     const policy = readOwnerPolicy(await owner.describe())
     const permitted = Array.isArray(policy.permittedPrivacy) ? policy.permittedPrivacy : []
-    return { subject: policy.subject, privacy: permitted.includes('local') ? 'local' : String(permitted[0] ?? 'local') }
+    return { subject: policy.subject, privacy: permitted.includes('local') ? 'local' : null }
   }
   registerRememberedCapture(ctx, {
     stateDir: captureStateDir,
@@ -635,11 +646,34 @@ export async function apply(ctx, config) {
   // this module sees anything.
   //
   // A FAILURE HERE MUST NOT BREAK A TURN. `registerRecallInjection` contains every read fault and
-  // returns the delegate's decision unchanged — an improvement to a session that can break the session
-  // is worse than the absence it repairs.
+  // contributes a named fault snapshot while preserving the delegate's decision kind.
   const recallConversation = new KiraConversation(owner, 'recall-injection', undefined)
   registerRecallInjection(ctx, {
     conversation: recallConversation,
+    remembered: memoryOwner === undefined ? undefined : async (text, event) => {
+      const scope = projectScopeOf(event?.agent)
+      const deps = storeDepsForRecall()
+      const reply = await rememberedFor(deps.listNotes, text, scope, true)
+      const policy = readOwnerPolicy(await owner.describe())
+      const live = deps.liveRemembered()
+      const notes = visibleRemembered(live.notes, policy, scope)
+      const diagnostics = recallDiagnostics(reply)
+      const context = { now: new Date().toISOString(), attachedProjects: scope === null ? [] : [scope], states: live.states }
+      const byId = new Map(notes.filter(note => {
+        const verdict = recallFilter(note, context)
+        if (!verdict.ok) diagnostics.diagnostics.push({ reason: verdict.why })
+        return verdict.ok
+      }).map(note => [note.id, note]))
+      for (const reason of ['unreadable', 'unchained']) if (live[reason] > 0) diagnostics.diagnostics.push({ reason, count: live[reason] })
+      const unavailable = !['found', 'empty'].includes(reply.state) || live.unreadable > 0 || live.unchained > 0
+      return { availability: unavailable ? 'undetermined' : byId.size > 0 ? 'found' : 'empty', ...diagnostics,
+        snippets: (reply.notes ?? []).filter(note => byId.has(note.id)).map(note => rememberedSnippet(byId.get(note.id))) }
+    },
+    newest: memoryOwner === undefined ? undefined : async event => {
+      const policy = readOwnerPolicy(await owner.describe())
+      const live = storeDepsForRecall().liveRemembered()
+      return projectRecent(live.notes, policy, projectScopeOf(event?.agent), live.states, live)
+    },
     // ── LANE-KEYED INJECTION ───────────────────────────────────────────────────
     // ONE PLUGIN SERVES EVERY LANE, so the lane is resolved PER TURN from the agent's own session. A lane
     // fixed at registration would ask AURA's question inside AUMLOK's session and seed the wrong thread.
@@ -659,11 +693,11 @@ export async function apply(ctx, config) {
         return typeof newest?.content?.summary === 'string' ? newest.content.summary : ''
       } catch { return '' }
     },
-    // Clear the previous turn's healthy result before any new recall is attempted.
+    // Clear the previous turn's healthy result before delegating to downstream pre-step listeners.
     onTurnStart: agent => partialFailureState.failure(agent),
     onFailure: (_error, event) => partialFailureState.failure(event?.agent),
-    onRecalled: (reply, _recent, event) => partialFailureState.record(event?.agent, {
-      outer: reply?.availability,
+    onRecalled: (reply, recent, event) => partialFailureState.record(event?.agent, {
+      outer: reply?.partialFailure || (recent?.availability === 'undetermined' && recent.reason !== 'host-project-scope-unavailable') ? 'undetermined' : reply?.availability,
       remembered: 'not-asked',
     }),
   })
@@ -855,7 +889,7 @@ export async function apply(ctx, config) {
       // undetermined ambient picture beside a found governed answer without downgrading.
       const result = typeof request.text !== 'string' || request.text === ''
         ? answer
-        : reconcileRecallAvailability(answer, await rememberedFor(rememberedNotes, request.text))
+        : reconcileRecallAvailability(answer, await rememberedFor(rememberedNotes, request.text, projectScopeOf(exec?.agent)))
       partialFailureState.record(exec?.agent, result?.partialFailure ?? {
         outer: result?.availability,
         remembered: 'not-asked',

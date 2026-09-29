@@ -87,7 +87,7 @@ const MUTANTS = Object.freeze({
   },
   'first-frame-only': {
     file: 'plugins/aukora-kira/lib/session-read.mjs',
-    from: '  for (const text of frameTexts(file, true)) {\n',
+    from: '  for (const text of frameTexts(file, true, maxBytes)) {\n',
     to: "  for (const text of [zstdDecompressSync(readFileSync(file)).toString('utf8')]) {\n",
     arm: ARMS.everything,
   },
@@ -429,12 +429,13 @@ try {
     await arm(ARMS.keeps, async () => {
       const secret = 'sk-' + 'a1B2'.repeat(6)
       await say('Off the record, I prefer to keep my salary review with Maya out of this.')
+      await speak('Off the record, the salary review is postponed.')
       await say('[fable via lane door] run the courts again and report the survivors')
       await say(`Use the token ${secret} for the staging box.`)
       await speak('Stop remembering, the doctor said my knee needs surgery.', { intent: 'stop-remembering', matched: 'stop remembering' })
       const all = await listed('remembered')
       const joined = all.map(one => String(one.text)).join('\n')
-      assert.ok(!/salary review/u.test(joined), 'an off-the-record text turn was remembered')
+      assert.ok(!/salary review/u.test(joined), 'an off-the-record turn was remembered')
       assert.ok(!filesUnder(join(stateDir, 'queue')).some(one => one.text.includes('salary review')), 'an off-the-record text turn was queued for approval')
       assert.ok(!/survivors/u.test(joined), 'a lane-door message was remembered as the owner\'s turn')
       assert.ok(!joined.includes(secret), 'a turn carrying a secret-shaped token was remembered')

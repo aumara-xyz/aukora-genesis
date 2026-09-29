@@ -35,7 +35,7 @@ const MUTANTS = Object.freeze({
   'ledger-filter-off': ['recall-openviking.mjs', '      const note = id === null ? undefined : live.entries.get(id)\n', "      const note = id === null ? undefined : (live.entries.get(id) ?? { id, statement: 'unmapped' })\n", ARMS.ledger],
   'forget-not-passed': ['index.js', '      const reached = await bridge.forget(String(answer.id))\n', "      const reached = { reached: false, because: 'reverted' }\n", ARMS.forget],
   'capture-not-indexed': ['index.js', "from ${info.sessionId} turn ${String(info.turn)}`); semanticIndex() }", "from ${info.sessionId} turn ${String(info.turn)}`) }", ARMS.backfill],
-  'ledger-read-early': ['index.js', 'found = await bridge.recall({ question: text, live: semanticLedger })', 'found = await bridge.recall({ question: text, live: semanticLedger() })', ARMS.race],
+  'ledger-read-early': ['index.js', 'found = await bridge.recall({ question: text, live: semanticLedger, accept:', 'found = await bridge.recall({ question: text, live: semanticLedger(), accept:', ARMS.race],
   'forget-out-of-turn': ['recall-openviking.mjs', '  const forget = id => inTurn(() => forgetNow(id))\n', '  const forget = forgetNow\n', ARMS.race],
   'remote-models-allowed': ['recall-openviking.mjs', '    if (off.length > 0 && raw.allowRemoteModels !== true) {\n', '    if (false) {\n', ARMS.privacy],
 })

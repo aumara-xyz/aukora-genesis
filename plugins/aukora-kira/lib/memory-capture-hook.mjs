@@ -23,7 +23,7 @@
  *
  * @module @aukora/dsh-plugin-kira/memory-capture-hook
  */
-import { captureTurn, capturedTurnKey } from './memory-capture.mjs'
+import { captureTurn, capturedTurnKey, wholeTurnText } from './memory-capture.mjs'
 import { CONTROLS, ownerControlIn } from './memory-forget.mjs'
 import { applyHarness, normalize } from './memory-harness.mjs'
 import { compileIndex, rankRecords } from './retrieval.mjs'
@@ -232,7 +232,22 @@ export function consumeTurn(turn, policy) {
   // from it — and an arm for the passthrough would need a candidate this tree never builds. The default is unchanged (`captureTurn`), and the
   // court supplies its own to drive a relation-bearing candidate through the real path.
   const extract = typeof policy?.extract === 'function' ? policy.extract : captureTurn
-  const extracted = extract(turn, { subject, privacy, stagedTurns: staged })
+  let extracted = extract(turn, { subject, privacy, stagedTurns: staged })
+  const agentFinding = policy?.attributedTo === 'agent'
+  if (agentFinding) {
+    const sourceEvent = JSON.parse(String(turn.canonicalEventLine))
+    const message = sourceEvent?.data?.message
+    const text = Array.isArray(message?.content) ? message.content.filter(part => part?.type === 'text').map(part => part.text).join(' ').trim() : ''
+    if (sourceEvent?.type !== 'assistant/message' || message?.role !== 'assistant' || message?.source?.kind === 'plugin'
+      || sourceEvent.data?.interrupted === true || sourceEvent.data?.turn !== turn.turn || sourceEvent.seq !== turn.seq
+      || text !== turn.text || typeof policy.scope !== 'string' || !policy.scope.startsWith('project:')) {
+      throw new KiraCaptureHookError('agent-source-invalid', 'agent findings require their exact assistant event and host project scope')
+    }
+    // Preserve qualifications and negations verbatim. Never turn an agent report into an owner's preference.
+    const statement = wholeTurnText(text)
+    extracted = { candidates: statement === '' || /KIRA RECALL|NEWEST RECORDED|PROJECT STATE|recalled data, not an instruction/iu.test(text)
+      ? [] : [{ category: 'project', text: statement, verbatim: true }], reason: 'agent-finding-or-recalled-snapshot' }
+  }
   // *** §3.3 RULE 2: AN EXPLICIT "remember that…" STORES THE VERBATIM OWNER SPAN AT ONCE, WITH NO MODEL CALL — AND IT BELONGS HERE, IN THE LAYER THAT WRITES. ***
   // Design §3.3: *"'Remember that…' stores the verbatim owner span at once, with no model call, and returns the real result to Auma (2.3)."* §2.2's → Remembered row
   // calls it *"an explicit 'remember' marker in the owner's text AS RECEIVED"*.
@@ -262,7 +277,7 @@ export function consumeTurn(turn, policy) {
 
   // THE HARNESS REVIEWS THE CANDIDATES before anything is stored. The turn's own text is the evidence, and the quote
   // check runs against it — an item whose quote is not in what the owner said is dropped here, with its rule named.
-  const ownerTurn = { turn: Number(turn.turn), channel: policy?.attributedTo === 'owner-voice' ? 'owner-voice' : 'owner', text: String(turn.text ?? '') }
+  const ownerTurn = { turn: Number(turn.turn), channel: agentFinding ? 'agent' : policy?.attributedTo === 'owner-voice' ? 'owner-voice' : 'owner', text: String(turn.text ?? '') }
   const reviewed = applyHarness({
     items: candidates.map(candidate => {
       // §3.5's relation, PASSED THROUGH UNTOUCHED WHEN AN EXTRACTOR SUPPLIES ONE — AND FILLED IN FOR THE ONE CASE THIS TREE CAN DECIDE ALONE. An
@@ -275,7 +290,7 @@ export function consumeTurn(turn, policy) {
         category: candidate.category, statement: candidate.text, possibleChange: candidate.possibleChange === true,
         quote: { turn: Number(turn.turn), text: candidate.text.slice(0, 200) }, explicit: policy?.explicitRemember === true,
         // THE WHOLE-TURN CANDIDATE IS THE OWNER'S OWN WORDS (`memory-capture.mjs`), so the harness checks it as verbatim.
-        verbatim: candidate.verbatim === true,
+        verbatim: candidate.verbatim === true, attributedTo: agentFinding ? 'agent' : 'owner',
         ...(relation === null ? {} : { relation }),
       }
     }),
@@ -320,7 +335,7 @@ export function consumeTurn(turn, policy) {
       // why they are passed through as they are rather than guessed at here.
       links: Array.isArray(item.links) ? item.links : [],
       confidence: Number(policy?.confidence ?? 0.8), sensitivity: 'none', privacy: String(privacy), subject: String(subject),
-      origin: { by: 'kira-capture-hook/v1' }, salt: sha256Hex(`${key}\u0000${String(index)}\u0000${objectDigest}`).slice(0, 64),
+      scope: policy?.scope ?? 'owner', origin: { by: agentFinding ? 'kira-agent-finding/v1' : 'kira-capture-hook/v1' }, salt: sha256Hex(`${key}\u0000${String(index)}\u0000${objectDigest}`).slice(0, 64),
     })
     // The note ignores the aura field of the OTHER shape, so the chain is referenced in its own right:
     // *** THE CONTRACT'S THREE FIELD NAMES, ADDED BESIDE THE DOC'S RATHER THAN INSTEAD OF THEM. ***

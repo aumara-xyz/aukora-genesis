@@ -169,7 +169,11 @@ export function mergeReservedSlots({ ambient, governed, ceiling = 3, reserved = 
   const droppedGoverned = Math.max(0, gov.filter(h => !seen.has(String(h.id))).length)
   const droppedAmbient = Math.max(0, amb.filter(h => !seen.has(String(h.id))).length)
 
-  return { selected, wastedReserved, droppedGoverned, droppedAmbient }
+  return { selected, wastedReserved, droppedGoverned, droppedAmbient,
+    // Legacy wastedReserved counts reservations unused BY GOVERNED, even if ambient filled them.
+    unusedGoverned: wastedReserved, borrowedByAmbient: Math.min(wastedReserved, Math.max(0, takenAmb - (N - R))),
+    unfilledTotal: N - selected.length,
+  }
 }
 
 /**

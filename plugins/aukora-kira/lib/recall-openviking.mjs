@@ -20,6 +20,7 @@
  *
  * @module @aukora/dsh-plugin-kira/recall-openviking
  */
+import { contentWords } from './memory-harness.mjs'
 import { dirname } from 'node:path'
 import { readJsonStrict, readTextStrict, stateExists } from './strict-read.mjs'
 import { GOVERNED_RESERVED_SLOTS, SEMANTIC_WINDOW, eligibleByTier, mergeReservedSlots } from './reserved-slots.mjs'
@@ -304,8 +305,9 @@ export function createOpenVikingRecall(input) {
   const forget = id => inTurn(() => forgetNow(id))
 
   /** Ask OpenViking, then keep ONLY hits whose id the ledger holds, above the threshold and within the window of the best. */
-  const recall = async ({ question, live: ledger }) => {
-    const dropped = { unmapped: [], belowThreshold: 0 }
+  const recall = async ({ question, live: ledger, accept = () => true }) => {
+    const dropped = { unmapped: [], belowThreshold: 0, outsideWindow: 0, invalidScore: 0 }
+    const diagnostics = []
     // WHETHER THE MEMORY STORE COULD BE READ IS REPORTED ON EVERY PATH, including the paths where
     // OpenViking could not be reached at all. An unreachable INDEX and an unreadable LEDGER are
     // different faults, and a caller that cannot tell them apart treats an unreadable store as an
@@ -327,7 +329,7 @@ export function createOpenVikingRecall(input) {
     const live = ledgerShape(await ledgerNow(ledger))
     ledgerComplete = live.complete === true
     const candidates = []
-    for (const hit of [...(result?.memories ?? []), ...(result?.resources ?? [])]) {
+    for (const hit of [...(result?.memories ?? []), ...(result?.resources ?? [])].slice(0, Math.min(50, config.candidates))) {
       const id = idFromUri(config.user, hit?.uri)
       // THE LEDGER FILTER: an id the chained store does not hold is never shown, and is removed so it stops coming back.
       const note = id === null ? undefined : live.entries.get(id)
@@ -336,9 +338,23 @@ export function createOpenVikingRecall(input) {
         if (id !== null && live.complete === true) void forget(id)
         continue
       }
+      if (!accept(note)) continue // Scope/privacy exclusions are not stale index entries and must never be deleted.
       const score = Number(hit?.score)
-      if (!Number.isFinite(score) || score < config.scoreThreshold) { dropped.belowThreshold += 1; continue }
-      if (!candidates.some(one => one.id === id)) candidates.push({ id, score, note, tier: note.tier === 'signed' ? 'signed' : 'remembered' })
+      const tier = note.tier === 'signed' ? 'signed' : 'remembered'
+      if (!Number.isFinite(score)) { dropped.invalidScore += 1; diagnostics.push({ id, tier, score: null, reason: 'invalid-score' }); continue }
+      // Independent lexical evidence can rescue a weak embedding match. Two distinct
+      // content words, at least half the question, never retrieval frequency or tier.
+      const terms = [...new Set(contentWords(question))]
+      const words = new Set(contentWords(note.statement))
+      const overlap = terms.filter(term => words.has(term)).length
+      const lexical = score > 0 && overlap >= Math.max(2, Math.ceil(terms.length / 2))
+      if (score < config.scoreThreshold && !lexical) {
+        dropped.belowThreshold += 1
+        diagnostics.push({ id, tier, score, reason: 'below-threshold', lexicalOverlap: overlap })
+        continue
+      }
+      if (!candidates.some(one => one.id === id)) candidates.push({ id, score, note, tier,
+        relevance: score >= config.scoreThreshold ? 'semantic-threshold' : 'lexical-corroboration', lexicalOverlap: overlap })
     }
     candidates.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
     // A4: THE WINDOW IS MEASURED WITHIN A TIER, NOT FROM THE BEST SCORE OVERALL. Measured from the
@@ -346,19 +362,22 @@ export function createOpenVikingRecall(input) {
     // own was discarded because ambient text scored `window` higher — so its reserved slots stayed
     // empty and governed memory was reachable only by near-tying the best ambient match.
     const byTier = eligibleByTier(candidates, { threshold: config.scoreThreshold, window: config.window })
-    const eligible = [...byTier.ambient, ...byTier.governed]
-    dropped.belowThreshold += candidates.length - eligible.length
-    // Governance is a slot reservation, never a score multiplier. Both groups have
-    // already cleared the same threshold, and the window is each group's own.
-    const reserved = mergeReservedSlots({
-      ambient: byTier.ambient,
-      governed: byTier.governed,
-      ceiling: config.limit,
-      reserved: GOVERNED_RESERVED_SLOTS,
-    })
+    const preferred = new Set([...byTier.ambient, ...byTier.governed].map(one => one.id))
+    dropped.outsideWindow = candidates.filter(one => one.score >= config.scoreThreshold && !preferred.has(one.id)).length
+    // The window is a precision preference, not grounds to leave usable capacity empty.
+    // Governed still has first use of its reservation and may never exceed it.
+    const ordered = signed => candidates.filter(one => (one.tier === 'signed') === signed)
+      .sort((a, b) => Number(preferred.has(b.id)) - Number(preferred.has(a.id)) || b.score - a.score || a.id.localeCompare(b.id))
+    const reserved = mergeReservedSlots({ ambient: ordered(false), governed: ordered(true),
+      ceiling: config.limit, reserved: GOVERNED_RESERVED_SLOTS })
+    const selected = new Set(reserved.selected.map(one => one.id))
+    for (const one of candidates) diagnostics.push({ id: one.id, tier: one.tier, score: one.score,
+      reason: !selected.has(one.id) ? 'capacity' : one.relevance === 'lexical-corroboration' ? one.relevance
+        : preferred.has(one.id) ? 'semantic-threshold' : 'window-backfill', lexicalOverlap: one.lexicalOverlap })
+
     const byId = new Map(candidates.map(one => [one.id, one]))
     const hits = reserved.selected.map(slot => ({ ...byId.get(slot.id), slot: slot.slot }))
-    return { available: true, hits, dropped, reserved, sync: synced, ledgerComplete }
+    return { available: true, hits, dropped, reserved, diagnostics, threshold: config.scoreThreshold, window: config.window, sync: synced, ledgerComplete }
   }
 
   return Object.freeze({ configured, reason: configured ? undefined : config?.reason, available, sync, forget, recall })
@@ -371,13 +390,14 @@ export function createOpenVikingRecall(input) {
 export function semanticNotes(answer, chars = 600) {
   return Object.freeze({
     state: 'found', method: SEMANTIC_METHOD, grantsAuthority: false,
-    notes: answer.hits.map(({ id, score, note, slot }) => ({
+    notes: answer.hits.map(({ id, score, note, slot, relevance }) => ({
       id, text: String(note.statement).slice(0, chars), observedAt: note.observedAt ?? null, score,
-      tier: note.tier === 'signed' ? 'signed' : 'remembered', slot,
+      tier: note.tier === 'signed' ? 'signed' : 'remembered', slot, relevance, attributedTo: note.attributedTo, scope: note.scope,
       source: { sessionId: note.source?.sessionId ?? null, seq: note.source?.seq ?? null }, bodyAtCapture: note.bodyAtCapture ?? null,
       rememberedChain: { index: note.aura?.index ?? null, entryHash: note.aura?.entryHash ?? null },
     })),
     droppedUnmapped: answer.dropped.unmapped.length, droppedBelowThreshold: answer.dropped.belowThreshold,
+    outsideWindow: answer.dropped.outsideWindow, diagnostics: answer.diagnostics ?? [], threshold: answer.threshold, window: answer.window,
     ...(answer.reserved === undefined ? {} : { reserved: answer.reserved }),
     ...(answer.sync === undefined ? {} : { index: answer.sync }),
     ceiling: SEMANTIC_CEILING,

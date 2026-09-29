@@ -37,7 +37,9 @@ import { MAX_NOTES_PER_TURN, boundedNotes, consumeTurn } from './memory-capture-
 // THE SECRET SHAPES COME FROM THE ONE PLACE THEY ARE DEFINED, so the capture path and the compaction path cannot drift apart.
 import { FORBIDDEN_WINDOW_DIGESTS, SECRET_PATTERNS } from './compaction-export.mjs'
 import { appendJournalLine, durableWrite, ensureDirectory, readJsonStrict, readLinesIfPresent, withFileLock } from './strict-read.mjs'
-import { readLastUserMessage } from './session-read.mjs'
+import { readMemoryTurn, recentSessionHeaders } from './session-read.mjs'
+import { projectScopeOf } from './project-memory.mjs'
+import { CONTROLS, ownerControlIn } from './memory-forget.mjs'
 import { proposeMemoryPutThroughCell } from './wasm-proposal.mjs'
 import { MEMORY_PUT_PROPOSAL_WASM_SHA256 } from './wasm-cell/aukora/guest/wasm-proposal-cell.mjs'
 import { canonicalJSON } from './wasm-cell/aukora/kernel-seed/canonical-json.mjs'
@@ -109,13 +111,13 @@ export function registerRememberedCapture(ctx, options = {}) {
     if (!failed.has(key)) { failed.add(key); console.log(`[kira-capture] automatic memory FAILED: ${String(cause).slice(0, 240)}`) }
   }
 
-  return ctx.on('agent/turn-stopping', async payload => {
+  const capture = async (payload, recovery = false) => {
     try {
       setLaneDoorMessageIds(laneDoorMessageIds(laneDoorRoot))
       const sessionId = sessionIdOfAgent(payload?.agent)
       if (sessionId === null) return
-      const turn = Number.isInteger(payload?.turn) ? payload.turn : null
-      if (turn === null) return
+      let turn = Number.isInteger(payload?.turn) ? payload.turn : undefined
+      if (turn === undefined && !recovery) return
       // *** DEDUPED ON THE ASK, NOT ON THE TURN, AND THAT IS A MEASURED LIMIT RATHER THAN A CHOICE. *** The surface's
       // `user/message` disposition carries `['role', 'id', 'content', 'source']` and NO turn field, so a message cannot be
       // attributed to the turn that is stopping — `lastRealAsk`'s own docstring says so, and the sibling hook dedupes on the
@@ -123,22 +125,33 @@ export function registerRememberedCapture(ctx, options = {}) {
       // the session: a memory multiplier, and the worst kind, because each copy would carry a valid receipt.
       // THE RAW LOG'S TAIL (2026-09-27): this read the whole surface every turn (126 MB for the owner's session), then re-read the
       // ask with a decoder that saw only the first zstd frame, so no turn was remembered. An absent ask (a lane-door turn) is normal.
-      const read = readLastUserMessage({ stateRoot: sessionsRoot, sessionId })
-      if (read === null) return fail(`no session log under ${sessionsRoot}/sessions`)
-      if (read === undefined || !isRealAsk(read.event)) return
-      const { event, line } = read
-      const ask = eventText(event)
-      const seq = Number.isInteger(event.seq) ? event.seq : null
-      if (seq === null || ask === '') return
-      // *** ONE CAPTURE PER ASK EVENT, KEYED BY ITS SEQ, NOT BY ITS TEXT (2026-09-27, "remember everything"). *** An agent turn
-      // fires this hook many times per ask, so a key is needed; keyed by the TEXT, the owner saying "continue" twice in a row was
-      // remembered once. The event's own seq names the ask, so two asks with the same words are two turns.
-      // MARKED ONLY AFTER THE WRITE, so a failed capture is retried; the journal's `turn` anchor keeps it once.
-      if (seenTurns.get(sessionId) === seq) return
-      // AN ASK OLDER THAN THIS PROCESS gets `null` (UNKNOWN): this body is never pinned to a message it did not see.
-      const bodyAtCapture = event.time >= bootedAt ? bodyNow() : null
-
+      const readTurn = readMemoryTurn({ stateRoot: sessionsRoot, sessionId, turn, beforeSeq: recovery ? payload.beforeSeq : undefined, ...(recovery ? { maxBytes: 2 * 1024 * 1024 } : {}) })
+      if (readTurn === null) return fail(`no session log under ${sessionsRoot}/sessions`)
+      if (!readTurn.ask) return
+      turn = readTurn.turn ?? turn
+      if (!Number.isInteger(turn)) return { previousSeq: readTurn.ask.event.seq, count: 0 }
+      const control = ownerControlIn(eventText(readTurn.ask.event))
+      if (control !== null && CONTROLS[control]?.stopsCapture) return
+      const scope = projectScopeOf(payload.agent)
+      const sources = [
+        ...(!recovery && isRealAsk(readTurn.ask.event) ? [readTurn.ask] : []),
+        ...(scope === null ? [] : readTurn.findings),
+      ]
       const policy = await policyOf()
+      if (policy?.privacy !== 'local' || policy?.offTheRecord === true
+        || Object.entries(CONTROLS).some(([name, effect]) => policy?.controls?.[name] === true && effect.stopsCapture)) return
+      let remaining = MAX_NOTES_PER_TURN
+      for (const read of sources) {
+      const { event, line } = read
+      const agentFinding = event.type === 'assistant/message'
+      const ask = agentFinding ? event.data.message.content.filter(part => part?.type === 'text').map(part => part.text).join(' ').trim() : eventText(event)
+      const seq = Number.isInteger(event.seq) ? event.seq : null
+      if (seq === null || ask === '' || remaining <= 0) continue
+      const seenKey = `${sessionId}:${seq}`
+      if (seenTurns.has(seenKey)) continue
+      // AN ASK OLDER THAN THIS PROCESS gets `null` (UNKNOWN): this body is never pinned to a message it did not see.
+      const bodyAtCapture = !recovery && event.time >= bootedAt ? bodyNow() : null
+
       // THE EVENT'S OWN TIME, because that is the canonical record: the surface event carries `{type, seq, time, data}` and its
       // `time` is what the receipt's `at` must say. The first version took the time from the boundary's read, which answered a
       // different clock and made the note disagree with the line it came from.
@@ -169,7 +182,7 @@ export function registerRememberedCapture(ctx, options = {}) {
         const auraIndex = readLinesIfPresent(auraFile).length
         const captured = consumeTurn(
           { sessionId, sessionTitle: 'auma', seq, at, turn, text: ask, canonicalEventLine: line },
-          { subject: String(policy?.subject ?? ''), privacy: String(policy?.privacy ?? 'local'), observedAt: at, auraIndex, validFrom: at.slice(0, 10), forbidden: FORBIDDEN_WINDOW_DIGESTS, secretPatterns: SECRET_PATTERNS },
+          { ...policy, attributedTo: agentFinding ? 'agent' : 'owner', scope: scope ?? 'owner', subject: String(policy?.subject ?? ''), privacy: 'local', observedAt: at, auraIndex, validFrom: at.slice(0, 10), forbidden: FORBIDDEN_WINDOW_DIGESTS, secretPatterns: SECRET_PATTERNS },
         )
         // *** A DROPPED CANDIDATE SAYS WHY, AND NEVER SAYS WHAT. *** The bare 64-hex pattern drops notes that quote a digest,
         // which is the right trade (a false positive costs a record; a leaked key costs everything) — but a silent drop cannot be told
@@ -179,7 +192,7 @@ export function registerRememberedCapture(ctx, options = {}) {
           logger?.warn?.(`aukora-kira: a candidate was not remembered (${String(drop.rule)}): statement sha256 ${sha256Hex(String(drop.statement ?? '')).slice(0, 16)}… — the text is deliberately not logged`)
         }
         // THE BOUND AND ITS REPORT COME FROM ONE PLACE, so the court that drives them drives what RUNS.
-        const notes = boundedNotes(captured.notes, { logger }).map(note => {
+        const notes = boundedNotes(captured.notes, { logger, cap: remaining }).map(note => {
           // The complete note carries statement/text, subject, category and provenance
           // as the value of the closed memory.put pair. Keep an independent binding
           // before entering the cell; persist only the host-validated snapshot.
@@ -243,14 +256,45 @@ export function registerRememberedCapture(ctx, options = {}) {
         for (const append of plan.appends) appendJournalLine({ file: append.file, line: append.line })
         return notes
       })
-      seenTurns.set(sessionId, seq)
-      if (remembered.length === 0) return
+      if (seenTurns.size >= 2048) seenTurns.delete(seenTurns.keys().next().value)
+      seenTurns.set(seenKey, seq)
+      remaining -= remembered.length
+      if (remembered.length === 0) continue
       // REPORTED, NOT SILENT: a reader of the log can see what was remembered and how many, which is the only way to notice a
       // capture path that has quietly stopped producing notes.
       options.onRemembered?.({ sessionId, turn, seq, remembered: remembered.length, ids: remembered.map(note => note.id) })
+      }
+      return { previousSeq: readTurn.ask.event.seq, count: MAX_NOTES_PER_TURN - remaining }
     } catch (error) {
       // THE ONLY OUTLET. A capture fault costs a record; it must never cost the turn.
       fail(error?.code ?? error?.message ?? String(error))
     }
+  }
+  const stop = ctx.on('agent/turn-stopping', capture)
+  const recovered = new Set()
+  // One bounded bootstrap per project in this process. Capture owns the writes;
+  // injection and the read owner still have no write capability. Old assistant
+  // reports retain their original receipts, observation times and unknown body.
+  const created = ctx.on('agent/created', async ({ agent }) => {
+    const scope = projectScopeOf(agent)
+    if (scope === null || recovered.has(scope)) return
+    recovered.add(scope)
+    try {
+      const headers = recentSessionHeaders(sessionsRoot).filter(header => header.id !== sessionIdOfAgent(agent)
+        && projectScopeOf({ session: { header } }) === scope).slice(0, 8)
+      let count = 0
+      for (const header of headers) {
+        let beforeSeq
+        // The latest ask may be unanswered; walk up to eight prior asks, never a
+        // whole transcript. Source receipts and capture filters are unchanged.
+        for (let round = 0; round < 8 && count < 24; round += 1) {
+          const result = await capture({ agent: { session: { id: header.id, header } }, beforeSeq }, true)
+          if (!result || !Number.isInteger(result.previousSeq)) break
+          beforeSeq = result.previousSeq
+          count += result.count
+        }
+      }
+    } catch (error) { fail(error?.code ?? error?.message ?? String(error)) }
   })
+  return () => { stop?.(); created?.() }
 }

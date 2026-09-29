@@ -16,7 +16,7 @@
  *
  * @module @aukora/dsh-plugin-kira/session-read
  */
-import { closeSync, fstatSync, openSync, readFileSync, readSync, readdirSync } from 'node:fs'
+import { closeSync, fstatSync, openSync, readFileSync, readSync, readdirSync, lstatSync } from 'node:fs'
 import { zstdDecompressSync } from 'node:zlib'
 
 import { MAX_ARTIFACT_BYTES } from './strict-read.mjs'
@@ -242,15 +242,17 @@ function frameStarts(fd, file) {
   return scan
 }
 
-function* frameTexts(file, reverse = false) {
+function* frameTexts(file, reverse = false, maxBytes = MAX_TAIL_BYTES) {
   const fd = openSync(file, 'r')
   try {
     const { starts, end } = frameStarts(fd, file)
     for (let n = 0; n < starts.length; n += 1) {
       const at = reverse ? starts.length - 1 - n : n
-      const bytes = Buffer.alloc((starts[at + 1] ?? end) - starts[at])
+      const size = (starts[at + 1] ?? end) - starts[at]
+      if (size > maxBytes) throw new Error('kira.read:session-frame-limit')
+      const bytes = Buffer.alloc(size)
       readSync(fd, bytes, 0, bytes.length, starts[at])
-      yield zstdDecompressSync(bytes).toString('utf8')
+      yield zstdDecompressSync(bytes, { maxOutputLength: maxBytes }).toString('utf8')
     }
   } finally {
     closeSync(fd)
@@ -280,6 +282,40 @@ export function readLastUserMessage({ stateRoot, sessionId, maxBytes = MAX_TAIL_
 }
 
 
+/** Bounded tail of the stopping turn. Only committed assistant text and the actual
+ * preceding user event are eligible; plugin snapshots and tool results are never findings. */
+export function readMemoryTurn({ stateRoot, sessionId, turn, beforeSeq = Infinity, maxBytes = MAX_TAIL_BYTES }) {
+  const file = findSessionFile({ stateRoot, sessionId })
+  if (file === null) return null
+  const findings = []
+  let selectedTurn = turn
+  let scanned = 0
+  for (const text of frameTexts(file, true, maxBytes)) {
+    scanned += Buffer.byteLength(text)
+    if (scanned > maxBytes) throw new Error('kira.read:memory-turn-tail-limit')
+    for (const line of text.split('\n').reverse()) {
+      let event
+      try { event = JSON.parse(line) } catch { continue }
+      if (Number.isInteger(event?.seq) && event.seq >= beforeSeq) continue
+      if (event?.type === 'user/message' && event?.data?.source?.kind === 'user') {
+        return { ask: { event, line }, findings: findings.reverse(), turn: selectedTurn }
+      }
+      if (event?.type !== 'assistant/message' || event.data?.interrupted === true) continue
+      if (selectedTurn === undefined && Number.isInteger(event.data?.turn)) selectedTurn = event.data.turn
+      if (event.data?.turn !== selectedTurn) continue
+      const message = event.data?.message
+      if (message?.role !== 'assistant' || message?.source?.kind === 'plugin') continue
+      const content = message.content
+      if (!Array.isArray(content) || !content.some(part => part?.type === 'text' && part.text?.trim())) continue
+      // Tool requests, reasoning and failed attempts are not reports of what was found.
+      if (content.some(part => part?.type === 'tool-call')) continue
+      if (findings.length < 3) findings.push({ event, line })
+    }
+  }
+  return { ask: null, findings: [] } // Without an ask the owner's capture controls cannot be checked.
+}
+
+
 /**
  * ONE event through the streaming reader — the path a verifier uses, bounded because it stops at what it was asked for
  * rather than reading a whole conversation to find one line.
@@ -297,4 +333,37 @@ export function readSessionEvent({ stateRoot, sessionId, seq, decompress }) {
   const events = readSessionEvents({ stateRoot, sessionId, decompress })
   if (events === null) return null
   return events.find(one => one.seq === seq)
+}
+
+
+/** Discovery reads only canonical session headers under the configured home.
+ * Newest 64 files, at most 64 KiB per header; callers further restrict project identity. */
+export function recentSessionHeaders(stateRoot, limit = 64) {
+  const root = `${stateRoot}/sessions`
+  const files = []
+  let projects
+  try { projects = readdirSync(root, { withFileTypes: true }) } catch { return [] }
+  for (const project of projects.filter(one => one.isDirectory()).slice(0, 256)) {
+    const dir = `${root}/${project.name}`
+    for (const session of readdirSync(dir, { withFileTypes: true }).filter(one => one.isDirectory())) {
+      for (const name of ['session.v3.jsonl.zstd', 'session.jsonl.zstd']) {
+        const file = `${dir}/${session.name}/${name}`
+        try {
+          const stat = lstatSync(file)
+          if (stat.isFile()) { files.push({ file, mtime: stat.mtimeMs, id: session.name }); break }
+        } catch { /* No canonical log in this directory. */ }
+      }
+    }
+  }
+  const headers = []
+  for (const { file, id } of files.sort((a, b) => b.mtime - a.mtime).slice(0, limit)) {
+    try {
+      for (const text of frameTexts(file, false, 64 * 1024)) {
+        const header = JSON.parse(text.split('\n')[0])
+        if (header?.type === 'session' && header.id === id && typeof header.cwd === 'string') headers.push(header)
+        break
+      }
+    } catch { /* An unreadable header is not a project identity. */ }
+  }
+  return headers
 }

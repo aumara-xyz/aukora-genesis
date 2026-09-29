@@ -409,7 +409,7 @@ export function recomputeRecordId(record) {
 export const NOTE_VERSION = 1
 
 /** Who the note is attributed to (design §3.6). A closed set: a new value needs a new format version. */
-export const ATTRIBUTIONS = Object.freeze(['owner', 'owner-voice', 'owner-edit', 'backfill', 'lane-requester', 'dream'])
+export const ATTRIBUTIONS = Object.freeze(['owner', 'owner-voice', 'owner-edit', 'backfill', 'lane-requester', 'dream', 'agent'])
 
 /** The sensitivity ladder the design names. */
 export const SENSITIVITIES = Object.freeze(['none', 'health', 'financial', 'intimate'])

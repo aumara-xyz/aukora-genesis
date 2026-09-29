@@ -483,7 +483,7 @@ export function buildRouteDeps(input) {
       if (chained.get(id) !== note.aura?.entryHash) { unchained += 1; continue }
       notes.push({ ...note, tier: 'remembered' })
     }
-    return { notes, unreadable, unchained }
+    return { notes, states: hiddenStates, unreadable, unchained }
   }
 
   /** The `queue-backup-*` directories `scripts/kira/migrate-queue.mjs --apply` sets aside beside the store. */
