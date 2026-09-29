@@ -24,6 +24,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import './noble-map.mjs' // resolves the box's @noble/* to this repository's committed closure
 
 const names = [
   'no grant (memory.put)', 'expired grant (memory.put)',
@@ -98,6 +99,7 @@ if (startupFailure !== null) {
   // sealed box. The ordinary run above imports the original modules unchanged.
   // Require the PARTICULAR arm to go red: unrelated blocked arms cannot count
   // as a killed mutation merely because they already make the child exit 1.
+  const nobleMap = fileURLToPath(new URL('./noble-map.mjs', import.meta.url))
   const removals = [
     ['broker/broker.mjs',
       "if (grant === undefined || grant === null) return { ok: false, state: 'REFUSED', reason: REFUSE.NO_GRANT }", ''],
@@ -135,7 +137,7 @@ if (startupFailure !== null) {
       delete env.NODE_OPTIONS
       delete env.NODE_PATH
       const child = spawnSync(process.execPath,
-        ['--import', hookFile, fileURLToPath(import.meta.url), '--guard-removal-probe'],
+        ['--import', nobleMap, '--import', hookFile, fileURLToPath(import.meta.url), '--guard-removal-probe'],
         { cwd: root, env, encoding: 'utf8', timeout: 20_000 })
       assert.equal(child.error, undefined, `guard-removal child failed to run: ${child.error?.code}`)
       assert.equal(child.status, 1, 'guard-removal child did not fail')
@@ -476,7 +478,7 @@ if (startupFailure !== null) {
         delete env.NODE_OPTIONS
         delete env.NODE_PATH
         const child = spawnSync(process.execPath,
-          ['--import', hookFile, fileURLToPath(import.meta.url)],
+          ['--import', nobleMap, '--import', hookFile, fileURLToPath(import.meta.url)],
           { cwd: root, env, encoding: 'utf8', timeout: 15_000 })
         assert.equal(child.error, undefined, `dependency probe did not run: ${child.error?.code}`)
         assert.equal(child.status, 1, `${packageName}: missing dependency did not fail`)
