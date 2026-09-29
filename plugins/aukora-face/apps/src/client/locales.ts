@@ -2,6 +2,9 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'room.name': '房间',
+  'room.message': '房间消息',
+  'room.sendFailed': '发送失败，消息已保留。按回车重试。',
   'language.name': 'Auma · Lingwa',
   'language.menu': '学习她的语言——一场由她长成的游戏',
   'language.eyebrow': 'LINGWA DI LUMO · 光之语言',
@@ -46,6 +49,9 @@ export type StockAppsKey = keyof typeof zh
 
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
+  'room.name': 'Room',
+  'room.message': 'Room message',
+  'room.sendFailed': 'Send failed; message retained. Press Enter to retry.',
   'language.name': 'Auma · Lingwa',
   'language.menu': 'learn her language — a game she grew',
   'language.eyebrow': 'LINGWA DI LUMO · THE LANGUAGE OF LIGHT',

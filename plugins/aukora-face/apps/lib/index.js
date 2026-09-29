@@ -3,11 +3,12 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { readFile, readdir, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { accessSync, appendFileSync, chmodSync, closeSync, constants, existsSync, fchmodSync, fstatSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync, writeSync } from "node:fs";
+import { homedir } from "node:os";
+import { setTimeout as setTimeout$1 } from "node:timers/promises";
 import { credentialRef } from "@deepseek-ai/dsh-credentials";
 import { SessionId } from "@deepseek-ai/dsh-session";
-import { accessSync, appendFileSync, chmodSync, closeSync, constants, existsSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync, writeSync } from "node:fs";
 import { once } from "node:events";
-import { homedir } from "node:os";
 import { extractSessionEventText } from "@deepseek-ai/dsh-session-query";
 import { execFile } from "node:child_process";
 import WebSocket, { WebSocketServer } from "ws";
@@ -167,6 +168,259 @@ function createEmbeddedAssetHandlers(serveStatic) {
 		}
 	};
 }
+//#endregion
+//#region lib/types/room.js
+const MAX_BYTES = 16384;
+const SPEAKERS = new Set([
+	"PETER",
+	"AUMA",
+	"CLAUDE",
+	"CODEX-DESKTOP",
+	"AUMA-CODEX",
+	"GROK"
+]);
+var RoomError = class extends Error {
+	status;
+	constructor(status, message) {
+		super(message);
+		this.status = status;
+	}
+};
+function code(error) {
+	return error?.code;
+}
+/** Keep the owning fd open until release so its inode cannot be recycled underneath this identity. */
+function removeLock(lock, owner, contents) {
+	const matches = (path) => {
+		const fd = openSync(path, "r");
+		try {
+			const found = fstatSync(fd, { bigint: true });
+			return found.dev === owner.dev && found.ino === owner.ino && (contents === void 0 || readFileSync(fd, "utf8") === contents);
+		} finally {
+			closeSync(fd);
+		}
+	};
+	try {
+		if (!matches(lock)) return;
+		const tomb = `${lock}.stale.${process.pid}:${randomBytes(8).toString("hex")}`;
+		renameSync(lock, tomb);
+		let ours = false;
+		try {
+			ours = matches(tomb);
+		} finally {
+			if (!ours) try {
+				linkSync(tomb, lock);
+			} catch (error) {
+				if (code(error) !== "EEXIST") throw error;
+			}
+			unlinkSync(tomb);
+		}
+	} catch (error) {
+		if (code(error) !== "ENOENT") throw error;
+	}
+}
+function writeAll(fd, bytes) {
+	for (let offset = 0; offset < bytes.length;) {
+		const written = writeSync(fd, bytes, offset, bytes.length - offset);
+		if (written === 0) throw new Error("short-room-write");
+		offset += written;
+	}
+}
+function json(res, status, body) {
+	res.writeHead(status, {
+		"content-type": "application/json; charset=utf-8",
+		"cache-control": "no-store"
+	});
+	res.end(JSON.stringify(body));
+}
+function bodyOf(req) {
+	return new Promise((resolve, reject) => {
+		const chunks = [];
+		let size = 0;
+		const cleanup = () => {
+			req.off("data", data).off("end", end).off("error", failed).off("aborted", failed);
+		};
+		const failed = () => {
+			cleanup();
+			reject(new RoomError(400, "invalid-body"));
+		};
+		const data = (chunk) => {
+			size += chunk.length;
+			if (size > MAX_BYTES) {
+				cleanup();
+				req.resume();
+				reject(new RoomError(413, "message-too-large"));
+			} else chunks.push(chunk);
+		};
+		const end = () => {
+			cleanup();
+			try {
+				resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
+			} catch {
+				reject(new RoomError(400, "invalid-body"));
+			}
+		};
+		req.on("data", data).on("end", end).on("error", failed).on("aborted", failed);
+	});
+}
+function localISO(date) {
+	const offset = -date.getTimezoneOffset();
+	const local = new Date(date.getTime() + offset * 6e4).toISOString().slice(0, -1);
+	const pad = (n) => String(n).padStart(2, "0");
+	return `${local}${offset < 0 ? "-" : "+"}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`;
+}
+/** In-process room I/O. Both handlers are registered behind the host's requestRejection gate. */
+var RoomHttp = class {
+	room;
+	constructor(roomLogPath = "~/aukora-live/room.log") {
+		this.room = roomLogPath.startsWith("~/") ? join(homedir(), roomLogPath.slice(2)) : roomLogPath;
+	}
+	async acquire() {
+		const lock = `${this.room}.lock`;
+		const deadline = Date.now() + 5e3;
+		while (true) {
+			if (Date.now() >= deadline) throw new RoomError(503, "room-busy");
+			let fd;
+			try {
+				fd = openSync(lock, "wx", 384);
+			} catch (error) {
+				if (code(error) !== "EEXIST") throw error;
+				let held;
+				try {
+					held = openSync(lock, "r");
+					const owner = fstatSync(held, { bigint: true });
+					const contents = readFileSync(held, "utf8");
+					const holder = Number(contents.trim().split(":")[0]);
+					if (Number.isSafeInteger(holder) && holder > 0 && holder <= 2147483647) try {
+						process.kill(holder, 0);
+					} catch (probe) {
+						if (code(probe) === "ESRCH") removeLock(lock, owner, contents);
+					}
+				} catch {} finally {
+					if (held !== void 0) closeSync(held);
+				}
+				await setTimeout$1(20);
+				continue;
+			}
+			let owner;
+			try {
+				owner = fstatSync(fd, { bigint: true });
+				writeAll(fd, Buffer.from(String(process.pid)));
+				return {
+					fd,
+					owner
+				};
+			} catch (error) {
+				try {
+					if (owner) removeLock(lock, owner);
+				} finally {
+					closeSync(fd);
+				}
+				throw error;
+			}
+		}
+	}
+	async append(record) {
+		const line = Buffer.from(`${JSON.stringify(record)}\n`);
+		const held = await this.acquire();
+		try {
+			const fd = openSync(this.room, "a", 384);
+			try {
+				writeAll(fd, line);
+				fsyncSync(fd);
+			} finally {
+				closeSync(fd);
+			}
+		} finally {
+			try {
+				try {
+					removeLock(`${this.room}.lock`, held.owner);
+				} finally {
+					closeSync(held.fd);
+				}
+			} catch {}
+		}
+	}
+	recent = async (req, res) => {
+		if (req.method !== "GET") {
+			res.setHeader("allow", "GET");
+			json(res, 405, { error: "method-not-allowed" });
+			return;
+		}
+		try {
+			const afterText = new URL(req.url ?? "/", "http://localhost").searchParams.get("after");
+			const after = afterText === null ? -1 : Number(afterText);
+			if (afterText !== null && (!/^(?:-1|0|[1-9]\d*)$/.test(afterText) || !Number.isSafeInteger(after))) throw new RoomError(400, "invalid-cursor");
+			let data;
+			try {
+				data = await readFile(this.room, "utf8");
+			} catch (error) {
+				if (code(error) !== "ENOENT") throw error;
+				data = "";
+			}
+			const complete = data.slice(0, data.lastIndexOf("\n") + 1);
+			const lines = complete === "" ? [] : complete.slice(0, -1).split("\n");
+			const cursor = lines.length - 1;
+			const reset = after > cursor;
+			const messages = [];
+			for (let index = reset ? 0 : after + 1; index < lines.length; index++) {
+				let row;
+				try {
+					row = JSON.parse(lines[index]);
+				} catch {
+					continue;
+				}
+				if (row === null || typeof row !== "object" || "ack" in row) continue;
+				const record = row;
+				if (typeof record.id !== "string" || typeof record.at !== "string" || typeof record.from !== "string" || !SPEAKERS.has(record.from) || typeof record.msg !== "string") continue;
+				messages.push({
+					index,
+					id: record.id,
+					at: record.at,
+					from: record.from,
+					msg: record.msg
+				});
+				if (messages.length > 300) messages.shift();
+			}
+			json(res, 200, {
+				messages,
+				cursor,
+				reset
+			});
+		} catch (error) {
+			this.failure(res, error);
+		}
+	};
+	post = async (req, res) => {
+		if (req.method !== "POST") {
+			res.setHeader("allow", "POST");
+			json(res, 405, { error: "method-not-allowed" });
+			return;
+		}
+		try {
+			const body = await bodyOf(req);
+			const msg = body !== null && typeof body === "object" ? body.msg : void 0;
+			if (typeof msg !== "string" || msg.trim().length === 0) throw new RoomError(400, "invalid-message");
+			if (Buffer.byteLength(msg) > MAX_BYTES) throw new RoomError(413, "message-too-large");
+			const now = /* @__PURE__ */ new Date();
+			const record = {
+				id: `PETER-${now.getTime()}-${randomBytes(2).toString("hex")}`,
+				at: localISO(now),
+				from: "PETER",
+				to: "ALL",
+				msg,
+				origin: "aukora-room-app"
+			};
+			await this.append(record);
+			json(res, 201, { id: record.id });
+		} catch (error) {
+			this.failure(res, error);
+		}
+	};
+	failure(res, error) {
+		json(res, error instanceof RoomError ? error.status : 503, { error: error instanceof RoomError ? error.message : "room-unavailable" });
+	}
+};
 //#endregion
 //#region lib/types/auma-live/presence-deps.js
 /**
@@ -6849,6 +7103,7 @@ const inject = [
 	"subprocess"
 ];
 const Config = z.object({
+	roomLogPath: z.string().default("~/aukora-live/room.log"),
 	apiKeyEnv: z.string().role("credential-ref").default("OPENROUTER_API_KEY"),
 	maxRequestBodyBytes: z.natural().min(1).default(16 * 1024),
 	voicePort: z.natural().min(1).max(65535).default(7512),
@@ -7273,7 +7528,18 @@ async function apply(ctx, config) {
 			...config.privateMindRunsOn.length === 0 ? {} : { runsOn: config.privateMindRunsOn }
 		} } }
 	});
+	const roomHttp = new RoomHttp(config.roomLogPath);
 	const routes = [
+		{
+			kind: "exact",
+			path: "/api/room/recent",
+			handler: roomHttp.recent
+		},
+		{
+			kind: "exact",
+			path: "/api/room/message",
+			handler: roomHttp.post
+		},
 		{
 			kind: "prefix",
 			path: "/app",

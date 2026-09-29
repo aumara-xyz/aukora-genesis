@@ -2,9 +2,9 @@
 import type { StockAppMenuProps } from './contract.ts'
 import css from './StockApps.module.css'
 
-export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas'
+export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room'
 
-type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas'
+type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'room'
 
 interface MenuSpec {
   id: StockAppId
@@ -17,12 +17,14 @@ const AUMA_LANGUAGE_APP = { id: 'auma-language', copy: 'language', presentation:
 const AUMA_LIVE_APP = { id: 'auma-live', copy: 'live', presentation: 'full-bleed' } as const
 const ZETA_HARP_APP = { id: 'zeta-harp', copy: 'harp', presentation: 'full-bleed' } as const
 const AUMA_CANVAS_APP = { id: 'auma-canvas', copy: 'canvas', presentation: 'full-bleed' } as const
+const ROOM_APP = { id: 'room', copy: 'room', presentation: 'contained' } as const
 
 export const STOCK_APPS = [
   AUMA_LANGUAGE_APP,
   AUMA_LIVE_APP,
   ZETA_HARP_APP,
   AUMA_CANVAS_APP,
+  ROOM_APP,
 ] as const satisfies readonly MenuSpec[]
 
 function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps & { spec: MenuSpec }) {
@@ -36,7 +38,7 @@ function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps
     >
       <span className={css.menuCopy}>
         <strong>{t(`${spec.copy}.name`)}</strong>
-        <span>{t(`${spec.copy}.menu`)}</span>
+        {spec.copy !== 'room' && <span>{t(`${spec.copy}.menu`)}</span>}
       </span>
     </button>
   )
@@ -60,4 +62,9 @@ export function ZetaHarpMenu(props: StockAppMenuProps) {
 /** Render the Auma Canvas prototype launcher. */
 export function AumaCanvasMenu(props: StockAppMenuProps) {
   return <StockAppMenu {...props} spec={AUMA_CANVAS_APP} />
+}
+
+/** Render the Room launcher without a subtitle. */
+export function RoomMenu(props: StockAppMenuProps) {
+  return <StockAppMenu {...props} spec={ROOM_APP} />
 }

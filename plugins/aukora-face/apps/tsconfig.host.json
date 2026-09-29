@@ -6,6 +6,8 @@
     "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
   },
   "files": [
+    "src/room.ts",
+    "src/room-types.ts",
     "src/auma-canvas/projection.ts",
     "src/auma-canvas/types.ts",
     "src/auma-canvas-tool.ts",

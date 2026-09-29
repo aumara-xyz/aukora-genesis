@@ -6,7 +6,7 @@ import css from './StockApps.module.css'
 // Escape inside a text-entry control edits that control, never the surface.
 // Duck-typed so targets from the same-origin iframe document (a different
 // realm, where instanceof HTMLElement fails) classify identically.
-function isEditableTarget(target: EventTarget | null): boolean {
+export function isEditableTarget(target: EventTarget | null): boolean {
   const el = target as { tagName?: unknown; isContentEditable?: unknown } | null
   const tag = typeof el?.tagName === 'string' ? el.tagName : ''
   return el?.isContentEditable === true || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'

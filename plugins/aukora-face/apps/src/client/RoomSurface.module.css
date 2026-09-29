@@ -1,0 +1,92 @@
+.room {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  gap: 12px;
+  padding: 16px;
+  color: var(--dsw-alias-label-primary);
+  font-family: var(--dsw-font-family);
+}
+
+.messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: 12px;
+  overflow-y: auto;
+  overflow-anchor: none;
+  padding: 4px 8px;
+}
+
+.message {
+  --speaker-color: var(--dsw-alias-label-primary);
+  align-self: flex-start;
+  max-width: min(525px, 82%);
+  min-width: 0;
+}
+
+.message[data-speaker='PETER'] { --speaker-color: var(--dsw-static-spatial-blue); align-self: flex-end; }
+.message[data-speaker='AUMA'] { --speaker-color: var(--dsw-static-spatial-violet); }
+.message[data-speaker='CLAUDE'] { --speaker-color: var(--dsw-static-spatial-gold); }
+.message[data-speaker='CODEX-DESKTOP'] { --speaker-color: var(--dsw-static-spatial-mint); }
+.message[data-speaker='AUMA-CODEX'] { --speaker-color: var(--dsw-static-amber-400); }
+.message[data-speaker='GROK'] { --speaker-color: var(--dsw-static-red-400); }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 16px 4px;
+  color: var(--speaker-color);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.meta time {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 11px;
+}
+
+.message[data-speaker='PETER'] .meta { justify-content: flex-end; }
+
+.bubble {
+  padding: 10px 16px;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--speaker-color) 8%, transparent);
+  font-size: 16px;
+  line-height: 24px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.message[data-speaker='PETER'] .bubble { background: var(--dsw-specific-bubble); }
+
+.composer {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
+  border-radius: 22px;
+  background: var(--dsw-specific-input-major);
+  box-shadow: var(--dsw-shadow-lv2);
+}
+
+.composer textarea {
+  min-height: 24px;
+  max-height: 120px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 16px;
+  line-height: 24px;
+  resize: none;
+  outline: none;
+}

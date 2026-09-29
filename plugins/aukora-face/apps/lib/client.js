@@ -7,19 +7,19 @@ window.__ModuleLoader__.load({
 		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		//#region \0dsh-css:StockApps.module.css.mjs
-		const css = ".NQINWW_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.NQINWW_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.NQINWW_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.NQINWW_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.NQINWW_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.NQINWW_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
-		const tagId = "@aukora/face-apps/StockApps.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+		const css$1 = ".vQN9ya_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.vQN9ya_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.vQN9ya_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.vQN9ya_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.vQN9ya_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.vQN9ya_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
+		const tagId$1 = "@aukora/face-apps/StockApps.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@aukora/face-apps";
-			tag.dataset.pluginCss = tagId;
-			tag.textContent = css;
+			tag.dataset.pluginCss = tagId$1;
+			tag.textContent = css$1;
 			document.head.appendChild(tag);
 		}
 		var StockApps_module_css_default = {
-			"embeddedFrame": "NQINWW_embeddedFrame",
-			"menuCopy": "NQINWW_menuCopy",
-			"surfaceSeat": "NQINWW_surfaceSeat"
+			"embeddedFrame": "vQN9ya_embeddedFrame",
+			"menuCopy": "vQN9ya_menuCopy",
+			"surfaceSeat": "vQN9ya_surfaceSeat"
 		};
 		//#endregion
 		//#region src/client/EmbeddedAppSurface.tsx
@@ -288,6 +288,202 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
+		//#region \0dsh-css:RoomSurface.module.css.mjs
+		const css = ".z6LR1q_room{box-sizing:border-box;color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.z6LR1q_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.z6LR1q_message{--speaker-color:var(--dsw-alias-label-primary);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.z6LR1q_message[data-speaker=PETER]{--speaker-color:var(--dsw-static-spatial-blue);align-self:flex-end}.z6LR1q_message[data-speaker=AUMA]{--speaker-color:var(--dsw-static-spatial-violet)}.z6LR1q_message[data-speaker=CLAUDE]{--speaker-color:var(--dsw-static-spatial-gold)}.z6LR1q_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--dsw-static-spatial-mint)}.z6LR1q_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--dsw-static-amber-400)}.z6LR1q_message[data-speaker=GROK]{--speaker-color:var(--dsw-static-red-400)}.z6LR1q_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.z6LR1q_meta time{color:var(--dsw-alias-label-tertiary);font-size:11px}.z6LR1q_message[data-speaker=PETER] .z6LR1q_meta{justify-content:flex-end}.z6LR1q_bubble{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--speaker-color) 8%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;border-radius:22px;padding:10px 16px;font-size:16px;line-height:24px}.z6LR1q_message[data-speaker=PETER] .z6LR1q_bubble{background:var(--dsw-specific-bubble)}.z6LR1q_composer{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2-darkmode-thin);background:var(--dsw-specific-input-major);width:100%;box-shadow:var(--dsw-shadow-lv2);border-radius:22px;flex-direction:column;flex:none;padding:12px 12px 10px;display:flex}.z6LR1q_composer textarea{min-height:24px;max-height:120px;color:var(--dsw-alias-label-primary);font:inherit;resize:none;background:0 0;border:0;outline:none;padding:0 4px;font-size:16px;line-height:24px}";
+		const tagId = "@aukora/face-apps/RoomSurface.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@aukora/face-apps";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var RoomSurface_module_css_default = {
+			"bubble": "z6LR1q_bubble",
+			"composer": "z6LR1q_composer",
+			"message": "z6LR1q_message",
+			"messages": "z6LR1q_messages",
+			"meta": "z6LR1q_meta",
+			"room": "z6LR1q_room"
+		};
+		//#endregion
+		//#region src/client/RoomSurface.tsx
+		function atBottom(element) {
+			return element.scrollHeight - element.clientHeight - element.scrollTop <= 24;
+		}
+		function timeOf(at) {
+			const date = new Date(at);
+			return Number.isNaN(date.getTime()) ? "" : date.toLocaleTimeString([], {
+				hour: "2-digit",
+				minute: "2-digit"
+			});
+		}
+		/** Native, plain-text view of the private room. It polls only while its shell seat is active. */
+		function RoomSurface({ activeSurface, closeSurface, t }) {
+			const active = activeSurface === "room";
+			const surface = (0, react.useRef)(null);
+			const list = (0, react.useRef)(null);
+			const cursor = (0, react.useRef)(null);
+			const current = (0, react.useRef)([]);
+			const following = (0, react.useRef)(true);
+			const scroll = (0, react.useRef)(null);
+			const posting = (0, react.useRef)(false);
+			const [messages, setMessages] = (0, react.useState)([]);
+			const [draft, setDraft] = (0, react.useState)("");
+			const [sendFailed, setSendFailed] = (0, react.useState)(false);
+			(0, react.useEffect)(() => {
+				if (!active) {
+					const focused = document.activeElement;
+					if (focused instanceof HTMLElement && surface.current?.contains(focused)) focused.blur();
+					return;
+				}
+				const onKeyDown = (event) => {
+					if (event.key !== "Escape" || event.defaultPrevented || isEditableTarget(event.target)) return;
+					event.preventDefault();
+					closeSurface();
+				};
+				document.addEventListener("keydown", onKeyDown);
+				return () => {
+					document.removeEventListener("keydown", onKeyDown);
+				};
+			}, [active, closeSurface]);
+			(0, react.useEffect)(() => {
+				if (!active) return;
+				const controller = new AbortController();
+				let timer;
+				const poll = async () => {
+					try {
+						const query = cursor.current === null ? "" : `?after=${cursor.current}`;
+						const response = await fetch(`/api/room/recent${query}`, {
+							credentials: "same-origin",
+							cache: "no-store",
+							signal: controller.signal
+						});
+						if (!response.ok) throw new Error("room-read-failed");
+						const page = await response.json();
+						if (controller.signal.aborted) return;
+						const initial = cursor.current === null;
+						const next = (initial || page.reset ? page.messages : [...current.current, ...page.messages]).slice(-300);
+						if (initial || page.reset || page.messages.length > 0) {
+							const element = list.current;
+							if (element) {
+								const retained = new Set(next.map((message) => String(message.index)));
+								const top = element.getBoundingClientRect().top;
+								const anchor = Array.from(element.children).find((child) => retained.has(child.dataset.roomIndex ?? "") && child.getBoundingClientRect().bottom > top);
+								scroll.current = {
+									bottom: initial || atBottom(element),
+									anchor: anchor?.dataset.roomIndex,
+									top: anchor?.getBoundingClientRect().top ?? top
+								};
+							}
+							current.current = next;
+							setMessages(next);
+						}
+						cursor.current = page.cursor;
+					} catch {} finally {
+						if (!controller.signal.aborted) timer = setTimeout(() => {
+							poll();
+						}, 1e3);
+					}
+				};
+				poll();
+				return () => {
+					controller.abort();
+					clearTimeout(timer);
+				};
+			}, [active]);
+			(0, react.useLayoutEffect)(() => {
+				const element = list.current;
+				const position = scroll.current;
+				if (!element || !position) return;
+				if (position.bottom) element.scrollTop = element.scrollHeight;
+				else if (position.anchor !== void 0) {
+					const anchor = Array.from(element.children).find((child) => child.dataset.roomIndex === position.anchor);
+					if (anchor) element.scrollTop += anchor.getBoundingClientRect().top - position.top;
+				} else element.scrollTop = 0;
+				following.current = position.bottom;
+				scroll.current = null;
+			}, [messages]);
+			(0, react.useEffect)(() => {
+				const element = list.current;
+				if (!active || !element) return;
+				const resize = new ResizeObserver(() => {
+					if (following.current) element.scrollTop = element.scrollHeight;
+				});
+				resize.observe(element);
+				return () => {
+					resize.disconnect();
+				};
+			}, [active]);
+			const send = async () => {
+				if (posting.current || draft.trim().length === 0) return;
+				const submitted = draft;
+				posting.current = true;
+				setSendFailed(false);
+				try {
+					if (!(await fetch("/api/room/message", {
+						method: "POST",
+						credentials: "same-origin",
+						headers: { "content-type": "application/json" },
+						body: JSON.stringify({ msg: submitted })
+					})).ok) throw new Error("room-send-failed");
+					setDraft((value) => value === submitted ? "" : value);
+				} catch {
+					setSendFailed(true);
+				} finally {
+					posting.current = false;
+				}
+			};
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				...active ? {} : { inert: "" },
+				ref: surface,
+				"data-stock-app": "room",
+				"data-active": active ? "" : void 0,
+				"aria-hidden": !active,
+				className: `${StockApps_module_css_default.surfaceSeat} ${RoomSurface_module_css_default.room}`,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					ref: list,
+					className: RoomSurface_module_css_default.messages,
+					"aria-label": t("room.name"),
+					onScroll: () => {
+						if (list.current) following.current = atBottom(list.current);
+					},
+					children: messages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: RoomSurface_module_css_default.message,
+						"data-room-index": message.index,
+						"data-speaker": message.from,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: RoomSurface_module_css_default.meta,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: message.from }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("time", {
+								dateTime: message.at,
+								children: timeOf(message.at)
+							})]
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+							className: RoomSurface_module_css_default.bubble,
+							children: message.msg
+						})]
+					}, `${message.index}:${message.id}`))
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+					className: RoomSurface_module_css_default.composer,
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+						rows: 2,
+						"aria-label": t(sendFailed ? "room.sendFailed" : "room.message"),
+						"aria-invalid": sendFailed || void 0,
+						value: draft,
+						onChange: (event) => {
+							setDraft(event.target.value);
+							setSendFailed(false);
+						},
+						onKeyDown: (event) => {
+							if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing || event.keyCode === 229) return;
+							event.preventDefault();
+							send();
+						}
+					})
+				})]
+			});
+		}
+		//#endregion
 		//#region src/client/DakiniCode.tsx
 		/** Render the independent Dakini Code app launcher. */
 		function DakiniCodeMenu({ activeSurface, openSurface, t }) {
@@ -332,15 +528,22 @@ window.__ModuleLoader__.load({
 			copy: "harp",
 			presentation: "full-bleed"
 		};
+		const AUMA_CANVAS_APP = {
+			id: "auma-canvas",
+			copy: "canvas",
+			presentation: "full-bleed"
+		};
+		const ROOM_APP = {
+			id: "room",
+			copy: "room",
+			presentation: "contained"
+		};
 		const STOCK_APPS = [
 			AUMA_LANGUAGE_APP,
 			AUMA_LIVE_APP,
 			ZETA_HARP_APP,
-			{
-				id: "auma-canvas",
-				copy: "canvas",
-				presentation: "full-bleed"
-			}
+			AUMA_CANVAS_APP,
+			ROOM_APP
 		];
 		function StockAppMenu({ spec, activeSurface, openSurface, t }) {
 			const active = activeSurface === spec.id;
@@ -353,7 +556,7 @@ window.__ModuleLoader__.load({
 				},
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 					className: StockApps_module_css_default.menuCopy,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), spec.copy !== "room" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
 				})
 			});
 		}
@@ -378,11 +581,21 @@ window.__ModuleLoader__.load({
 				spec: ZETA_HARP_APP
 			});
 		}
+		/** Render the Room launcher without a subtitle. */
+		function RoomMenu(props) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StockAppMenu, {
+				...props,
+				spec: ROOM_APP
+			});
+		}
 		//#endregion
 		//#region src/client/locales.ts
 		/** Stock-app launcher, surface, and interaction dictionaries. */
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
+			"room.name": "房间",
+			"room.message": "房间消息",
+			"room.sendFailed": "发送失败，消息已保留。按回车重试。",
 			"language.name": "Auma · Lingwa",
 			"language.menu": "学习她的语言——一场由她长成的游戏",
 			"language.eyebrow": "LINGWA DI LUMO · 光之语言",
@@ -423,6 +636,9 @@ window.__ModuleLoader__.load({
 		};
 		/** English dictionary, checked complete against the Chinese key set. */
 		const en = {
+			"room.name": "Room",
+			"room.message": "Room message",
+			"room.sendFailed": "Send failed; message retained. Press Enter to retry.",
 			"language.name": "Auma · Lingwa",
 			"language.menu": "learn her language — a game she grew",
 			"language.eyebrow": "LINGWA DI LUMO · THE LANGUAGE OF LIGHT",
@@ -502,6 +718,11 @@ window.__ModuleLoader__.load({
 					app: STOCK_APPS[2],
 					Menu: ZetaHarpMenu,
 					Surface: ZetaHarpSurface
+				},
+				{
+					app: STOCK_APPS[4],
+					Menu: RoomMenu,
+					Surface: RoomSurface
 				}
 			].forEach(({ app, Menu, Surface }, index) => {
 				ctx.slots.inject("shell.menu.apps", () => ctx.slots.register({
@@ -519,6 +740,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
+		exports.RoomSurface = RoomSurface;
 		exports.apply = apply;
 		exports.inject = inject;
 		return module.exports;

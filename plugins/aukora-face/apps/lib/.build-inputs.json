@@ -1,6 +1,6 @@
 {
   "face": "apps",
-  "srcDigest": "74c9523632242a8d29c40bd83b7f08ad08e6d374adee101d53adb05689e1d41f",
+  "srcDigest": "56c1ce85e801c9803b5f3d5f26de45d5d4edc8eb1d515f242501eebc45e05a69",
   "files": [
     "package.json",
     "src/auma-canvas-tool.ts",
@@ -47,6 +47,8 @@
     "src/client/AumaLiveSurface.tsx",
     "src/client/DakiniCode.tsx",
     "src/client/EmbeddedAppSurface.tsx",
+    "src/client/RoomSurface.module.css",
+    "src/client/RoomSurface.tsx",
     "src/client/StockAppMenu.tsx",
     "src/client/StockApps.module.css",
     "src/client/ZetaHarpSurface.tsx",
@@ -58,10 +60,12 @@
     "src/embedded-assets.ts",
     "src/index.ts",
     "src/invariant.ts",
+    "src/room-types.ts",
+    "src/room.ts",
     "src/status-facts.ts",
     "src/vendor-paths.ts",
     "src/vendor/organism.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-28T03:21:17Z"
+  "builtAt": "2026-09-29T16:17:10Z"
 }

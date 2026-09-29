@@ -23,6 +23,7 @@ interface RouteGate {
 }
 import type {} from '@deepseek-ai/dsh-session-persistence'
 import { createEmbeddedAssetHandlers } from './embedded-assets.ts'
+import { RoomHttp } from './room.ts'
 import { AumaLiveHttp } from './auma-live/http.ts'
 import { checkHomeSessionConfig, CONTROLLER_UNMOUNTED, type HomeResume } from './auma-live/home-session.ts'
 import { CrossLaneMemory } from './auma-live/cross-lane.ts'
@@ -196,6 +197,8 @@ export const inject = ['webServer', 'connection', 'credentials', 'sessions', 'su
 
 /** Host settings for the local Auma Live organs. */
 export interface Config {
+  /** Private room JSONL path, expanded on the host. */
+  roomLogPath: string
   /** The configured CORE session; empty means no conductor and a named refusal. */
   coreSessionId: string
   /** Her home thread; empty means the no-session refusal is the only remaining one. */
@@ -283,6 +286,7 @@ export interface Config {
 }
 
 export const Config: z<Config> = z.object({
+  roomLogPath: z.string().default('~/aukora-live/room.log'),
   apiKeyEnv: z.string().role('credential-ref').default('OPENROUTER_API_KEY'),
   maxRequestBodyBytes: z.natural().min(1).default(16 * 1024),
   voicePort: z.natural().min(1).max(65_535).default(7_512),
@@ -934,7 +938,10 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
         },
       }),
   })
+  const roomHttp = new RoomHttp(config.roomLogPath)
   const routes = [
+    { kind: 'exact', path: '/api/room/recent', handler: roomHttp.recent },
+    { kind: 'exact', path: '/api/room/message', handler: roomHttp.post },
     { kind: 'prefix', path: '/app', handler: assetHandlers.serveStockAppFile },
     { kind: 'exact', path: '/assets/aumara-icon-96.png', handler: assetHandlers.serveAukoraIcon },
     // The same bytes under the path the shell's own components ask for. Deep shipped
