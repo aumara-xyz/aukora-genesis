@@ -22,7 +22,7 @@
  */
 import { dirname } from 'node:path'
 import { readJsonStrict, readTextStrict, stateExists } from './strict-read.mjs'
-import { GOVERNED_RESERVED_SLOTS, mergeReservedSlots } from './reserved-slots.mjs'
+import { GOVERNED_RESERVED_SLOTS, SEMANTIC_WINDOW, eligibleByTier, mergeReservedSlots } from './reserved-slots.mjs'
 
 /** The method name every semantic answer carries. */
 export const SEMANTIC_METHOD = 'openviking-semantic'
@@ -31,9 +31,9 @@ export const SEMANTIC_METHOD = 'openviking-semantic'
 const NOTE_ID = /^rem:[0-9a-f]{64}$/u
 const GOVERNED_ID = /^kira:[0-9a-f]{64}$/u
 
-/** Defaults; `aukora-bridge.json` overrides each. Thresholds measured on ten notes with Qwen3-Embedding-0.6B. */
+/** Defaults; `aukora-bridge.json` overrides each. `scoreThreshold` is measured; `SEMANTIC_WINDOW` is not — see its note in reserved-slots.mjs. */
 export const SEMANTIC_DEFAULTS = Object.freeze({
-  account: 'aukora', user: 'owner', scoreThreshold: 0.4, window: 0.1, limit: 3, candidates: 12, timeoutMs: 8000, syncBatch: 32,
+  account: 'aukora', user: 'owner', scoreThreshold: 0.4, window: SEMANTIC_WINDOW, limit: 3, candidates: 12, timeoutMs: 8000, syncBatch: 32,
   /** Prepended to the question only (asymmetric embedding models such as Qwen3-Embedding want it). */
   queryInstruction: '',
 })
@@ -341,14 +341,18 @@ export function createOpenVikingRecall(input) {
       if (!candidates.some(one => one.id === id)) candidates.push({ id, score, note, tier: note.tier === 'signed' ? 'signed' : 'remembered' })
     }
     candidates.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
-    const best = candidates[0]?.score ?? 0
-    const eligible = candidates.filter(one => best - one.score <= config.window)
+    // A4: THE WINDOW IS MEASURED WITHIN A TIER, NOT FROM THE BEST SCORE OVERALL. Measured from the
+    // global best (usually an ambient note), a governed record that cleared the threshold on its
+    // own was discarded because ambient text scored `window` higher — so its reserved slots stayed
+    // empty and governed memory was reachable only by near-tying the best ambient match.
+    const byTier = eligibleByTier(candidates, { threshold: config.scoreThreshold, window: config.window })
+    const eligible = [...byTier.ambient, ...byTier.governed]
     dropped.belowThreshold += candidates.length - eligible.length
     // Governance is a slot reservation, never a score multiplier. Both groups have
-    // already cleared the same threshold and window before this merge.
+    // already cleared the same threshold, and the window is each group's own.
     const reserved = mergeReservedSlots({
-      ambient: eligible.filter(one => one.tier !== 'signed'),
-      governed: eligible.filter(one => one.tier === 'signed'),
+      ambient: byTier.ambient,
+      governed: byTier.governed,
       ceiling: config.limit,
       reserved: GOVERNED_RESERVED_SLOTS,
     })
