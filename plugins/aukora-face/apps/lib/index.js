@@ -1,11 +1,10 @@
 import z from "@deepseek-ai/schemastery";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { readFile, readdir, realpath } from "node:fs/promises";
+import { open, readFile, readdir, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { accessSync, appendFileSync, chmodSync, closeSync, constants, existsSync, fchmodSync, fstatSync, fsyncSync, linkSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync, writeSync } from "node:fs";
+import { accessSync, appendFileSync, chmodSync, closeSync, constants, existsSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync, writeSync } from "node:fs";
 import { homedir } from "node:os";
-import { setTimeout as setTimeout$1 } from "node:timers/promises";
 import { credentialRef } from "@deepseek-ai/dsh-credentials";
 import { SessionId } from "@deepseek-ai/dsh-session";
 import { once } from "node:events";
@@ -171,6 +170,9 @@ function createEmbeddedAssetHandlers(serveStatic) {
 //#endregion
 //#region lib/types/room.js
 const MAX_BYTES = 16384;
+const PAGE_BYTES = 256 * 1024;
+const TAIL_CHUNK_BYTES = 16 * 1024;
+const O_EXLOCK = 32;
 const SPEAKERS = new Set([
 	"PETER",
 	"AUMA",
@@ -179,6 +181,7 @@ const SPEAKERS = new Set([
 	"AUMA-CODEX",
 	"GROK"
 ]);
+let appends = Promise.resolve();
 var RoomError = class extends Error {
 	status;
 	constructor(status, message) {
@@ -189,42 +192,77 @@ var RoomError = class extends Error {
 function code(error) {
 	return error?.code;
 }
-/** Keep the owning fd open until release so its inode cannot be recycled underneath this identity. */
-function removeLock(lock, owner, contents) {
-	const matches = (path) => {
-		const fd = openSync(path, "r");
-		try {
-			const found = fstatSync(fd, { bigint: true });
-			return found.dev === owner.dev && found.ino === owner.ino && (contents === void 0 || readFileSync(fd, "utf8") === contents);
-		} finally {
-			closeSync(fd);
-		}
-	};
-	try {
-		if (!matches(lock)) return;
-		const tomb = `${lock}.stale.${process.pid}:${randomBytes(8).toString("hex")}`;
-		renameSync(lock, tomb);
-		let ours = false;
-		try {
-			ours = matches(tomb);
-		} finally {
-			if (!ours) try {
-				linkSync(tomb, lock);
-			} catch (error) {
-				if (code(error) !== "EEXIST") throw error;
-			}
-			unlinkSync(tomb);
-		}
-	} catch (error) {
-		if (code(error) !== "ENOENT") throw error;
+async function readRange(file, start, end) {
+	const bytes = Buffer.alloc(end - start);
+	let used = 0;
+	while (used < bytes.length) {
+		const { bytesRead } = await file.read(bytes, used, bytes.length - used, start + used);
+		if (bytesRead === 0) break;
+		used += bytesRead;
 	}
+	return bytes.subarray(0, used);
 }
-function writeAll(fd, bytes) {
-	for (let offset = 0; offset < bytes.length;) {
-		const written = writeSync(fd, bytes, offset, bytes.length - offset);
-		if (written === 0) throw new Error("short-room-write");
-		offset += written;
+function pageOf(bytes, start, reset) {
+	const messages = [];
+	let used = 0;
+	for (let end = bytes.indexOf(10); end !== -1; end = bytes.indexOf(10, used)) {
+		const index = start + used;
+		const line = bytes.subarray(used, end).toString("utf8");
+		used = end + 1;
+		let row;
+		try {
+			row = JSON.parse(line);
+		} catch {
+			continue;
+		}
+		if (row === null || typeof row !== "object" || "ack" in row) continue;
+		const record = row;
+		if (typeof record.id !== "string" || typeof record.at !== "string" || typeof record.from !== "string" || !SPEAKERS.has(record.from) || typeof record.msg !== "string") continue;
+		messages.push({
+			index,
+			id: record.id,
+			at: record.at,
+			from: record.from,
+			msg: record.msg
+		});
+		if (messages.length > 300) messages.shift();
 	}
+	return {
+		messages,
+		cursor: start + used,
+		reset
+	};
+}
+/** Last 300 complete physical lines, with a hard byte budget even for corrupt giant records. */
+async function tailOf(file, size, reset) {
+	const chunks = [];
+	const floor = Math.max(0, size - PAGE_BYTES);
+	let start = size;
+	let newlines = 0;
+	while (start > floor && newlines <= 300) {
+		const from = Math.max(floor, start - TAIL_CHUNK_BYTES);
+		const chunk = await readRange(file, from, start);
+		if (chunk.length !== start - from) throw new Error("room-changed-during-read");
+		chunks.unshift(chunk);
+		for (const byte of chunk) if (byte === 10) newlines++;
+		start = from;
+	}
+	const bytes = Buffer.concat(chunks);
+	let first = 0;
+	if (start > 0) {
+		first = bytes.indexOf(10) + 1;
+		if (first === 0) return {
+			messages: [],
+			cursor: null,
+			reset
+		};
+		newlines--;
+	}
+	while (newlines > 300) {
+		first = bytes.indexOf(10, first) + 1;
+		newlines--;
+	}
+	return pageOf(bytes.subarray(first), start + first, reset);
 }
 function json(res, status, body) {
 	res.writeHead(status, {
@@ -275,71 +313,23 @@ var RoomHttp = class {
 	constructor(roomLogPath = "~/aukora-live/room.log") {
 		this.room = roomLogPath.startsWith("~/") ? join(homedir(), roomLogPath.slice(2)) : roomLogPath;
 	}
-	async acquire() {
-		const lock = `${this.room}.lock`;
-		const deadline = Date.now() + 5e3;
-		while (true) {
-			if (Date.now() >= deadline) throw new RoomError(503, "room-busy");
-			let fd;
-			try {
-				fd = openSync(lock, "wx", 384);
-			} catch (error) {
-				if (code(error) !== "EEXIST") throw error;
-				let held;
-				try {
-					held = openSync(lock, "r");
-					const owner = fstatSync(held, { bigint: true });
-					const contents = readFileSync(held, "utf8");
-					const holder = Number(contents.trim().split(":")[0]);
-					if (Number.isSafeInteger(holder) && holder > 0 && holder <= 2147483647) try {
-						process.kill(holder, 0);
-					} catch (probe) {
-						if (code(probe) === "ESRCH") removeLock(lock, owner, contents);
-					}
-				} catch {} finally {
-					if (held !== void 0) closeSync(held);
-				}
-				await setTimeout$1(20);
-				continue;
-			}
-			let owner;
-			try {
-				owner = fstatSync(fd, { bigint: true });
-				writeAll(fd, Buffer.from(String(process.pid)));
-				return {
-					fd,
-					owner
-				};
-			} catch (error) {
-				try {
-					if (owner) removeLock(lock, owner);
-				} finally {
-					closeSync(fd);
-				}
-				throw error;
-			}
-		}
-	}
-	async append(record) {
+	append(record) {
 		const line = Buffer.from(`${JSON.stringify(record)}\n`);
-		const held = await this.acquire();
-		try {
-			const fd = openSync(this.room, "a", 384);
+		const result = appends.then(async () => {
+			const file = await open(this.room, constants.O_WRONLY | constants.O_APPEND | constants.O_CREAT | O_EXLOCK, 384);
 			try {
-				writeAll(fd, line);
-				fsyncSync(fd);
-			} finally {
-				closeSync(fd);
-			}
-		} finally {
-			try {
-				try {
-					removeLock(`${this.room}.lock`, held.owner);
-				} finally {
-					closeSync(held.fd);
+				for (let offset = 0; offset < line.length;) {
+					const { bytesWritten } = await file.write(line, offset, line.length - offset);
+					if (bytesWritten === 0) throw new Error("short-room-write");
+					offset += bytesWritten;
 				}
-			} catch {}
-		}
+				await file.sync();
+			} finally {
+				await file.close();
+			}
+		});
+		appends = result.catch(() => {});
+		return result;
 	}
 	recent = async (req, res) => {
 		if (req.method !== "GET") {
@@ -349,44 +339,36 @@ var RoomHttp = class {
 		}
 		try {
 			const afterText = new URL(req.url ?? "/", "http://localhost").searchParams.get("after");
-			const after = afterText === null ? -1 : Number(afterText);
-			if (afterText !== null && (!/^(?:-1|0|[1-9]\d*)$/.test(afterText) || !Number.isSafeInteger(after))) throw new RoomError(400, "invalid-cursor");
-			let data;
+			const after = afterText === null ? null : Number(afterText);
+			if (afterText !== null && (!/^(?:0|[1-9]\d*)$/.test(afterText) || !Number.isSafeInteger(after))) throw new RoomError(400, "invalid-cursor");
+			let file;
 			try {
-				data = await readFile(this.room, "utf8");
+				file = await open(this.room, "r");
 			} catch (error) {
 				if (code(error) !== "ENOENT") throw error;
-				data = "";
-			}
-			const complete = data.slice(0, data.lastIndexOf("\n") + 1);
-			const lines = complete === "" ? [] : complete.slice(0, -1).split("\n");
-			const cursor = lines.length - 1;
-			const reset = after > cursor;
-			const messages = [];
-			for (let index = reset ? 0 : after + 1; index < lines.length; index++) {
-				let row;
-				try {
-					row = JSON.parse(lines[index]);
-				} catch {
-					continue;
-				}
-				if (row === null || typeof row !== "object" || "ack" in row) continue;
-				const record = row;
-				if (typeof record.id !== "string" || typeof record.at !== "string" || typeof record.from !== "string" || !SPEAKERS.has(record.from) || typeof record.msg !== "string") continue;
-				messages.push({
-					index,
-					id: record.id,
-					at: record.at,
-					from: record.from,
-					msg: record.msg
+				json(res, 200, {
+					messages: [],
+					cursor: 0,
+					reset: after !== null && after > 0
 				});
-				if (messages.length > 300) messages.shift();
+				return;
 			}
-			json(res, 200, {
-				messages,
-				cursor,
-				reset
-			});
+			let page;
+			try {
+				const { size } = await file.stat();
+				const reset = after !== null && size < after;
+				if (after === null || reset) page = await tailOf(file, size, reset);
+				else {
+					page = pageOf(await readRange(file, after, Math.min(size, after + PAGE_BYTES)), after, false);
+					if (page.cursor === after && size > after + PAGE_BYTES) {
+						const tail = await tailOf(file, size, false);
+						if (tail.cursor !== null) page = tail;
+					}
+				}
+			} finally {
+				await file.close();
+			}
+			json(res, 200, page);
 		} catch (error) {
 			this.failure(res, error);
 		}

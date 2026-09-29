@@ -25,7 +25,7 @@ export function RoomSurface({ activeSurface, closeSurface, t }: StockAppSurfaceP
   const active = activeSurface === 'room'
   const surface = useRef<HTMLDivElement>(null)
   const list = useRef<HTMLDivElement>(null)
-  const cursor = useRef<number | null>(null)
+  const cursor = useRef<number | null>(null) // Next unread byte, never a physical line count.
   const current = useRef<RoomMessage[]>([])
   const following = useRef(true)
   const scroll = useRef<ScrollPosition | null>(null)
