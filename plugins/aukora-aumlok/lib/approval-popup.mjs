@@ -81,6 +81,21 @@ export function approvalPopupText(requestInput) {
 export function approvalPopupArgv(text) {
   const quoted = text.replace(/\\/gu, '\\\\').replace(/"/gu, '\\"')
   return [
+    // AUDIBLE FIRST. A dialog that appears in silence is a dialog that gets missed, and a missed
+    // dialog expires unsigned — the approval never happens and nothing is signed. Three system
+    // beeps fire the instant the dialog is raised, before it is shown, so the alert and the dialog
+    // arrive together. The sound adds no authority: the default button is still Refuse, so a
+    // dialog dismissed with Return or closed by the window manager still signs nothing.
+    //
+    // ONE BURST, NOT A REPEAT. Making the alert continue for as long as the dialog stays open
+    // needs either a background sound child owned by the caller — and the caller is
+    // `scripts/aumlok/signer.mjs`, a fenced self-protecting path, because it holds the owner key —
+    // or an AppleScript rewrite that wraps `display dialog` in a try block, which risks the
+    // `button returned:Approve` parsing that `popupDecision` depends on. Neither is worth doing
+    // blind, so this ships the honest one-burst version; a repeating alert is a separate,
+    // deliberate change.
+    '-e',
+    'beep 3',
     '-e',
     `display dialog "${quoted}" buttons {"${POPUP_BUTTONS.REFUSE}", "${POPUP_BUTTONS.APPROVE}"} `
     + `default button "${POPUP_BUTTONS.REFUSE}" with title "AUKORA" with icon caution`,
