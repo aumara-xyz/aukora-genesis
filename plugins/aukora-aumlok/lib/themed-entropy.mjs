@@ -21,16 +21,13 @@
  *                not a per-draw figure: the worst case the generator actually carries (the most
  *                likely output is the smallest-bucket anchor).
  *
- * MEASURED FIGURES (asserted by tests/aukora-aumlok-packaging.test.mjs): bits=34.14 ceiling=36.31 floor=none anchors=150 gate=12
+ * MEASURED FIGURES (asserted by tests/aukora-aumlok-pool-bits.test.mjs): bits=33.58 ceiling=33.58 floor=none anchors=475 gate=12
  *
- * THE SHIPPED FIGURE IS BELOW WHAT THE PLAN PROMISED, AND THE 64-BIT FLOOR IS RETIRED RATHER THAN MET.
- * MEASURED at HEAD: `generatorMinEntropy()` = 34.142 bits at the weakest drawable anchor and
- * `entropyCeiling()` = 36.311 at best, over 150 anchors whose used letters are `abcdefghlmoprstuvw`,
- * with `MIN_WORDS_PER_BUCKET` = 12. The floor does not refuse and cannot: `REFUSAL_ENTROPY_BELOW_FLOOR`
- * is `aumlok:entropy-below-floor-retired`, `measure()` returns `floorBits: null, meetsFloor: null`, and
- * `formatEntropyLine()` prints `(floor RETIRED — not gated)`. 34.14 is below the plan's 60 and far below
- * the 64 the floor named, so the honest statement is that this data does not reach either figure and no
- * court is pretending otherwise.
+ * THE FIGURE IS POOL MATH, NOT 256 BITS. `bits = log2(anchors) + the weakest anchor's six bucket logs`.
+ * A scrypt stretch does not add entropy. The seven-word acrostic is local story memorability only:
+ * word 0 is a 6-letter anchor, then nature, nature, people, people, spirit, spirit. The floor does not
+ * refuse and cannot: `REFUSAL_ENTROPY_BELOW_FLOOR` is `aumlok:entropy-below-floor-retired`, `measure()`
+ * returns `floorBits: null, meetsFloor: null`, and `formatEntropyLine()` prints `(floor RETIRED — not gated)`.
  *
  * THIS PARAGRAPH WAS WRONG BY A WHOLE HARVEST, AND IT IS WORTH SAYING HOW WRONG. It read "30,692 words:
  * NATURE 8,656 / PEOPLE 17,753 / SPIRIT 4,283 … 510 drawable anchors over abcdefghlmprstw … min bucket
@@ -460,10 +457,34 @@ export function assertEntropyFloor(bits = generatorMinEntropy(), detail) {
  * `plugins/aukora-face/aumlok/src/index.ts` AND NOT A CHANGE HERE** — the route exists and calls its control
  * service, so the wiring is possible; it simply has not been done, and this comment no longer implies it has.
  */
+/** What the phrase is worth, and what it is not. Pool math only. Never a 256-bit claim. */
+export function phraseEntropyClaim(measured = measure()) {
+  return Object.freeze({
+    kind: 'pool-math',
+    bits: measured.bits,
+    not256: true,
+    role: 'local-story-memorability',
+  })
+}
+
+/**
+ * The ceiling printed where a phrase is turned into a root or checked as one.
+ * The number is `measure()`. The sentence refuses a 256-bit reading.
+ */
+export function offlineGuessLine(measured = measure()) {
+  const bits = measured.bits.toFixed(2)
+  return 'CEILING: ROOT_KEY_OFFLINE_GUESSABLE — ' + bits
+    + ' bits of pool math from the seven-word acrostic plus a PUBLIC handle. '
+    + 'This is not 256 bits. The phrase is local story memorability only. '
+    + 'Public salt, roughly 1 second per guess. Whoever has the phrase rebuilds the root OFFLINE, with '
+    + 'no access to this machine. The acrostic stays.'
+}
+
 export function formatEntropyLine(measured = measure()) {
   const where = measured.dataPresent ? measured.dataPath : `${measured.dataPath} (ABSENT)`
+  const claim = phraseEntropyClaim(measured)
   return (
-    `PHRASE_ENTROPY: ${measured.bits.toFixed(2)} bits (floor RETIRED — not gated) · anchors ` +
+    `PHRASE_ENTROPY: ${measured.bits.toFixed(2)} bits of ${claim.kind} (not 256-bit; ${claim.role}; floor RETIRED — not gated) · anchors ` +
     `${measured.anchorCount} from ${measured.anchorSource} · letters ${measured.anchorLetters.join('') || 'none'} · ` +
     `weakest anchor ${measured.limitingAnchor ?? 'none'} · buckets ${where}`
   )

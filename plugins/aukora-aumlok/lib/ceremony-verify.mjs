@@ -26,6 +26,7 @@
  * @module @aukora/dsh-plugin-aumlok/ceremony-verify
  */
 import { createHash, timingSafeEqual, randomBytes, scryptSync } from 'node:crypto'
+import { offlineGuessLine } from './themed-entropy.mjs'
 
 /** `aumlokBindCeremony.ts:39` — seven, and it is a named constant for a reason. */
 export const BIND_PHRASE_WORDS = 7
@@ -49,16 +50,14 @@ export function normalizePhrase(s) {
  * **THIS IS THE RECOVERY PATH, AND IT IS ALSO THE CHEAPEST PLACE TO CHECK A GUESS (AUMLOK-113).** It hashes
  * seven normalised tokens against a salt, which is exactly what an offline attacker does — **and the salt here
  * is PUBLIC, so there is nothing in this function an attacker does not have.** Reviewer row 8: the root is worth
- * about 34.14 bits, so enumerating the phrase space is a dictionary walk, not a search for a secret.
+ * the pool-math figure from the word lists, not 256 bits, so enumerating the phrase space is a dictionary walk, not a search for a secret. The phrase is local story memorability only.
  *
  * **THE CEILING IS PRINTED ON EVERY CALL RATHER THAN ONCE AT STARTUP**, because a caller that reached this
  * function is a caller holding a phrase and asking whether it is the right one — **which is the moment the
  * question "how guessable is this" is actually being asked.**
  */
 export function saltedFingerprint(saltHex, phrase) {
-  console.log('CEILING: ROOT_KEY_OFFLINE_GUESSABLE — about 34.14 bits from the seven words plus a PUBLIC '
-    + 'handle, public salt, roughly 1 second per guess. This check is the same arithmetic an offline attacker '
-    + 'runs, and the salt is not a secret. The acrostic stays; what it unlocks is being redesigned.')
+  console.log(offlineGuessLine())
   return createHash('sha256').update(`${saltHex}|${normalizePhrase(phrase)}`, 'utf-8').digest('hex')
 }
 

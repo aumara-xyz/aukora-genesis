@@ -83,7 +83,7 @@ These are **operator-recorded lines, not independently reproduced** for this rev
 
 ## Ceilings
 
-The app and agent share a UID; the Airlock socket accepts signature requests from any process of that UID. Attendance is reported, not proven. The phrase-derived root has about 34 bits and can be guessed offline. Embedded app frames share the desktop origin. The live agent runs on the host. No independent re-implementation of the verifiers exists. Nothing on GitHub requires the approval routes: a direct push is not stopped.
+The app and agent share a UID; the Airlock socket accepts signature requests from any process of that UID. Attendance is reported, not proven. The phrase-derived root is pool math, not 256 bits, and can be guessed offline. The acrostic is local story memorability only. Embedded app frames share the desktop origin. The live agent runs on the host. No independent re-implementation of the verifiers exists. Nothing on GitHub requires the approval routes: a direct push is not stopped.
 
 The candidate file cap is 65,536 UTF-8 bytes, a fail-closed draft-size ceiling (`LIMITS.MAX_PATCH_BYTES` in `vendor/aukora-seed-app/lib/apps/seed/src/proposal.js`, applied to each non-generated file by `scripts/aukora/aumlok-candidate-authority.mjs`); no reason for that value is recorded in the code.
 

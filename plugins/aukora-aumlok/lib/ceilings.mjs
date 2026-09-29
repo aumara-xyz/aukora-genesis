@@ -67,6 +67,7 @@
  * @module @aukora/dsh-plugin-aumlok/ceilings
  */
 import { ATTENDANCE_STATES } from './attendance.mjs'
+import { measure } from './themed-entropy.mjs'
 
 
 /** The ceiling names, printed in this order, in this exact spelling. */
@@ -126,10 +127,10 @@ export const CEILING_TEXTS = Object.freeze({
   // ── **PETER DECIDED TO DISCLOSE THIS NOW AND REDESIGN IT AFTER THE SHARE (AUMLOK-113)** ────────────────
   //
   // REVIEWER ROW 8. The root key is derived from the seven acrostic words plus a handle that is PUBLIC, and the
-  // pair is worth about 34.14 bits (`themed-entropy.mjs:23-33` sets that floor; the 64-bit floor was retired).
-  // **A scrypt work factor of about one second per guess is a real cost and not a large one:** 2^34 guesses at
-  // 1 s each is roughly 545 core-years, **and the search parallelises perfectly — it is a dictionary, not a
-  // password, and every guess is independent.**
+  // pair is worth the pool-math figure from `measure()` (`themed-entropy.mjs`). That figure is not 256 bits.
+  // The seven-word acrostic is local story memorability only. The 64-bit floor was retired.
+  // **A scrypt work factor of about one second per guess is a real cost and not a large one.** The search
+  // parallelises perfectly — it is a dictionary, not a password, and every guess is independent.
   //
   // **THE DESIGN LAW SAYS THE PHRASE NEVER DERIVES THE KEY, AND THIS IS WHERE IT DOES.** `derive-v3.mjs` takes
   // the words and the handle and scrypts them into the root, so the words are not a presence check over a key
@@ -177,8 +178,9 @@ export const CEILING_TEXTS = Object.freeze({
     + 'A presence-bound custody is designed and spiked; switching to it changes the live key and the binding, so '
     + 'it is the owner\'s call',
   ROOT_KEY_OFFLINE_GUESSABLE:
-    'the root key is derived from the seven words PLUS A PUBLIC HANDLE: about 34.14 bits, public salt, about '
-    + '1 second per guess with scrypt. 2^34 guesses is roughly 545 core-years and the search PARALLELISES, so '
+    `the root key is derived from the seven words PLUS A PUBLIC HANDLE: ${measure().bits.toFixed(2)} bits of pool math, not 256 bits. `
+    + 'The seven-word acrostic is local story memorability only. Public salt, about '
+    + '1 second per guess with scrypt. The search PARALLELISES, so '
     + 'the phrase is the whole secret: whoever has it rebuilds the root OFFLINE, with no access to this '
     + 'machine. The acrostic stays; what it unlocks is being redesigned',
   SUCCESSION_UNMEASURED:
