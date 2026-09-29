@@ -21,16 +21,16 @@
  *                not a per-draw figure: the worst case the generator actually carries (the most
  *                likely output is the smallest-bucket anchor).
  *
- * MEASURED FIGURES (asserted by tests/aukora-aumlok-packaging.test.mjs): bits=34.14 ceiling=36.31 floor=none anchors=150 gate=12
+ * MEASURED FIGURES (asserted by tests/aukora-aumlok-pool-floor.test.mjs): bits=39.72 anchors=1031 gate=12
  *
- * THE SHIPPED FIGURE IS BELOW WHAT THE PLAN PROMISED, AND THE 64-BIT FLOOR IS RETIRED RATHER THAN MET.
- * MEASURED at HEAD: `generatorMinEntropy()` = 34.142 bits at the weakest drawable anchor and
- * `entropyCeiling()` = 36.311 at best, over 150 anchors whose used letters are `abcdefghlmoprstuvw`,
- * with `MIN_WORDS_PER_BUCKET` = 12. The floor does not refuse and cannot: `REFUSAL_ENTROPY_BELOW_FLOOR`
+ * THE SHIPPED FIGURE IS WHAT THESE BUCKETS CARRY, AND IT IS NOT 256 BITS AND NOT 128 BITS.
+ * MEASURED at HEAD: `generatorMinEntropy()` = 39.718 bits at the weakest drawable anchor,
+ * over 1031 anchors whose used letters are `abcdeghlmnoprstvw`, with `MIN_WORDS_PER_BUCKET` = 12.
+ * A scrypt output of 32 or 64 bytes is the width of the derived key, not the entropy of the phrase.
+ * The floor does not refuse and cannot: `REFUSAL_ENTROPY_BELOW_FLOOR`
  * is `aumlok:entropy-below-floor-retired`, `measure()` returns `floorBits: null, meetsFloor: null`, and
- * `formatEntropyLine()` prints `(floor RETIRED — not gated)`. 34.14 is below the plan's 60 and far below
- * the 64 the floor named, so the honest statement is that this data does not reach either figure and no
- * court is pretending otherwise.
+ * `formatEntropyLine()` prints `(floor RETIRED — not gated)` and states that the figure is not 256-bit.
+ * 39.72 is below the plan's old 60 and far below 128 or 256, so the honest statement is that number.
  *
  * THIS PARAGRAPH WAS WRONG BY A WHOLE HARVEST, AND IT IS WORTH SAYING HOW WRONG. It read "30,692 words:
  * NATURE 8,656 / PEOPLE 17,753 / SPIRIT 4,283 … 510 drawable anchors over abcdefghlmprstw … min bucket
@@ -112,14 +112,15 @@ export const MIN_WORDS_PER_BUCKET = 12
  *  log2(A) but can raise the worst bucket, so on a small pool the greedy walk strips letters until only a
  *  handful of anchors can be spelled. MEASURED, item X2's rebuild: a 2,468-word pool let the unguarded
  *  search fall from 153 drawable anchors to 13 in exchange for 3.05 bits, and a thirteen-anchor identity
- *  list is not an anchor list — a person would meet the same anchor again and again. 128 is 7 bits of
- *  anchor choice, below which the anchor stops being a choice and becomes a fixture.
+ *  list is not an anchor list — a person would meet the same anchor again and again. 1000 anchors is
+ *  the floor under the expanded list (the previous guard was 128, which let a bits-maximising search
+ *  spend the list down to a few hundred). Below 1000 the anchor stops being a wide choice.
  *
  *  THIS IS NOT THE RETIRED FLOOR COMING BACK. The 60/64-bit floor gated a PHRASE and refused it by name;
  *  nothing here gates or refuses anything, and `measure()` still compares its figure to nothing. This is a
  *  floor on the SIZE OF THE ANCHOR POOL, which is a product asset, and it exists because a measurement
  *  must not be allowed to consume the thing it measures. */
-export const MIN_ANCHOR_POOL = 128
+export const MIN_ANCHOR_POOL = 1000
 /** RETIRED. Kept only so that a caller matching on the old name gets a clear error rather than a
  *  silent pass; nothing in this module throws it any more. */
 export const REFUSAL_ENTROPY_BELOW_FLOOR = 'aumlok:entropy-below-floor-retired'
@@ -460,10 +461,27 @@ export function assertEntropyFloor(bits = generatorMinEntropy(), detail) {
  * `plugins/aukora-face/aumlok/src/index.ts` AND NOT A CHANGE HERE** — the route exists and calls its control
  * service, so the wiring is possible; it simply has not been done, and this comment no longer implies it has.
  */
+/**
+ * The sentence the ceilings print. The number is measured from the shipped lists at call time,
+ * and the sentence says what the phrase is not: a 256-bit secret, or a 128-bit one. The derived
+ * key is wider than the phrase. Width is not entropy.
+ * @param {object} [measured] the object `measure()` returns.
+ * @returns {string} the ceiling sentence, without the `CEILING:` name.
+ */
+export function phraseEntropySentence(measured = measure()) {
+  const bits = measured.bits.toFixed(2)
+  return (
+    `about ${bits} bits from the seven words plus a PUBLIC handle, public salt, roughly 1 second ` +
+    'per guess. The phrase is not a 256-bit secret and not a 128-bit secret. Whoever has the phrase ' +
+    'rebuilds the root OFFLINE, with no access to this machine. The acrostic stays; what it unlocks ' +
+    'is being redesigned'
+  )
+}
+
 export function formatEntropyLine(measured = measure()) {
   const where = measured.dataPresent ? measured.dataPath : `${measured.dataPath} (ABSENT)`
   return (
-    `PHRASE_ENTROPY: ${measured.bits.toFixed(2)} bits (floor RETIRED — not gated) · anchors ` +
+    `PHRASE_ENTROPY: ${measured.bits.toFixed(2)} bits (not 256-bit, not 128-bit; floor RETIRED — not gated) · anchors ` +
     `${measured.anchorCount} from ${measured.anchorSource} · letters ${measured.anchorLetters.join('') || 'none'} · ` +
     `weakest anchor ${measured.limitingAnchor ?? 'none'} · buckets ${where}`
   )

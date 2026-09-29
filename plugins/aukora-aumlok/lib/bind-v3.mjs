@@ -38,7 +38,7 @@ import { randomBytes } from 'node:crypto'
 
 import { assertHandle, deriveRootFromPhrase, requireHandle } from './derive-v3.mjs'
 // THE SHAPE OF A WORD, FROM THE MODULE THAT OWNS IT.
-import { WORD_PATTERN } from './themed-entropy.mjs'
+import { WORD_PATTERN, phraseEntropySentence } from './themed-entropy.mjs'
 import { buildGenesisV3 } from './genesis-v3.mjs'
 import { deriveMachineKeyV3 } from './machine-key-v3.mjs'
 import {
@@ -153,15 +153,13 @@ export async function bindV3({ handle, words, directory, boundAt, custodian } = 
   // ── **THE ENTROPY OF THE THING BEING DERIVED, PRINTED WHERE IT IS DERIVED (AUMLOK-113)** ────────────────
   //
   // REVIEWER ROW 8, DISCLOSED BY PETER'S RULING: this path is the one that turns seven words and a PUBLIC handle
-  // into the root key, and **the pair is worth about 34.14 bits.** A reader of this output is watching a root key
+  // into the root key, and **the pair is worth the measured phrase entropy, which is not 256 bits.** A reader of this output is watching a root key
   // come into existence and is entitled to know what it is worth before anything is written.
   //
   // **AND THE LAW IT BREAKS IS THE REASON IT MUST BE SAID HERE RATHER THAN IN A DESIGN NOTE.** The project's own
   // statement is that the phrase never derives the key — a presence check over a secret held elsewhere. **This
   // line is where that is untrue**: the words ARE the secret, so a photograph of them, or a backup, is the root.
-  console.log('CEILING: ROOT_KEY_OFFLINE_GUESSABLE — about 34.14 bits from the seven words plus a PUBLIC '
-    + 'handle, public salt, roughly 1 second per guess. Whoever has the phrase rebuilds the root OFFLINE, with '
-    + 'no access to this machine. The acrostic stays; what it unlocks is being redesigned.')
+  console.log(`CEILING: ROOT_KEY_OFFLINE_GUESSABLE — ${phraseEntropySentence()}`)
   const root = await deriveRootFromPhrase(offered.join('-'), { handle: normalizedHandle })
   const genesis = buildGenesisV3({ root, genesisNonce: randomBytes(32).toString('hex') })
   if (!NONCE.test(genesis.genesisNonce)) {

@@ -67,6 +67,7 @@
  * @module @aukora/dsh-plugin-aumlok/ceilings
  */
 import { ATTENDANCE_STATES } from './attendance.mjs'
+import { phraseEntropySentence } from './themed-entropy.mjs'
 
 
 /** The ceiling names, printed in this order, in this exact spelling. */
@@ -126,7 +127,8 @@ export const CEILING_TEXTS = Object.freeze({
   // ── **PETER DECIDED TO DISCLOSE THIS NOW AND REDESIGN IT AFTER THE SHARE (AUMLOK-113)** ────────────────
   //
   // REVIEWER ROW 8. The root key is derived from the seven acrostic words plus a handle that is PUBLIC, and the
-  // pair is worth about 34.14 bits (`themed-entropy.mjs:23-33` sets that floor; the 64-bit floor was retired).
+  // pair is worth the figure `phraseEntropySentence()` prints (`themed-entropy.mjs`), which is not 256 bits
+  // and not 128 bits. The 64-bit floor was retired.
   // **A scrypt work factor of about one second per guess is a real cost and not a large one:** 2^34 guesses at
   // 1 s each is roughly 545 core-years, **and the search parallelises perfectly — it is a dictionary, not a
   // password, and every guess is independent.**
@@ -177,10 +179,10 @@ export const CEILING_TEXTS = Object.freeze({
     + 'A presence-bound custody is designed and spiked; switching to it changes the live key and the binding, so '
     + 'it is the owner\'s call',
   ROOT_KEY_OFFLINE_GUESSABLE:
-    'the root key is derived from the seven words PLUS A PUBLIC HANDLE: about 34.14 bits, public salt, about '
-    + '1 second per guess with scrypt. 2^34 guesses is roughly 545 core-years and the search PARALLELISES, so '
-    + 'the phrase is the whole secret: whoever has it rebuilds the root OFFLINE, with no access to this '
-    + 'machine. The acrostic stays; what it unlocks is being redesigned',
+    'the root key is derived from the seven words PLUS A PUBLIC HANDLE. '
+    + phraseEntropySentence()
+    + '. 2^40 guesses is on the order of thirty thousand core-years at one second each and the search '
+    + 'PARALLELISES, so the phrase is the whole secret',
   SUCCESSION_UNMEASURED:
     'the observer-succession court (UNOWNABLE-CORE.md section 5) is a separate prerequisite and is UNMEASURED',
   NO_IDENTITY_BINDING:

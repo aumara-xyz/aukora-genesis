@@ -2,7 +2,8 @@
  * AUMLOK v3 — the HANDLE and the seven words together are the key.
  *
  * THE PHRASE IS NOT THE KEY; THE ROOT IS DERIVED FROM IT, AND FROM THE HANDLE. **The seven words carry
- * about 14.3 bits on their own and the handle is PUBLIC, so the PAIR is worth about 34.14 bits — and that
+ * about 14.3 bits on the old tiny tables; the shipped acrostic is the figure `phraseEntropySentence()`
+ * prints, and the handle is PUBLIC, so the PAIR is that figure — not 256 bits and not 128 bits — and that
  * is the number that matters, because there is no root without both.** (This header said "about 14 bits"
  * until AUMLOK-114; *the phrase's own figure is the smaller half of a number a reader would take as the
  * whole, which is the understatement that made the entitlement look stronger than it is.*) The pair is

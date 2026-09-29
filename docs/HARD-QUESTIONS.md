@@ -56,8 +56,9 @@ agent only when no credential it can reach may push to `main` or edit protection
 ### 4. Who holds the key?
 
 Two layers. The root key is not stored: it is re-derived with scrypt from a seven-word phrase and a public handle
-(`plugins/aukora-aumlok/lib/derive-v3.mjs:4-15`), which gives 34.14 bits at the weakest drawable anchor
-(`plugins/aukora-aumlok/lib/themed-entropy.mjs:24`). Approvals are signed by a machine key whose seed sits on the
+(`plugins/aukora-aumlok/lib/derive-v3.mjs:4-15`), which gives 39.72 bits at the weakest drawable anchor
+over 1031 anchors (`plugins/aukora-aumlok/lib/themed-entropy.mjs`). That figure is not 256 bits and not
+128 bits. Approvals are signed by a machine key whose seed sits on the
 Mac, by default in `machine-seed-v3.json`, mode 0600 (`plugins/aukora-aumlok/lib/record-v3.mjs:69-82`); reading it
 asks no person for anything (`:277-281`). Receipts say key class `B`, `software-held`
 (`plugins/aukora-aumlok/lib/approval-receipt.mjs:47`). The approver that `self-change.mjs` and Kira trust is
