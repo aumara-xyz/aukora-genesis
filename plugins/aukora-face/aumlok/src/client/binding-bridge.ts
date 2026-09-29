@@ -41,6 +41,11 @@ export interface AumlokDrawnPhrase {
   readonly ok: boolean
   /** The seven words, in order, anchor first. Present only on a completed draw. */
   readonly words?: readonly string[]
+  /**
+   * A local memory aid. Absent when no local story was produced. It is not a word of the phrase
+   * and it is not part of the key.
+   */
+  readonly story?: string
   /** The shell's own short machine-readable refusal. Shown verbatim, never replaced. */
   readonly reason?: string
 }
@@ -75,6 +80,9 @@ const WORD = /^[a-z]{1,32}$/u
 
 /** The plan's phrase is seven words, and a draw that is not seven words is not a phrase. */
 const PHRASE_LENGTH = 7
+
+/** A story longer than this is dropped. The words still stand. */
+const STORY_LIMIT = 400
 
 function isFunction(value: unknown): value is (...args: never[]) => unknown {
   return typeof value === 'function'
@@ -131,7 +139,24 @@ export function parseAumlokDrawnPhrase(value: unknown): AumlokDrawnPhrase {
   const words = record['words']
   if (!Array.isArray(words) || words.length !== PHRASE_LENGTH) return { ok: false }
   if (!words.every(word => typeof word === 'string' && WORD.test(word))) return { ok: false }
-  return { ok: true, words: words.map(word => String(word)) }
+  const drawn: AumlokDrawnPhrase = { ok: true, words: words.map(word => String(word)) }
+  const story = readMnemonicStory(record)
+  return story === undefined ? drawn : { ...drawn, story }
+}
+
+/**
+ * A story is shown only when it cannot be mistaken for key material: a short string, not marked
+ * authoritative, and carrying no entropy figure other than zero.
+ */
+function readMnemonicStory(record: Record<string, unknown>): string | undefined {
+  if (record['storyAuthoritative'] === true) return undefined
+  const bits = record['storyEntropyBits']
+  if (bits !== undefined && bits !== 0) return undefined
+  const value = record['story']
+  if (typeof value !== 'string') return undefined
+  const story = value.trim()
+  if (story.length === 0 || story.length > STORY_LIMIT) return undefined
+  return story
 }
 
 /**

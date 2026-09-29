@@ -2,7 +2,9 @@
  * AUMLOK v3 — the HANDLE and the seven words together are the key.
  *
  * THE PHRASE IS NOT THE KEY; THE ROOT IS DERIVED FROM IT, AND FROM THE HANDLE. **The seven words carry
- * about 14.3 bits on their own and the handle is PUBLIC, so the PAIR is worth about 34.14 bits — and that
+ * the themed acrostic measured by `themed-entropy.mjs`. The theme groups the words and is not an
+ * input to scrypt. The handle is PUBLIC, so the pair is worth that measured figure — not 128 bits
+ * and not 256 bits — and that
  * is the number that matters, because there is no root without both.** (This header said "about 14 bits"
  * until AUMLOK-114; *the phrase's own figure is the smaller half of a number a reader would take as the
  * whole, which is the understatement that made the entitlement look stronger than it is.*) The pair is

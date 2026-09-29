@@ -266,6 +266,9 @@ export function AumlokSurface({
   // process, they are cleared the moment the tiles turn over, and nothing else in this file reads
   // them — no effect, no log, no request.
   const [words, setWords] = useState<readonly string[] | undefined>(undefined)
+  // A local memory aid, shown with the words and cleared with them. Absent means no story.
+  // It is not typed back and it is not part of the phrase.
+  const [story, setStory] = useState<string | undefined>(undefined)
   const [typed, setTyped] = useState<readonly string[]>(emptyTyped)
   // THE HANDLE LIVES HERE ONLY WHILE IT IS ON THE SCREEN, and it is NOT a secret: it is public, it is
   // recorded in the public record, and it is what a NIP-05 `name@domain` local part is read from. It is
@@ -324,6 +327,7 @@ export function AumlokSurface({
         return
       }
       setWords(drawn.words)
+      setStory(drawn.story)
       setTyped(emptyTyped())
       setBeat('shown')
     })()
@@ -338,6 +342,7 @@ export function AumlokSurface({
       const result = await submitPhrase(intent, typed, handle)
       setBusy(false)
       setWords(undefined)
+      setStory(undefined)
       setAcknowledged(false)
       setOutcome(result)
       if (!result.ok) {
@@ -357,6 +362,7 @@ export function AumlokSurface({
     if (busy) return
     if (beat === 'shown') {
       setWords(undefined)
+      setStory(undefined)
       setBeat('typed')
       return
     }
@@ -695,6 +701,9 @@ export function AumlokSurface({
               >
                 {beat === 'shown' ? (
                   <p className={css.warning} data-aumlok-phrase-warning>{t('surface.warning.lost')}</p>
+                ) : null}
+                {beat === 'shown' && story !== undefined ? (
+                  <p data-aumlok-mnemonic-story>{story}</p>
                 ) : null}
                 {/* Y3: "GIVE ME ANOTHER". Peter's sentence is that a person may draw a new phrase "as
                     many times as the person likes until one feels right", and that NOTHING is written

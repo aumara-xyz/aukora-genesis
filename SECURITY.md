@@ -169,12 +169,15 @@ Spelled in `plugins/aukora-aumlok/lib/ceilings.mjs`.
 - `SUCCESSION_UNMEASURED` and `NO_IDENTITY_BINDING` — no identity binding, ceremony, hardware
   custody or succession claim is made. A signature shows that a key signed, never that a person
   attended.
-- Not printed as a ceiling yet: the owner's root key is derived with scrypt from the seven words and a
-  public handle (`plugins/aukora-aumlok/lib/derive-v3.mjs`). The desktop app's generator gives about 34
-  bits at its weakest anchor (`plugins/aukora-aumlok/lib/themed-entropy.mjs`), and
-  `scripts/aumlok/bind --generate` about 14.3 bits (`plugins/aukora-aumlok/lib/ceremony-phrase.mjs`).
-  Because the handle is public, someone who has the public key can search for the words offline; the
-  scrypt cost slows each guess but does not stop the search. A redesign is planned.
+- The owner's root key is derived with scrypt from the seven words and a public handle
+  (`plugins/aukora-aumlok/lib/derive-v3.mjs`). The desktop draw is a seven-word acrostic: a six-letter
+  anchor, then Nature, Nature, People, People, Spirit, Spirit
+  (`plugins/aukora-aumlok/lib/themed-entropy.mjs`, `apps/aukora-desktop/aumlok-draw.mjs`). `measure()`
+  prints the weakest and strongest anchors. That figure is not 128 bits and not 256 bits. scrypt's
+  output length is not the phrase entropy. The theme only groups the words. Because the handle is
+  public, someone who has the public key can search for the words offline; the scrypt cost slows
+  each guess but does not stop the search. An old phrase still derives: the key is the seven words
+  and the handle, not a lookup in the current theme pools.
 
 ### Aura
 

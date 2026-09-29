@@ -31,7 +31,7 @@
 // Peter's seven words vanished and his screen returned to "Give me my phrase" with no record and no
 // refusal: the shell told the screen a success it had not achieved.
 //
-// WHY THE LIST IS READ OUT OF THE RELEASE. The organ's themed lists and its anchor list are data the
+// WHY THE LIST IS READ OUT OF THE RELEASE. The organ's approved word lists and its anchor list are data the
 // release already carries; the shell reads those bytes rather than keeping a second copy that could
 // disagree with the one a record is eventually derived against. If the release does not carry them,
 // the answer is a refusal BY NAME, never a fallback list.
@@ -43,6 +43,13 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { randomInt } from 'node:crypto'
+import {
+  THEME_BY_POSITION,
+  admissibleLetters,
+  bucketCounts,
+  chooseAnchorLetters,
+} from '../../plugins/aukora-aumlok/lib/themed-entropy.mjs'
+import { mnemonicStory } from '../../plugins/aukora-aumlok/lib/mnemonic-story.mjs'
 
 /** The names this shell refuses by. Every one of them is a constant of this file, so no refusal can
  * carry phrase material: the reply is the name, and the name is written here. */
@@ -128,8 +135,8 @@ function errnoSuffix(cause) {
 /** The plan's phrase: one six-letter anchor and six words, typed back in order, anchor first. */
 export const PHRASE_LENGTH = 7
 
-/** The letters each of the six rows must start with, and the theme each row is drawn from. */
-const ROW_THEMES = Object.freeze(['NATURE', 'NATURE', 'PEOPLE', 'PEOPLE', 'SPIRIT', 'SPIRIT'])
+/** Six acrostic positions. The initial is the anchor's letter. The pool is not a theme. */
+const ACROSTIC_POSITIONS = 6
 
 /** The only shape a word of a phrase can have, matching the face's own reader exactly. */
 const WORD = /^[a-z]{4,9}$/u
@@ -167,56 +174,69 @@ function readDataFile(releaseDir, name) {
 }
 
 /**
- * The per-letter word pools, indexed by theme then by the letter a row must start with.
+ * The approved pool for each theme and letter.
  *
- * The shipped shape is `{v, themes: {NATURE: {a: [...], ...}, PEOPLE: {...}, SPIRIT: {...}},
- * provenance}`. Anything else yields an empty table, which makes every draw refuse by name rather
- * than silently drawing from a list this module failed to understand.
+ * The file is `{themes: {NATURE, PEOPLE, SPIRIT}}`. A position draws from its own theme.
+ * Anything else yields empty theme tables, and every draw then refuses by name.
  * @param {unknown} themes - the parsed `aumlok-themes.json`.
- * @returns {Record<string, Record<string, string[]>>} the pools.
+ * @returns {Record<string, Record<string, string[]>>} theme → letter → words.
  */
-export function indexThemePools(themes) {
-  const table = {}
+export function indexLetterPools(themes) {
+  const pools = { NATURE: {}, PEOPLE: {}, SPIRIT: {} }
   const source = themes !== null && typeof themes === 'object' ? themes.themes : undefined
-  if (source === null || typeof source !== 'object') return table
+  if (source === null || typeof source !== 'object') return pools
   for (const theme of ['NATURE', 'PEOPLE', 'SPIRIT']) {
     const buckets = source[theme]
     if (buckets === null || typeof buckets !== 'object') continue
-    const pool = {}
     for (const letter of Object.keys(buckets)) {
+      const key = letter.toLowerCase()
+      if (!/^[a-z]$/u.test(key)) continue
       const words = buckets[letter]
       if (!Array.isArray(words)) continue
-      const clean = words.filter(word => typeof word === 'string' && WORD.test(word))
-      if (clean.length > 0) pool[letter.toLowerCase()] = clean
+      const list = []
+      const seen = new Set()
+      for (const word of words) {
+        if (typeof word === 'string' && WORD.test(word) && !seen.has(word)) {
+          seen.add(word)
+          list.push(word)
+        }
+      }
+      if (list.length > 0) pools[theme][key] = list
     }
-    table[theme] = pool
   }
-  return table
+  return pools
 }
 
 /**
- * The anchors this shell may draw: six lower-case letters, each of which has a non-empty pool in every
- * theme and every row that letter will be used by.
+ * The anchors this shell may draw: six lower-case letters, each of which has a pool large enough
+ * for every time that letter occurs, and each of which the entropy module still admits.
  *
- * THE ANCHOR IS ONLY USABLE IF THE WHOLE PHRASE CAN BE BUILT FROM IT. An anchor whose letter has no
- * SPIRIT words would draw six words and then fail on row five, so it is not an anchor this generator
- * can use — and the honest answer is to leave it out of the drawable set rather than to retry until
- * something works.
+ * THE ANCHOR IS ONLY USABLE IF THE WHOLE PHRASE CAN BE BUILT FROM IT. A letter that repeats more
+ * times than its pool has words cannot be drawn without repeating a word, so that anchor is left
+ * out rather than retried until something collides.
  * @param {unknown} anchors - the parsed `aumlok-anchors.json`.
- * @param {Record<string, Record<string, string[]>>} pools - the indexed theme pools.
+ * @param {Record<string, Record<string, string[]>>} pools - theme → letter → words.
+ * @param {ReadonlySet<string>} [letters] - letters the measurement still admits. Omitted means all.
  * @returns {string[]} the drawable anchors.
  */
-export function drawableAnchors(anchors, pools) {
+export function drawableAnchors(anchors, pools, letters) {
   const list = Array.isArray(anchors) ? anchors
     : anchors !== null && typeof anchors === 'object' && Array.isArray(anchors.anchors) ? anchors.anchors
       : []
   const usable = []
   for (const candidate of list) {
     if (typeof candidate !== 'string' || !ANCHOR.test(candidate)) continue
+    const seen = {}
     let ok = true
-    for (let row = 0; row < ROW_THEMES.length && ok; row++) {
-      const pool = pools[ROW_THEMES[row]]?.[candidate[row]]
-      if (!Array.isArray(pool) || pool.length === 0) ok = false
+    for (let row = 0; row < ACROSTIC_POSITIONS && ok; row++) {
+      const theme = THEME_BY_POSITION[row]
+      const letter = candidate[row]
+      if (letters && !letters.has(letter)) ok = false
+      const pool = pools[theme]?.[letter]
+      const key = `${theme}:${letter}`
+      const already = seen[key] ?? 0
+      if (!Array.isArray(pool) || pool.length - already <= 0) ok = false
+      seen[key] = already + 1
     }
     if (ok) usable.push(candidate)
   }
@@ -224,22 +244,36 @@ export function drawableAnchors(anchors, pools) {
 }
 
 /**
- * Build one phrase from an anchor and the pools, refusing rather than repeating a word.
+ * The letter set the measurement admits for these pools and anchors.
+ * The draw and `measure()` name the same anchors, so the printed bits are the draw's bits.
+ * @param {unknown} themes - the parsed themes document.
+ * @param {readonly string[]} anchors - six-letter candidates.
+ * @returns {Set<string>}
+ */
+export function admittedLetters(themes, anchors) {
+  const counts = bucketCounts(themes)
+  const chosen = chooseAnchorLetters(admissibleLetters(counts), counts, anchors)
+  return new Set(chosen.evaluation.letters)
+}
+
+/**
+ * Build one phrase from an anchor and that position's theme pool.
  *
- * A REPEATED WORD IS NOT A PHRASE. Seven words with a duplicate in them are fewer than seven words of
- * choice and would be typed back as a puzzle about which position the duplicate belonged to, so a row
- * whose pool is exhausted by the words already drawn refuses the whole phrase by name.
+ * A REPEATED WORD IS NOT A PHRASE. A position whose remaining pool is empty refuses the phrase.
+ * The pick is `node:crypto` `randomInt`, uniform. The theme is `THEME_BY_POSITION[row]`.
  * @param {string} anchor - the six-letter anchor.
- * @param {Record<string, Record<string, string[]>>} pools - the indexed theme pools.
+ * @param {Record<string, Record<string, string[]>>} pools - theme → letter → words.
+ * @param {(list: readonly string[]) => string} [pick] - the draw. Courts pass a fixed pick.
  * @returns {{ok: true, words: string[]}|{ok: false, reason: string}} the phrase, or a refusal.
  */
-export function composePhrase(anchor, pools) {
+export function composePhrase(anchor, pools, pick = drawOne) {
   const words = []
-  for (let row = 0; row < ROW_THEMES.length; row++) {
-    const pool = pools[ROW_THEMES[row]]?.[anchor[row]] ?? []
+  for (let row = 0; row < ACROSTIC_POSITIONS; row++) {
+    const theme = THEME_BY_POSITION[row]
+    const pool = pools[theme]?.[anchor[row]] ?? []
     const free = pool.filter(word => !words.includes(word))
     if (free.length === 0) return { ok: false, reason: DRAW_REFUSE.NO_ANCHOR }
-    words.push(drawOne(free))
+    words.push(pick(free))
   }
   return { ok: true, words }
 }
@@ -274,8 +308,12 @@ export function createAumlokDraw(options = {}) {
     const themes = readData(releaseDir, 'aumlok-themes.json')
     const anchors = readData(releaseDir, 'aumlok-anchors.json')
     if (themes === null || anchors === null) return { ok: false, reason: DRAW_REFUSE.NO_LISTS }
-    const pools = indexThemePools(themes)
-    const usable = drawableAnchors(anchors, pools)
+    const pools = indexLetterPools(themes)
+    const anchorList = Array.isArray(anchors) ? anchors
+      : anchors !== null && typeof anchors === 'object' && Array.isArray(anchors.anchors) ? anchors.anchors
+        : []
+    const letters = admittedLetters(themes, anchorList.filter(word => typeof word === 'string' && ANCHOR.test(word)))
+    const usable = drawableAnchors(anchors, pools, letters)
     if (usable.length === 0) return { ok: false, reason: DRAW_REFUSE.NO_ANCHOR }
     return { ok: true, anchors: usable, pools }
   }
@@ -305,6 +343,10 @@ export function createAumlokDraw(options = {}) {
         if (composed.ok !== true) continue
         const words = [anchor, ...composed.words]
         pending = { owner, intent, words }
+        const told = mnemonicStory(words, options.story)
+        if (told.story && told.entropyBits === 0 && told.authoritative === false && told.local === true) {
+          return { ok: true, words, anchor, story: told.story, storyEntropyBits: 0, storyAuthoritative: false }
+        }
         return { ok: true, words, anchor }
       }
       return { ok: false, reason: DRAW_REFUSE.NO_ANCHOR }

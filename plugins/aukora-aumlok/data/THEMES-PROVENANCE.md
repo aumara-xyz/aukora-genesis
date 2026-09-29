@@ -1,12 +1,13 @@
 # AUMLOK v3 — the themed buckets: provenance, counts, and what the entropy actually is
 
-> **Superseded by item X2 (2026-09-23); historical below (banner added 2026-09-26).** Every number below
-> was measured from the `aumlok-themes.json` of its day. The shipped file is now the X2 rebuild: every word
-> drawn from the EFF large wordlist with `wordfreq` 3.1.1 zipf as a filter, totals NATURE 683, PEOPLE 1,198,
-> SPIRIT 677, **18 usable letters** (`abcdefghlmoprstuvw`) at a minimum bucket of 12, **150** anchors, and a
-> measured **34.14 bits** (weakest anchor 26.91 bits; ceiling 36.31) that gates nothing — the entropy floor
-> was retired (`aumlok:entropy-below-floor-retired`). See the file's own `provenance` block and
-> [COMMON-WORDS-PROVENANCE.md](COMMON-WORDS-PROVENANCE.md). The court this page cites was rewritten by X2.
+> **The live draw is themed again (banner updated 2026-09-28).** Words 1–2 are NATURE, 3–4 PEOPLE,
+> 5–6 SPIRIT. The pools are the maximal lexicons in `theme-nature.json`, `theme-people.json` and
+> `theme-spirit.json` after the safety filter, built by `scripts/aumlok/build-maximal-themes.py`.
+> Fruit stays in NATURE and is not in PEOPLE. The live figure is `measure()` in `lib/themed-entropy.mjs`.
+> On this rebuild that is about 60.46 bits at the weakest anchor and 69.59 at the strongest, 1364 anchors,
+> letters `abcdefghilmopqrst`. That is not 128 bits and not 256 bits. The root is scrypt of the seven
+> words and the public handle. The theme only groups the words. The paragraphs below this banner were
+> measured from earlier, smaller files.
 
 Generated from the shipped arrays of its day by the same module the generator uses
 (`plugins/aukora-aumlok/lib/themed-entropy.mjs`); every number below was measured from

@@ -23,23 +23,18 @@ no key.
 
 ## Generate a phrase
 
-`node scripts/aumlok/bind --generate` prints one TRUE ACROSTIC — seven dash-joined tokens whose
-initial letters spell the first — and exits without prompting, deriving a key or creating a
-controller. Run it alone, without binding options.
-Output is secret: use your own private terminal, not a recorded chat or shared log.
+`node scripts/aumlok/bind --generate` is refused. It does not print a phrase.
 
-**IT READS NO FILE, AND THERE IS NO WORD LIST TO SHIP.** This used to draw seven unrelated words from
-a bundled copy of the EFF Long Wordlist, pinned by SHA-256 and refused when missing or altered. The
-AUMLOK phrase was never seven unrelated words: it is an acrostic drawn from the themed tables in
-`plugins/aukora-aumlok/lib/ceremony-phrase.mjs`, so the list and every function that read it were
-deleted. There is nothing left to tamper with, no runtime download, and no third-party attribution to
-carry — the EFF list, its licence and its digest used to live in this paragraph and went with it.
+**THE CEREMONY DRAW IS NOT THIS COMMAND.** The seven words are drawn in the
+desktop shell (`apps/aukora-desktop/aumlok-draw.mjs`). Word 0 is a six-letter anchor. Words 1–2
+are Nature, 3–4 People, 5–6 Spirit, and each initial follows the anchor. The bits are what
+`measure()` in `plugins/aukora-aumlok/lib/themed-entropy.mjs` reports. That figure is not 128 bits
+and not 256 bits. The root is scrypt of the seven words and the public handle. The small tables in
+`ceremony-phrase.mjs` are the donor list, and they are not the ceremony draw.
 
-The output is dash-joined because that is the form the ceremony window displays and compares against.
-A court asserts that the string this command prints BINDS: the two used to disagree, and the window
-could not bind the phrase it had just drawn.
-
-Binding takes `--directory` and `--handle` (required: the handle salts the KDF).
+Binding takes `--directory` and `--handle` (required: the handle salts the KDF). The seven words are
+typed into the terminal for that command, or drawn and typed back on the ceremony screen. They are
+dash-joined when the ceremony compares them.
 
 ## Run the lane
 
