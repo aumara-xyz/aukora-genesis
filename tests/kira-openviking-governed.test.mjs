@@ -59,7 +59,10 @@ await arm('A1 gives ambient and governed records distinct, reversible URIs', asy
   const kira = [...governed.keys()][0]
   assert.equal(idFromUri(USER, uriFor(USER, rem)), rem)
   assert.equal(idFromUri(USER, uriFor(USER, kira)), kira)
-  assert.match(uriFor(USER, kira), /\/governed\/kira-/u)
+  assert.match(uriFor(USER, kira), new RegExp(`/governed/${kira.slice(5)}\\.md$`, 'u'))
+  assert.doesNotMatch(uriFor(USER, kira), /\/governed\/kira-/u)
+  // legacy read still works
+  assert.equal(idFromUri(USER, `viking://user/${USER}/memories/kira/governed/kira-${kira.slice(5)}.md`), kira)
 })
 
 await arm('sync indexes governed records beside ambient with tier tags', async () => {
@@ -110,6 +113,65 @@ await arm('an incomplete ledger never removes governed index entries', async () 
   const answer = await bridge.sync({ ambient, governed: new Map(), complete: false })
   assert.equal(answer.removed, 0)
   assert.equal(files.has(uriFor(USER, missing)), true)
+})
+
+await arm('OV hit for forgotten/gone governed id is dropped (no tombstone bypass)', async () => {
+  // Index all six, then hand a ledger that omits one governed id (forgotten/gone).
+  await bridge.sync(ledger())
+  const forgotten = [...governed.keys()][0]
+  const retained = new Map(governed)
+  retained.delete(forgotten)
+  const forgottenUri = uriFor(USER, forgotten)
+  // Re-plant a stale OV entry AFTER a full index (simulates forget not yet reconciled).
+  files.set(forgottenUri, {
+    uri: forgottenUri,
+    content: 'forgotten body must not surface',
+    tags: [`kira_id=${forgotten}`, 'tier=signed'],
+  })
+  assert.equal(files.has(forgottenUri), true)
+  scores.set(forgotten, 0.99)
+  for (const id of ambient.keys()) scores.set(id, 0.5)
+  for (const id of retained.keys()) scores.set(id, 0.5)
+  const answer = await bridge.recall({
+    question: 'governance',
+    live: () => ({ ambient, governed: retained, complete: true }),
+  })
+  assert.equal(answer.hits.some(hit => hit.id === forgotten), false)
+  // complete ledger reconcile removes the stale OV entry (no tombstone bypass)
+  assert.equal(files.has(forgottenUri), false)
+})
+
+await arm('OV tags alone cannot bypass a missing settled record', async () => {
+  const ghost = 'kira:' + '9'.repeat(64)
+  const ghostUri = uriFor(USER, ghost)
+  files.set(ghostUri, {
+    uri: ghostUri,
+    content: 'should never surface',
+    tags: [`kira_id=${ghost}`, 'tier=signed'],
+  })
+  scores.set(ghost, 0.99)
+  for (const id of ambient.keys()) scores.set(id, 0.4)
+  const answer = await bridge.recall({
+    question: 'ghost',
+    live: () => ({ ambient, governed, complete: true }),
+  })
+  assert.equal(answer.hits.some(hit => hit.id === ghost), false)
+  assert.equal(files.has(ghostUri), false)
+})
+
+await arm('incomplete ledger still drops unmapped hits from the answer', async () => {
+  const missing = [...governed.keys()][1]
+  const uri = uriFor(USER, missing)
+  files.set(uri, { uri, content: 'stale', tags: [`kira_id=${missing}`, 'tier=signed'] })
+  scores.set(missing, 0.99)
+  for (const id of ambient.keys()) scores.set(id, 0.4)
+  const answer = await bridge.recall({
+    question: 'incomplete',
+    live: () => ({ ambient, governed: new Map(), complete: false }),
+  })
+  assert.equal(answer.hits.some(hit => hit.id === missing), false)
+  // incomplete: may keep OV entry (no delete), but must not show it
+  assert.equal(files.has(uri), true)
 })
 
 process.stdout.write(`kira-openviking-governed: ${passed} passed, ${failures} failed\n`)
