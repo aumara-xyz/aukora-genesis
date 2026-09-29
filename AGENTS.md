@@ -47,6 +47,14 @@
     this and call it a lesson. He does not have another night.
 15. **BRUTAL SELF-ROAST EVERY ROUND.** Each report to Peter opens with what I got wrong, what I wasted, and what the
     round did NOT deliver. No spin, no silver lining before the damage. The roast is the first paragraph, not the last.
+16. **NEVER SANDBOX CODEX OR CLAUDE. IT IS THE BARRIER, NOT THE ENVIRONMENT.** Invoke them with
+    `--dangerously-bypass-approvals-and-sandbox` (Codex) — never `-s workspace-write`, which blocks Unix socket
+    binding, `/usr/bin/sandbox-exec`, the signer socket, DNS, `ps` and even `.git/FETCH_HEAD`. On 2026-09-29 every
+    single "BLOCKED" report that night came from that one flag, and a sandboxed Codex wrote a plugin, could not test
+    it, DELETED its own work and reported blocked — five times. A coder who cannot run its own code retreats instead
+    of delivering. Give them full access, make them run their own work, and make them report real output. If a coder
+    cannot verify something in any environment, it still writes the code and names the unverified call; deleting the
+    work is the only failure.
 
 ## Memory is automatic, and it is never approved
 
