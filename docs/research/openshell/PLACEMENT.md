@@ -1,6 +1,6 @@
 # Placement — Domains A–D and the OpenShell gateway
 
-**Status: PROPOSED / UNRUN.** A diagram in this file confines nothing. OpenShell is not on the live path. No plugin, flag, crown path, or Approve step is added here.
+**Status: PROPOSED / UNRUN.** A diagram in this file confines nothing. OpenShell is not on the live path. No plugin, flag, crown path, or Approve step is added here. The proof harness is Docker only (`PROFILES.md`). The contracts that stay in AUKORA are `CORE-EXTRACT.md`.
 
 ## What is not enforced
 
