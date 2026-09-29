@@ -1,0 +1,37 @@
+# Increment 1 workload sketch. STAGE. No process in this tree loads this file.
+# It is not an OpenShell policy, not a Seatbelt profile, and not Approve.
+status: STAGE
+wired: false
+openshellIsApprove: false
+
+filesystem:
+  compatibility: hard_requirement
+  mounts:
+    - role: scratch
+      mode: read-write
+      source: workload-allocated
+    - role: input-snapshot
+      mode: read-only
+      source: operator-selected
+  refused:
+    - owner-home
+    - application-support
+    - signer-socket
+    - container-engine-socket
+    - gateway-admin
+    - github-push-credential
+    - protected-target-writable
+
+process:
+  run_as: non-root
+  # The measured default image user is ubuntu. A sandbox user is not assumed. Root is refused.
+
+network:
+  proposal: dedicated-aukora-broker-outside
+  inventedGatewayProposeRoute: false
+
+effect:
+  name: workspace.patch
+  executor: outside-workload
+
+gateA: UNMET

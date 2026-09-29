@@ -4,8 +4,9 @@
 
 North star: *AUKORA_Sovereign_Composable_Runtime_Technical_Spec_v0.2*  
 Spec SHA-256: `c4199726` … `afc1` (full digest in ~/aukora-live/jobs/containment-hard-20260929/NOTES.md)  
-Worktree tip base: `7a029c68b6f781071e623291a30f8888e91dd075` (`origin/main`)  
-Spec §2.6 AUKORA pin: `289d2cebab92249639cd4dfcf7f9fa7539e4ff58`  
+This mirror's base: `28956e78a` (cloud scratch PR; not a live land)  
+Earlier extract tip: `7a029c68`  
+Spec §2.6 AUKORA pin, short: `289d2ceb` (different commit from this mirror's base)  
 Mac spike: `~/aukora-live/jobs/openshell-spike-20260929/` **STATUS=PASS** (measure only)  
 Effect IR sibling: `~/aukora-live/jobs/day-astra-effect/ready/` **STATUS=STAGED** (do not break Auma)
 
@@ -87,8 +88,7 @@ From OpenShell / v0.2 / Mac spike PASS:
 
 ## Read next
 
-- `ADAPTER.md` — AUKORA-owned interface + OpenShell sketch
-- `PROFILES.md` — Development / Confined laboratory / Sovereign local v1
-- `SPIKE-FINDINGS.md` — Mac PASS evidence + required fixes
-- `ENGINEER-ONBOARD.md` — how to raise (docs-only card vs metal)
-- Sibling: `~/aukora-live/jobs/day-astra-effect/ready/`
+- `INC1-PLACEMENT.md` — placement, Gate A blockers, residual risks, stub call path
+- `SPIKE-FINDINGS.md` — prior Mac measure + required fixes (not re-run in the cloud mirror)
+- Plugin stubs: `plugins/aukora-containment/` (`launch` throws; courts print UNRUN)
+- `ADAPTER.md`, `PROFILES.md`, and `ENGINEER-ONBOARD.md` are not in this tree

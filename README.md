@@ -22,6 +22,20 @@ in a separate macOS account the agent cannot read; a kernel decides; every gover
 
 [Further limits and recorded evidence](#further-limits-and-recorded-evidence) below bound these claims.
 
+## OpenShell containment (STAGE only)
+
+`plugins/aukora-containment/` stages Increment 1 of a candidate OpenShell workload. It is not mounted, not Become, and not a live Electron wire. Peter's installed app changes only through local `scripts/aukora/self-change.mjs` and approval in the AUKORA popup. This tree does not do that.
+
+**OpenShell is not Approve.** A workload fence is a reachability ceiling. Aumlok still approves exact bytes. The existing broker still owns `workspace.patch` outside the workload. Aura is evidence. Kira is memory. None of those organs move into the sandbox, and no universal shell effect is added.
+
+**Gate A is unmet.** Gate A needs one exact OpenShell build, its API capabilities, and a platform qualification. Until that record exists the profile stays development status. A classifier does not stand in for a missing enforcement check. Residual blockers, including the same-UID ceiling, are in [docs/research/containment/INC1-PLACEMENT.md](docs/research/containment/INC1-PLACEMENT.md).
+
+```sh
+node plugins/aukora-containment/check.mjs
+```
+
+That command checks the stubs and prints `UNRUN` for B01, B02, and O01–O08. It is not one of the packet checks below, and a zero exit is not Gate A.
+
 ## Try it
 
 On macOS with Python 3, Node.js 22 or newer, Perl and `/usr/bin/cc` (Xcode Command Line Tools):

@@ -98,9 +98,11 @@ Full transcript: spike `logs/53-deny-evidence.txt`.
 
 ## Fold-forward into this STAGE
 
-| Artifact | Destination |
-|---|---|
-| Fix A + B + C + D | `plugins/aukora-containment/backends/openshell-sketch.mjs` |
-| Policy shape (noproc) | `plugins/aukora-containment/policy/memory-metal-worker.inc1.sketch.yaml` |
-| Evidence narrative | this file + ENGINEER-ONBOARD |
-| Hostile residuals | job `CLAUDE-HOSTILE-ADAPTER.md` |
+The cloud mirror did not re-run this spike. Destinations below are NOT_WIRED sketches.
+
+| Artifact | Destination | In this mirror |
+|---|---|---|
+| Fix A + B + C + D | `plugins/aukora-containment/backends/openshell-sketch.mjs` | data only; `launch()` throws |
+| Policy shape (noproc) | `plugins/aukora-containment/policy/memory-metal-worker.inc1.sketch.yaml` | sketch; no loader |
+| Evidence narrative | this file + `INC1-PLACEMENT.md` | STAGE; Gate A unmet |
+| Hostile residuals | job `CLAUDE-HOSTILE-ADAPTER.md` | not copied into the tree |
