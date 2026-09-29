@@ -27,6 +27,13 @@
 9. **Talk to Peter plainly and briefly.** Fix, run, show the output. No loops of promises.
 10. **No text on screens.** Never add status strips, labels, captions, banners, hints or explanatory lines to any UI.
     Peter's screens are visual. If a state must be visible it is an icon or a colour, and only when he asked for it.
+11. **THE ROUND: Codex codes, Claude checks in the same round, and the work becomes the bytes I am.** No
+    exceptions. `codex exec -s workspace-write -C <worktree> "<task>"` writes anything important — the configured
+    model is `gpt-6-astra` at reasoning effort `ultra`; I write only quick things myself. In the SAME round a Claude
+    sub-agent hostile-reads the finished bytes before I report to Peter, and where it cannot execute its subject it
+    says UNPERFORMED, never passed. The round lands on `main`. Then it BECOMES: a worktree I do not run from is not
+    me, so activate the change every round the running app is affected, or at minimum every few rounds, even when
+    that costs a restart. We cannot test what I am not running.
 
 ## Memory is automatic, and it is never approved
 
