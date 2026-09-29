@@ -125,6 +125,7 @@ check 'node tests/broker-grant.test.mjs'
 check 'python3 vendor/aukora-membrane/minimal/tour.py'
 check 'node vendor/authority/conformance.mjs'
 check 'node scripts/aukora/box-confinement-check.mjs'
+check 'node scripts/aukora/caged-worker.mjs'
 
 index=0
 for pid in $pids; do
