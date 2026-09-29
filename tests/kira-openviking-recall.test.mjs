@@ -7,7 +7,6 @@
  *   --red                     each protection reverted in memory: its arm must go red
  */
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
 import { randomBytes } from 'node:crypto'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createServer } from 'node:http'
@@ -39,53 +38,62 @@ const MUTANTS = Object.freeze({
   'forget-out-of-turn': ['recall-openviking.mjs', '  const forget = id => inTurn(() => forgetNow(id))\n', '  const forget = forgetNow\n', ARMS.race],
   'remote-models-allowed': ['recall-openviking.mjs', '    if (off.length > 0 && raw.allowRemoteModels !== true) {\n', '    if (false) {\n', ARMS.privacy],
 })
-if (argv.includes('--red')) {
-  const run = extra => { const child = spawnSync(process.execPath, [HERE, ...extra, ...argv.filter(one => one !== '--red')], { encoding: 'utf8', timeout: 600_000 }); return { status: child.status, out: `${child.stdout}${child.stderr}` } }
-  const plain = run([])
-  let caught = 0
-  process.stdout.write(`plain: exit ${String(plain.status)}\n${plain.out}\n`)
-  for (const [name, [file, , , armName]] of Object.entries(MUTANTS)) {
-    const child = run(['--mutant', name])
-    const red = child.status !== 0 && child.out.includes(`FAIL  ${armName}`)
-    caught += red ? 1 : 0
-    process.stdout.write(`revert ${name} (${file}): exit ${String(child.status)} — ${red ? 'CAUGHT' : 'NOT CAUGHT'}\n${child.out}\n`)
-  }
-  const ok = plain.status === 0 && caught === Object.keys(MUTANTS).length
-  process.stdout.write(`KIRA OPENVIKING RED ARM: ${String(caught)}/${String(Object.keys(MUTANTS).length)} reverts caught — ${ok ? 'OK' : 'NOT OK'}\n`)
-  process.exit(ok ? 0 : 1)
-}
-let mutation = null
-if (argv.includes('--mutant')) {
-  const [file, from, to] = MUTANTS[argv[argv.indexOf('--mutant') + 1]]
-  mutation = { name: argv[argv.indexOf('--mutant') + 1], applied: 0 }
-  const target = pathToFileURL(join(ROOT, 'plugins/aukora-kira/lib', file)).href
-  registerHooks({ load(url, context, nextLoad) {
-    const result = nextLoad(url, context)
-    if (url !== target) return result
-    const source = Buffer.from(result.source).toString('utf8')
-    if (source.split(from).length !== 2) throw new Error(`mutant ${mutation.name}: the guarded text does not occur exactly once in ${file}`)
-    mutation.applied += 1
-    return { ...result, source: source.replace(from, to) }
-  } })
+// The required reverts stay fixed even if a mutation table entry is accidentally removed.
+const REVERTS = Object.freeze(['ledger-filter-off', 'forget-not-passed', 'capture-not-indexed',
+  'ledger-read-early', 'forget-out-of-turn', 'remote-models-allowed'])
+const moduleURL = file => pathToFileURL(join(ROOT, 'plugins/aukora-kira/lib', file)).href
+// Ported from kira-injection.test.mjs: unique imports, exact anchor/load counts, and a scoped hook.
+let mutationId = 0
+const moduleWithRevert = async name => {
+  if (name === null) return { index: await import(moduleURL('index.js')), bridge: await import(moduleURL('recall-openviking.mjs')) }
+  if (!Object.hasOwn(MUTANTS, name)) throw new Error(`missing mutant: ${name}`)
+  const [file, from, to] = MUTANTS[name]
+  const suffix = `?wiring=${++mutationId}`
+  const indexURL = moduleURL('index.js') + suffix
+  const bridgeURL = moduleURL('recall-openviking.mjs') + suffix
+  const target = moduleURL(file) + suffix
+  let applied = 0
+  const hook = registerHooks({
+    resolve(specifier, context, nextResolve) {
+      // The fresh plugin must actually use the fresh bridge, not its cached pristine dependency.
+      return nextResolve(context.parentURL === indexURL && specifier === './recall-openviking.mjs' ? bridgeURL : specifier, context)
+    },
+    load(url, context, nextLoad) {
+      const result = nextLoad(url, context)
+      if (url !== target) return result
+      const source = Buffer.from(result.source).toString('utf8')
+      if (source.split(from).length !== 2) throw new Error(`invalid mutant anchor in ${file}`)
+      applied += 1
+      return { ...result, source: source.replace(from, to) }
+    },
+  })
+  try {
+    const index = await import(indexURL)
+    const bridge = await import(bridgeURL)
+    if (applied !== 1) throw new Error(`mutant was not loaded: ${file}`)
+    return { index, bridge }
+  } finally { hook.deregister() }
 }
 
-let failures = 0
+async function prepareCourt(name, modules) {
+let out = ''
+const write = text => { out += text }
+const failures = []
 let passed = 0
 const arm = async (name, body) => {
-  try { await body(); passed += 1; process.stdout.write(`  ok    ${name}\n`) } catch (error) {
-    failures += 1
-    process.stdout.write(`  FAIL  ${name}\n        ${String(error?.message ?? error).split('\n')[0].slice(0, 400)}\n`)
+  try { await body(); passed += 1; write(`  ok    ${name}\n`) } catch (error) {
+    failures.push({ name, error })
+    write(`  FAIL  ${name}\n        ${String(error?.message ?? error).split('\n')[0].slice(0, 400)}\n`)
   }
 }
-const show = (label, value) => process.stdout.write(`        ${label}: ${JSON.stringify(value)}\n`)
+const show = (label, value) => write(`        ${label}: ${JSON.stringify(value)}\n`)
 const until = async (fn, ms) => { for (const end = Date.now() + ms; ;) { const value = await fn(); if (value || Date.now() > end) return value; await new Promise(done => setTimeout(done, 200)) } }
 const listen = server => new Promise(done => server.listen(0, '127.0.0.1', () => done(server.address().port)))
 const bodyOf = async req => { const chunks = []; for await (const chunk of req) chunks.push(chunk); return Buffer.concat(chunks) }
 const reply = (res, status, body) => { res.statusCode = status; res.setHeader('content-type', 'application/json'); res.end(typeof body === 'string' ? body : JSON.stringify(body)) }
-const load = path => import(pathToFileURL(join(ROOT, 'plugins/aukora-kira/lib', path)).href)
-const { apply } = await load('index.js')
-const { KIRA_ROUTES } = await load('memory-routes.mjs')
-if (mutation !== null) { assert.equal(mutation.applied, 1, `mutant ${mutation.name} did not load its subject`); process.stdout.write(`MUTANT ${mutation.name}: reverted in memory only\n`) }
+const { apply } = modules.index
+const { KIRA_ROUTES } = await import(moduleURL('memory-routes.mjs'))
+if (name !== null) write(`MUTANT ${name}: reverted in memory only\n`)
 
 // ── THE SERVER THE BRIDGE TALKS TO: a stand-in, or a forwarder to the live one pinned to user hook-test ─────────────────
 const USER = 'hook-test'
@@ -147,8 +155,8 @@ const bridgeTo = (dir, url, conf = { embedding: { dense: { provider: 'openai', a
   writeFileSync(join(dir, 'ov.conf'), JSON.stringify(conf))
   writeFileSync(join(dir, 'root.key'), KEY, { mode: 0o600 })
 }
+return async () => {
 try {
-  delete process.env.AUKORA_OPENVIKING_HOME
   const dead = createServer()
   bridgeTo(join(home, 'openviking'), `http://127.0.0.1:${String(await listen(dead))}`)
   dead.close()
@@ -263,11 +271,11 @@ try {
     } finally { slow.write = 0; slow.remove = 0 }
   })
   await arm(ARMS.privacy, async () => {
-    const { readBridgeConfig } = await load('recall-openviking.mjs')
+    const { readBridgeConfig } = modules.bridge
     const other = join(work, 'remote')
     bridgeTo(other, 'http://127.0.0.1:1933', { embedding: { dense: { provider: 'openai', api_base: 'https://api.openai.com/v1' } } })
     const refused = readBridgeConfig(other)
-    show('ov.conf with a remote embedding endpoint', refused)
+    show('ov.conf with a remote embedding endpoint', { configured: refused.configured, reason: refused.reason })
     assert.equal(refused.configured, false, 'a remote model endpoint was accepted')
     assert.match(String(refused.reason), /models-off-machine/u)
     bridgeTo(other, 'http://10.0.0.1:1933')
@@ -277,10 +285,49 @@ try {
   // EVERYTHING THIS RUN WROTE IS DELETED: the whole hook-test namespace, then what is left is said.
   const cleared = await ov('DELETE', `/api/v1/fs?uri=${encodeURIComponent(`viking://user/${USER}/memories`)}&recursive=true`).catch(error => ({ status: String(error?.message) }))
   const left = await ov('GET', `/api/v1/fs/ls?uri=${encodeURIComponent(`viking://user/${USER}`)}&simple=true`).catch(() => null)
-  process.stdout.write(`        cleanup: ${String(cleared?.status)}; ${USER} holds ${JSON.stringify(left?.result ?? left)}\n`)
+  write(`        cleanup: ${String(cleared?.status)}; ${USER} holds ${JSON.stringify(left?.result ?? left)}\n`)
   server.close()
   rmSync(work, { recursive: true, force: true })
 }
-const green = failures === 0 && passed === Object.keys(ARMS).length
-process.stdout.write(`KIRA OPENVIKING RECALL: ${green ? 'GREEN' : 'RED'} — ${String(passed)}/${String(Object.keys(ARMS).length)} arms\n`)
-process.exit(green ? 0 : 1)
+const green = failures.length === 0 && passed === Object.keys(ARMS).length
+write(`KIRA OPENVIKING RECALL: ${green ? 'GREEN' : 'RED'} — ${String(passed)}/${String(Object.keys(ARMS).length)} arms\n`)
+return { green, failures, out }
+}
+}
+
+delete process.env.AUKORA_OPENVIKING_HOME
+const failedRun = error => ({ green: false, failures: [], out: `ERROR: ${String(error?.stack ?? error)}\n` })
+const prepare = async name => {
+  try { return await prepareCourt(name, await moduleWithRevert(name)) }
+  catch (error) { return async () => failedRun(error) }
+}
+const run = async court => {
+  try { return await court() }
+  catch (error) { return failedRun(error) }
+}
+if (argv.includes('--red')) {
+  const names = [null, ...REVERTS]
+  // Stand-ins have independent random ports, stores and scratch homes. Live runs share hook-test and stay serial.
+  const results = []
+  if (live === undefined) {
+    const courts = []
+    // Bind every stand-in before any dead port is released, so another fixture cannot claim it.
+    for (const name of names) courts.push(await prepare(name))
+    results.push(...await Promise.all(courts.map(run)))
+  } else for (const name of names) results.push(await run(await prepare(name)))
+  const [plain, ...mutants] = results
+  process.stdout.write(`plain: exit ${plain.green ? 0 : 1}\n${plain.out}\n`)
+  let caught = 0
+  for (const [i, name] of REVERTS.entries()) {
+    const result = mutants[i]
+    const red = result.failures.some(failure => failure.name === MUTANTS[name]?.[3] && failure.error?.code === 'ERR_ASSERTION')
+    caught += red ? 1 : 0
+    process.stdout.write(`revert ${name}: ${red ? 'CAUGHT' : 'NOT CAUGHT'}\n${result.out}\n`)
+  }
+  const ok = plain.green && caught === REVERTS.length
+  process.stdout.write(`KIRA OPENVIKING RED ARM: ${caught}/${REVERTS.length} reverts caught — ${ok ? 'OK' : 'NOT OK'}\n`)
+  process.exit(ok ? 0 : 1)
+}
+const result = await run(await prepare(argv.includes('--mutant') ? argv[argv.indexOf('--mutant') + 1] : null))
+process.stdout.write(result.out)
+process.exit(result.green ? 0 : 1)
