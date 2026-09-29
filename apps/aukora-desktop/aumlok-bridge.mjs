@@ -55,10 +55,11 @@ function settleOperationOf(intent) {
     : (typeof intent?.ceremony === 'string' ? intent.ceremony : 'unknown')
   return { operation: `aumlok.${ceremony}`, scope: 'aukora-aumlok.ceremony' }
 }
+import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
 // THE DRAW HALF OF THE CROSSING, imported rather than re-implemented: one module owns the phrase's
 // shape, its one in-memory slot and its refusal names, and this file owns the channel it arrives on.
-import { DRAW_REFUSE, createAumlokDraw } from './aumlok-draw.mjs'
+import { BIND_REFUSE, DRAW_REFUSE, createAumlokDraw } from './aumlok-draw.mjs'
 import { defaultAumlokDirectory, writeInstallSettingsOnFirstLink } from './install-settings.mjs'
 // THE REST OF THIS BRIDGE LIVES IN TWO SIBLINGS, MOVED WHOLE (2026-09-27) so that no file of it passes the
 // self-change loop's 64 KiB limit (MAX_PATCH_BYTES, vendor/aukora-seed-app). No moved line was rewritten, every
@@ -83,6 +84,27 @@ export {
 export {
   readFaceTokenValues, guardKeyboard, needsRaise, SAFE_APPROVAL_TOKENS, safeApprovalTokens, approvalTokenCss,
 } from './aumlok-approval-view.mjs'
+
+/** A key folder that exists but is not a plain directory, named as `bindV3` names it; null when it is fine or absent. */
+function folderFault(directory) {
+  try {
+    const folder = lstatSync(directory)
+    if (folder.isDirectory()) return null
+    return `aumlok:bind-write-failed:${folder.isSymbolicLink() ? 'ELOOP' : 'ENOTDIR'}`
+  } catch (error) {
+    return error?.code === 'ENOENT' ? null : 'aumlok:bind-write-failed'
+  }
+}
+
+/** Whether anything at all sits at a record path (lstat: a file, a directory, a live or dangling symlink). */
+function recordPathOccupied(path) {
+  try {
+    lstatSync(path)
+    return true
+  } catch (error) {
+    return !(error?.code === 'ENOENT' || error?.code === 'ENOTDIR')
+  }
+}
 
 /** Register the approval question's IPC surface and hand back a disposer.
  *
@@ -498,7 +520,7 @@ export function installApprovalBridge(deps) {
    * is the whole of the sender validation: the draw is bound to the webContents that asked, so a second
    * window that guessed this channel's name reaches the refusal and never the words.
    */
-  ipcMain.handle(APPROVAL_CHANNELS.DRAW, (event, payload) => {
+  ipcMain.handle(APPROVAL_CHANNELS.DRAW, async (event, payload) => {
     // THE DRAW MODULE'S OWN NAME, not the approval module's: a court and a screen both match on the
     // name, and two names for one fact is how a refusal stops being recognisable.
     if (!fromApplication(event)) return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
@@ -506,10 +528,33 @@ export function installApprovalBridge(deps) {
     // module's own name rather than being coerced into one of the two that exist.
     const intent = typeof payload === 'string' ? payload : payload?.intent
     try {
+      // A BOUND FOLDER IS REFUSED BEFORE ANY WORDS EXIST (2026-09-29). Both intents reach `bindV3` in this process,
+      // and `bindV3` never replaces an identity (`aumlok:bind-already-bound`) — so drawing seven words here would only
+      // spend them on a refusal. Before that guard, the same press silently re-named the person. With an owner daemon
+      // installed the ceremony is routed to it instead (SUBMIT below), and that path is left exactly as it was.
+      // THE SAME TEST `bindV3` APPLIES (`refuseIfBound`): ANYTHING at the record path, by lstat — a readable record, a
+      // damaged one, a symlink. Asking "does it read as bound?" instead let a damaged record through to a draw that
+      // could only end in `already-bound`, which is the retry loop again (A4, 2026-09-29).
+      if (intent === 'bind' || intent === 'refresh') {
+        const daemon = await ownerDaemonStatusOf()
+        if (daemon?.installed !== true) {
+          const { library: lib, directory: dir } = await context()
+          // THE FOLDER ITSELF FIRST, with the names `bindV3` would give after seven typed words.
+          const fault = folderFault(dir)
+          if (fault !== null) return { ok: false, reason: fault }
+          if (recordPathOccupied(join(dir, lib.LOCAL_AUMLOK_CONTROL_FILENAME ?? 'local-control.json'))) {
+            return { ok: false, reason: BIND_REFUSE.ALREADY_BOUND }
+          }
+        }
+      }
       return draw.draw(event.sender, intent, getReleaseDir())
     } catch (error) {
       say(`draw refused: ${String(error?.message ?? error)}`)
-      return { ok: false, reason: String(error?.code ?? error?.message ?? error) }
+      // A NAME OF OURS OR THE DRAW MODULE'S OWN, never a raw message: the same rule SUBMIT's catch applies below.
+      const code = error?.code
+      const ours = typeof code === 'string' && code.length <= 128
+        && (code.startsWith('aumlok:') || code.startsWith('aukora-owner:'))
+      return { ok: false, reason: ours ? code : DRAW_REFUSE.CEREMONY_ABSENT }
     }
   })
 
@@ -592,6 +637,7 @@ export function installApprovalBridge(deps) {
       }
       const verdict = await draw.submit(event.sender, intent, words, { library, directory, handle })
       if (verdict?.ok === true) recordInstallSettings(library, directory)
+      // THE VERDICT CARRIES `drawSpent` FROM THE DRAW ITSELF (aumlok-draw.mjs), decided when the slot was consumed.
       return verdict
     } catch (error) {
       say(`submit refused: ${String(error?.message ?? error)}`)
