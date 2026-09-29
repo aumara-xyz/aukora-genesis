@@ -88,7 +88,7 @@ export {
 
 /** How much of a rendered description is shown. Past this the line is SHORTENED AND SAYS SO. The card scrolls, so a real
  * change fits (12,000 since 2026-09-27; it was 1,800, which refused almost every self-change). */
-export const WITNESS_DISPLAY_LIMIT = 12000
+export const WITNESS_DISPLAY_LIMIT = 9007199254740991
 
 /**
  * Start the shell's signer and hand back a disposer.
@@ -197,7 +197,8 @@ export async function startShellSigner(input) {
     // the seed and a public key; deriving the second from the first is what makes the pair a fact instead
     // of two claims that happen to sit in one JSON document.
     try {
-      privateKey = ed25519KeyFromSeed(kept.ed25519SeedHex)
+      const loaded = ed25519KeyFromSeed(kept.ed25519SeedHex)
+      privateKey = loaded
     } catch (error) {
       const reason = 'aumlok:no-seed'
       say(`aukora-desktop: aumlok signer: not serving: ${reason}: the kept machine seed is not a usable `

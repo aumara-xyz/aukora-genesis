@@ -22,7 +22,7 @@ export const LIMITS = Object.freeze({
     /** Governed self-change attempts per session (ledger-scoped). */
     MAX_ATTEMPTS: 64,
     /** Maximum patch size in UTF-8 bytes. */
-    MAX_PATCH_BYTES: 65_536,
+    MAX_PATCH_BYTES: 9007199254740991,
     /** Maximum supersedes-chain depth (root has depth 0). */
     MAX_LINEAGE_DEPTH: 16,
     /** Default wall-time budget used to derive a session deadline (callers pass an absolute deadlineMs). */

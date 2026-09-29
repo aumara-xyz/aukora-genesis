@@ -16,5 +16,5 @@ export function shownLimit(stateDir, treeLimit = Infinity) {
     const recorded = Number(readFileSync(join(stateDir, 'home', 'become', 'shell-limit'), 'utf8').trim())
     if (Number.isSafeInteger(recorded) && recorded > 0) installed = recorded
   } catch { /* no shell installed by become yet */ }
-  return Math.min(11800, installed - 150, treeLimit - 150)
+  return Math.min(9007199254740991, installed - 150, treeLimit - 150)
 }
