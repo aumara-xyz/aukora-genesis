@@ -32,9 +32,9 @@
 .portalSearch {
   display: block;
   width: 100%;
-  max-width: 420px;
+  min-width: 0;
   height: 38px;
-  margin: 2px auto 8px;
+  margin: 0;
   box-sizing: border-box;
   border: 1px solid color-mix(in srgb, var(--aukora-accent) 30%, transparent);
   border-radius: var(--aukora-radius);
@@ -61,6 +61,26 @@
 .more { padding: 8px 20px; }
 .portalBody, .memoryList, .memoryItem, .memoryDetail { min-width: 0; }
 .memoryMenuItem { width: 100%; }
+.searchControls { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 470px; margin: 2px auto 8px; }
+.viewToggle { flex: none; width: 38px; height: 38px; padding: 0; }
+.viewToggle[aria-busy='true'] { opacity: .55; }
+.viewToggle[data-unavailable] { color: var(--aukora-text-muted); }
+.constellation { position: relative; width: 100%; height: clamp(320px, 55vh, 560px); overflow: hidden; isolation: isolate; }
+.starCanvas { display: block; width: 100%; height: 100%; outline-offset: -4px; border-radius: inherit; }
+.starCanvas:focus-visible { outline: 2px solid var(--aukora-blue); }
+.starKey { position: absolute; inset: 14px 14px auto auto; display: flex; gap: 14px; pointer-events: none; }
+.starKey > span { display: flex; padding: 5px; border-radius: var(--aukora-radius); pointer-events: auto; }
+.starKey > span:focus-visible { outline: 1px solid currentColor; outline-offset: 2px; }
+.personKey { color: var(--aukora-blue); }
+.agentKey { color: var(--aukora-green); }
+.starTooltip {
+  position: absolute; z-index: 1;
+  display: flex; flex-direction: column; gap: 5px; width: max-content; max-width: min(260px, 65%);
+  padding: 10px 12px; background: var(--aukora-surface); border: 1px solid var(--aukora-border);
+  border-radius: var(--aukora-radius); color: var(--aukora-text); pointer-events: none;
+  font-size: 12px; line-height: 18px; overflow-wrap: anywhere;
+}
+.starTooltip time { color: var(--aukora-text-muted); font-size: 11px; }
 @container (max-width: 340px) {
   .memoryPortal { align-items: flex-start; flex-direction: column; gap: 6px; }
   .memoryWhen { flex-direction: row; flex-wrap: wrap; gap: 8px; font-size: 11px; }

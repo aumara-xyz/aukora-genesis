@@ -293,22 +293,22 @@ def bundle(name):
 def src_digest(name):
     """The digest of the exact src inputs this face was built from.
 
-    **THE CANONICAL FORM IS SPELLED OUT HERE AND IN tests/laya-face-bundle-freshness.test.mjs.** Two
-    implementations of one digest, in two languages, is how a freshness court ends up permanently red on untouched
-    code — so the form is deliberately trivial and identical on both sides:
+    The canonical byte format is:
 
         for each input file, sorted by its path RELATIVE to the face package:
             "<relpath>\n<sha256 of the file's bytes>\n"
         srcDigest = sha256 over the concatenation, hex
 
-    THE INPUTS ARE THE FACE PACKAGE'S OWN `src/**` (plus `package.json` and `tsdown.config.ts` when present) —
-    the same set `scripts/artifacts-coverage.json` names for face coverage, so the two agree rather than compete.
+    Inputs include `src/**`, shipped `vendor/**`, package.json and tsdown.config.ts. Vendored modules can
+    be compiled into the bundle, so their bytes and licenses must participate in freshness too.
     A digest over a SUBSET would be worse than none: it would report fresh for a face whose real input changed.
     """
     pkg = FACE / name
     inputs = sorted(
         p.relative_to(pkg).as_posix()
-        for p in (pkg / 'src').rglob('*') if p.is_file()
+        for directory in ('src', 'vendor') for p in (pkg / directory).rglob('*') if p.is_file()
+        and not any(p.match(pattern) for pattern in FACE_IGNORE_FILES)
+        and not any(parent.match(pattern) for parent in p.relative_to(pkg).parents for pattern in FACE_IGNORE_DIRS)
     )
     for extra in ('package.json', 'tsdown.config.ts'):
         if (pkg / extra).is_file():

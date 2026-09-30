@@ -8,7 +8,7 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		//#region \0dsh-css:Memory.module.css.mjs
-		const css = ".F0hRUq_memoryView[hidden]{display:none!important}.F0hRUq_memoryView{z-index:1;box-sizing:border-box;overscroll-behavior:contain;scrollbar-gutter:stable;background:var(--aukora-background);width:100%;min-width:0;max-width:46rem;height:100%;min-height:0;color:var(--aukora-text);flex-direction:column;gap:18px;margin:0 auto;padding:22px 20px 48px;display:flex;position:relative;overflow:hidden auto;container-type:inline-size}.F0hRUq_memoryHead{flex-direction:column;flex:none;align-items:flex-start;gap:4px;padding:0 4px}.F0hRUq_memoryTitle{margin:0;font-size:20px;font-weight:600;line-height:28px}.F0hRUq_portals{flex-direction:column;flex:none;gap:10px;min-width:0;display:flex}.F0hRUq_portalDot{background:currentColor;border-radius:50%;width:9px;height:9px}.F0hRUq_portalBody{flex-direction:column;gap:8px;display:flex}.F0hRUq_portalSearch{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-accent) 30%, transparent);border-radius:var(--aukora-radius);background:var(--aukora-surface);width:100%;max-width:420px;height:38px;color:var(--aukora-text);font:inherit;text-align:center;margin:2px auto 8px;padding:0 16px;font-size:13px;display:block}.F0hRUq_portalSearch::placeholder{color:var(--aukora-text-muted)}.F0hRUq_portalSearch:focus-visible{outline:2px solid var(--aukora-accent);outline-offset:2px}.F0hRUq_portalQuiet{color:var(--aukora-text-muted);text-align:center;margin:4px 0;font-size:12px}.F0hRUq_memoryList{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.F0hRUq_memoryPortal{gap:12px;min-height:48px;padding:10px 14px}.F0hRUq_memoryWords{overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;font-size:14px;font-weight:400;line-height:20px;display:block}.F0hRUq_memoryItem[data-open=no] .F0hRUq_memoryWords{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.F0hRUq_memoryWhen{color:var(--aukora-text-muted);flex-direction:column;flex:none;align-items:flex-end;gap:3px;font-size:12px;display:flex}.F0hRUq_memoryDetail{padding:0 14px 12px}.F0hRUq_memoryActions{flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;display:flex}.F0hRUq_pill{padding:4px 12px;font-size:12px}.F0hRUq_memoryProblem{color:var(--aukora-red-warning);align-self:center}.F0hRUq_retry,.F0hRUq_more{align-self:center}.F0hRUq_more{padding:8px 20px}.F0hRUq_portalBody,.F0hRUq_memoryList,.F0hRUq_memoryItem,.F0hRUq_memoryDetail{min-width:0}.F0hRUq_memoryMenuItem{width:100%}@container (width<=340px){.F0hRUq_memoryPortal{flex-direction:column;align-items:flex-start;gap:6px}.F0hRUq_memoryWhen{flex-flow:wrap;gap:8px;font-size:11px}.F0hRUq_portalHead{gap:10px;padding:10px 12px}.F0hRUq_portalBody{padding:2px 8px 12px}}";
+		const css = ".F0hRUq_memoryView[hidden]{display:none!important}.F0hRUq_memoryView{z-index:1;box-sizing:border-box;overscroll-behavior:contain;scrollbar-gutter:stable;background:var(--aukora-background);width:100%;min-width:0;max-width:46rem;height:100%;min-height:0;color:var(--aukora-text);flex-direction:column;gap:18px;margin:0 auto;padding:22px 20px 48px;display:flex;position:relative;overflow:hidden auto;container-type:inline-size}.F0hRUq_memoryHead{flex-direction:column;flex:none;align-items:flex-start;gap:4px;padding:0 4px}.F0hRUq_memoryTitle{margin:0;font-size:20px;font-weight:600;line-height:28px}.F0hRUq_portals{flex-direction:column;flex:none;gap:10px;min-width:0;display:flex}.F0hRUq_portalDot{background:currentColor;border-radius:50%;width:9px;height:9px}.F0hRUq_portalBody{flex-direction:column;gap:8px;display:flex}.F0hRUq_portalSearch{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-accent) 30%, transparent);border-radius:var(--aukora-radius);background:var(--aukora-surface);width:100%;min-width:0;height:38px;color:var(--aukora-text);font:inherit;text-align:center;margin:0;padding:0 16px;font-size:13px;display:block}.F0hRUq_portalSearch::placeholder{color:var(--aukora-text-muted)}.F0hRUq_portalSearch:focus-visible{outline:2px solid var(--aukora-accent);outline-offset:2px}.F0hRUq_portalQuiet{color:var(--aukora-text-muted);text-align:center;margin:4px 0;font-size:12px}.F0hRUq_memoryList{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.F0hRUq_memoryPortal{gap:12px;min-height:48px;padding:10px 14px}.F0hRUq_memoryWords{overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;font-size:14px;font-weight:400;line-height:20px;display:block}.F0hRUq_memoryItem[data-open=no] .F0hRUq_memoryWords{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.F0hRUq_memoryWhen{color:var(--aukora-text-muted);flex-direction:column;flex:none;align-items:flex-end;gap:3px;font-size:12px;display:flex}.F0hRUq_memoryDetail{padding:0 14px 12px}.F0hRUq_memoryActions{flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;display:flex}.F0hRUq_pill{padding:4px 12px;font-size:12px}.F0hRUq_memoryProblem{color:var(--aukora-red-warning);align-self:center}.F0hRUq_retry,.F0hRUq_more{align-self:center}.F0hRUq_more{padding:8px 20px}.F0hRUq_portalBody,.F0hRUq_memoryList,.F0hRUq_memoryItem,.F0hRUq_memoryDetail{min-width:0}.F0hRUq_memoryMenuItem{width:100%}.F0hRUq_searchControls{align-items:center;gap:8px;width:100%;max-width:470px;margin:2px auto 8px;display:flex}.F0hRUq_viewToggle{flex:none;width:38px;height:38px;padding:0}.F0hRUq_viewToggle[aria-busy=true]{opacity:.55}.F0hRUq_viewToggle[data-unavailable]{color:var(--aukora-text-muted)}.F0hRUq_constellation{isolation:isolate;width:100%;height:clamp(320px,55vh,560px);position:relative;overflow:hidden}.F0hRUq_starCanvas{outline-offset:-4px;border-radius:inherit;width:100%;height:100%;display:block}.F0hRUq_starCanvas:focus-visible{outline:2px solid var(--aukora-blue)}.F0hRUq_starKey{pointer-events:none;gap:14px;display:flex;position:absolute;inset:14px 14px auto auto}.F0hRUq_starKey>span{border-radius:var(--aukora-radius);pointer-events:auto;padding:5px;display:flex}.F0hRUq_starKey>span:focus-visible{outline-offset:2px;outline:1px solid}.F0hRUq_personKey{color:var(--aukora-blue)}.F0hRUq_agentKey{color:var(--aukora-green)}.F0hRUq_starTooltip{z-index:1;background:var(--aukora-surface);border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);width:max-content;max-width:min(260px,65%);color:var(--aukora-text);pointer-events:none;overflow-wrap:anywhere;flex-direction:column;gap:5px;padding:10px 12px;font-size:12px;line-height:18px;display:flex;position:absolute}.F0hRUq_starTooltip time{color:var(--aukora-text-muted);font-size:11px}@container (width<=340px){.F0hRUq_memoryPortal{flex-direction:column;align-items:flex-start;gap:6px}.F0hRUq_memoryWhen{flex-flow:wrap;gap:8px;font-size:11px}.F0hRUq_portalHead{gap:10px;padding:10px 12px}.F0hRUq_portalBody{padding:2px 8px 12px}}";
 		const tagId = "@aukora/face-memory/Memory.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -18,6 +18,8 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Memory_module_css_default = {
+			"agentKey": "F0hRUq_agentKey",
+			"constellation": "F0hRUq_constellation",
 			"memoryActions": "F0hRUq_memoryActions",
 			"memoryDetail": "F0hRUq_memoryDetail",
 			"memoryHead": "F0hRUq_memoryHead",
@@ -31,6 +33,7 @@ window.__ModuleLoader__.load({
 			"memoryWhen": "F0hRUq_memoryWhen",
 			"memoryWords": "F0hRUq_memoryWords",
 			"more": "F0hRUq_more",
+			"personKey": "F0hRUq_personKey",
 			"pill": "F0hRUq_pill",
 			"portalBody": "F0hRUq_portalBody",
 			"portalDot": "F0hRUq_portalDot",
@@ -38,7 +41,12 @@ window.__ModuleLoader__.load({
 			"portalQuiet": "F0hRUq_portalQuiet",
 			"portalSearch": "F0hRUq_portalSearch",
 			"portals": "F0hRUq_portals",
-			"retry": "F0hRUq_retry"
+			"retry": "F0hRUq_retry",
+			"searchControls": "F0hRUq_searchControls",
+			"starCanvas": "F0hRUq_starCanvas",
+			"starKey": "F0hRUq_starKey",
+			"starTooltip": "F0hRUq_starTooltip",
+			"viewToggle": "F0hRUq_viewToggle"
 		};
 		//#endregion
 		//#region src/client/MemoryMenu.tsx
@@ -344,6 +352,41 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region src/client/memory-api.ts
+		async function fetchConstellationMatches(query, signal) {
+			const response = await fetch(`/api/aukora/memory/constellation/search?${new URLSearchParams({ q: query })}`, {
+				credentials: "same-origin",
+				signal
+			});
+			const body = object(await response.json());
+			if (!response.ok || !Array.isArray(body.items)) throw new MemoryServiceError("failed", response.status, "memory:search-unavailable");
+			return body.items.map((value) => {
+				const row = object(value);
+				if (typeof row.id !== "string" || typeof row.score !== "number" || !Number.isFinite(row.score)) throw new MemoryServiceError("failed", 502, "memory:invalid-search");
+				return {
+					id: row.id,
+					score: row.score
+				};
+			}).sort((a, b) => b.score - a.score);
+		}
+		async function fetchConstellation(signal) {
+			const response = await fetch("/api/aukora/memory/constellation", {
+				credentials: "same-origin",
+				signal
+			});
+			const body = object(await response.json());
+			if (!response.ok || body.projection !== "unit-pca-v1" || !Array.isArray(body.items) || !body.items.length) throw new MemoryServiceError("absent", response.status, "memory:vectors-unavailable");
+			const seen = /* @__PURE__ */ new Set();
+			return body.items.map((value) => {
+				const row = object(value), p = row.position;
+				if (typeof row.id !== "string" || !row.id || seen.has(row.id) || typeof row.text !== "string" || !["kira", "openviking"].includes(String(row.backend)) || row.tier !== "remembered" || row.createdAt != null && wireTime(row.createdAt) === null || !Array.isArray(p) || p.length !== 2 || !p.every((v) => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= 1.001)) throw new MemoryServiceError("failed", 502, "memory:invalid-layout");
+				seen.add(row.id);
+				return {
+					...noteToRecord(row),
+					backend: row.backend,
+					position: p
+				};
+			});
+		}
 		const WHY_MANIFEST_ROUTE = "/api/aukora/why";
 		const KIRA_MEMORY_ROUTES = {
 			list: "/api/kira/memories",
@@ -372,7 +415,7 @@ window.__ModuleLoader__.load({
 		};
 		function wireTime(value) {
 			const parsed = typeof value === "number" ? value < 0xe8d4a51000 ? value * 1e3 : value : typeof value === "string" ? Date.parse(value) : NaN;
-			return Number.isFinite(parsed) ? parsed : null;
+			return Number.isFinite(parsed) && Math.abs(parsed) <= 864e13 ? parsed : null;
 		}
 		function noteToRecord(note) {
 			const source = object(note.source ?? object(note.citation).source);
@@ -482,6 +525,7 @@ window.__ModuleLoader__.load({
 						} else issues.push(`${backends[i]}:${result.reason instanceof MemoryServiceError ? result.reason.code : "memory:request-failed"}`);
 					}
 					if (results.length > 0 && results.every((result) => result.status === "rejected")) throw results[0].reason;
+					if (input.q?.trim()) items.sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0));
 					return {
 						items,
 						next: next.kira !== null || next.openviking !== null ? JSON.stringify(next) : null,
@@ -497,6 +541,423 @@ window.__ModuleLoader__.load({
 					return body;
 				}
 			};
+		}
+		//#endregion
+		//#region src/client/MemoryConstellation.tsx
+		function MemoryAuthorIcon({ person }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+				width: "16",
+				height: "16",
+				viewBox: "0 0 24 24",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
+				"aria-hidden": "true",
+				children: person ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+					cx: "12",
+					cy: "7",
+					r: "4"
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M4 21v-2a8 8 0 0 1 16 0v2" })] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+					x: "4",
+					y: "7",
+					width: "16",
+					height: "14",
+					rx: "3"
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 3v4M8 12v2m8-2v2M9 17h6" })] })
+			});
+		}
+		function MemoryViewIcon({ list }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+				width: "18",
+				height: "18",
+				viewBox: "0 0 24 24",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				"aria-hidden": "true",
+				children: list ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M8 5h12M8 12h12M8 19h12" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+					d: "M3 5h.01M3 12h.01M3 19h.01",
+					strokeWidth: "3"
+				})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", {
+						d: "m5 7 8-3 6 11-9 5Z",
+						opacity: ".5"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "5",
+						cy: "7",
+						r: "2"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "13",
+						cy: "4",
+						r: "1.5"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "19",
+						cy: "15",
+						r: "2"
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+						cx: "10",
+						cy: "20",
+						r: "1.5"
+					})
+				] })
+			});
+		}
+		const firstLine = (text) => text.split(/\r?\n/u).find((line) => line.trim())?.slice(0, 180) ?? "";
+		/** One draw call for every note. Search changes attributes, never the semantic positions. */
+		function MemoryConstellation({ points, matches, onSelect, onUnavailable, labels }) {
+			const host = (0, react.useRef)(null), canvas = (0, react.useRef)(null);
+			const tooltipId = (0, react.useId)();
+			const [hover, setHover] = (0, react.useState)(null);
+			const callbacks = (0, react.useRef)({
+				onSelect,
+				onUnavailable
+			});
+			callbacks.current = {
+				onSelect,
+				onUnavailable
+			};
+			const updateMatches = (0, react.useRef)(null);
+			const currentMatches = (0, react.useRef)(matches);
+			currentMatches.current = matches;
+			(0, react.useEffect)(() => {
+				setHover(null);
+				const element = host.current, node = canvas.current;
+				if (!element || !node) return;
+				let stopped = false;
+				let teardown = () => {};
+				const mount = (THREE) => {
+					let renderer;
+					try {
+						renderer = new THREE.WebGLRenderer({
+							canvas: node,
+							alpha: true,
+							antialias: false,
+							powerPreference: "low-power"
+						});
+					} catch {
+						callbacks.current.onUnavailable();
+						return;
+					}
+					const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 10);
+					camera.position.z = 2;
+					const geometry = new THREE.BufferGeometry();
+					const position = new Float32Array(points.length * 3), colours = new Float32Array(points.length * 3);
+					const sizes = new Float32Array(points.length), emphasis = new Float32Array(points.length), best = new Float32Array(points.length);
+					const style = getComputedStyle(element);
+					const person = new THREE.Color().setStyle(style.getPropertyValue("--aukora-blue").trim(), THREE.NoColorSpace);
+					const agent = new THREE.Color().setStyle(style.getPropertyValue("--aukora-green").trim(), THREE.NoColorSpace);
+					const unknown = new THREE.Color().setStyle(style.getPropertyValue("--aukora-text-muted").trim(), THREE.NoColorSpace);
+					const now = Date.now();
+					points.forEach((point, i) => {
+						const colour = point.author === "Peter" ? person : point.author === "agent" ? agent : unknown;
+						colours.set([
+							colour.r,
+							colour.g,
+							colour.b
+						], i * 3);
+						const age = point.createdAt === null ? Infinity : Math.max(0, now - point.createdAt) / 864e5;
+						sizes[i] = 10 + 12 * Math.exp(-age / 45);
+					});
+					const positionAttribute = new THREE.BufferAttribute(position, 3);
+					const emphasisAttribute = new THREE.BufferAttribute(emphasis, 1), bestAttribute = new THREE.BufferAttribute(best, 1);
+					geometry.setAttribute("position", positionAttribute).setAttribute("starColour", new THREE.BufferAttribute(colours, 3)).setAttribute("starSize", new THREE.BufferAttribute(sizes, 1)).setAttribute("emphasis", emphasisAttribute).setAttribute("best", bestAttribute);
+					const motion = matchMedia("(prefers-reduced-motion: reduce)");
+					const material = new THREE.ShaderMaterial({
+						transparent: true,
+						depthWrite: false,
+						blending: THREE.NormalBlending,
+						uniforms: {
+							time: { value: 0 },
+							ratio: { value: 1 },
+							moving: { value: motion.matches ? 0 : 1 }
+						},
+						vertexShader: `attribute vec3 starColour; attribute float starSize; attribute float emphasis; attribute float best;
+          uniform float time; uniform float ratio; uniform float moving; varying vec3 colour; varying float light; varying float pulse;
+          void main() { colour = starColour; light = emphasis;
+            pulse = best * (0.5 + 0.5 * sin(time * 2.0)) * moving;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            gl_PointSize = starSize * ratio * (1.0 + 0.35 * best + 0.2 * pulse); }`,
+						fragmentShader: `varying vec3 colour; varying float light; varying float pulse;
+          void main() { float r = length(gl_PointCoord - 0.5) * 2.0; if (r > 1.0) discard;
+            float core = exp(-r * r * 48.0); float glow = exp(-r * r * 5.5) * 0.36;
+            gl_FragColor = vec4(colour + core * 0.35, (core + glow) * light * (1.0 + pulse * 0.3)); }`
+					});
+					const stars = new THREE.Points(geometry, material);
+					stars.frustumCulled = false;
+					scene.add(stars);
+					let width = 1, height = 1, scale = 1, hovered = -1, keyboard = -1, disposed = false;
+					let frame = 0, visible = true, elapsed = 0, previous = 0;
+					const render = () => {
+						if (!disposed) renderer.render(scene, camera);
+					};
+					let bounds = node.getBoundingClientRect();
+					const refreshBounds = () => {
+						bounds = node.getBoundingClientRect();
+					};
+					const pointIds = new Set(points.map((point) => point.id));
+					const show = (index, force = false) => {
+						if (!force && index === hovered) return;
+						hovered = index;
+						node.style.cursor = index < 0 ? "default" : "pointer";
+						const point = points[index];
+						setHover(point ? {
+							index,
+							x: Math.max(12, Math.min(width - 12, width / 2 + point.position[0] * scale + stars.position.x)),
+							y: Math.max(48, Math.min(height - 12, height / 2 - point.position[1] * scale - stars.position.y))
+						} : null);
+					};
+					updateMatches.current = (ids) => {
+						const hits = ids === null ? null : new Set(ids);
+						const bestId = ids?.find((id) => pointIds.has(id));
+						points.forEach((point, i) => {
+							emphasis[i] = hits === null ? .85 : hits.has(point.id) ? 1.15 : .16;
+							best[i] = point.id === bestId ? 1 : 0;
+						});
+						emphasisAttribute.needsUpdate = true;
+						bestAttribute.needsUpdate = true;
+						render();
+					};
+					updateMatches.current(currentMatches.current);
+					const resize = () => {
+						refreshBounds();
+						width = element.clientWidth;
+						height = element.clientHeight;
+						if (!width || !height) return;
+						const ratio = Math.min(devicePixelRatio || 1, 2);
+						renderer.setPixelRatio(ratio);
+						renderer.setSize(width, height, false);
+						material.uniforms.ratio.value = ratio;
+						camera.left = -width / 2;
+						camera.right = width / 2;
+						camera.top = height / 2;
+						camera.bottom = -height / 2;
+						camera.updateProjectionMatrix();
+						scale = Math.max(1, Math.min(width - 64, height - 100) / 2);
+						points.forEach((point, i) => {
+							position[i * 3] = point.position[0] * scale;
+							position[i * 3 + 1] = point.position[1] * scale;
+						});
+						positionAttribute.needsUpdate = true;
+						if (hovered >= 0) show(hovered, true);
+						render();
+					};
+					const hitTest = (event) => {
+						const x = event.clientX - bounds.left - width / 2 - stars.position.x;
+						const y = height / 2 - (event.clientY - bounds.top) - stars.position.y;
+						const hits = [];
+						points.forEach((point, index) => {
+							const distance = (point.position[0] * scale - x) ** 2 + (point.position[1] * scale - y) ** 2;
+							if (distance < 144) hits.push({
+								index,
+								distance
+							});
+						});
+						return hits.sort((a, b) => a.distance - b.distance || a.index - b.index);
+					};
+					let pointerFrame = 0, pointerEvent = null, clickGroup = "", clickOffset = -1;
+					const pick = (event) => {
+						pointerEvent = event;
+						if (pointerFrame) return;
+						pointerFrame = requestAnimationFrame(() => {
+							pointerFrame = 0;
+							keyboard = -1;
+							show(hitTest(pointerEvent)[0]?.index ?? -1);
+						});
+					};
+					const leave = () => {
+						cancelAnimationFrame(pointerFrame);
+						pointerFrame = 0;
+						if (keyboard < 0) show(-1);
+					};
+					const click = (event) => {
+						cancelAnimationFrame(pointerFrame);
+						pointerFrame = 0;
+						keyboard = -1;
+						const hits = hitTest(event);
+						const group = hits.map((hit) => hit.index).sort((a, b) => a - b).join(",");
+						clickOffset = group === clickGroup ? (clickOffset + 1) % hits.length : 0;
+						clickGroup = group;
+						show(hits[clickOffset]?.index ?? -1);
+						if (hovered >= 0) callbacks.current.onSelect(points[hovered].id);
+					};
+					const key = (event) => {
+						if ([
+							"ArrowRight",
+							"ArrowDown",
+							"ArrowLeft",
+							"ArrowUp",
+							"Home",
+							"End"
+						].includes(event.key)) {
+							event.preventDefault();
+							keyboard = event.key === "Home" ? 0 : event.key === "End" ? points.length - 1 : (Math.max(0, keyboard) + (event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1) + points.length) % points.length;
+							show(keyboard);
+						} else if ((event.key === "Enter" || event.key === " ") && hovered >= 0) {
+							event.preventDefault();
+							callbacks.current.onSelect(points[hovered].id);
+						} else if (event.key === "Escape") {
+							keyboard = -1;
+							show(-1);
+						}
+					};
+					const focus = () => {
+						keyboard = Math.max(0, best.findIndex((v) => v > 0));
+						show(keyboard);
+					};
+					const blur = () => {
+						keyboard = -1;
+						show(-1);
+					};
+					const tick = (time) => {
+						frame = 0;
+						if (disposed || !visible || document.hidden || motion.matches) return;
+						elapsed += previous ? Math.min(time - previous, 100) / 1e3 : 0;
+						previous = time;
+						if (hovered < 0) {
+							stars.position.x = Math.sin(elapsed * .17) * 3;
+							stars.position.y = Math.sin(elapsed * .13) * 2;
+						}
+						material.uniforms.time.value = elapsed;
+						render();
+						frame = requestAnimationFrame(tick);
+					};
+					const wake = () => {
+						cancelAnimationFrame(frame);
+						frame = 0;
+						previous = 0;
+						material.uniforms.moving.value = motion.matches ? 0 : 1;
+						if (motion.matches) {
+							stars.position.x = 0;
+							stars.position.y = 0;
+							if (hovered >= 0) show(hovered, true);
+						}
+						if (!document.hidden && visible) {
+							render();
+							if (!motion.matches) frame = requestAnimationFrame(tick);
+						}
+					};
+					const lost = (event) => {
+						event.preventDefault();
+						callbacks.current.onUnavailable();
+					};
+					const observer = new ResizeObserver(resize);
+					const intersection = new IntersectionObserver((entries) => {
+						visible = entries.some((entry) => entry.isIntersecting);
+						wake();
+					});
+					observer.observe(element);
+					intersection.observe(element);
+					node.addEventListener("pointermove", pick);
+					node.addEventListener("pointerleave", leave);
+					node.addEventListener("click", click);
+					node.addEventListener("keydown", key);
+					node.addEventListener("focus", focus);
+					node.addEventListener("blur", blur);
+					node.addEventListener("webglcontextlost", lost);
+					document.addEventListener("visibilitychange", wake);
+					motion.addEventListener("change", wake);
+					document.addEventListener("scroll", refreshBounds, true);
+					node.addEventListener("pointerenter", refreshBounds);
+					resize();
+					wake();
+					return () => {
+						disposed = true;
+						updateMatches.current = null;
+						cancelAnimationFrame(frame);
+						cancelAnimationFrame(pointerFrame);
+						observer.disconnect();
+						intersection.disconnect();
+						node.removeEventListener("pointermove", pick);
+						node.removeEventListener("pointerleave", leave);
+						node.removeEventListener("click", click);
+						node.removeEventListener("keydown", key);
+						node.removeEventListener("focus", focus);
+						node.removeEventListener("blur", blur);
+						node.removeEventListener("webglcontextlost", lost);
+						document.removeEventListener("visibilitychange", wake);
+						motion.removeEventListener("change", wake);
+						document.removeEventListener("scroll", refreshBounds, true);
+						node.removeEventListener("pointerenter", refreshBounds);
+						geometry.dispose();
+						material.dispose();
+						scene.clear();
+						renderer.dispose();
+						renderer.forceContextLoss();
+					};
+				};
+				import(
+					/* @vite-ignore */
+					new URL("/api/aukora/memory/three/r180/three.module.min.js", window.location.href).href
+).then((THREE) => {
+					if (!stopped) teardown = mount(THREE) ?? (() => {});
+				}).catch(() => {
+					if (!stopped) callbacks.current.onUnavailable();
+				});
+				return () => {
+					stopped = true;
+					teardown();
+				};
+			}, [points]);
+			(0, react.useEffect)(() => {
+				updateMatches.current?.(matches);
+			}, [matches]);
+			const point = hover ? points[hover.index] : null;
+			const tooltipWidth = Math.min(260, (host.current?.clientWidth ?? 400) * .65);
+			const tooltipLeft = hover ? Math.max(tooltipWidth / 2 + 12, Math.min((host.current?.clientWidth ?? 400) - tooltipWidth / 2 - 12, hover.x)) : 0;
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
+				ref: host,
+				className: Memory_module_css_default.constellation,
+				"data-memory-constellation": true,
+				children: [
+					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("canvas", {
+						ref: canvas,
+						className: Memory_module_css_default.starCanvas,
+						tabIndex: 0,
+						role: "group",
+						"aria-label": labels.field,
+						"aria-describedby": point ? tooltipId : void 0
+					}),
+					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						className: Memory_module_css_default.starKey,
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							className: Memory_module_css_default.personKey,
+							tabIndex: 0,
+							role: "img",
+							title: labels.person,
+							"aria-label": labels.person,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MemoryAuthorIcon, { person: true })
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+							className: Memory_module_css_default.agentKey,
+							tabIndex: 0,
+							role: "img",
+							title: labels.agent,
+							"aria-label": labels.agent,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MemoryAuthorIcon, { person: false })
+						})]
+					}),
+					point && hover ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+						id: tooltipId,
+						className: Memory_module_css_default.starTooltip,
+						"data-memory-tooltip": true,
+						style: {
+							left: tooltipLeft,
+							top: hover.y < 140 ? hover.y + 18 : hover.y - 16,
+							transform: hover.y < 140 ? "translate(-50%, 0)" : "translate(-50%, -100%)"
+						},
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: firstLine(point.text) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("time", {
+							dateTime: point.createdAt === null ? void 0 : new Date(point.createdAt).toISOString(),
+							children: point.createdAt === null ? "—" : new Date(point.createdAt).toLocaleDateString()
+						})]
+					}) : null
+				]
+			});
 		}
 		//#endregion
 		//#region src/client/MemorySurface.tsx
@@ -537,12 +998,52 @@ window.__ModuleLoader__.load({
 			const [actionError, setActionError] = (0, react.useState)(null);
 			const [busy, setBusy] = (0, react.useState)(null);
 			const [whyTrouble, setWhyTrouble] = (0, react.useState)(false);
+			const [starMode, setStarMode] = (0, react.useState)(false);
+			const [stars, setStars] = (0, react.useState)([]);
+			const [starPending, setStarPending] = (0, react.useState)(false);
+			const [starUnavailable, setStarUnavailable] = (0, react.useState)(false);
+			const [starMatches, setStarMatches] = (0, react.useState)([]);
+			const [starSearchPending, setStarSearchPending] = (0, react.useState)(false);
+			const fallbackToList = (0, react.useCallback)(() => {
+				setStarMode(false);
+				setStarUnavailable(true);
+				setView((current) => ({
+					...current,
+					query: ""
+				}));
+			}, []);
 			const generation = (0, react.useRef)(0);
 			const pageInFlight = (0, react.useRef)(false);
 			const scroller = (0, react.useRef)(null);
 			const more = (0, react.useRef)(null);
 			(0, react.useEffect)(() => {
-				if (!active || openTier === null) return;
+				setStars([]);
+				if (!active || openTier !== "remembered" || !starMode) {
+					setStarPending(false);
+					return;
+				}
+				const abort = new AbortController();
+				setStarPending(true);
+				setStarUnavailable(false);
+				fetchConstellation(abort.signal).then((answer) => {
+					if (!abort.signal.aborted) setStars(answer);
+				}).catch(() => {
+					if (!abort.signal.aborted) fallbackToList();
+				}).finally(() => {
+					if (!abort.signal.aborted) setStarPending(false);
+				});
+				return () => {
+					abort.abort();
+				};
+			}, [
+				active,
+				openTier,
+				starMode,
+				revision,
+				fallbackToList
+			]);
+			(0, react.useEffect)(() => {
+				if (!active || openTier === null || starMode) return;
 				const current = ++generation.current;
 				const abort = new AbortController();
 				pageInFlight.current = false;
@@ -578,7 +1079,8 @@ window.__ModuleLoader__.load({
 				openTier,
 				view.tier,
 				view.query,
-				revision
+				revision,
+				starMode
 			]);
 			const loadMore = (0, react.useCallback)(() => {
 				if (!next || pageInFlight.current || state !== "ready") return;
@@ -594,7 +1096,8 @@ window.__ModuleLoader__.load({
 					setRecords((previous) => {
 						const merged = new Map(previous.map((record) => [record.id, record]));
 						for (const record of answer.items) merged.set(record.id, record);
-						return [...merged.values()];
+						const all = [...merged.values()];
+						return view.query.trim() ? all.sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0)) : all;
 					});
 					setNext(answer.next);
 					if (answer.issues?.length) setIssues((previous) => [...new Set([...previous, ...answer.issues])]);
@@ -614,7 +1117,7 @@ window.__ModuleLoader__.load({
 				view.query
 			]);
 			(0, react.useEffect)(() => {
-				if (!active || !next || !more.current || paging) return;
+				if (!active || starMode || !next || !more.current || paging) return;
 				const observer = new IntersectionObserver((entries) => {
 					if (entries.some((entry) => entry.isIntersecting)) loadMore();
 				}, {
@@ -627,6 +1130,7 @@ window.__ModuleLoader__.load({
 				};
 			}, [
 				active,
+				starMode,
 				next,
 				paging,
 				loadMore
@@ -663,6 +1167,67 @@ window.__ModuleLoader__.load({
 				query: "",
 				ranked: view.query.trim() !== ""
 			}).items;
+			const starPoints = (0, react.useMemo)(() => stars.filter((point) => view.citedIds === null || view.citedIds.includes(point.id)), [stars, view.citedIds]);
+			const constellationShown = active && starMode && !starPending && stars.length > 0 && openTier === "remembered";
+			(0, react.useEffect)(() => {
+				setStarMatches([]);
+				if (!constellationShown || !view.query.trim()) {
+					setStarSearchPending(false);
+					return;
+				}
+				const abort = new AbortController();
+				setStarSearchPending(true);
+				const timer = window.setTimeout(() => {
+					fetchConstellationMatches(view.query, abort.signal).then((answer) => {
+						if (!abort.signal.aborted) setStarMatches(answer);
+					}).catch(() => {
+						if (!abort.signal.aborted) fallbackToList();
+					}).finally(() => {
+						if (!abort.signal.aborted) setStarSearchPending(false);
+					});
+				}, 250);
+				return () => {
+					window.clearTimeout(timer);
+					abort.abort();
+				};
+			}, [
+				constellationShown,
+				view.query,
+				fallbackToList
+			]);
+			const matches = (0, react.useMemo)(() => {
+				if (!view.query.trim()) return null;
+				if (starSearchPending) return [];
+				const visible = new Set(starPoints.map((point) => point.id));
+				const ranked = starMatches.filter((match) => visible.has(match.id));
+				const floor = Math.max(.4, (ranked[0]?.score ?? 0) - .1);
+				return ranked.filter((match) => match.score >= floor).map((match) => match.id);
+			}, [
+				starPoints,
+				starMatches,
+				view.query,
+				starSearchPending
+			]);
+			const visibleItems = constellationShown ? itemsOf({ items: starPoints.filter((point) => point.id === openItem) }, {
+				...view,
+				query: ""
+			}).items : items;
+			const showStarDetail = (id) => {
+				setOpenItem(id);
+				setActionError(null);
+				setView((current) => ({
+					...current,
+					confirmingForget: null
+				}));
+				requestAnimationFrame(() => {
+					const row = Array.from(scroller.current?.querySelectorAll("[data-memory-row]") ?? []).find((element) => element.dataset.memoryRow === id);
+					row?.querySelector("button")?.focus({ preventScroll: true });
+					row?.scrollIntoView({
+						block: "nearest",
+						behavior: "instant"
+					});
+				});
+			};
 			const forget = (id) => {
 				if (busy) return;
 				setBusy(id);
@@ -670,6 +1235,7 @@ window.__ModuleLoader__.load({
 				SOURCE.forget(id).then(() => {
 					++generation.current;
 					setRecords((previous) => previous.filter((record) => record.id !== id));
+					setStars((previous) => previous.filter((record) => record.id !== id));
 					setView((current) => ({
 						...current,
 						confirmingForget: null
@@ -721,9 +1287,11 @@ window.__ModuleLoader__.load({
 							}),
 							buttonClassName: Memory_module_css_default.portalHead,
 							contentClassName: Memory_module_css_default.portalBody,
-							contentProps: { "aria-busy": state === "loading" || paging },
+							contentProps: { "aria-busy": starMode ? starPending || starSearchPending : state === "loading" || paging },
 							onExpandedChange: (nextOpen) => {
 								setOpenItem(null);
+								setStarMode(false);
+								setStarUnavailable(false);
 								setActionError(null);
 								setOpenTier(nextOpen ? each.tier : null);
 								if (nextOpen) setView((current) => ({
@@ -734,23 +1302,45 @@ window.__ModuleLoader__.load({
 								}));
 							},
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									type: "search",
-									className: Memory_module_css_default.portalSearch,
-									"data-memory-search": true,
-									placeholder: t("search.placeholder"),
-									"aria-label": t("search.placeholder"),
-									value: view.query,
-									onChange: (event) => {
-										setOpenItem(null);
-										setView((current) => ({
-											...current,
-											query: event.target.value,
-											confirmingForget: null
-										}));
-									}
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: Memory_module_css_default.searchControls,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										type: "search",
+										className: Memory_module_css_default.portalSearch,
+										"data-memory-search": true,
+										placeholder: t("search.placeholder"),
+										"aria-label": t("search.placeholder"),
+										value: view.query,
+										onChange: (event) => {
+											setOpenItem(null);
+											setView((current) => ({
+												...current,
+												query: event.target.value,
+												confirmingForget: null
+											}));
+										}
+									}), each.tier === "remembered" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+										className: Memory_module_css_default.viewToggle,
+										"data-memory-view-toggle": true,
+										"data-unavailable": starUnavailable || void 0,
+										"aria-pressed": starMode,
+										"aria-busy": starPending,
+										title: t(starUnavailable ? "constellation.unavailable" : starMode ? "constellation.list" : "constellation.show"),
+										"aria-label": t("constellation.show"),
+										onClick: () => {
+											setOpenItem(null);
+											setStarMode((value) => !value);
+										},
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MemoryViewIcon, { list: starMode })
+									}) : null]
 								}),
-								state === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								starPending ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: Memory_module_css_default.portalQuiet,
+									role: "img",
+									"aria-label": t("surface.loading"),
+									children: "⋯"
+								}) : null,
+								!starMode && state === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 									className: Memory_module_css_default.portalQuiet,
 									role: "img",
 									"aria-label": t("surface.loading"),
@@ -769,14 +1359,25 @@ window.__ModuleLoader__.load({
 									},
 									children: "↻"
 								}) : null,
-								state === "ready" && !issues.length && !next && items.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								!constellationShown && state === "ready" && !issues.length && !next && items.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
 									className: Memory_module_css_default.portalQuiet,
 									"data-memory-empty": view.tier,
 									children: t("surface.empty")
 								}) : null,
+								constellationShown && starPoints.length > 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MemoryConstellation, {
+									points: starPoints,
+									matches,
+									onSelect: showStarDetail,
+									onUnavailable: fallbackToList,
+									labels: {
+										field: t("constellation.field"),
+										person: t("constellation.person"),
+										agent: t("constellation.agent")
+									}
+								}) : null,
 								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
 									className: Memory_module_css_default.memoryList,
-									children: items.map((item) => {
+									children: visibleItems.map((item) => {
 										const expanded = openItem === item.id;
 										const confirming = view.confirmingForget === item.id;
 										const mutable = !item.erased && item.tier !== "signed";
@@ -920,7 +1521,7 @@ window.__ModuleLoader__.load({
 										}, item.id);
 									})
 								}),
-								next ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+								!constellationShown && next ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 									ref: more,
 									type: "button",
 									className: Memory_module_css_default.more,
@@ -951,6 +1552,12 @@ window.__ModuleLoader__.load({
 		*/
 		/** The Chinese dictionary. */
 		const zh = {
+			"constellation.show": "记忆星图",
+			"constellation.list": "记忆列表",
+			"constellation.unavailable": "星图不可用或索引不完整，已返回列表。点击重试。",
+			"constellation.field": "记忆星图。方向键浏览，回车打开。",
+			"constellation.person": "人的话 · 蓝色",
+			"constellation.agent": "智能体的话 · 绿色",
 			"action.more": "加载更多记忆",
 			"source.unknown": "来源未知",
 			"when.modified": "更新于",
@@ -1043,6 +1650,12 @@ window.__ModuleLoader__.load({
 		};
 		/** The English dictionary. */
 		const en = {
+			"constellation.show": "Memory constellation",
+			"constellation.list": "Memory list",
+			"constellation.unavailable": "Constellation unavailable or index incomplete; showing the list. Try again.",
+			"constellation.field": "Memory constellation. Arrow keys explore; Enter opens.",
+			"constellation.person": "Person · blue",
+			"constellation.agent": "Agent · green",
 			"action.more": "Load more memories",
 			"source.unknown": "Unknown source",
 			"when.modified": "Updated",

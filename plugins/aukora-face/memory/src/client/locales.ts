@@ -11,6 +11,12 @@
 
 /** The Chinese dictionary. */
 export const zh = {
+  'constellation.show': '记忆星图',
+  'constellation.list': '记忆列表',
+  'constellation.unavailable': '星图不可用或索引不完整，已返回列表。点击重试。',
+  'constellation.field': '记忆星图。方向键浏览，回车打开。',
+  'constellation.person': '人的话 · 蓝色',
+  'constellation.agent': '智能体的话 · 绿色',
   'action.more': '加载更多记忆',
   'source.unknown': '来源未知',
   'when.modified': '更新于',
@@ -105,6 +111,12 @@ export const zh = {
 
 /** The English dictionary. */
 export const en: Record<keyof typeof zh, string> = {
+  'constellation.show': 'Memory constellation',
+  'constellation.list': 'Memory list',
+  'constellation.unavailable': 'Constellation unavailable or index incomplete; showing the list. Try again.',
+  'constellation.field': 'Memory constellation. Arrow keys explore; Enter opens.',
+  'constellation.person': 'Person · blue',
+  'constellation.agent': 'Agent · green',
   'action.more': 'Load more memories',
   'source.unknown': 'Unknown source',
   'when.modified': 'Updated',

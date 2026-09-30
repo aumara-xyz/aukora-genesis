@@ -1,18 +1,25 @@
 {
   "face": "memory",
-  "srcDigest": "a126345f60616ee61d623f307929d6a0787a8dc433c28bdf918840f8b0d78407",
+  "srcDigest": "aba5dd27f1c03d576fd11b50363f15682be83c806b088bd520f3cf2b8df8d221",
   "files": [
     "package.json",
     "src/client/Memory.module.css",
+    "src/client/MemoryConstellation.tsx",
     "src/client/MemoryMenu.tsx",
     "src/client/MemorySurface.tsx",
     "src/client/index.ts",
     "src/client/locales.ts",
     "src/client/memory-api.ts",
     "src/client/memory-model.ts",
+    "src/client/three.d.ts",
+    "src/constellation-layout.ts",
     "src/css-modules.d.ts",
     "src/index.ts",
-    "tsdown.config.ts"
+    "tsdown.config.ts",
+    "vendor/three/LICENSE",
+    "vendor/three/three.core.min.js",
+    "vendor/three/three.module.min.js",
+    "vendor/three/upstream-three.json"
   ],
-  "builtAt": "2026-09-30T05:54:56Z"
+  "builtAt": "2026-09-30T07:08:40Z"
 }

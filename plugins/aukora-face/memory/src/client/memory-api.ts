@@ -23,6 +23,41 @@ export interface MemoryListAnswer {
   readonly next: string | null
   readonly issues?: readonly string[]
 }
+export interface ConstellationRecord extends MemoryRecord { readonly position: readonly [number, number] }
+export interface ConstellationMatch { readonly id: string; readonly score: number }
+
+export async function fetchConstellationMatches(query: string, signal: AbortSignal): Promise<readonly ConstellationMatch[]> {
+  const response = await fetch(`/api/aukora/memory/constellation/search?${new URLSearchParams({ q: query })}`, { credentials: 'same-origin', signal })
+  const body = object(await response.json())
+  if (!response.ok || !Array.isArray(body.items)) throw new MemoryServiceError('failed', response.status, 'memory:search-unavailable')
+  return body.items.map(value => {
+    const row = object(value)
+    if (typeof row.id !== 'string' || typeof row.score !== 'number' || !Number.isFinite(row.score)) {
+      throw new MemoryServiceError('failed', 502, 'memory:invalid-search')
+    }
+    return { id: row.id, score: row.score }
+  }).sort((a, b) => b.score - a.score)
+}
+
+export async function fetchConstellation(signal: AbortSignal): Promise<readonly ConstellationRecord[]> {
+  const response = await fetch('/api/aukora/memory/constellation', { credentials: 'same-origin', signal })
+  const body = object(await response.json())
+  if (!response.ok || body.projection !== 'unit-pca-v1' || !Array.isArray(body.items) || !body.items.length) {
+    throw new MemoryServiceError('absent', response.status, 'memory:vectors-unavailable')
+  }
+  const seen = new Set<string>()
+  return body.items.map(value => {
+    const row = object(value), p = row.position
+    if (typeof row.id !== 'string' || !row.id || seen.has(row.id) || typeof row.text !== 'string'
+      || !['kira', 'openviking'].includes(String(row.backend)) || row.tier !== 'remembered'
+      || (row.createdAt != null && wireTime(row.createdAt) === null) || !Array.isArray(p) || p.length !== 2
+      || !p.every(v => typeof v === 'number' && Number.isFinite(v) && Math.abs(v) <= 1.001)) {
+      throw new MemoryServiceError('failed', 502, 'memory:invalid-layout')
+    }
+    seen.add(row.id)
+    return { ...noteToRecord(row), backend: row.backend as MemoryRecord['backend'], position: p as [number, number] }
+  })
+}
 export interface MemoryVerifyAnswer { readonly id: string; readonly source: string }
 export interface MemoryForgetAnswer { readonly id: string; readonly forgotten: boolean; readonly [key: string]: unknown }
 export interface MemorySource {
@@ -52,7 +87,7 @@ export class MemoryServiceError extends Error {
 function wireTime(value: unknown): number | null {
   const parsed = typeof value === 'number' ? (value < 1e12 ? value * 1000 : value)
     : typeof value === 'string' ? Date.parse(value) : NaN
-  return Number.isFinite(parsed) ? parsed : null
+  return Number.isFinite(parsed) && Math.abs(parsed) <= 8.64e15 ? parsed : null
 }
 
 export function noteToRecord(note: Row): MemoryRecord {
@@ -122,6 +157,7 @@ export function httpMemorySource(options: { readonly fetchImpl?: typeof fetch } 
         const failed = results[0] as PromiseRejectedResult
         throw failed.reason
       }
+      if (input.q?.trim()) items.sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0))
       return { items, next: next.kira !== null || next.openviking !== null ? JSON.stringify(next) : null, issues }
     },
     async verify(id) { return await post(KIRA_MEMORY_ROUTES.verify, id) as unknown as MemoryVerifyAnswer },
