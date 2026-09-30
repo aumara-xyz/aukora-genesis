@@ -1,6 +1,6 @@
 # Running AUKORA Genesis on your Mac
 
-For the coding agent a friend points at this repository. NOT VERIFIED means nobody has run that step end to end on a fresh Mac.
+For the coding agent a friend points at this repository. A friend opening the app follows `docs/FRIEND-MAC-INSTALL.md`. NOT VERIFIED means nobody has run that step end to end on a fresh Mac.
 
 ## What you get and what you don't
 
@@ -27,7 +27,7 @@ You need macOS, Xcode Command Line Tools (`/usr/bin/cc`; `xcode-select --install
    scripts/install-mac.sh --dry-run
    scripts/install-mac.sh
    ```
-   It builds the pinned DeepSeek Harness (about 1.8 GB, minutes), keeps the committed faces, materializes `~/aukora-release-<commit>` and packages an unsigned app. Full run: NOT VERIFIED. Never run `build-face.py`: it changes committed bytes and the materializer then refuses.
+   It builds the pinned DeepSeek Harness (about 1.8 GB, minutes), keeps the committed faces, materializes `~/aukora-release-<commit>` and packages an unsigned app. It writes `~/Library/Application Support/AUKORA` (config `repo` and `profile: friend-preview`). Full run: NOT VERIFIED. Never run `build-face.py`: it changes committed bytes and the materializer then refuses.
 3. Start it:
    ```sh
    cd apps/aukora-desktop && npm start

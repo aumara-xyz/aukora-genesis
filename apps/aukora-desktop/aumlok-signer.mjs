@@ -54,6 +54,7 @@ import { appendFileSync, chmodSync, existsSync, lstatSync, mkdirSync, readFileSy
 import { connect, createServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { readOwnerDaemonConfig } from './aumlok-airlock-config.mjs'
+import { airlockConfigRefusedLine } from './friend-preview.mjs'
 import { createAirlockSigner, requestOwnerSignature } from './aumlok-signer-airlock.mjs'
 // THE REST OF THIS SIGNER LIVES IN TWO SIBLINGS, MOVED WHOLE (2026-09-27) so that no file of it passes the self-change
 // loop's 64 KiB limit (MAX_PATCH_BYTES, vendor/aukora-seed-app). No moved line was rewritten, every name this file
@@ -130,7 +131,8 @@ export async function startShellSigner(input) {
   let ownerConfig
   try {
     ownerConfig = readOwnerDaemonConfig(input.ownerDaemonConfigPath, input.ownerDaemonConfigUid)
-  } catch {
+  } catch (error) {
+    say(airlockConfigRefusedLine(error))
     return decide({ logDir, say, verdict: { serving: false, reason: 'airlock:config-refused', socketPath: null } })
   }
 

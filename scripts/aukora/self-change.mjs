@@ -50,6 +50,7 @@ import {
   qualifyCandidateCrossing, candidateOperation, checkCandidatePreview, authorizeAndMaterializeCandidate, commitCandidateTree,
 } from './aumlok-candidate-authority.mjs'
 import { PENDING_INTENT_SCHEMA } from '../../vendor/aukora-seed-app/lib/apps/seed/src/governedCrossing.js'
+import { failClosedIfFriend } from './friend-guard.mjs'
 
 // THIS script's checkout supplies every program it runs (approve-operation, verify-approval, the face tuples, the imports).
 // AUKORA_SELF_CHANGE_SOURCE names another checkout to propose FROM: the trusted aukora_self_change tool
@@ -69,6 +70,7 @@ const WINDOW_SECONDS = 300
 const MAX_SHOWN_CHARS = shownLimit(STATE, WITNESS_DISPLAY_LIMIT)
 
 const fail = (message) => { process.stderr.write(`SELF-CHANGE REFUSED: ${message}\n`); process.exit(1) }
+failClosedIfFriend('self-change', SUPPORT, fail)
 const candidateStep = (action) => {
   try { return action() } catch (error) { fail(error instanceof Error ? error.message : String(error)) }
 }

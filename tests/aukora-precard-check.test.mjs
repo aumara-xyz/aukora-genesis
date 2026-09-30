@@ -9,6 +9,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
 import { precardCheck } from '../scripts/aukora/precard-check.mjs'
+import { failClosedIfFriend } from '../scripts/aukora/friend-guard.mjs'
 import * as scan from '../scripts/aukora/snapshot-scan.mjs'
 const ROOT_FOR_REASON = new URL('..', import.meta.url).pathname
 
@@ -115,6 +116,7 @@ try {
       codeChain: () => ({ locked: fn => fn(), closeUnused: () => [], read: () => [], closedKeys: () => new Set(), consumedIds: consumed,
         append: () => { fs.writeFileSync(consumed, 'unexpected'); throw new Error('unexpected chain append') } }),
       precardCheck: async options => { state.evidence = options.evidence; return precardCheck({ ...options, timeoutMs }) },
+      failClosedIfFriend,
       spawnSync: (command, args, options) => {
         if (args[0]?.endsWith('/approve-operation')) {
           state.popups++; state.card = fs.readFileSync(args[args.indexOf('--operation') + 1], 'utf8')

@@ -14,6 +14,7 @@
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
+import { friendConsequentialRefusal } from './friend-guard.mjs'
 
 const deny = (code) => { throw new Error(code) }
 
@@ -32,6 +33,10 @@ function git(repo, args, { input, env = {}, optional = false, encoding = 'utf8' 
 
 export function writeCandidateCommit(repo, { tree, base, message, requireSsh = process.env.AUKORA_REQUIRE_COMMIT_SSH === '1' }) {
   const ident = ['-c', 'user.name=Auma Approved Change', '-c', 'user.email=approved@localhost']
+  if (requireSsh) {
+    const refusal = friendConsequentialRefusal('commit-ssh')
+    if (refusal) deny(refusal.code)
+  }
   if (!requireSsh) {
     return git(repo, [...ident, 'commit-tree', tree, '-p', base], { input: message }).trim()
   }

@@ -176,7 +176,7 @@ try {
   // Only packaged desktop siblings exist beside this private resolver copy; no plugin imports can resolve.
   const isolatedShell = join(scratch, 'packaged-shell')
   await mkdir(isolatedShell)
-  for (const name of ['url-policy.mjs', 'install-settings.mjs']) {
+  for (const name of ['url-policy.mjs', 'install-settings.mjs', 'friend-preview.mjs']) {
     await copyFile(join(shell, name), join(isolatedShell, name))
   }
   const source = await readFile(join(shell, 'resolve.mjs'), 'utf8')
