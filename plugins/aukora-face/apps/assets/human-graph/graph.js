@@ -72,13 +72,20 @@ export async function mountGraph(signal, onError) {
     const positions = nodes.map(node => new THREE.Vector3(...node.position))
     const graphRadius = Math.max(1, ...positions.map(position => position.distanceTo(positions[rootIndex]))) + 2
     const colors = nodes.map(node => new THREE.Color(PALETTE[node.cluster < 0 ? 0 : 1 + node.cluster % 4]))
+    const mutualDegree = new Float32Array(nodes.length)
+    for (const edge of [...graph.branches, ...graph.vouches]) {
+      if (!edge.mutual) continue
+      const a = byId.get(edge.source), b = byId.get(edge.target)
+      mutualDegree[a]++; mutualDegree[b]++
+    }
+    const baseGlowSizes = nodes.map((_, i) => i === rootIndex ? 12 : 1.8 + mutualDegree[i] * 0.5)
     const nodePositions = new Float32Array(nodes.length * 3)
     const glowColors = new Float32Array(nodes.length * 3)
     const glowSizes = new Float32Array(nodes.length)
     nodes.forEach((node, index) => {
       positions[index].toArray(nodePositions, index * 3)
       colors[index].toArray(glowColors, index * 3)
-      glowSizes[index] = index === rootIndex ? 12 : 1.65 + (4 - clamp(node.depth, 0, 4)) * 0.25
+      glowSizes[index] = baseGlowSizes[index]
     })
 
     const pointMaterial = own(new THREE.ShaderMaterial({
@@ -87,27 +94,35 @@ export async function mountGraph(signal, onError) {
       vertexShader: `
         attribute float size;
         attribute vec3 tint;
+        attribute float strength;
+        attribute float softness;
         uniform float height;
         uniform float time;
         uniform float pulse;
         varying vec3 vColor;
         varying float vPulse;
+        varying float vStrength;
+        varying float vSoftness;
         void main() {
           vec4 p = modelViewMatrix * vec4(position, 1.0);
           vColor = tint;
+          vStrength = strength;
+          vSoftness = softness;
           vPulse = 0.92 + pulse * 0.08 * sin(time * 0.7 + position.x * 0.16);
-          gl_PointSize = clamp(size * height / max(1.0, -p.z), 2.0, 210.0);
+          gl_PointSize = clamp(size * height / max(1.0, -p.z), 2.0, 480.0);
           gl_Position = projectionMatrix * p;
         }`,
       fragmentShader: `
         varying vec3 vColor;
         varying float vPulse;
+        varying float vStrength;
+        varying float vSoftness;
         void main() {
           float r = length(gl_PointCoord - 0.5) * 2.0;
           if (r > 1.0) discard;
-          float halo = exp(-r * r * 7.0) * 0.30;
-          float core = exp(-r * r * 70.0) * 0.46;
-          gl_FragColor = vec4(vColor, (halo + core) * (1.0 - r) * vPulse);
+          float halo = exp(-r * r * mix(7.0, 3.0, vSoftness)) * 0.30;
+          float core = exp(-r * r * 70.0) * 0.46 * (1.0 - vSoftness);
+          gl_FragColor = vec4(vColor, (halo + core) * (1.0 - r) * vPulse * vStrength);
           #include <colorspace_fragment>
         }`,
     }))
@@ -115,8 +130,43 @@ export async function mountGraph(signal, onError) {
     pointGeometry.setAttribute('position', new THREE.BufferAttribute(nodePositions, 3))
     pointGeometry.setAttribute('tint', new THREE.BufferAttribute(glowColors, 3))
     pointGeometry.setAttribute('size', new THREE.BufferAttribute(glowSizes, 1))
+    pointGeometry.setAttribute('strength', new THREE.Float32BufferAttribute(nodes.map((_, i) => i === rootIndex ? 1 : 0.55 + mutualDegree[i] * 0.15), 1))
+    pointGeometry.setAttribute('softness', new THREE.BufferAttribute(new Float32Array(nodes.length), 1))
     const glows = new THREE.Points(pointGeometry, pointMaterial)
     scene.add(glows)
+
+    // Soft volumes expose mutually vouched membership without painting a page background.
+    const haloCanvas = document.createElement('canvas')
+    haloCanvas.width = haloCanvas.height = 128
+    const brush = haloCanvas.getContext('2d')
+    if (!brush) throw new Error('Human Graph halo unavailable')
+    const fade = brush.createRadialGradient(64, 64, 0, 64, 64, 64)
+    fade.addColorStop(0, 'rgba(255,255,255,0.65)')
+    fade.addColorStop(0.25, 'rgba(255,255,255,0.35)')
+    fade.addColorStop(0.55, 'rgba(255,255,255,0.12)')
+    fade.addColorStop(1, 'rgba(255,255,255,0)')
+    brush.fillStyle = fade
+    brush.fillRect(0, 0, 128, 128)
+    const haloTexture = own(new THREE.CanvasTexture(haloCanvas))
+    const largestCell = Math.max(1, ...graph.cells.map(cell => cell.members.length))
+    for (const cell of graph.cells) {
+      const members = cell.members.map(id => byId.get(id))
+      const centre = new THREE.Vector3()
+      for (const index of members) centre.add(positions[index])
+      centre.divideScalar(members.length)
+      // World-space billboards stay attached to the cell at every zoom level;
+      // point sprites would stop growing at the GPU's point-size limit.
+      const material = own(new THREE.SpriteMaterial({ map: haloTexture,
+        color: PALETTE[1 + cell.cluster % 4], transparent: true,
+        opacity: 0.4 * members.length / largestCell,
+        depthWrite: false, blending: THREE.AdditiveBlending }))
+      const halo = new THREE.Sprite(material)
+      own(halo.geometry)
+      halo.position.copy(centre)
+      halo.scale.setScalar(members.length * 2.4)
+      halo.renderOrder = -2
+      scene.add(halo)
+    }
 
     const coreGeometry = own(new THREE.IcosahedronGeometry(1, 1))
     const coreMaterial = own(new THREE.MeshBasicMaterial({ color: 0xffffff }))
@@ -124,7 +174,7 @@ export async function mountGraph(signal, onError) {
     const transform = new THREE.Object3D()
     nodes.forEach((node, index) => {
       transform.position.copy(positions[index])
-      transform.scale.setScalar(index === rootIndex ? 0.001 : 0.13 + (4 - clamp(node.depth, 0, 4)) * 0.045)
+      transform.scale.setScalar(index === rootIndex ? 0.001 : 0.13 + mutualDegree[index] * 0.025)
       transform.updateMatrix()
       cores.setMatrixAt(index, transform.matrix)
       cores.setColorAt(index, colors[index].clone().lerp(new THREE.Color(0xffffff), 0.38))
@@ -146,7 +196,7 @@ export async function mountGraph(signal, onError) {
     scene.add(ring)
 
     // Two batched triangle meshes: screen-space ribbons keep their real pixel
-    // width on WebGL, and the vouch shader cuts each ribbon into round dots.
+    // width on WebGL. Only loose, second-degree links are cut into round dots.
     const neighbours = nodes.map(() => new Set())
     const edgeMaterials = []
     function connections(edges, dotted) {
@@ -191,7 +241,7 @@ export async function mountGraph(signal, onError) {
             float len = max(length(delta), 0.001);
             vec2 normal = vec2(-delta.y, delta.x) / len;
             vActive = (abs(ids.x - selected) < 0.1 || abs(ids.y - selected) < 0.1) ? 1.0 : 0.0;
-            float thickness = mix(1.65, 2.6, dotted) + vActive * 1.3;
+            float thickness = mix(1.5, 1.1, dotted) + vActive * 1.3;
             vec4 p = mix(a, b, corner.x);
             p.xy += normal * corner.y * thickness / resolution * p.w;
             gl_Position = p;
@@ -208,7 +258,7 @@ export async function mountGraph(signal, onError) {
               alpha = 1.0 - smoothstep(0.7, 1.0, length(vec2(x, vSide)));
             }
             if (alpha < 0.01) discard;
-            float emphasis = selected < 0.0 ? 0.82 : mix(0.22, 1.0, vActive);
+            float emphasis = selected < 0.0 ? mix(0.76, 0.28, dotted) : mix(0.12, 1.0, vActive);
             gl_FragColor = vec4(mix(vTint, vec3(1.0, 0.91, 0.65), vActive * 0.65), alpha * emphasis);
             #include <colorspace_fragment>
           }`,
@@ -219,8 +269,10 @@ export async function mountGraph(signal, onError) {
       mesh.renderOrder = -1
       scene.add(mesh)
     }
-    connections(graph.branches, false)
-    connections(graph.vouches, true)
+    const edges = [...graph.branches, ...graph.vouches]
+    const solid = edge => edge.source === graph.root || edge.target === graph.root || edge.mutual
+    connections(edges.filter(solid), false)
+    connections(edges.filter(edge => !solid(edge)), true)
     const selection = new THREE.Mesh(own(new THREE.RingGeometry(0.52, 0.57, 48)), own(new THREE.MeshBasicMaterial({ color: 0xffe1ad, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthTest: false, depthWrite: false })))
     selection.visible = false
     scene.add(selection)
@@ -257,7 +309,7 @@ export async function mountGraph(signal, onError) {
           : color.clone().multiplyScalar(pathNodes.has(i) ? 1 : 0.45)
         cores.setColorAt(i, coreColor)
         color.toArray(glowColors, i * 3)
-        glowSizes[i] = i === rootIndex ? 12 : (1.65 + (4 - clamp(node.depth, 0, 4)) * 0.25) * (pathNodes.has(i) ? 1.7 : 1)
+        glowSizes[i] = baseGlowSizes[i] * (pathNodes.has(i) ? 1.7 : 1)
       })
       cores.instanceColor.needsUpdate = true
       pointGeometry.attributes.tint.needsUpdate = true

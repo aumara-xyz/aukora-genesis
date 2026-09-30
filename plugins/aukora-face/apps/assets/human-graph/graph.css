@@ -28,7 +28,9 @@ body { color: #c5cedf; }
 }
 svg { display: block; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .badge svg { width: 17px; height: 17px; color: var(--gold); }
-.controls { position: absolute; z-index: 2; top: 84px; right: 26px; display: flex; gap: 2px; padding: 4px; border-radius: 28px; }
+.topbar { position: absolute; z-index: 2; inset: 24px 26px auto; display: flex; align-items: center; justify-content: space-between; gap: 16px; pointer-events: none; }
+.topbar h1 { margin: 0; color: #e2e7f0; font-size: clamp(20px, 3vw, 30px); font-weight: 550; letter-spacing: -.035em; }
+.controls { display: flex; gap: 2px; padding: 4px; border-radius: 28px; pointer-events: auto; }
 button { appearance: none; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #b5c0d1b0; cursor: pointer; }
 button:hover { background: #96b4ff12; color: #e8edff; }
 button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
@@ -41,7 +43,9 @@ button:disabled { opacity: .25; cursor: default; }
 #retry svg { width: 26px; height: 26px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 @media (max-width: 520px) {
-  .controls { top: 84px; right: 14px; }
+  .topbar { inset: 18px 18px auto; flex-wrap: wrap; }
+  .controls { margin-left: auto; }
+  .controls button { width: 34px; height: 34px; }
   .badge { bottom: 16px; left: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }

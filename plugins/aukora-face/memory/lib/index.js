@@ -1,81 +1,7 @@
-import { access, readFile } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import process from "node:process";
-import { setImmediate } from "node:timers/promises";
-//#region lib/types/constellation-layout.js
-/** Unit-vector PCA, with canonical input order, axis seed and sign. No ID jitter or invented coordinates.
-* Distances are a two-dimensional approximation to embedding similarity, not an exact metric.
-* O(notes × dimensions × iterations), yields between iterations and honours the request deadline. */
-async function semanticLayout(input, signal) {
-	const rows = [...input].sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-	const n = rows.length, d = rows[0]?.vector.length ?? 0;
-	if (!n || !d) throw new Error("memory:invalid-vectors");
-	const mean = new Float64Array(d);
-	const data = rows.map((row) => {
-		if (row.vector.length !== d || !row.vector.every(Number.isFinite)) throw new Error("memory:invalid-vectors");
-		let squaredNorm = 0;
-		for (const value of row.vector) squaredNorm += value * value;
-		const norm = Math.sqrt(squaredNorm);
-		if (norm < 1e-12) throw new Error("memory:invalid-vectors");
-		const unit = Float64Array.from(row.vector, (v) => v / norm);
-		for (let j = 0; j < d; j++) mean[j] += unit[j] / n;
-		return unit;
-	});
-	const variance = new Float64Array(d);
-	for (const row of data) for (let j = 0; j < d; j++) {
-		row[j] -= mean[j];
-		variance[j] += row[j] ** 2;
-	}
-	const dot = (a, b) => {
-		let value = 0;
-		for (let j = 0; j < d; j++) value += a[j] * b[j];
-		return value;
-	};
-	const axes = [];
-	for (let axis = 0; axis < 2; axis++) {
-		let seed = 0, best = -1;
-		for (let j = 0; j < d; j++) {
-			const weight = variance[j] * (1 - (axes[0]?.[j] ?? 0) ** 2);
-			if (weight > best) {
-				seed = j;
-				best = weight;
-			}
-		}
-		let direction = new Float64Array(d);
-		direction[seed] = 1;
-		for (let step = 0; step < 40; step++) {
-			signal?.throwIfAborted();
-			const next = new Float64Array(d);
-			for (const row of data) {
-				const weight = dot(row, direction);
-				for (let j = 0; j < d; j++) next[j] += row[j] * weight;
-			}
-			for (const previous of axes) {
-				const overlap = dot(next, previous);
-				for (let j = 0; j < d; j++) next[j] -= overlap * previous[j];
-			}
-			const norm = Math.sqrt(dot(next, next));
-			if (norm < 1e-12) {
-				direction.fill(0);
-				break;
-			}
-			for (let j = 0; j < d; j++) next[j] /= norm;
-			const converged = Math.abs(dot(next, direction)) > .999999999;
-			direction = next;
-			await setImmediate();
-			if (converged) break;
-		}
-		let pivot = 0;
-		for (let j = 1; j < d; j++) if (Math.abs(direction[j]) > Math.abs(direction[pivot])) pivot = j;
-		if (direction[pivot] < 0) for (let j = 0; j < d; j++) direction[j] *= -1;
-		axes.push(direction);
-	}
-	const xy = data.map((row) => [dot(row, axes[0]), dot(row, axes[1])]);
-	const extent = xy.reduce((max, [x, y]) => Math.max(max, Math.abs(x), Math.abs(y)), 1e-9);
-	return new Map(rows.map((row, i) => [row.id, [xy[i][0] / extent, xy[i][1] / extent]]));
-}
-//#endregion
 //#region lib/types/index.js
 var __rewriteRelativeImportExtension = function(path, preserveJsx) {
 	if (typeof path === "string" && /^\.\.?\//.test(path)) return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
@@ -86,11 +12,7 @@ var __rewriteRelativeImportExtension = function(path, preserveJsx) {
 const MEMORY_OPENVIKING_ROUTES = {
 	remembered: "/api/aukora/memory/remembered",
 	list: "/api/aukora/memory/openviking",
-	forget: "/api/aukora/memory/openviking/forget",
-	constellation: "/api/aukora/memory/constellation",
-	constellationSearch: "/api/aukora/memory/constellation/search",
-	threeModule: "/api/aukora/memory/three/r180/three.module.min.js",
-	threeCore: "/api/aukora/memory/three/r180/three.core.min.js"
+	forget: "/api/aukora/memory/openviking/forget"
 };
 const inject = ["webServer", "connection"];
 const object = (value) => value !== null && typeof value === "object" && !Array.isArray(value) ? value : {};
@@ -174,13 +96,13 @@ async function memoryOpenVikingConfig() {
 		queryInstruction: String(config.queryInstruction ?? "")
 	};
 }
-async function vikingCall(config, path, method = "GET", body, signal) {
+async function vikingCall(config, path, method = "GET", body) {
 	let response;
 	try {
 		response = await fetch(`${config.url}${path}`, {
 			method,
 			redirect: "error",
-			signal: AbortSignal.any([AbortSignal.timeout(15e3), ...signal ? [signal] : []]),
+			signal: AbortSignal.timeout(15e3),
 			headers: {
 				"content-type": "application/json",
 				"x-openviking-account": config.account,
@@ -190,7 +112,7 @@ async function vikingCall(config, path, method = "GET", body, signal) {
 			...body === void 0 ? {} : { body: JSON.stringify(body) }
 		});
 	} catch {
-		throw new MemoryFaceError(signal?.aborted ? "memory:constellation-timeout" : "memory:openviking-unreachable", 503);
+		throw new MemoryFaceError("memory:openviking-unreachable", 503);
 	}
 	const answer = object(await response.json().catch(() => null));
 	if (!response.ok || answer.status !== "ok") throw new MemoryFaceError(response.status === 404 ? "memory:openviking-not-found" : "memory:openviking-refused", response.status === 404 ? 404 : 502);
@@ -249,13 +171,13 @@ function memoryAuthor(note, tags = []) {
 	].includes(value)) || source.dream === true) return "agent";
 	return null;
 }
-async function vikingRecord(config, row, signal) {
+async function vikingRecord(config, row) {
 	const uri = String(row.uri);
 	const params = new URLSearchParams({ uri });
 	const [content, statValue, attributes] = await Promise.all([
-		vikingCall(config, `/api/v1/content/read?${params}`, "GET", void 0, signal),
-		row.modTime !== void 0 ? row : vikingCall(config, `/api/v1/fs/stat?${params}`, "GET", void 0, signal),
-		vikingCall(config, `/api/v1/fs/attrs?${params}`, "GET", void 0, signal)
+		vikingCall(config, `/api/v1/content/read?${params}`),
+		row.modTime !== void 0 ? row : vikingCall(config, `/api/v1/fs/stat?${params}`),
+		vikingCall(config, `/api/v1/fs/attrs?${params}`)
 	]);
 	if (typeof content !== "string") throw new MemoryFaceError("memory:invalid-content");
 	const stat = object(statValue);
@@ -377,143 +299,6 @@ async function forgetMemoryOpenViking(uri) {
 		localOnly: true
 	};
 }
-/** OpenViking's tenant-isolated debug scroll is the installed API that actually returns dense vectors.
-* Read only: no indexing, embedding calls, persisted layouts, or copies of notes. Kira's current ledger
-* supplies Kira text/eligibility; vector-store content is never treated as an authoritative memory. */
-async function memoryConstellation() {
-	const signal = AbortSignal.timeout(3e4);
-	const config = await memoryOpenVikingConfig();
-	const { idFromUri, uriFor } = await loadKiraMemoryReaderModule("recall-openviking");
-	const live = new Map((await readFaceLiveRemembered()).map((note) => [String(note.id), note]));
-	const files = /* @__PURE__ */ new Map();
-	for (let page = 0; page < 32; page++) {
-		const result = await vikingCall(config, `/api/v1/fs/tree?${new URLSearchParams({
-			uri: `viking://user/${config.user}`,
-			output: "original",
-			include_tags: "true",
-			level_limit: "64",
-			offset: String(page * 1e3),
-			node_limit: "1000"
-		})}`, "GET", void 0, signal);
-		if (!Array.isArray(result)) throw new MemoryFaceError("memory:invalid-list", 503);
-		for (const value of result) {
-			const row = object(value), uri = String(row.uri ?? "");
-			if (row.isDir === true && uri.split("/").length >= 64) throw new MemoryFaceError("memory:tree-incomplete", 503);
-			if (row.isDir !== true && isFaceOwnedVikingMemory(uri, config.user)) files.set(uri, row);
-		}
-		if (result.length < 1e3) break;
-		if (page === 31) throw new MemoryFaceError("memory:tree-incomplete", 503);
-	}
-	const candidates = /* @__PURE__ */ new Map();
-	let cursor = null, vectorValues = 0;
-	const acceptVector = (value) => {
-		const row = object(value), uri = String(row.uri ?? "");
-		if (row.context_type !== "memory" || row.level !== 2) return;
-		const id = idFromUri(config.user, uri), note = live.get(id);
-		if (!note && !files.has(uri)) return;
-		const vector = row.vector;
-		if (!Array.isArray(vector) || !vector.length || vector.length > 4096 || !vector.every((v) => typeof v === "number" && Number.isFinite(v)) || Math.hypot(...vector) < 1e-12) return;
-		const identity = note ? String(note.id) : uri;
-		vectorValues += vector.length - (candidates.get(identity)?.vector.length ?? 0);
-		if (vectorValues > 8e6) throw new MemoryFaceError("memory:vector-budget-exceeded", 503);
-		candidates.set(identity, {
-			vector: Float32Array.from(vector),
-			note
-		});
-	};
-	const cursors = /* @__PURE__ */ new Set();
-	for (let page = 0; page < 32; page++) {
-		const params = new URLSearchParams({ limit: "1000" });
-		if (cursor) params.set("cursor", cursor);
-		const result = object(await vikingCall(config, `/api/v1/debug/vector/scroll?${params}`, "GET", void 0, signal));
-		if (!Array.isArray(result.records)) throw new MemoryFaceError("memory:vectors-unavailable", 503);
-		for (const value of result.records) acceptVector(value);
-		cursor = typeof result.next_cursor === "string" && result.next_cursor ? result.next_cursor : null;
-		if (!cursor) break;
-		if (cursors.has(cursor) || page === 31) throw new MemoryFaceError("memory:vector-scan-incomplete", 503);
-		cursors.add(cursor);
-	}
-	const missing = [...live.keys(), ...files.keys()].filter((id) => !candidates.has(id));
-	for (let i = 0; i < missing.length; i += 8) {
-		const batch = await Promise.all(missing.slice(i, i + 8).map(async (id) => {
-			const uri = live.has(id) ? uriFor(config.user, id) : id;
-			const result = object(await vikingCall(config, `/api/v1/debug/vector/scroll?${new URLSearchParams({
-				uri,
-				limit: "1000"
-			})}`, "GET", void 0, signal));
-			if (!Array.isArray(result.records)) throw new MemoryFaceError("memory:vectors-unavailable", 503);
-			return result.records.filter((value) => object(value).uri === uri);
-		}));
-		for (const rows of batch) for (const row of rows) acceptVector(row);
-	}
-	if ([...live.keys(), ...files.keys()].some((id) => !candidates.has(id))) throw new MemoryFaceError("memory:vector-coverage-incomplete", 503);
-	const selected = [...candidates].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
-	const items = [];
-	const vectors = [];
-	for (let i = 0; i < selected.length; i += 8) {
-		if (signal.aborted) throw new MemoryFaceError("memory:constellation-timeout", 503);
-		const batch = await Promise.all(selected.slice(i, i + 8).map(async ([id, value]) => {
-			return {
-				item: value.note ? {
-					...value.note,
-					id,
-					backend: "kira",
-					tier: "remembered",
-					text: value.note.statement,
-					author: memoryAuthor(value.note)
-				} : await vikingRecord(config, files.get(id), signal),
-				id,
-				vector: value.vector
-			};
-		}));
-		for (const value of batch) {
-			items.push(value.item);
-			vectors.push({
-				id: value.id,
-				vector: value.vector
-			});
-		}
-	}
-	if (!vectors.length) throw new MemoryFaceError("memory:vectors-unavailable", 503);
-	let positions;
-	try {
-		positions = await semanticLayout(vectors, signal);
-	} catch (error) {
-		if (signal.aborted) throw new MemoryFaceError("memory:constellation-timeout", 503);
-		if (error instanceof Error && error.message === "memory:invalid-vectors") throw new MemoryFaceError("memory:invalid-vectors", 503);
-		throw error;
-	}
-	const current = await readFaceLiveRemembered();
-	if (current.length !== live.size || current.some((note) => {
-		const previous = live.get(String(note.id));
-		return !previous || previous.statement !== note.statement;
-	})) throw new MemoryFaceError("memory:snapshot-changed", 503);
-	return {
-		projection: "unit-pca-v1",
-		items: items.map((item) => ({
-			...item,
-			position: positions.get(String(item.id))
-		}))
-	};
-}
-/** One ranked request for the complete vector population, returning only identities and scores.
-* Avoids progressively re-fetching every search prefix and re-reading note bodies for highlights. */
-async function searchMemoryConstellation(query) {
-	const config = await memoryOpenVikingConfig();
-	const count = object(await vikingCall(config, "/api/v1/debug/vector/count")).count;
-	if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0 || count > 32e3) throw new MemoryFaceError("memory:search-budget-exceeded", 503);
-	if (!count) return { items: [] };
-	const hits = await findMemoryOpenViking(config, query, 0, count);
-	const { idFromUri } = await loadKiraMemoryReaderModule("recall-openviking");
-	return { items: hits.flatMap((hit) => {
-		const uri = String(hit.uri ?? ""), id = idFromUri(config.user, uri);
-		if (!id && !isFaceOwnedVikingMemory(uri, config.user) || typeof hit.score !== "number" || !Number.isFinite(hit.score)) return [];
-		return [{
-			id: id ?? uri,
-			score: hit.score
-		}];
-	}) };
-}
 function json(res, status, body) {
 	res.writeHead(status, {
 		"content-type": "application/json; charset=utf-8",
@@ -546,7 +331,6 @@ async function requestBody(req) {
 	}
 }
 function apply(ctx) {
-	let constellationFlight = null;
 	for (const [operation, path] of Object.entries(MEMORY_OPENVIKING_ROUTES)) {
 		const route = {
 			kind: "exact",
@@ -564,31 +348,9 @@ function apply(ctx) {
 					return;
 				}
 				try {
-					if (operation === "threeModule" || operation === "threeCore") {
-						const bytes = await readFile(new URL(`../vendor/three/${operation === "threeModule" ? "three.module.min.js" : "three.core.min.js"}`, import.meta.url));
-						res.writeHead(200, {
-							"content-type": "text/javascript; charset=utf-8",
-							"cache-control": "private, max-age=86400",
-							"x-content-type-options": "nosniff"
-						});
-						res.end(bytes);
-						return;
-					}
-					if (operation === "constellation") {
-						constellationFlight ??= memoryConstellation().finally(() => {
-							constellationFlight = null;
-						});
-						json(res, 200, await constellationFlight);
-						return;
-					}
 					if (operation !== "forget") {
 						const params = new URL(req.url ?? "/", "http://127.0.0.1").searchParams;
 						const q = params.get("q")?.trim() ?? "";
-						if (operation === "constellationSearch") {
-							if (!q || q.length > 4e3) throw new MemoryFaceError("memory:invalid-query", 400);
-							json(res, 200, await searchMemoryConstellation(q));
-							return;
-						}
 						if (operation === "remembered") {
 							if (q.length > 4e3) throw new MemoryFaceError("memory:invalid-query", 400);
 							json(res, 200, await listFaceRemembered(q, params.get("before")));
@@ -612,4 +374,4 @@ function apply(ctx) {
 	}
 }
 //#endregion
-export { MEMORY_OPENVIKING_ROUTES, apply, forgetMemoryOpenViking, inject, isFaceOwnedVikingMemory, listFaceRemembered, listMemoryOpenViking, memoryAuthor, memoryConstellation, memoryOpenVikingConfig, memoryRequestRejection, readFaceLiveRemembered, searchMemoryConstellation };
+export { MEMORY_OPENVIKING_ROUTES, apply, forgetMemoryOpenViking, inject, isFaceOwnedVikingMemory, listFaceRemembered, listMemoryOpenViking, memoryAuthor, memoryOpenVikingConfig, memoryRequestRejection, readFaceLiveRemembered };

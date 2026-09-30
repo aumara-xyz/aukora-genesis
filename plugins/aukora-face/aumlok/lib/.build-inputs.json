@@ -1,6 +1,6 @@
 {
   "face": "aumlok",
-  "srcDigest": "3bc7df62f03d9edf92c1ce6e82f04cca1f2bba4a6e57ca38c29bfc8f9637fa3a",
+  "srcDigest": "32dd843b08f406090d65dd5a56333c994356263ef4dd1d019bb3d8ddf4536d1b",
   "files": [
     "../messages/package.json",
     "../messages/src/client/add-contact.ts",
@@ -39,5 +39,5 @@
     "src/vendor/qrcodegen/qrcodegen.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T07:50:47Z"
+  "builtAt": "2026-09-30T08:20:04Z"
 }

@@ -80,6 +80,7 @@
 .identityAvatar > svg[viewBox='0 0 24 24'] { width: 36px; height: 36px; }
 
 .identityHeader h2 { flex: 1; }
+.identityHeader > [data-identity-verify] { flex: none; align-self: flex-start; margin-left: auto; }
 .identityNameForm { display: flex; flex: 1; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .identityNameForm input {
   flex: 1;
@@ -338,7 +339,8 @@
 .identityAction[data-labeled][data-result='error'] { color: #cf695f; }
 
 @container (max-width: 420px) {
-  .identityHeader { flex-direction: column; text-align: center; }
+  .identityHeader { flex-wrap: wrap; text-align: left; }
+  .identityHeader h2 { order: 1; flex-basis: 100%; }
   .identityPortal summary { gap: 12px; padding: 16px; }
   .portalHeading strong { font-size: 21px; }
   .portalIcon { width: 42px; height: 42px; }
@@ -402,6 +404,9 @@
 .statusBadge > svg { width: 18px; height: 18px; }
 
 .statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   flex: none;
   padding: 7px 12px;
   border: 1px solid color-mix(in srgb, var(--aumlok-anchor) 48%, transparent);
@@ -1221,11 +1226,11 @@
 .anchorMeta { flex: 1; min-width: 0; }
 .anchorBoxes { flex: 1; }
 .anchorBox { flex: 1; min-width: 22px; }
-.explanationHeader { gap: 10px; margin-bottom: 22px; }
+.explanationHeader { gap: 10px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--dsw-alias-border-l1); }
 .flow .explanationHeader h3 { font-size: 22px; margin: 0; letter-spacing: -.025em; }
 .explanationHeader img { flex: none; }
-.explanationHeader .statusBadge { margin-left: auto; padding: 7px 9px; font-size: 10px; }
-.boundaryClosing { border: 1px solid color-mix(in srgb, var(--aumlok-anchor) 58%, transparent); border-radius: 17px; padding: 18px 20px; }
+.boundaryClosing { border: 1px solid color-mix(in srgb, var(--aumlok-anchor) 58%, transparent); border-radius: 17px; padding: 18px 20px; font-size: clamp(16px, 1.8cqi, 22px); white-space: nowrap; }
+@container aumlok (max-width: 520px) { .boundaryClosing { white-space: normal; } }
 @container aumlok (max-width: 520px) { .anchorToken { flex-direction: column; align-items: stretch; } .anchorBoxes { width: 100%; } }
 
 .phraseStage { container-type: inline-size; container-name: phrase; }

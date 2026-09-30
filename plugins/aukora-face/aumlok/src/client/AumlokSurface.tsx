@@ -509,6 +509,7 @@ export function AumlokSurface({
               words are typed back. The decision is `aumlokBadgeWord`, keyed off the same state the
               tiles and the buttons are drawn from, so the badge cannot disagree with the screen. */}
           <span className={css.statusBadge} data-aumlok-badge={aumlokBadgeWord(state)} role="img" aria-label={t(aumlokBadgeWord(state))}>
+            {aumlokBadgeWord(state) === 'bound' ? <IdentityIcon name="lock" /> : null}
             {t(aumlokBadgeWord(state))}
           </span>
         </header>
@@ -626,7 +627,6 @@ export function AumlokSurface({
             <SectionHeader className={css.explanationHeader}>
               <img src="/branding/aumara-icon-96.png" width="36" height="36" alt="" />
               <h3 id="aumlok-flow-label">{t('surface.explanation.title')}</h3>
-              <span className={css.statusBadge}>{t(aumlokBadgeWord(state))}</span>
             </SectionHeader>
             <div className={css.explanation} data-aumlok-explanation>
               <p>{t('surface.explanation.identity')}</p>

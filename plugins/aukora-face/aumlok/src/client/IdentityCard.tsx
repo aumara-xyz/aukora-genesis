@@ -203,6 +203,9 @@ function IdentityProfile({ identity, openAumlok, t }: {
         {photoError ? <span role="alert" className={css.identityStorageError} aria-label={t('identity.failed')}><IdentityIcon name="error" /></span> : null}
       </div>
       <h2 data-aumlok-owner>{identity.label || t('identity.title')}</h2>
+      <button type="button" className={css.identityAction} data-labeled data-identity-verify onClick={() => { setScanning(true) }}>
+        <IdentityIcon name="camera" /><span>{t('identity.verify')}</span>
+      </button>
     </header>
     <div className={css.identityQrHalo} data-ready={usable || undefined}>
       <div className={css.identityQr} data-aumlok-contact-qr aria-busy={!usable && !contactError}>
@@ -263,9 +266,6 @@ function IdentityProfile({ identity, openAumlok, t }: {
         </div>
       </details>
     </div>
-    <button type="button" className={css.identityAction} data-labeled data-identity-verify onClick={() => { setScanning(true) }}>
-      <IdentityIcon name="camera" /><span>{t('identity.verify')}</span>
-    </button>
     {scanning ? <IdentityScanner ownerNpub={identity.npub} onClose={() => { setScanning(false) }} t={t} /> : null}
   </Card>
 }

@@ -1,11 +1,10 @@
 /** A paged memory view inside the existing centre lane. */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { TIER_TABS, INITIAL_VIEW, citedIdsOf, itemsOf, receiptBadgeOf } from './memory-model.ts'
 import type { MemoryView } from './memory-model.ts'
-import { MemoryServiceError, fetchConstellation, fetchConstellationMatches, httpMemorySource, WHY_MANIFEST_ROUTE } from './memory-api.ts'
-import type { ConstellationMatch, ConstellationRecord, MemoryRecord } from './memory-api.ts'
-import { MemoryConstellation, MemoryViewIcon } from './MemoryConstellation.tsx'
+import { MemoryServiceError, httpMemorySource, WHY_MANIFEST_ROUTE } from './memory-api.ts'
+import type { MemoryRecord } from './memory-api.ts'
 import { ActionButton, PortalButton, SectionHeader, type Accent } from '@aukora/face-layout/client'
 import css from './Memory.module.css'
 
@@ -36,38 +35,13 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
   const [actionError, setActionError] = useState<{ id: string; code: string } | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [whyTrouble, setWhyTrouble] = useState(false)
-  const [starMode, setStarMode] = useState(false)
-  const [stars, setStars] = useState<readonly ConstellationRecord[]>([])
-  const [starPending, setStarPending] = useState(false)
-  const [starUnavailable, setStarUnavailable] = useState(false)
-  const [starMatches, setStarMatches] = useState<readonly ConstellationMatch[]>([])
-  const [starSearchPending, setStarSearchPending] = useState(false)
-  const fallbackToList = useCallback(() => {
-    setStarMode(false)
-    setStarUnavailable(true)
-    setView(current => ({ ...current, query: '' }))
-  }, [])
   const generation = useRef(0)
   const pageInFlight = useRef(false)
   const scroller = useRef<HTMLElement>(null)
   const more = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    setStars([])
-    if (!active || openTier !== 'remembered' || !starMode) { setStarPending(false); return }
-    const abort = new AbortController()
-    setStarPending(true)
-    setStarUnavailable(false)
-    void fetchConstellation(abort.signal).then(answer => {
-      if (!abort.signal.aborted) setStars(answer)
-    }).catch(() => {
-      if (!abort.signal.aborted) fallbackToList()
-    }).finally(() => { if (!abort.signal.aborted) setStarPending(false) })
-    return () => { abort.abort() }
-  }, [active, openTier, starMode, revision, fallbackToList])
-
-  useEffect(() => {
-    if (!active || openTier === null || starMode) return
+    if (!active || openTier === null) return
     const current = ++generation.current
     const abort = new AbortController()
     pageInFlight.current = false
@@ -90,7 +64,7 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
       })
     }, view.query ? 250 : 0)
     return () => { window.clearTimeout(timer); abort.abort(); ++generation.current }
-  }, [active, openTier, view.tier, view.query, revision, starMode])
+  }, [active, openTier, view.tier, view.query, revision])
 
   const loadMore = useCallback(() => {
     if (!next || pageInFlight.current || state !== 'ready') return
@@ -102,13 +76,10 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
       setRecords(previous => {
         const merged = new Map(previous.map(record => [record.id, record]))
         for (const record of answer.items) merged.set(record.id, record)
-        const all = [...merged.values()]
-        return view.query.trim() ? all.sort((a, b) => Number(b.score ?? 0) - Number(a.score ?? 0)) : all
+        return [...merged.values()]
       })
       setNext(answer.next)
-      if (answer.issues?.length) {
-        setIssues(previous => [...new Set([...previous, ...answer.issues!])])
-      }
+      if (answer.issues?.length) setIssues(previous => [...new Set([...previous, ...answer.issues!])])
     }).catch((error: unknown) => {
       if (current !== generation.current) return
       setIssues(previous => [...previous, errorCode(error)])
@@ -121,13 +92,13 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
   }, [next, state, view.tier, view.query])
 
   useEffect(() => {
-    if (!active || starMode || !next || !more.current || paging) return
+    if (!active || !next || !more.current || paging) return
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) loadMore()
     }, { root: scroller.current, rootMargin: '0px 0px 180px 0px' })
     observer.observe(more.current)
     return () => { observer.disconnect() }
-  }, [active, starMode, next, paging, loadMore])
+  }, [active, next, paging, loadMore])
 
   useEffect(() => {
     if (!surfaceTarget) {
@@ -147,43 +118,6 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
 
   // Search was already ranked by the server. A substring filter would discard semantic paraphrases.
   const items = itemsOf({ items: records }, { ...view, query: '', ranked: view.query.trim() !== '' }).items
-  const starPoints = useMemo(() => stars.filter(point => view.citedIds === null || view.citedIds.includes(point.id)), [stars, view.citedIds])
-  const constellationShown = active && starMode && !starPending && stars.length > 0 && openTier === 'remembered'
-  useEffect(() => {
-    setStarMatches([])
-    if (!constellationShown || !view.query.trim()) { setStarSearchPending(false); return }
-    const abort = new AbortController()
-    setStarSearchPending(true)
-    const timer = window.setTimeout(() => {
-      void fetchConstellationMatches(view.query, abort.signal).then(answer => {
-        if (!abort.signal.aborted) setStarMatches(answer)
-      }).catch(() => { if (!abort.signal.aborted) fallbackToList() })
-        .finally(() => { if (!abort.signal.aborted) setStarSearchPending(false) })
-    }, 250)
-    return () => { window.clearTimeout(timer); abort.abort() }
-  }, [constellationShown, view.query, fallbackToList])
-  const matches = useMemo(() => {
-    if (!view.query.trim()) return null
-    if (starSearchPending) return []
-    const visible = new Set(starPoints.map(point => point.id))
-    const ranked = starMatches.filter(match => visible.has(match.id))
-    // Same leading semantic band as Kira's pinned local model; weak similarities stay dim.
-    const floor = Math.max(.4, (ranked[0]?.score ?? 0) - .1)
-    return ranked.filter(match => match.score >= floor).map(match => match.id)
-  }, [starPoints, starMatches, view.query, starSearchPending])
-  const visibleItems = constellationShown
-    ? itemsOf({ items: starPoints.filter(point => point.id === openItem) }, { ...view, query: '' }).items : items
-  const showStarDetail = (id: string) => {
-    setOpenItem(id)
-    setActionError(null)
-    setView(current => ({ ...current, confirmingForget: null }))
-    requestAnimationFrame(() => {
-      const row = Array.from(scroller.current?.querySelectorAll<HTMLElement>('[data-memory-row]') ?? [])
-        .find(element => element.dataset.memoryRow === id)
-      row?.querySelector('button')?.focus({ preventScroll: true })
-      row?.scrollIntoView({ block: 'nearest', behavior: 'instant' })
-    })
-  }
   const forget = (id: string) => {
     if (busy) return
     setBusy(id)
@@ -191,7 +125,6 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
     void SOURCE.forget(id).then(() => {
       ++generation.current
       setRecords(previous => previous.filter(record => record.id !== id))
-      setStars(previous => previous.filter(record => record.id !== id))
       setView(current => ({ ...current, confirmingForget: null }))
       setOpenItem(null)
       setRevision(value => value + 1)
@@ -216,39 +149,24 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
               subtitle={t(`tab.${each.tier}.blurb` as 'tab.remembered.blurb')}
               icon={<span className={css.portalDot} aria-hidden="true" />}
               buttonClassName={css.portalHead} contentClassName={css.portalBody}
-              contentProps={{ 'aria-busy': starMode ? starPending || starSearchPending : state === 'loading' || paging }} onExpandedChange={nextOpen => {
+              contentProps={{ 'aria-busy': state === 'loading' || paging }} onExpandedChange={nextOpen => {
                 setOpenItem(null)
-                setStarMode(false)
-                setStarUnavailable(false)
                 setActionError(null)
                 setOpenTier(nextOpen ? each.tier : null)
                 if (nextOpen) setView(current => ({ ...current, tier: each.tier, query: '', confirmingForget: null }))
               }}>
-                <div className={css.searchControls}>
                 <input type="search" className={css.portalSearch} data-memory-search placeholder={t('search.placeholder')}
                   aria-label={t('search.placeholder')} value={view.query} onChange={event => {
                     setOpenItem(null)
                     setView(current => ({ ...current, query: event.target.value, confirmingForget: null }))
                   }} />
-                {each.tier === 'remembered' ? <ActionButton className={css.viewToggle} data-memory-view-toggle
-                  data-unavailable={starUnavailable || undefined} aria-pressed={starMode} aria-busy={starPending}
-                  title={t(starUnavailable ? 'constellation.unavailable' : starMode ? 'constellation.list' : 'constellation.show')}
-                  aria-label={t('constellation.show')}
-                  onClick={() => { setOpenItem(null); setStarMode(value => !value) }}>
-                  <MemoryViewIcon list={starMode} />
-                </ActionButton> : null}
-                </div>
-                {starPending ? <span className={css.portalQuiet} role="img" aria-label={t('surface.loading')}>⋯</span> : null}
-                {!starMode && state === 'loading' ? <span className={css.portalQuiet} role="img" aria-label={t('surface.loading')}>⋯</span> : null}
+                {state === 'loading' ? <span className={css.portalQuiet} role="img" aria-label={t('surface.loading')}>⋯</span> : null}
                 {issues.length ? <ActionButton type="button" variant="red-warning" className={css.retry} data-memory-failed={state === 'failed' ? 'failed' : 'partial'}
                   data-memory-error={issues.join(',')} title={issues.join('\n')} aria-label={t('surface.failed')}
                   onClick={() => { setRevision(value => value + 1) }}>↻</ActionButton> : null}
-                {!constellationShown && state === 'ready' && !issues.length && !next && items.length === 0 ? <p className={css.portalQuiet} data-memory-empty={view.tier}>{t('surface.empty')}</p> : null}
-                {constellationShown && starPoints.length > 0 ? <MemoryConstellation points={starPoints} matches={matches}
-                  onSelect={showStarDetail} onUnavailable={fallbackToList}
-                  labels={{ field: t('constellation.field'), person: t('constellation.person'), agent: t('constellation.agent') }} /> : null}
+                {state === 'ready' && !issues.length && !next && items.length === 0 ? <p className={css.portalQuiet} data-memory-empty={view.tier}>{t('surface.empty')}</p> : null}
                 <ul className={css.memoryList}>
-                  {visibleItems.map(item => {
+                  {items.map(item => {
                     const expanded = openItem === item.id
                     const confirming = view.confirmingForget === item.id
                     const mutable = !item.erased && item.tier !== 'signed'
@@ -294,7 +212,7 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
                     </li>
                   })}
                 </ul>
-                {!constellationShown && next ? <ActionButton ref={more} type="button" className={css.more} variant={TONE[each.tier]} data-memory-more disabled={paging}
+                {next ? <ActionButton ref={more} type="button" className={css.more} variant={TONE[each.tier]} data-memory-more disabled={paging}
                   aria-label={t('action.more')} onClick={loadMore}>{paging ? '⋯' : '↓'}</ActionButton> : null}
             </PortalButton>
           )
