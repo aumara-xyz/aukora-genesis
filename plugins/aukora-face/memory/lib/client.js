@@ -514,6 +514,19 @@ window.__ModuleLoader__.load({
 		};
 		const dateText = (at) => at === null ? "—" : new Date(at).toLocaleDateString();
 		const errorCode = (error) => error instanceof MemoryServiceError ? error.code : "memory:request-failed";
+		function WarningIcon() {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+				width: "14",
+				height: "14",
+				viewBox: "0 0 24 24",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinejoin: "round",
+				"aria-hidden": "true",
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 3 22 21H2Z" })
+			});
+		}
 		function MemorySurface({ activeSurface, t, openSource, surfaceTarget }) {
 			const active = activeSurface === "memory";
 			const [view, setView] = (0, react.useState)(INITIAL_VIEW);
@@ -694,7 +707,7 @@ window.__ModuleLoader__.load({
 						role: "img",
 						"aria-label": t("surface.whyTrouble"),
 						title: t("surface.whyTrouble"),
-						children: "!"
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(WarningIcon, {})
 					}) : null]
 				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 					className: Memory_module_css_default.portals,
@@ -802,10 +815,31 @@ window.__ModuleLoader__.load({
 														children: item.text
 													}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 														className: Memory_module_css_default.memoryWhen,
-														children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: item.author ?? t("source.unknown") }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("time", {
+														children: [item.author === "Peter" || item.author === "agent" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+															width: "14",
+															height: "14",
+															viewBox: "0 0 24 24",
+															fill: "none",
+															stroke: "currentColor",
+															strokeWidth: "1.5",
+															strokeLinecap: "round",
+															strokeLinejoin: "round",
+															role: "img",
+															"aria-label": item.author,
+															children: item.author === "Peter" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+																cx: "12",
+																cy: "7",
+																r: "4"
+															}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M4 21v-2a8 8 0 0 1 16 0v2" })] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+																x: "4",
+																y: "7",
+																width: "16",
+																height: "14",
+																rx: "3"
+															}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 3v4M8 12v2m8-2v2M9 17h6" })] })
+														}) : null, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("time", {
 															dateTime: item.createdAt === null ? void 0 : new Date(item.createdAt).toISOString(),
-															title: item.dateKind === "modified" ? t("when.modified") : t("when.created"),
-															children: [item.dateKind === "modified" ? `${t("when.modified")} ` : "", dateText(item.createdAt)]
+															children: dateText(item.createdAt)
 														})]
 													})]
 												}), expanded ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
@@ -891,7 +925,7 @@ window.__ModuleLoader__.load({
 																role: "img",
 																"aria-label": t("surface.actionFailed"),
 																title: actionError.code,
-																children: "!"
+																children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(WarningIcon, {})
 															}) : null
 														]
 													})

@@ -14,6 +14,12 @@ const TONE: Record<string, string> = { remembered: 'mint', signed: 'gold', propo
 const dateText = (at: number | null): string => at === null ? '—' : new Date(at).toLocaleDateString()
 const errorCode = (error: unknown): string => error instanceof MemoryServiceError ? error.code : 'memory:request-failed'
 
+function WarningIcon() {
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3 22 21H2Z" />
+  </svg>
+}
+
 export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: MemorySurfaceProps) {
   const active = activeSurface === 'memory'
   const [view, setView] = useState<MemoryView>(INITIAL_VIEW)
@@ -130,7 +136,7 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
       aria-label={t('view.title')} hidden={!active} aria-hidden={!active}>
       <header className={css.memoryHead}>
         <h2 className={css.memoryTitle}>{t('view.title')}</h2>
-        {whyTrouble ? <span className={css.memoryProblem} role="img" aria-label={t('surface.whyTrouble')} title={t('surface.whyTrouble')}>!</span> : null}
+        {whyTrouble ? <span className={css.memoryProblem} role="img" aria-label={t('surface.whyTrouble')} title={t('surface.whyTrouble')}><WarningIcon /></span> : null}
       </header>
       <div className={css.portals}>
         {TIER_TABS.map(each => {
@@ -171,10 +177,13 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
                       <button type="button" className={css.memoryPortal} aria-expanded={expanded} onClick={() => { setOpenItem(expanded ? null : item.id) }}>
                         <span className={css.memoryWords}>{item.text}</span>
                         <span className={css.memoryWhen}>
-                          <span>{item.author ?? t('source.unknown')}</span>
-                          <time dateTime={item.createdAt === null ? undefined : new Date(item.createdAt).toISOString()}
-                            title={item.dateKind === 'modified' ? t('when.modified') : t('when.created')}>
-                            {item.dateKind === 'modified' ? `${t('when.modified')} ` : ''}{dateText(item.createdAt)}
+                          {item.author === 'Peter' || item.author === 'agent' ? <svg width="14" height="14" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={item.author}>
+                            {item.author === 'Peter' ? <><circle cx="12" cy="7" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></>
+                              : <><rect x="4" y="7" width="16" height="14" rx="3" /><path d="M12 3v4M8 12v2m8-2v2M9 17h6" /></>}
+                          </svg> : null}
+                          <time dateTime={item.createdAt === null ? undefined : new Date(item.createdAt).toISOString()}>
+                            {dateText(item.createdAt)}
                           </time>
                         </span>
                       </button>
@@ -199,7 +208,7 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
                           </> : <button type="button" className={css.pill} data-memory-forget={item.id} disabled={busy !== null}
                             onClick={() => { setActionError(null); setView(current => ({ ...current, confirmingForget: item.id })) }}>{t('action.forget')}</button> : null}
                           {actionError?.id === item.id ? <span className={css.memoryProblem} data-memory-action-failed={actionError.code}
-                            role="img" aria-label={t('surface.actionFailed')} title={actionError.code}>!</span> : null}
+                            role="img" aria-label={t('surface.actionFailed')} title={actionError.code}><WarningIcon /></span> : null}
                         </div>
                       </div> : null}
                     </li>
