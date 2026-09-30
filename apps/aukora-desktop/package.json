@@ -50,10 +50,13 @@
       "url-policy.mjs"
     ],
     "mac": {
-      "identity": null,
+      "identity": "-",
       "target": "dir",
       "category": "public.app-category.productivity",
+      "entitlements": "entitlements.mac.plist",
+      "entitlementsInherit": "entitlements.mac.plist",
       "extendInfo": {
+        "NSCameraUsageDescription": "AUKORA uses the camera only while you scan an AUKORA contact to verify them in person. Camera frames stay on this device.",
         "NSMicrophoneUsageDescription": "AUKORA uses the microphone only while you open the voice channel in Auma Live, and the audio goes to the local voice process on this machine."
       }
     },

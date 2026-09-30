@@ -13,10 +13,7 @@
   container-name: aumlok;
   container-type: inline-size;
   color: var(--dsw-alias-label-primary);
-  background:
-    radial-gradient(circle at 8% 2%, color-mix(in srgb, var(--aumlok-root) 9%, transparent), transparent 30%),
-    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--aumlok-rise) 10%, transparent), transparent 34%),
-    var(--dsw-alias-bg-layer-1);
+  background: transparent;
 }
 
 .surface[hidden] {
@@ -28,6 +25,324 @@
   min-height: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+.identityPanel {
+  padding: clamp(20px, 3.2%, 40px);
+  overflow: auto;
+  container-type: inline-size;
+  background: transparent;
+}
+
+.identityCard {
+  width: min(100%, 680px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: clamp(20px, 4cqi, 36px);
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 30px;
+  background: var(--aukora-surface);
+  box-shadow: 0 24px 80px #0003, inset 0 1px #ffffff08;
+}
+
+.identityHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+}
+
+.identityHeader h2 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(32px, 6cqi, 52px);
+  font-weight: 640;
+  letter-spacing: -0.03em;
+}
+
+.identityAvatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 82px;
+  height: 82px;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--aumlok-unite) 10%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--aumlok-unite) 35%, transparent), 0 8px 28px #0003;
+  color: var(--aumlok-unite);
+}
+.identityAvatar svg { width: 100%; height: 100%; }
+.identityAvatar > svg[viewBox='0 0 24 24'] { width: 36px; height: 36px; }
+
+.identityHeader h2 { flex: 1; }
+.identityNameForm { display: flex; flex: 1; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.identityNameForm input {
+  flex: 1;
+  width: 120px;
+  min-width: 0;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 12px;
+  padding: 10px;
+  color: inherit;
+  background: var(--dsw-alias-bg-layer-2);
+  font: inherit;
+}
+.identityStorageError {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: #cf695f;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.identityStorageError svg { width: 18px; height: 18px; }
+.identityScrim {
+  --aumlok-root: var(--dsw-static-spatial-mint);
+  --aumlok-unite: var(--dsw-static-spatial-blue);
+  --aumlok-rise: var(--dsw-static-spatial-violet);
+  --aumlok-anchor: var(--dsw-static-spatial-gold);
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: #080615bb;
+  backdrop-filter: blur(10px);
+}
+.identitySheet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: min(100%, 560px);
+  max-height: 90dvh;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow: auto;
+  padding: 24px;
+  box-sizing: border-box;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 24px;
+  color: var(--dsw-alias-label-primary);
+  background: linear-gradient(145deg, #162337, #12131f 55%, #211930);
+  box-shadow: 0 20px 80px #0008;
+}
+.identitySheetHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; width: 100%; }
+.identitySheetHeader h3 { margin: 0; font-size: clamp(27px, 4vw, 34px); line-height: 1.2; letter-spacing: -0.035em; }
+.identitySheetHeader p { margin: 10px 0 0; font-size: 16px; color: var(--dsw-alias-label-secondary); }
+.identitySheet .identityAction { font-size: 15px; min-height: 44px; height: auto; padding: 10px 14px; }
+.identitySheetHeader > .identityAction { color: var(--dsw-alias-label-secondary); }
+.identityCameraFrame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 320px;
+  aspect-ratio: 1.12;
+  border: 1px solid color-mix(in srgb, var(--aumlok-unite) 35%, transparent);
+  border-radius: 22px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, #1c2d48, #090e19 80%);
+  box-shadow: inset 0 0 45px #0005, 0 0 30px color-mix(in srgb, var(--aumlok-unite) 5%, transparent);
+}
+.identityCamera { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.identityCamera[hidden] { display: none; }
+.scanCorners { position: absolute; inset: 22px; pointer-events: none; color: var(--aumlok-unite); }
+.scanCorners i { position: absolute; width: 34px; height: 34px; border: solid currentColor; border-width: 0; filter: drop-shadow(0 0 6px currentColor); }
+.scanCorners i:nth-child(1) { top: 0; left: 0; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 12px; }
+.scanCorners i:nth-child(2) { top: 0; right: 0; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 12px; }
+.scanCorners i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 12px; }
+.scanCorners i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 12px; }
+.identityCameraFrame[data-scanning] .scanCorners { animation: identity-scan 2.4s ease-in-out infinite; }
+@keyframes identity-scan { 50% { opacity: 0.5; transform: scale(0.96); } }
+.scannerMessage { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 44px 32px; text-align: center; color: var(--dsw-alias-label-primary); }
+.scannerMessage > svg { width: 42px; height: 42px; color: var(--aumlok-unite); }
+.scannerMessage strong { font-size: 19px; line-height: 1.4; }
+.scannerMessage p { margin: 0; max-width: 32ch; font-size: 15px; color: var(--dsw-alias-label-secondary); }
+.scannerMessage[data-warning] > svg { color: #ee958a; }
+.scannerMessage[data-live] { align-self: end; flex-direction: row; gap: 10px; margin: 0 24px 42px; padding: 10px 18px; border: 1px solid #ffffff24; border-radius: 999px; background: #080e1de6; color: #f3f6ff; }
+.scannerMessage[data-live] > svg { width: 22px; height: 22px; }
+.scannerMessage[data-live] strong { font-size: 16px; }
+.identitySheet .identityWarning { color: #ee958a; font-size: 15px; }
+.identitySheet .identityWarning svg { flex: none; }
+.identityScanned { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; padding: 22px 0; }
+.identityScanned h2 { margin: 0; max-width: 100%; overflow-wrap: anywhere; text-align: center; font-size: 27px; }
+.scannerAbout { width: 100%; border-top: 1px solid var(--dsw-alias-border-l1); }
+.scannerAbout summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0 4px; font-size: 16px; cursor: pointer; list-style: none; color: var(--aumlok-unite); }
+.scannerAbout summary::-webkit-details-marker { display: none; }
+.scannerAbout p { margin: 14px 0 0; color: var(--dsw-alias-label-secondary); font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { .identityCameraFrame[data-scanning] .scanCorners { animation: none; } }
+
+.identityBind:focus-visible { outline: 2px solid var(--aumlok-unite); outline-offset: 3px; }
+
+ .identityQrHalo {
+  display: grid;
+  place-items: center;
+  width: min(100%, 362px);
+  padding: 12px;
+  box-sizing: border-box;
+  border-radius: 30px;
+  background: #f4f3f8;
+  box-shadow: 0 12px 36px #0002;
+}
+.identityQr {
+  display: grid;
+  place-items: center;
+  width: min(100%, 336px);
+  aspect-ratio: 1;
+  padding: 14px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  /* The standard SVG includes its own four-module quiet zone. */
+  background: transparent;
+  color: #252047;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--aumlok-rise) 45%, transparent), 0 12px 40px #0003;
+}
+
+.identityQr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.identityQrPending {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #25204740;
+  border-top-color: #252047;
+  border-radius: 50%;
+  animation: identity-loading 1s linear infinite;
+}
+
+@keyframes identity-loading { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .identityQrPending { animation: none; } }
+
+.identityRetry {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border: 1px solid currentColor;
+  border-radius: 14px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.identityRetry svg { width: 20px; height: 20px; }
+.identityRetry:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+.identityWarning { display: inline-flex; align-items: center; gap: 10px; color: #963b38; }
+.identityWarning svg { width: 20px; height: 20px; }
+
+.identityPortals { display: grid; gap: 14px; width: 100%; }
+.identityPortal {
+  --portal-color: var(--aumlok-anchor);
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--portal-color) 32%, transparent);
+  border-radius: 21px;
+  background: linear-gradient(115deg, color-mix(in srgb, var(--portal-color) 9%, transparent), #10172480);
+  box-shadow: inset 0 1px #ffffff06, 0 8px 24px #0002;
+  transition: border-color 180ms ease, background 180ms ease;
+}
+.identityPortal[data-identity-portal='nostr'] { --portal-color: var(--aumlok-unite); }
+.identityPortal[data-identity-portal='sharing'] { --portal-color: var(--aumlok-rise); }
+.identityPortal[data-identity-portal='sharing'] .portalContent p + p { border-top: 0; padding-top: 0; }
+.identityPortal:hover, .identityPortal[open] { border-color: color-mix(in srgb, var(--portal-color) 64%, transparent); }
+.identityPortal summary { display: flex; align-items: center; gap: 18px; min-height: 106px; padding: 20px 22px; box-sizing: border-box; cursor: pointer; list-style: none; }
+.identityPortal summary::-webkit-details-marker { display: none; }
+.identityPortal summary:focus-visible, .scannerAbout summary:focus-visible { outline: 2px solid var(--aumlok-unite); outline-offset: 4px; border-radius: 18px; }
+.portalIcon { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border: 1px solid color-mix(in srgb, var(--portal-color) 32%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--portal-color) 8%, transparent); color: var(--portal-color); }
+.portalIcon svg { width: 27px; height: 27px; }
+.portalHeading { display: grid; flex: 1; min-width: 0; gap: 5px; }
+.portalHeading strong { font-size: 23px; font-weight: 610; letter-spacing: -0.025em; }
+.portalHeading > span { font-size: 15px; line-height: 1.5; color: var(--dsw-alias-label-secondary); }
+.portalChevron { display: block; width: 9px; height: 9px; flex: none; margin: 0 3px 5px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); color: var(--portal-color, var(--aumlok-unite)); }
+.identityPortal[open] .portalChevron, .scannerAbout[open] .portalChevron { transform: rotate(225deg); margin-bottom: -4px; }
+.portalContent { display: grid; justify-items: start; gap: 18px; padding: 0 22px 24px; }
+.portalContent p { margin: 0; padding-top: 18px; border-top: 1px solid color-mix(in srgb, var(--portal-color) 18%, transparent); color: var(--dsw-alias-label-secondary); font-size: 16px; line-height: 1.7; }
+.portalContent code { width: 100%; min-width: 0; box-sizing: border-box; padding: 15px; border-radius: 12px; background: #0003; overflow-wrap: anywhere; user-select: all; color: var(--dsw-alias-label-primary); font-family: var(--dsw-font-family-mono, ui-monospace, monospace); font-size: 15px; line-height: 1.8; }
+.identityPortal .portalContent .identityAction[data-labeled] { color: var(--portal-color); }
+.identityPortal .portalContent .identityAction[data-result='check'] { color: var(--aumlok-root); }
+.identityPortal .portalContent .identityAction[data-result='error'] { color: #cf695f; }
+
+.identityBind {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--aumlok-anchor);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.identityActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.identityAction {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 14px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--aumlok-anchor);
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.identityAction[data-labeled] { display: inline-flex; justify-content: center; gap: 9px; width: auto; height: auto; min-height: 46px; padding: 11px 18px; line-height: 1.4; }
+.identityAction[data-labeled]:last-child { color: var(--aumlok-unite); }
+
+.identityAction svg {
+  width: 20px;
+  height: 20px;
+}
+
+.identityAction:hover:not(:disabled),
+.identityAction:focus-visible {
+  border-color: var(--aumlok-anchor);
+  outline: 2px solid color-mix(in srgb, var(--aumlok-anchor) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.identityAction:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.identityAction[data-result='check'],
+.identityAction[data-labeled][data-result='check'] { color: var(--aumlok-root); }
+.identityAction[data-result='error'],
+.identityAction[data-labeled][data-result='error'] { color: #cf695f; }
+
+@container (max-width: 420px) {
+  .identityHeader { flex-direction: column; text-align: center; }
+  .identityPortal summary { gap: 12px; padding: 16px; }
+  .portalHeading strong { font-size: 21px; }
+  .portalIcon { width: 42px; height: 42px; }
+  .portalContent { padding: 0 16px 20px; }
 }
 
 .hero {
@@ -84,6 +399,8 @@
   white-space: nowrap;
 }
 
+.statusBadge > svg { width: 18px; height: 18px; }
+
 .statusBadge {
   flex: none;
   padding: 7px 12px;
@@ -123,20 +440,8 @@
   /* The gold anchor's own band colour, so the tile bodies above and below it are one system. */
   --band-color: var(--aumlok-anchor);
   display: flex;
-  /* PETER'S Y4, AND THE DEFECT WAS THE DIRECTION (2026-09-23 17:02): "the boxes overlap the 'WORD ZERO
-     · ANCHOR / six letters' text: put the label above the boxes, boxes on their own row." This rule
-     defaulted to a ROW — one axis, label and boxes on it together — with the card's free space pushed
-     between its two children, so the six 40px gold boxes were laid out BESIDE the two lines of label
-     rather than under them and at anything but the narrowest width the two had nowhere to go but into
-     each other. The card is a COLUMN at every width now — label first, then the boxes on a row of their
-     own — and the narrow-width override that used to say so is gone with it, because it was describing
-     the base rule and could not repair it.
-     THIS COMMENT DOES NOT SPELL THE PROPERTY IT REPLACED, and the reason is measured: Y4's arm reads
-     this whole rule block INCLUDING comments, so naming the old declaration in prose would leave the
-     defect it repairs looking present. The arm that measures it is a protection; the way past it is to
-     stop writing the declaration in prose, never to loosen the arm. */
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   gap: 12px;
   min-height: 88px;
   margin-top: 14px;
@@ -245,29 +550,9 @@
   opacity: 0.6;
 }
 
-/* THE LOCKED HANDLE (Y2). The same field as `.handleInput`, in the same place, with the gold edge
-   quietened rather than removed: a person who bound on this screen should recognise where they are,
-   and read that the name is now a fact rather than an invitation to type. It is NOT dimmed to the
-   disabled opacity — a locked name is information, not a control that failed. */
-.handleLocked {
-  width: 100%;
-  min-width: 0;
-  height: 44px;
-  padding: 0 14px;
-  box-sizing: border-box;
-  border: 1px dashed color-mix(in srgb, var(--aumlok-anchor) 42%, transparent);
-  border-radius: 11px;
-  color: var(--dsw-alias-label-primary);
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 62%, transparent);
-  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  font-size: 16px;
-  letter-spacing: 0.08em;
-  cursor: default;
-}
-
-.handleLocked:focus {
-  outline: none;
-}
+.handleHeading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px 20px; margin-bottom: 22px; }
+.phraseStage .handleHeading h3 { color: var(--dsw-alias-label-primary); font-size: clamp(25px, 3.6cqi, 32px); font-weight: 610; line-height: 1.3; letter-spacing: -0.035em; }
+.handleLocked { min-width: 0; overflow-wrap: anywhere; font-size: 18px; font-weight: 580; line-height: 1.5; }
 
 .handleHint {
   margin: 0;
@@ -679,94 +964,18 @@
   line-height: 17px;
 }
 
-/* THE ONE DISCLOSURE. Small, quiet, and CLOSED: the technical status is here for an operator and
-   nowhere a person who is not debugging has to read it. */
-.details {
-  margin-top: 18px;
-  padding-top: 12px;
-  border-top: 1px solid var(--dsw-alias-border-l1);
-}
-
-.detailsSummary {
-  color: var(--dsw-alias-label-tertiary);
-  cursor: pointer;
-  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  font-size: 10px;
-  line-height: 15px;
-  letter-spacing: 0.14em;
-  list-style: none;
-}
-
-.detailsSummary::-webkit-details-marker {
-  display: none;
-}
-
-/* THE RECEIPT OF A BINDING, ON THE SCREEN AND NOT BEHIND ANYTHING: the root and the instant it was
-   bound, said in one line a person can read. */
 .boundReceipt {
-  margin-top: 18px;
-  padding: 14px 16px;
-  box-sizing: border-box;
-  border: 1px solid color-mix(in srgb, var(--aumlok-anchor) 44%, transparent);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--aumlok-anchor) 7%, transparent);
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid color-mix(in srgb, var(--aumlok-anchor) 35%, transparent);
+  border-radius: 22px;
+  background: linear-gradient(140deg, color-mix(in srgb, var(--aumlok-anchor) 8%, transparent), #11182580);
 }
-
-/* Y5'S QUIET CONFIRMATION: one word and a full stop, smaller and dimmer than the line under it. It is
-   deliberately the least prominent sentence in the block — "nothing flashy" is the same instruction —
-   and it sits here rather than beside the badge so the acknowledgement travels with the receipt it is
-   acknowledging. */
-.boundQuiet {
-  margin: 0;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 11px;
-  line-height: 16px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.boundLine {
-  margin: 0;
-  color: var(--aumlok-anchor);
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: 610;
-}
-
-.receipt {
-  display: grid;
-  gap: 8px;
-  margin: 10px 0 0;
-}
-
-.receipt > div {
-  display: grid;
-  min-width: 0;
-  grid-template-columns: minmax(96px, 0.28fr) minmax(0, 1fr);
-  align-items: baseline;
-  gap: 12px;
-}
-
-.receipt dt {
-  color: var(--dsw-alias-label-tertiary);
-  font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
-  font-size: 9px;
-  line-height: 14px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.receipt dd {
-  min-width: 0;
-  margin: 0;
-}
-
-.receipt code {
-  overflow-wrap: anywhere;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
-  line-height: 16px;
-}
+.phraseStage .boundLine { margin: 0; color: var(--aumlok-anchor); font-size: 24px; line-height: 1.3; font-weight: 610; letter-spacing: -0.025em; }
+.boundExplanation { margin: 12px 0 16px; color: var(--dsw-alias-label-secondary); font-size: 15px; line-height: 1.7; }
+.boundRoot { display: block; overflow-wrap: anywhere; color: var(--aumlok-unite); font-family: var(--dsw-font-family-mono, ui-monospace, monospace); font-size: 14px; line-height: 1.8; }
+.boundReceipt .ceremonyAction { margin-top: 22px; padding: 0; border: 0; background: none; }
+.boundReceipt .ceremonyAction button { min-height: 48px; font-size: 16px; }
 
 /* PETER'S STEP BEFORE ANYTHING IS BOUND: the last moment at which saying the words out loud can save
    the identity, and the box that arms the button. */
@@ -807,33 +1016,25 @@
 }
 
 /* THE EXPLANATION, short and straight, where the ceremony's own controls are. */
-.explanation {
-  display: flex;
-  margin-top: 13px;
-  padding: 0;
-  flex-direction: column;
-  gap: 8px;
-  list-style: none;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 13px;
-  line-height: 20px;
-}
-
-.explanation li {
+.flow {
   position: relative;
-  padding-left: 15px;
+  padding: clamp(24px, 3cqi, 36px);
+  border: 1px solid color-mix(in srgb, var(--aumlok-rise) 23%, transparent);
+  border-radius: 26px;
+  background: var(--aukora-surface);
+  box-shadow: inset 0 1px #ffffff06;
 }
-
-.explanation li::before {
-  content: '';
-  position: absolute;
-  top: 8px;
-  left: 0;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--aumlok-anchor) 72%, transparent);
-}
+.flow h3 { color: var(--dsw-alias-label-primary); font-size: clamp(28px, 3.8cqi, 37px); line-height: 1.2; letter-spacing: -0.035em; font-weight: 610; margin-bottom: 26px; }
+.boundaryArt { position: relative; width: 120px; height: 94px; margin-bottom: 24px; display: grid; place-items: center; }
+.boundaryArt span { position: absolute; width: 80px; height: 80px; border: 1px solid; border-radius: 50%; color: var(--aumlok-anchor); transform: rotate(-30deg) scaleX(0.6); box-shadow: 0 0 24px #e4be7310; }
+.boundaryArt span:nth-child(2) { transform: rotate(30deg) scaleX(0.8); color: var(--aumlok-unite); opacity: 0.65; }
+.boundaryArt span:nth-child(3) { transform: rotate(80deg); color: var(--aumlok-rise); opacity: 0.5; }
+.boundaryArt > svg { position: relative; width: 27px; height: 27px; padding: 12px; color: var(--aumlok-anchor); background: #161e2c; border-radius: 50%; }
+.explanation { display: grid; gap: 22px; color: var(--dsw-alias-label-secondary); font-size: 15.5px; line-height: 1.85; }
+.explanation p { margin: 0; }
+.explanation p:first-child { color: var(--dsw-alias-label-primary); font-size: 17px; line-height: 1.8; }
+.explanation p:nth-child(4) { padding-left: 18px; border-left: 2px solid color-mix(in srgb, var(--aumlok-anchor) 65%, transparent); color: var(--dsw-alias-label-primary); }
+.boundaryClosing { margin: 28px 0 0; padding-top: 24px; border-top: 1px solid color-mix(in srgb, var(--aumlok-anchor) 24%, transparent); color: var(--aumlok-anchor); font-size: 22px; line-height: 1.5; letter-spacing: -0.02em; }
 
 /* A LOST PHRASE MEANS A NEW INSTANCE, said where the words are rather than in a footnote. */
 .warning {
@@ -988,3 +1189,44 @@
     animation-name: none;
   }
 }
+
+
+.handleLockedWrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 17px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--aumlok-unite) 62%, transparent);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--aumlok-unite) 8%, transparent);
+  color: var(--aumlok-unite);
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--aumlok-unite) 5%, transparent);
+}
+.handleLockedWrap > svg { width: 18px; height: 18px; flex: none; }
+.identityAvatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 18px; }
+.identityAvatarControls { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: none; }
+.identityAvatarButton { padding: 0; border: 0; border-radius: 18px; background: transparent; cursor: pointer; }
+.identityAvatarButton:focus-visible { outline: 2px solid var(--aumlok-unite); outline-offset: 3px; }
+.identityAvatarControls > .identityAction { min-width: 28px; min-height: 28px; padding: 3px; }
+
+/* The shell owns the page; shared surfaces belong only to cards. */
+.handleHeading { --band-color: var(--aumlok-unite); width: 100%; box-sizing: border-box; padding: 15px; border: 1px solid color-mix(in srgb, var(--band-color) 34%, transparent); border-left: 3px solid color-mix(in srgb, var(--band-color) 76%, transparent); border-radius: 15px; background: linear-gradient(100deg, color-mix(in srgb, var(--band-color) 10%, transparent), color-mix(in srgb, var(--dsw-alias-bg-layer-2) 55%, transparent)); }
+.handleHeading .handleLabel { display: block; font-size: 12px; color: var(--aumlok-unite); }
+.phraseStage .handleHeading h3 { margin: 4px 0 0; font-size: 28px; }
+.handleTools { display: flex; gap: 8px; align-items: center; color: var(--aumlok-unite); font-size: 12px; }
+.handleTools svg { width: 20px; height: 20px; }
+.anchorMeta { flex: 1; min-width: 0; }
+.anchorBoxes { flex: 1; }
+.anchorBox { flex: 1; min-width: 22px; }
+.explanationHeader { gap: 10px; margin-bottom: 22px; }
+.flow .explanationHeader h3 { font-size: 22px; margin: 0; letter-spacing: -.025em; }
+.explanationHeader img { flex: none; }
+.explanationHeader .statusBadge { margin-left: auto; padding: 7px 9px; font-size: 10px; }
+.boundaryClosing { border: 1px solid color-mix(in srgb, var(--aumlok-anchor) 58%, transparent); border-radius: 17px; padding: 18px 20px; }
+@container aumlok (max-width: 520px) { .anchorToken { flex-direction: column; align-items: stretch; } .anchorBoxes { width: 100%; } }
+
+.phraseStage { container-type: inline-size; container-name: phrase; }
+@container phrase (max-width: 520px) { .anchorToken { flex-direction: column; align-items: stretch; } .anchorBoxes { width: 100%; } }

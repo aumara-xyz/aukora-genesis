@@ -15,12 +15,6 @@
  * word beside it. The numbers are there and quiet. The badge is above them: UNBOUND with empty tiles
  * and "Give me my phrase", BOUND with dots, the receipt and "Your Aumlok is bound".
  *
- * AND THE SCREEN IS STRIPPED (Peter, 14:20). It is not a status page: the title, the badge, the tiles
- * and ONE big button per state are the screen, with at most three short lines under "What Aumlok is".
- * Every sentence of technical status — the controller's absence, its own refusal code, the origin the
- * reading came from, the seven public fields — is inside ONE small "details" disclosure that is
- * CLOSED by default, so a person who is not debugging never reads it and an operator still can.
- *
  * THE WORDS ARE SHOWN ONCE AND LEAVE AS THE TILES TURN OVER. They arrive from the shell for display,
  * live only in this component's state while they are on the screen, and are gone the moment the tiles
  * accept input — a screen that showed them while accepting them would be reading the phrase back to
@@ -28,7 +22,7 @@
  * system copy-paste buffer is never touched. The step between typing them back and binding with them
  * is Peter's own warning, and the box that must be ticked before Bind is live.
  */
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type {
   HostObservable,
   InjectFace,
@@ -42,11 +36,11 @@ import type {
 } from './binding-bridge.ts'
 import type { AumlokControlProjectionState } from './control-projection.ts'
 import type { AumlokKey } from './locales.ts'
+import { Card, SectionHeader } from '@aukora/face-layout/client'
+import { IdentityIcon } from './IdentityVisuals.tsx'
 import {
   AUMLOK_ANCHOR_POSITION,
   AUMLOK_BANDS,
-  AUMLOK_NOT_CONNECTED_REASON,
-  AUMLOK_RUNTIME_POSTURE,
   aumlokActionKey,
   aumlokAnchorBoxes,
   aumlokBadgeWord,
@@ -75,21 +69,6 @@ function isEditableTarget(target: EventTarget | null): boolean {
 
 /** Connection state of the parent-reported local controller. */
 export type AumlokBindingStatus = AumlokControlProjectionState['status']
-
-/**
- * The backend this page was served by, which is the backend every status here describes.
- *
- * Taken from the document rather than from configuration on purpose: the projection is
- * fetched with a path relative to this origin, so reading it here cannot disagree with
- * where the answer actually came from. It is rendered inside the details disclosure, where
- * a reading about one particular machine belongs.
- *
- * @returns the origin, or undefined where there is no document to ask.
- */
-function readBackendOrigin(): string | undefined {
-  const origin = (globalThis as { location?: { origin?: string } }).location?.origin
-  return typeof origin === 'string' && origin.length > 0 && origin !== 'null' ? origin : undefined
-}
 
 /** Projection source, and ceremony source, injected by the browser plugin. */
 export interface AumlokSurfaceInjected {
@@ -258,9 +237,8 @@ export function AumlokSurface({
 }: AumlokSurfaceProps) {
   const active = activeSurface === 'aumlok'
   const projection = useControlProjection(value => value)
-  const posture = AUMLOK_RUNTIME_POSTURE[projection.status]
-  const backendOrigin = readBackendOrigin()
   const [refreshing, setRefreshing] = useState(false)
+  const [changingHandle, setChangingHandle] = useState(false)
   const [beat, setBeat] = useState<AumlokCeremonyBeat>('none')
   // THE WORDS LIVE ONLY WHILE THEY ARE ON THE SCREEN. This is the one place they exist in this
   // process, they are cleared the moment the tiles turn over, and nothing else in this file reads
@@ -275,6 +253,22 @@ export function AumlokSurface({
   const [busy, setBusy] = useState(false)
   const [acknowledged, setAcknowledged] = useState(false)
   const [outcome, setOutcome] = useState<AumlokCeremonyResult | undefined>(undefined)
+  const ceremonyGeneration = useRef(0)
+  useLayoutEffect(() => {
+    if (!active) {
+      setRefreshing(false)
+      setChangingHandle(false)
+      setBeat('none')
+      setWords(undefined)
+      setTyped(emptyTyped())
+      setHandle('')
+      setBusy(false)
+      setAcknowledged(false)
+      setOutcome(undefined)
+    }
+    // Invalidate pending work on close or unmount; late words must never reopen a ceremony.
+    return () => { ceremonyGeneration.current += 1 }
+  }, [active])
   const state = aumlokSurfaceState({ bound: projection.status === 'connected', refreshing })
   const face = aumlokTileFace(state, beat)
   const action = aumlokActionKey(state, beat)
@@ -294,7 +288,9 @@ export function AumlokSurface({
   const shownHandle = typeof boundHandle === 'string' && boundHandle.length > 0
     ? boundHandle
     : (state === 'unbound' ? handle : '')
-  const handleGate = aumlokHandleGate({ state, handle: shownHandle })
+  const handleGate = aumlokHandleGate({ state: changingHandle ? 'unbound' : state, handle: changingHandle ? handle : shownHandle })
+  const sameHandle = changingHandle && typeof boundHandle === 'string' && boundHandle.length > 0
+    && handle.normalize('NFKC').toLowerCase() === boundHandle.normalize('NFKC').toLowerCase()
   const receipt = projection.status === 'connected' ? aumlokReceipt(projection.control) : undefined
   const onType = (position: number, value: string): void => {
     // THE BOX ACKNOWLEDGES THE WORDS THAT WERE ON THE SCREEN WHEN IT WAS TICKED. Editing any of them
@@ -310,13 +306,15 @@ export function AumlokSurface({
     // THE ORDER X8 ASKS FOR, ENFORCED WHERE IT MATTERS. On a new machine the handle is typed first; a
     // draw that happened before it would be a ceremony whose key is half missing, and the shell would
     // refuse it later with a name a person could do nothing with at this point.
-    if (!handleGate.canDraw) return
+    if (busy || !active || !handleGate.canDraw || sameHandle) return
+    const generation = ++ceremonyGeneration.current
     setBusy(true)
     setOutcome(undefined)
     setAcknowledged(false)
     if (intent === 'refresh') setRefreshing(true)
     void (async () => {
-      const drawn = await drawPhrase(intent)
+      const drawn = await drawPhrase(intent).catch((): AumlokDrawnPhrase => ({ ok: false }))
+      if (generation !== ceremonyGeneration.current) return
       setBusy(false)
       if (!drawn.ok || drawn.words === undefined) {
         setOutcome(drawn.reason === undefined ? { ok: false } : { ok: false, reason: drawn.reason })
@@ -330,10 +328,14 @@ export function AumlokSurface({
   }
   // A spent draw needs new words; only a refusal before consumption can keep the typed tiles.
   const submit = (intent: AumlokCeremonyIntent): void => {
+    if (busy || !active || sameHandle) return
+    const generation = ++ceremonyGeneration.current
     setBusy(true)
     setOutcome(undefined)
     void (async () => {
-      const result = await submitPhrase(intent, typed, handle)
+      const result = await submitPhrase(intent, typed, handle).catch((): AumlokCeremonyResult => ({ ok: false }))
+      if (result.ok) refreshControlStatus()
+      if (generation !== ceremonyGeneration.current) return
       setBusy(false)
       setWords(undefined)
       setAcknowledged(false)
@@ -350,7 +352,8 @@ export function AumlokSurface({
       }
       setBeat('none')
       setRefreshing(false)
-      refreshControlStatus()
+      setChangingHandle(false)
+      setHandle('')
     })()
   }
   // ONE CONTROL PER STATE, AND THE PERSON'S OWN BEAT BETWEEN SHOWING AND TYPING. The words leave the
@@ -375,7 +378,10 @@ export function AumlokSurface({
       return
     }
     if (state === 'unbound') begin('bind')
-    else if (state === 'bound') begin('refresh')
+    else if (state === 'bound') {
+      if (!changingHandle) { setHandle(''); setChangingHandle(true) }
+      else begin('refresh')
+    }
   }
   useEffect(() => {
     if (!active) return
@@ -392,6 +398,97 @@ export function AumlokSurface({
     document.addEventListener('keydown', onKeyDown)
     return () => { document.removeEventListener('keydown', onKeyDown) }
   }, [active, closeSurface])
+
+  const ceremonyControls = ceremonyAvailable ? (
+    <div
+      className={css.ceremonyAction}
+      data-aumlok-ceremony-state={state}
+      data-aumlok-ceremony-beat={beat}
+    >
+      {beat === 'shown' ? (
+        <p className={css.warning} data-aumlok-phrase-warning>{t('surface.warning.lost')}</p>
+      ) : null}
+      {/* Y3: "GIVE ME ANOTHER". Peter's sentence is that a person may draw a new phrase "as
+          many times as the person likes until one feels right", and that NOTHING is written
+          until they confirm and type it back. Both halves are the decision above: it is
+          offered exactly while the words are on an unbound screen, and its handler draws —
+          it never submits, so there is no path from this control to a write.
+          IT IS A SPAN, AND NOT A SECOND BUTTON ELEMENT, DELIBERATELY. X6 courts exactly ONE
+          button element in this surface and that one is the ceremony's own; a second one
+          here would break a ticked requirement to satisfy this one, and on a bound screen it
+          would be the second big button Peter ruled out. So the element kind is part of the
+          requirement rather than a styling choice, and the keyboard handler below is what
+          makes a span an honest control rather than a click target only a mouse can reach.
+          THIS COMMENT DELIBERATELY DOES NOT SPELL THAT ELEMENT'S TAG, and the reason is
+          measured rather than imagined: X6 counts openings of that tag in THIS FILE, so a
+          comment that named it would be counted as one. That arm is a protection, not an
+          obstacle, and the honest way past it is to stop writing the tag in prose — never
+          to loosen the arm. */}
+      {redraw.offered ? (
+        <span
+          className={css.redraw}
+          data-aumlok-redraw
+          data-aumlok-redraw-kind={redraw.kind}
+          role="button"
+          tabIndex={0}
+          onClick={() => { begin('bind') }}
+          onKeyDown={event => {
+            if (event.key !== 'Enter' && event.key !== ' ') return
+            event.preventDefault()
+            begin('bind')
+          }}
+        >
+          {t(redraw.action ?? 'surface.action.another')}
+        </span>
+      ) : null}
+      {/* PETER'S OWN STEP, BEFORE ANYTHING IS BOUND. The words are off the screen, the
+          person has typed them back, and this is the last moment at which saying them out
+          loud can save the identity: the box is what arms the button. */}
+      {gate.ask ? (
+        <div className={css.confirm} data-aumlok-confirm>
+          <p className={css.confirmWarning} data-aumlok-confirm-warning>
+            {t('surface.confirm.warning')}
+          </p>
+          <label className={css.confirmRow}>
+            <input
+              type="checkbox"
+              data-aumlok-confirm-checkbox
+              checked={acknowledged}
+              disabled={busy}
+              onChange={event => { setAcknowledged(event.target.checked) }}
+            />
+            <span>{t('surface.confirm.checkbox')}</span>
+          </label>
+        </div>
+      ) : null}
+      <button
+        type="button"
+        data-aumlok-bind-button
+        data-aumlok-action={action}
+        disabled={busy || (gate.ask && !gate.bindEnabled)
+          || (handleGate.ask && !handleGate.canDraw) || sameHandle}
+        aria-busy={busy}
+        onClick={act}
+      >
+        {t(busy ? 'runtime.binding.busy' : changingHandle && beat === 'none' ? 'surface.action.drawNew' : action)}
+      </button>
+      {state !== 'unbound' ? <p className={css.handleHint}>{t('surface.handle.together')}</p> : null}
+      {/* ONE REFUSAL, AND IT CARRIES NO CONTENT: not which word was wrong, not how many
+          matched. A refusal that narrowed the answer would be an oracle for anyone who can
+          read this screen. */}
+      {outcome === undefined || outcome.ok ? null : (
+        <p className={css.ceremonyRefusal} data-aumlok-binding-refused="true">
+          {t('runtime.binding.failed')}
+          {outcome.reason === undefined ? null : (
+            <>
+              {' '}
+              <code data-aumlok-binding-reason>{outcome.reason}</code>
+            </>
+          )}
+        </p>
+      )}
+    </div>
+  ) : null
 
   return (
     <section
@@ -411,23 +508,14 @@ export function AumlokSurface({
               because a refresh is an act on the bound state and the old binding stands until the new
               words are typed back. The decision is `aumlokBadgeWord`, keyed off the same state the
               tiles and the buttons are drawn from, so the badge cannot disagree with the screen. */}
-          <span className={css.statusBadge} data-aumlok-badge={aumlokBadgeWord(state)}>
+          <span className={css.statusBadge} data-aumlok-badge={aumlokBadgeWord(state)} role="img" aria-label={t(aumlokBadgeWord(state))}>
             {t(aumlokBadgeWord(state))}
           </span>
         </header>
 
         <div className={css.composition}>
-          <section className={css.phraseStage} aria-labelledby="aumlok-phrase-label">
-            <h3 id="aumlok-phrase-label">{t('phrase.label')}</h3>
-            {/*
-              X8's FIELD, AND IT IS ABOVE THE TILES — literally, in this markup: it sits between the
-              phrase label and the gold anchor card, so it is the first thing a person meets on a new
-              machine and the words come after it. It is asked for on BIND only (`handleGate.ask`): a
-              machine that is already bound publishes its handle in the record, and this block then
-              shows THAT NAME, READ-ONLY (Y2) — the handle is a fact the record carries, not a field
-              to fill in again. A record bound before X8 carries none, and the block is then absent
-              rather than an empty locked box.
-            */}
+          <section className={css.phraseStage} aria-label={t('phrase.label')}>
+            {/* A new binding needs a handle before the phrase is drawn; a bound handle is read-only. */}
             {handleGate.ask ? (
               <div className={css.handleField} data-aumlok-handle>
                 <label className={css.handleLabel} htmlFor="aumlok-handle">
@@ -438,8 +526,8 @@ export function AumlokSurface({
                   className={css.handleInput}
                   data-aumlok-handle-input
                   value={handle}
-                  disabled={busy}
-                  onChange={event => { setHandle(event.target.value) }}
+                  disabled={busy || beat !== 'none'}
+                  onChange={event => { if (!busy && beat === 'none') setHandle(event.target.value) }}
                   autoComplete="off"
                   autoCapitalize="none"
                   spellCheck={false}
@@ -448,35 +536,19 @@ export function AumlokSurface({
                     is typed cannot be a handle: a disabled button with no sentence beside it is the
                     silent refusal this whole screen exists to remove. */}
                 <p className={css.handleHint} data-aumlok-handle-hint>
-                  {handle.length === 0 || handleGate.valid
+                  {sameHandle ? t('surface.handle.mustChange') : handle.length === 0 || handleGate.valid
                     ? t('surface.handle.hint')
                     : t('surface.handle.invalid')}
                 </p>
               </div>
             ) : null}
-            {/* THE LOCKED HANDLE, WHICH IS THE NAME THIS MACHINE IS BOUND UNDER. It is rendered as an
-                input with `readOnly` rather than a span for one reason: it is the SAME field in the
-                SAME place, so the screen a person bound on does not rearrange itself underneath them
-                once the record exists — what changes is that it can no longer be typed into. */}
             {handleGate.shown ? (
-              <div className={css.handleField} data-aumlok-handle-locked>
-                <label className={css.handleLabel} htmlFor="aumlok-handle-locked">
-                  {t('surface.handle.label')}
-                </label>
-                <input
-                  id="aumlok-handle-locked"
-                  className={css.handleLocked}
-                  data-aumlok-handle-locked-input
-                  value={handleGate.value}
-                  readOnly
-                  aria-readonly="true"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                <p className={css.handleHint} data-aumlok-handle-locked-hint>
-                  {t('surface.handle.locked')}
-                </p>
-              </div>
+              <Card className={css.handleHeading} data-aumlok-handle-locked>
+                <div><span className={css.handleLabel}>{t('surface.handle.label')}</span>
+                  <h3 data-aumlok-handle-locked-value>{handleGate.value}</h3></div>
+                <div className={css.handleTools}><IdentityIcon name="lock" /><span>{t('surface.handle.locked')}</span>
+                </div>
+              </Card>
             ) : null}
             {/* THE GOLD ANCHOR CARD, WITH SIX BOXES IN IT. Six because the anchor is a six-letter
                 word: `aumlokAnchorBoxes` answers a letter while the words are on the screen, a dot
@@ -539,250 +611,35 @@ export function AumlokSurface({
                 />
               ))}
             </div>
-            {/* THE RECEIPT, AND THE ONE LINE THAT SAYS WHAT HAPPENED. The root and the bound time are
-                the two facts a person wants back after binding, read from the record itself — not the
-                ten technical fields, which are in the disclosure below. */}
-            {receipt === undefined ? null : (
-              <div className={css.boundReceipt} data-aumlok-bound-receipt>
-                {/* Y5'S QUIET CONFIRMATION. The line below says WHAT is bound and the receipt says
-                    what with; this is the ceremony's own acknowledgement that it finished, and it is
-                    the smallest sentence here on purpose — one word and a full stop, no celebration,
-                    because Peter's same sentence says "nothing flashy". It arrives with the receipt
-                    and only on the bound screen, which is the face this block is rendered at. */}
-                <p className={css.boundQuiet} data-aumlok-bound-quiet>{t('surface.bound.quiet')}</p>
-                <p className={css.boundLine} data-aumlok-bound-line>{t('surface.bound.line')}</p>
-                <dl className={css.receipt}>
-                  <div>
-                    <dt>{t('receipt.root')}</dt>
-                    <dd><code data-aumlok-receipt-root>{receipt.root}</code></dd>
-                  </div>
-                  <div>
-                    <dt>{t('receipt.bound')}</dt>
-                    <dd>
-                      <code data-aumlok-receipt-bound>
-                        {receipt.boundAt ?? t('receipt.bound.unknown')}
-                      </code>
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-            )}
-            {/*
-              THE TECHNICAL STATUS, BEHIND ONE DISCLOSURE THAT IS CLOSED BY DEFAULT. X6: the origin,
-              the controller's named absence and its own refusal code, and the seven public fields are
-              things an operator reads and a person does not — so they are here, one click away, and
-              the screen a person meets is the title, the badge, the tiles and one button. The
-              disclosure carries no `open` attribute, which is what "closed by default" means.
-            */}
-            <details className={css.details} data-aumlok-details>
-              <summary className={css.detailsSummary}>{t('details')}</summary>
-              <div className={css.runtimePosture} data-aumlok-runtime={projection.status}>
-                <div>
-                  <strong>{t(posture.status)}</strong>
-                  <span>{t(posture.detail)}</span>
-                  {/*
-                    ATTRIBUTION BELONGS ON BOTH ANSWERS, NOT JUST THE GOOD ONE. This shell
-                    attaches to backends it does not own, so every status here is a reading
-                    about one particular machine and was not saying which.
-                  */}
-                  <span data-aumlok-origin={backendOrigin ?? 'unknown'}>
-                    {backendOrigin === undefined
-                      ? t('runtime.origin.unknown')
-                      : t('runtime.origin').replace('{origin}', backendOrigin)}
-                  </span>
-                </div>
-                {projection.status === 'not-connected' ? (
-                  <p className={css.missingBinding} data-aumlok-missing-binding data-aumlok-reason={projection.reason ?? 'unnamed'}>
-                    {projection.reason === undefined
-                      ? t('runtime.reason.unnamed')
-                      : t(AUMLOK_NOT_CONNECTED_REASON[projection.reason])}
-                    {projection.code === undefined ? null : (
-                      <>
-                        {' '}
-                        <code data-aumlok-refusal-code>
-                          {t('runtime.reason.code').replace('{code}', projection.code)}
-                        </code>
-                      </>
-                    )}
-                    {/*
-                      THE CONTROLLER'S OWN SENTENCE, QUOTED AND NOT TRANSLATED. `code` says what the
-                      system calls this refusal; this says what to do about it, and for a record naming
-                      several machines it names the argument that answers. It is data from the
-                      controller, not copy this face owns, so it is rendered verbatim rather than
-                      looked up in a locale table — the same rule the refusal code above follows.
-                    */}
-                    {projection.detail === undefined ? null : (
-                      <span data-aumlok-refusal-detail>
-                        {' '}
-                        {projection.detail}
-                      </span>
-                    )}
-                  </p>
-                ) : null}
-                {projection.status === 'connected' ? (
-                  /*
-                    THE TEN PUBLIC FIELDS THE CEREMONY WROTE, read back from the controller on every
-                    refresh. Nothing private is here: the 0600 record this screen never opens is where
-                    the private half stays.
-                  */
-                  <dl className={css.controlProjection} data-aumlok-control-projection>
-                    <div>
-                      <dt>{t('runtime.field.subject')}</dt>
-                      <dd><code data-aumlok-subject>{projection.control.subject}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.epoch')}</dt>
-                      <dd><code data-aumlok-epoch>{projection.control.epoch}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.activeControl')}</dt>
-                      <dd><code data-aumlok-control-digest>{projection.control.activeControlDigest}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.revoked')}</dt>
-                      <dd>
-                        <code data-aumlok-revoked={String(projection.control.revoked)}>
-                          {t(projection.control.revoked ? 'runtime.revoked.yes' : 'runtime.revoked.no')}
-                        </code>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.approvalKey')}</dt>
-                      <dd><code data-aumlok-approval-key>{projection.control.approvalKeyDid}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.domain')}</dt>
-                      <dd><code data-aumlok-domain>{projection.control.domain}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.custody')}</dt>
-                      <dd><code data-aumlok-custody-class>{projection.control.custodyClass}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.projectionState')}</dt>
-                      <dd><code data-aumlok-projection-state data-aumlok-connection-state>{t('runtime.projection.loaded')}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.bindment')}</dt>
-                      <dd><code data-aumlok-bindment-status>{t('runtime.bindment.unknown')}</code></dd>
-                    </div>
-                    <div>
-                      <dt>{t('runtime.field.reviewChannel')}</dt>
-                      <dd><code data-aumlok-review-channel>{t('runtime.reviewChannel.notReported')}</code></dd>
-                    </div>
-                  </dl>
-                ) : null}
-              </div>
-            </details>
+            <div className={receipt === undefined ? undefined : css.boundReceipt}
+              data-aumlok-bound-receipt={receipt === undefined ? undefined : ''}>
+              {receipt === undefined ? null : <>
+                <h3 className={css.boundLine} data-aumlok-bound-line>{t('surface.bound.line')}</h3>
+                <p className={css.boundExplanation}>{t('surface.bound.explanation')}</p>
+                <code className={css.boundRoot} data-aumlok-receipt-root>{receipt.root}</code>
+              </>}
+              {ceremonyControls}
+            </div>
           </section>
 
-          <section className={css.flow} aria-labelledby="aumlok-flow-label">
-            {/* §3's explanation, taken from Symbiote's "Creating Aumlok": what this is and why it
-                matters, at most three short lines, where the ceremony's controls are. */}
-            <h3 id="aumlok-flow-label">{t('surface.explanation.title')}</h3>
-            <ul className={css.explanation} data-aumlok-explanation>
-              <li>{t('surface.explanation.install')}</li>
-              <li>{t('surface.explanation.made')}</li>
-              <li>{t('surface.explanation.spirit')}</li>
-            </ul>
-            {/*
-              WHETHER THERE IS A CEREMONY AT ALL. `ceremonyAvailable` is the shell's own statement
-              that it exposes BOTH v3 verbs on this page; in a plain browser it is false, this block
-              is never mounted, and the screen is exactly the read-only screen this face has always
-              shown. There is no control that opens anything: the ceremony is this screen.
-            */}
-            {ceremonyAvailable ? (
-              <div
-                className={css.ceremonyAction}
-                data-aumlok-ceremony-state={state}
-                data-aumlok-ceremony-beat={beat}
-              >
-                {beat === 'shown' ? (
-                  <p className={css.warning} data-aumlok-phrase-warning>{t('surface.warning.lost')}</p>
-                ) : null}
-                {/* Y3: "GIVE ME ANOTHER". Peter's sentence is that a person may draw a new phrase "as
-                    many times as the person likes until one feels right", and that NOTHING is written
-                    until they confirm and type it back. Both halves are the decision above: it is
-                    offered exactly while the words are on an unbound screen, and its handler draws —
-                    it never submits, so there is no path from this control to a write.
-                    IT IS A SPAN, AND NOT A SECOND BUTTON ELEMENT, DELIBERATELY. X6 courts exactly ONE
-                    button element in this surface and that one is the ceremony's own; a second one
-                    here would break a ticked requirement to satisfy this one, and on a bound screen it
-                    would be the second big button Peter ruled out. So the element kind is part of the
-                    requirement rather than a styling choice, and the keyboard handler below is what
-                    makes a span an honest control rather than a click target only a mouse can reach.
-                    THIS COMMENT DELIBERATELY DOES NOT SPELL THAT ELEMENT'S TAG, and the reason is
-                    measured rather than imagined: X6 counts openings of that tag in THIS FILE, so a
-                    comment that named it would be counted as one. That arm is a protection, not an
-                    obstacle, and the honest way past it is to stop writing the tag in prose — never
-                    to loosen the arm. */}
-                {redraw.offered ? (
-                  <span
-                    className={css.redraw}
-                    data-aumlok-redraw
-                    data-aumlok-redraw-kind={redraw.kind}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => { begin('bind') }}
-                    onKeyDown={event => {
-                      if (event.key !== 'Enter' && event.key !== ' ') return
-                      event.preventDefault()
-                      begin('bind')
-                    }}
-                  >
-                    {t(redraw.action ?? 'surface.action.another')}
-                  </span>
-                ) : null}
-                {/* PETER'S OWN STEP, BEFORE ANYTHING IS BOUND. The words are off the screen, the
-                    person has typed them back, and this is the last moment at which saying them out
-                    loud can save the identity: the box is what arms the button. */}
-                {gate.ask ? (
-                  <div className={css.confirm} data-aumlok-confirm>
-                    <p className={css.confirmWarning} data-aumlok-confirm-warning>
-                      {t('surface.confirm.warning')}
-                    </p>
-                    <label className={css.confirmRow}>
-                      <input
-                        type="checkbox"
-                        data-aumlok-confirm-checkbox
-                        checked={acknowledged}
-                        disabled={busy}
-                        onChange={event => { setAcknowledged(event.target.checked) }}
-                      />
-                      <span>{t('surface.confirm.checkbox')}</span>
-                    </label>
-                  </div>
-                ) : null}
-                <button
-                  type="button"
-                  data-aumlok-bind-button
-                  data-aumlok-action={action}
-                  disabled={busy || (gate.ask && !gate.bindEnabled)
-                    || (handleGate.ask && !handleGate.canDraw)}
-                  aria-busy={busy}
-                  onClick={act}
-                >
-                  {t(busy ? 'runtime.binding.busy' : action)}
-                </button>
-                {/* ONE REFUSAL, AND IT CARRIES NO CONTENT: not which word was wrong, not how many
-                    matched. A refusal that narrowed the answer would be an oracle for anyone who can
-                    read this screen. */}
-                {outcome === undefined || outcome.ok ? null : (
-                  <p className={css.ceremonyRefusal} data-aumlok-binding-refused="true">
-                    {t('runtime.binding.failed')}
-                    {outcome.reason === undefined ? null : (
-                      <>
-                        {' '}
-                        <code data-aumlok-binding-reason>{outcome.reason}</code>
-                      </>
-                    )}
-                  </p>
-                )}
-              </div>
-            ) : null}
-          </section>
+          <Card className={css.flow} aria-labelledby="aumlok-flow-label">
+            <SectionHeader className={css.explanationHeader}>
+              <img src="/branding/aumara-icon-96.png" width="36" height="36" alt="" />
+              <h3 id="aumlok-flow-label">{t('surface.explanation.title')}</h3>
+              <span className={css.statusBadge}>{t(aumlokBadgeWord(state))}</span>
+            </SectionHeader>
+            <div className={css.explanation} data-aumlok-explanation>
+              <p>{t('surface.explanation.identity')}</p>
+              <p>{t('surface.explanation.knowledge')}</p>
+              <p>{t('surface.explanation.decider')}</p>
+              <p>{t('surface.explanation.boundary')}</p>
+              <p>{t('surface.explanation.edge')}</p>
+            </div>
+            <p className={css.boundaryClosing}>{t('surface.explanation.closing')}</p>
+          </Card>
         </div>
       </div>
+
     </section>
   )
 }

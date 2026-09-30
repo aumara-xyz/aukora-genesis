@@ -1,6 +1,6 @@
 {
   "face": "messages",
-  "srcDigest": "12b0ebbee79c2e966b6eca71cd6f3afbf60758e398e08c015a5cc9af2dd0859a",
+  "srcDigest": "984bb0ef7482b959088d6bd0e724cfef40571c48baeeb6783b650a139b61a152",
   "files": [
     "package.json",
     "src/add-contact-route.ts",
@@ -26,5 +26,5 @@
     "src/vendor/jsqr/upstream-jsqr.json",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T06:06:03Z"
+  "builtAt": "2026-09-30T07:07:22Z"
 }

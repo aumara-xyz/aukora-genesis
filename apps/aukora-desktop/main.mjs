@@ -404,15 +404,17 @@ app.whenReady().then(async () => {
     return
   }
 
-  // The microphone, and only for the harness we just started. Auma Live streams
-  // the page's audio to the local voice sidecar, so a blanket denial here is a
-  // blanket denial of the voice app. The handlers are installed after `url` is
-  // known, because the grant is scoped to that exact origin.
+  // Electron requests carry mediaTypes; permission checks carry singular mediaType.
+  // Both paths use the same camera/microphone policy and exact app origin.
+  const mediaTypesOf = details => details?.mediaTypes !== undefined
+    ? details.mediaTypes
+    : details?.mediaType !== undefined ? [details.mediaType] : undefined
   ses.setPermissionRequestHandler((wc, permission, cb, details) => {
-    cb(permissionAllowed(permission, details?.requestingUrl ?? wc?.getURL(), url, details?.mediaTypes))
+    cb(permissionAllowed(permission, details?.securityOrigin ?? details?.requestingUrl
+      ?? (details?.isMainFrame ? wc?.getURL() : undefined), url, mediaTypesOf(details)))
   })
   ses.setPermissionCheckHandler((_wc, permission, requestingOrigin, details) => (
-    permissionAllowed(permission, details?.requestingUrl ?? requestingOrigin, url, details?.mediaTypes)
+    permissionAllowed(permission, details?.securityOrigin ?? details?.requestingUrl ?? requestingOrigin, url, mediaTypesOf(details))
   ))
 
   win = createWindow(ses, status)

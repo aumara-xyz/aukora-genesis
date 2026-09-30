@@ -204,7 +204,7 @@ export function apply(ctx: ClientContext): void {
     name: 'shell.surface', id: 'aura-coherence', order: 60, locale: NS,
   }, AuraCoherenceSurface))
   ctx.slots.inject('shell.menu.system', () => ctx.slots.register({
-    name: 'shell.menu.system', id: 'aura-coherence', order: 60, locale: NS,
+    name: 'shell.menu.system', id: 'aura-coherence', order: -10, locale: NS,
   }, AuraCoherenceMenu))
 
   ctx.slots.inject('settings.section', () => ctx.slots.register({

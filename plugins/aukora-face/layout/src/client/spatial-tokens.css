@@ -33,7 +33,7 @@ body {
   --aukora-gold: var(--dsw-static-spatial-gold);
   --aukora-red-warning: rgb(242, 85, 90);
   --aukora-background: rgb(11, 13, 24);
-  --aukora-surface: var(--aukora-background);
+  --aukora-surface: rgba(38, 43, 54, 0.72);
   --aukora-border: rgba(255, 255, 255, 0.1);
   --aukora-text: rgb(232, 234, 237);
   --aukora-text-secondary: rgb(184, 188, 196);
@@ -75,7 +75,10 @@ body[data-ds-dark-theme] {
       var(--dsw-static-spatial-night-950) 100%
     );
   --dsw-specific-spatial-lane: rgba(255, 255, 255, 0.043);
-  --dsw-specific-spatial-lane-bright: rgba(255, 255, 255, 0.06);
+  --dsw-specific-spatial-lane-bright:
+    radial-gradient(circle at 8% 2%, color-mix(in srgb, var(--dsw-static-spatial-mint) 9%, transparent), transparent 30%),
+    radial-gradient(circle at 96% 0%, color-mix(in srgb, var(--dsw-static-spatial-violet) 10%, transparent), transparent 34%),
+    var(--dsw-alias-bg-layer-1);
   --dsw-specific-spatial-selection: rgba(196, 170, 255, 0.12);
 }
 

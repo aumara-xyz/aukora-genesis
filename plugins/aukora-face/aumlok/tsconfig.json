@@ -33,6 +33,9 @@
     },
     {
       "path": "../ui-slots"
+    },
+    {
+      "path": "../aukora-face-messages/tsconfig.client.json"
     }
   ]
 }

@@ -17,7 +17,7 @@
   box-sizing: border-box;
   overflow: hidden;
   color: var(--aukora-text);
-  background: var(--aukora-background);
+  background: var(--dsw-specific-spatial-canvas);
   transition:
     grid-template-columns var(--ds-transition-duration-slow) var(--ds-ease-in-out),
     gap var(--ds-transition-duration-slow) var(--ds-ease-in-out),
@@ -144,14 +144,14 @@
   border: 1px solid var(--aukora-border);
   border-radius: 22px;
   box-sizing: border-box;
-  background: var(--aukora-surface);
+  background: var(--dsw-specific-spatial-lane);
   transition:
     width var(--ds-transition-duration-slow) var(--ds-ease-in-out),
     border-radius var(--ds-transition-duration-slow) var(--ds-ease-in-out);
 }
 
 .laneCenter .laneShell {
-  background: var(--aukora-surface);
+  background: var(--dsw-specific-spatial-lane-bright);
 }
 
 .frame[data-pane-preset='left-wide'] .laneLeft .laneShell,

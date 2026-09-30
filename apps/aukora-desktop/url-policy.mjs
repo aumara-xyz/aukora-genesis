@@ -41,13 +41,13 @@ export function externalSchemeAllowed(url) {
 }
 
 /**
- * The two capabilities this window grants a page, and only to its own harness.
+ * Microphone, contact-scanner camera and clipboard writes, only to this app origin.
  *
  * Auma Live is a voice app: the page captures the microphone and streams it to
  * the local sidecar, so a window that denies every permission is a window where
  * the voice channel can never open. Everything else a page can ask for —
- * camera, location, notifications, clipboard READS, MIDI, USB, screen capture —
- * stays denied, and both grants below are scoped to the exact loopback origin
+ * location, notifications, clipboard READS, MIDI, USB, screen capture —
+ * stays denied, and the grants below are scoped to the exact loopback origin
  * this shell started. A page reached through some other origin gets nothing,
  * whatever it asks for.
  *
@@ -66,23 +66,27 @@ export function externalSchemeAllowed(url) {
  * `clipboard-read`. Chromium labels the write "sanitized" because it strips
  * dangerous markup on the way in, which is the behaviour a copy button wants.
  *
- * `mediaTypes` is Electron's own breakdown of a media request. When it is given,
- * a request that includes video is refused: this grants a microphone, not a camera.
+ * `mediaTypes` is normalized from Electron's request array or check's singular
+ * `mediaType`. Unknown, empty and combined audio/video requests are refused.
  * @param {string} permission - Electron permission name.
  * @param {string | undefined} requestingUrl - the URL of the frame asking.
  * @param {string | undefined} appUrl - the page this shell loaded.
  * @param {string[] | undefined} mediaTypes - Electron's mediaTypes for a media request.
- * @returns {boolean} true only for the harness's own microphone or clipboard write.
+ * @returns {boolean} true only for the harness's microphone, camera or clipboard write.
  */
 export function permissionAllowed(permission, requestingUrl, appUrl, mediaTypes) {
-  const grants = ['media', 'audioCapture', 'clipboard-sanitized-write']
+  const grants = ['media', 'audioCapture', 'videoCapture', 'clipboard-sanitized-write']
   if (!grants.includes(permission)) return false
   if (typeof requestingUrl !== 'string' || typeof appUrl !== 'string') return false
   let asking, mine
   try { asking = new URL(requestingUrl).origin; mine = new URL(appUrl).origin } catch { return false }
   if (asking !== mine) return false
   try { loopbackOnly(appUrl) } catch { return false }
-  // A media request that asks for video is refused. A clipboard write carries no mediaTypes.
-  if (mediaTypes !== undefined && mediaTypes.some(kind => kind !== 'audio')) return false
+  if (permission === 'clipboard-sanitized-write') return true
+  const kinds = mediaTypes ?? (permission === 'audioCapture' ? ['audio'] : permission === 'videoCapture' ? ['video'] : [])
+  if (!Array.isArray(kinds) || kinds.length === 0 || kinds.some(kind => kind !== 'audio' && kind !== 'video')) return false
+  if (kinds.includes('audio') && kinds.includes('video')) return false
+  if (permission === 'audioCapture' && kinds.some(kind => kind !== 'audio')) return false
+  if (permission === 'videoCapture' && kinds.some(kind => kind !== 'video')) return false
   return true
 }

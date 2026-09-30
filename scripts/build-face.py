@@ -313,6 +313,13 @@ def src_digest(name):
     for extra in ('package.json', 'tsdown.config.ts'):
         if (pkg / extra).is_file():
             inputs.append(extra)
+    if name == 'aumlok':
+        # Identity reuses the Messages decoder/parser. Measure their actual source and
+        # the vendored decoder's license/pin as inputs to this bundle, without copying them.
+        inputs.extend(['../messages/package.json', '../messages/src/client/qr-scanner.ts',
+                       '../messages/src/client/add-contact.ts'])
+        inputs.extend('../messages/' + p.relative_to(FACE / 'messages').as_posix()
+                      for p in (FACE / 'messages/src/vendor/jsqr').rglob('*') if p.is_file())
     outer = hashlib.sha256()
     for rel in sorted(inputs):
         inner = hashlib.sha256((pkg / rel).read_bytes()).hexdigest()

@@ -1,6 +1,6 @@
 {
   "face": "settings",
-  "srcDigest": "d040914cb70d883223788616d74bf0a387259395705e1a7f507f56abc389f004",
+  "srcDigest": "5c4cb66a052997c439ab9ac0670214f65af3c10da7f66e05703760a7a0f1761d",
   "files": [
     "package.json",
     "src/aura/activity.ts",
@@ -35,5 +35,5 @@
     "src/invariant.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-26T23:46:05Z"
+  "builtAt": "2026-09-30T07:07:30Z"
 }

@@ -3,7 +3,7 @@
 const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
 const GENERATOR = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]
 const MAX_CONTACT_INPUT = 64 * 1024
-const CONTACT_FIELDS = new Set(['type', 'version', 'npub', 'peerControllerKey', 'binding', 'label'])
+const CONTACT_FIELDS = new Set(['type', 'version', 'npub', 'peerControllerKey', 'binding', 'label', 'live'])
 
 export const MAX_ADD_NAME = 120
 export const ADD_REFUSE = Object.freeze({
@@ -146,6 +146,15 @@ export function parseContactInput(value: unknown): ContactInput {
   if (payload.version !== 1) return refuse(ADD_REFUSE.QR, 'unsupported contact version')
   if (Object.keys(payload).some(field => !CONTACT_FIELDS.has(field))) {
     return refuse(ADD_REFUSE.QR, 'unknown contact field')
+  }
+  // Freshness belongs to Identity Verify. Adding an ordinary contact remains possible after its
+  // live proof expires, and this parser must never turn that optional proof into a verified mark.
+  if ('live' in payload && (!isRecord(payload.live)
+    || Object.keys(payload.live).length !== 4
+    || !/^[0-9a-f]{64}$/u.test(String(payload.live.nonce ?? ''))
+    || !Number.isSafeInteger(payload.live.issuedAt) || !Number.isSafeInteger(payload.live.expiresAt)
+    || !/^[0-9a-f]{128}$/u.test(String(payload.live.signature ?? '')))) {
+    return refuse(ADD_REFUSE.QR, 'invalid live contact proof')
   }
   const npub = checkNpub(payload.npub)
   if (!npub.ok) return npub

@@ -7,10 +7,13 @@ import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@aukora/face-layout/client'
 import { AumlokMenu } from './AumlokMenu.tsx'
 import { AumlokSurface, type AumlokSurfaceInjected } from './AumlokSurface.tsx'
+import { IdentityMenu, IdentitySurface, type IdentitySurfaceInjected } from './IdentitySurface.tsx'
 import { AumlokControlProjectionService } from './control-projection.ts'
 import { AumlokControlStatusLoader } from './control-status-loader.ts'
 import { readAumlokCeremonyBridge } from './binding-bridge.ts'
 import { en, zh, type AumlokKey } from './locales.ts'
+import { AUMLOK_IDENTITY_ENDPOINT, type AumlokContactIdentity } from '../identity.ts'
+import type { ReadIdentity } from './IdentityCard.tsx'
 
 export {
   AUMLOK_CONTROL_NOT_CONNECTED,
@@ -49,7 +52,15 @@ export function apply(ctx: ClientContext): void {
   // and nothing else about a phrase crosses it in either direction.
   projection.attachCeremony(readAumlokCeremonyBridge())
   const connection = ctx.get('connection') as ConnectionHandle
+  const readIdentity: ReadIdentity = async signal => {
+    if (!connection.isLoopback) throw new Error('aumlok:identity-non-loopback')
+    const response = await fetch(AUMLOK_IDENTITY_ENDPOINT, { method: 'GET', signal,
+      headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' })
+    if (!response.ok) throw new Error('aumlok:identity-unavailable')
+    return await response.json() as AumlokContactIdentity
+  }
   const loader = new AumlokControlStatusLoader(projection, connection)
+  const refreshControlStatus = (): void => { void loader.refresh() }
   ctx.effect(() => {
     const disposeReset = ctx.on('connection/reset', () => { void loader.refresh() })
     void loader.refresh()
@@ -61,9 +72,12 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('shell.menu.system', () => ctx.slots.register({
     name: 'shell.menu.system',
     id: 'aumlok',
-    order: 20,
+    order: -30,
     locale: NS,
   }, AumlokMenu))
+  ctx.slots.inject('shell.menu.system', () => ctx.slots.register({
+    name: 'shell.menu.system', id: 'identity', order: -20, locale: NS,
+  }, IdentityMenu))
   ctx.inject(['slots', 'aumlokControlProjection'], (scope: ClientContext) => {
     scope.slots.inject('shell.surface', () => scope.slots.register({
       name: 'shell.surface',
@@ -83,8 +97,16 @@ export function apply(ctx: ClientContext): void {
         // every other status read re-reads the controller, so a newly bound subject
         // becomes the seven public fields without a page reload, and a changed phrase
         // moves the record to its new epoch. A refusal never reaches this.
-        refreshControlStatus: () => { void loader.refresh() },
+        refreshControlStatus,
       }),
     }, AumlokSurface))
+    scope.slots.inject('shell.surface', () => scope.slots.register({
+      name: 'shell.surface', id: 'identity', order: 21, locale: NS,
+      inject: (): IdentitySurfaceInjected => ({
+        hooks: { controlProjection: scope.aumlokControlProjection.store },
+        readIdentity,
+        refreshControlStatus,
+      }),
+    }, IdentitySurface))
   })
 }
