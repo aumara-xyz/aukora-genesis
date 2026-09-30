@@ -1,6 +1,6 @@
 {
   "face": "aumlok",
-  "srcDigest": "3b403238767a619861d8e44ad673c41cc0ac6c321ce77c0ed98f6a4bda7d8e49",
+  "srcDigest": "1007815854eef035bfb4a917ba826b7039ca8230ecb603e327c4add0287a78e6",
   "files": [
     "package.json",
     "src/client/Aumlok.module.css",
@@ -21,7 +21,9 @@
     "src/identity.ts",
     "src/index.ts",
     "src/invariant.ts",
+    "src/vendor/qrcodegen/LICENSE",
+    "src/vendor/qrcodegen/qrcodegen.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T01:35:32Z"
+  "builtAt": "2026-09-30T02:22:35Z"
 }

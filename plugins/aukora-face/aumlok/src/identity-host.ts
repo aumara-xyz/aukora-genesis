@@ -1,4 +1,5 @@
 import type { AumlokContactIdentity, AumlokIdentity } from './identity.ts'
+import { qrcodegen } from './vendor/qrcodegen/qrcodegen.ts'
 
 interface IdentityRoots {
   stateDir?: string
@@ -11,38 +12,24 @@ interface Bootstrap {
 }
 
 const qrImages = new Map<string, { image: Promise<string | null>; expires: number }>()
-const qrScript = `
-ObjC.import('AppKit')
-ObjC.import('CoreImage')
-function run(argv) {
-  const filter = $.CIFilter.filterWithName('CIQRCodeGenerator')
-  filter.setValueForKey($(argv[0]).dataUsingEncoding($.NSUTF8StringEncoding), 'inputMessage')
-  filter.setValueForKey($('M'), 'inputCorrectionLevel')
-  const image = filter.outputImage
-  const context = $.CIContext.contextWithOptions($.NSDictionary.dictionary)
-  const bitmap = $.NSBitmapImageRep.alloc.initWithCGImage(context.createCGImageFromRect(image, image.extent))
-  return ObjC.unwrap(bitmap.representationUsingTypeProperties($.NSBitmapImageFileTypePNG, $({})).base64EncodedStringWithOptions(0))
-}`
 
 async function contactQr(payload: string): Promise<string | null> {
   const cached = qrImages.get(payload)
   if (cached && Date.now() < cached.expires) return cached.image
-  // Core Image is supplied by the desktop OS; public contact data never leaves this machine.
-  const image = (async () => {
-    const specifier = 'node:child_process'
-    const child = await import(/* @vite-ignore */ specifier) as {
-      execFile(file: string, args: string[], options: { timeout: number; maxBuffer: number },
-        callback: (error: unknown, stdout: string) => void): unknown
+  const image = Promise.resolve().then(() => {
+    const qr = qrcodegen.QrCode.encodeText(payload, qrcodegen.QrCode.Ecc.MEDIUM)
+    const border = 4
+    const size = qr.size + border * 2
+    const modules: string[] = []
+    for (let y = 0; y < qr.size; y++) {
+      for (let x = 0; x < qr.size; x++) {
+        if (qr.getModule(x, y)) modules.push(`M${x + border},${y + border}h1v1h-1z`)
+      }
     }
-    return await new Promise<string | null>(resolve => {
-      child.execFile('/usr/bin/osascript', ['-l', 'JavaScript', '-e', qrScript, payload],
-        { timeout: 5000, maxBuffer: 256_000 }, (error, stdout) => {
-          const data = stdout?.trim()
-          resolve(!error && data?.startsWith('iVBORw0KGgo') && /^[A-Za-z0-9+/]+={0,2}$/u.test(data)
-            ? `data:image/png;base64,${data}` : null)
-        })
-    })
-  })().catch(() => null)
+    // Only numeric module coordinates enter the SVG; contact text never becomes markup.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${modules.join('')}" fill="#000"/></svg>`
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`
+  }).catch(() => null)
   const entry = { image, expires: Infinity }
   qrImages.set(payload, entry)
   if (qrImages.size > 4) qrImages.delete(qrImages.keys().next().value!)
