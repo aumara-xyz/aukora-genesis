@@ -90,3 +90,29 @@ Recorded ceiling for any window: $50 total. Gates in order: (1) this freeze lift
 only), (2) Actions billing clears for pushes, (3) H200 capacity returns, (4) recorded
 spending ceiling per window, (5) five-lane dispatch. The next window is one command:
 start → mount → serve → frozen comparison → export → STOPPED-confirmed.
+
+## PART 8 — GAMMA CONTEXT: WHAT THE OTHER REPORT CHANGES (added 2026-09-30)
+
+**Account resources: UNCHANGED.** Verified live: one instance (STOPPED), boot disk
+200 GiB, data disk 186 GiB READY + attached. Nothing from any side created, deleted, or
+moved resources since the data disk. The Gamma docs below changed the *picture*, not
+the account state.
+
+**Three credit figures now on record (status of each noted honestly):**
+- ~$50 remaining (September handoff premise; basis: observed spend rate, not a statement)
+- **$10K credit offer** (Gamma cover letter to Nebius — a written offer, terms unknown)
+- **$150K Lift Program** (May pitch ask — unknown whether granted; verifiable only in console/billing)
+
+**ULHF reasoning protocol (Gamma cover letter, stated):** anchored state observation +
+liquid hypothesis weighting + reasoned move/update loop; TU93 and LS20 Level 1 solved
+autonomously multiple times, repeatable on demand. The stated recursion target is explicit:
+**beat ARC-AGI-3 at human reasoning level, publicly, with full reasoning traces** (Kaggle
+entry at Level 5+). SOTA AI completes essentially zero levels in 500+ actions; humans do
+all 7 in ~175. Gamma's wins sit on the human side of that gap.
+
+**What this means for the lane:** the ARC-AGI-3 target gives the dojo work a real
+destination (Sokoban dojo = toy-scale version of the same trusted-engine discipline),
+and the ULHF loop (hypotheses weighted by confidence, refuted ones kept as negative
+memory) is directly comparable to the dream-layer + abstention-contract design. Two
+independent implementations converging on: fast hypothesis turnover, no re-litigation
+of refuted approaches, human-readable traces.
