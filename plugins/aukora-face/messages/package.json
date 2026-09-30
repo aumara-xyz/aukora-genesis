@@ -10,6 +10,9 @@
     "url": "https://github.com/aumara-xyz/aukora-genesis"
   },
   "type": "module",
+  "imports": {
+    "#jsqr": "./src/vendor/jsqr/jsQR.js"
+  },
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
   "exports": {

@@ -254,7 +254,11 @@ const MESSAGES_RELAY_REFUSALS = [
 	"messages:thread-timeout"
 ];
 /** Every refusal reason, reader-side and wire-side. */
-const MESSAGES_REFUSAL_REASONS = [...MESSAGES_STORE_REFUSALS, ...MESSAGES_WIRE_REFUSALS];
+const MESSAGES_REFUSAL_REASONS = [
+	...MESSAGES_STORE_REFUSALS,
+	...MESSAGES_WIRE_REFUSALS,
+	"messages:add-binding-invalid"
+];
 /** All three outcomes, so a parser and a caller can assert the set is closed. */
 const MESSAGES_EVIDENCE_OUTCOMES = [
 	"recorded",
@@ -348,7 +352,7 @@ function messagesEvidenceFields(evidence, evidenceRefusal) {
 /** Both roles, so a parser and a caller can assert the set is closed. */
 const MESSAGES_COPY_ROLES = ["recipient", "self"];
 /** Whether a value is a plain JSON object, for the parsers below. */
-function isRecord$2(value) {
+function isRecord$3(value) {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 /** Whether an object carries exactly the named keys and nothing else. */
@@ -427,7 +431,7 @@ function parseMessagesContactsRequest(pathname, search) {
 }
 /** Parse one SAS off the wire, or undefined when it is not one this face serves. */
 function parseWireSas(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, ["digits", "spoken"])) return void 0;
 	if (typeof value.digits !== "string" || !/^\d{6}$/u.test(value.digits)) return void 0;
 	if (typeof value.spoken !== "string" || !/^\d{3} \d{3}$/u.test(value.spoken)) return void 0;
@@ -442,7 +446,7 @@ function parseWireSas(value) {
 * @returns the entry, or undefined when it is not what this face serves.
 */
 function parseMessagesContactEntry(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, [
 		"npub",
 		"name",
@@ -500,7 +504,7 @@ function parseWireSasForBinding(value, binding) {
 * @returns the body, or undefined when it is not what this face serves.
 */
 function parseMessagesContactsBody(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, [
 		"status",
 		"root",
@@ -525,7 +529,7 @@ function parseMessagesContactsBody(value) {
 * @returns the answer, or undefined when it is neither a listing nor a named refusal.
 */
 function parseMessagesContactsAnswer(value) {
-	if (isRecord$2(value) && value.status === "refused") return parseMessagesRefusalBody(value);
+	if (isRecord$3(value) && value.status === "refused") return parseMessagesRefusalBody(value);
 	return parseMessagesContactsBody(value);
 }
 /**
@@ -534,7 +538,7 @@ function parseMessagesContactsAnswer(value) {
 * @returns the refusal, or undefined when the reason is not one this face defines.
 */
 function parseMessagesRefusalBody(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, [
 		"status",
 		"reason",
@@ -597,7 +601,7 @@ function parseMessagesThreadRequest(pathname, search) {
 * @returns the message, or undefined when it is not what this face serves.
 */
 function parseMessagesWireMessage(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, [
 		"id",
 		"from",
@@ -620,7 +624,7 @@ function parseMessagesWireMessage(value) {
 * @returns the body, or undefined when it is not what this face serves.
 */
 function parseMessagesThreadBody(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, [
 		"status",
 		"npub",
@@ -680,7 +684,7 @@ function parseThreadSas(value, state) {
 * @returns the request, or undefined when it is not the shape this face takes.
 */
 function parseMessagesSendRequest(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, ["npub", "text"])) return void 0;
 	if (!isText(value.npub)) return void 0;
 	if (typeof value.text !== "string") return void 0;
@@ -702,7 +706,7 @@ function parseMessagesSendRequest(value) {
 * @returns the outcome, or undefined when it is not one this face serves.
 */
 function parseMessagesCopyOutcome(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (!hasExactKeys(value, [
 		"copy",
 		"eventId",
@@ -742,7 +746,7 @@ function parseMessagesCopyOutcome(value) {
 * @returns the answer, or undefined when it is not what this face serves.
 */
 function parseMessagesSendBody(value) {
-	if (!isRecord$2(value)) return void 0;
+	if (!isRecord$3(value)) return void 0;
 	if (value.status === "refused") return parseMessagesRefusalBody(value);
 	if (!hasExactKeys(value, [
 		"status",
@@ -994,7 +998,7 @@ function errorCode(error) {
 	return typeof code === "string" ? code : void 0;
 }
 /** Whether a value is a plain JSON object, for the document reader below. */
-function isRecord$1(value) {
+function isRecord$2(value) {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 /**
@@ -1061,7 +1065,7 @@ function messagesContactsRoots(controllerDir) {
 * @returns the entry, or undefined when it is not a contact this face can resolve.
 */
 function parseStoredContact(value) {
-	if (!isRecord$1(value)) return void 0;
+	if (!isRecord$2(value)) return void 0;
 	if (typeof value.npub !== "string" || value.npub === "") return void 0;
 	if (typeof value.name !== "string" || value.name === "") return void 0;
 	if (typeof value.peerControllerKey !== "string") return void 0;
@@ -1080,7 +1084,7 @@ function parseStoredContact(value) {
 * @returns the document, or undefined when it is not one this face reads.
 */
 function parseMessagesContactsDocument(value) {
-	if (!isRecord$1(value)) return void 0;
+	if (!isRecord$2(value)) return void 0;
 	if (value.domain !== "aukora:nostr-contacts:v1") return void 0;
 	if (!Array.isArray(value.contacts)) return void 0;
 	const contacts = [];
@@ -1124,9 +1128,9 @@ async function readContactsFile(stateDir) {
 			refusal: refused("messages:contacts-unparseable", path)
 		};
 	}
-	if (!isRecord$1(parsed) || parsed.domain !== "aukora:nostr-contacts:v1") return {
+	if (!isRecord$2(parsed) || parsed.domain !== "aukora:nostr-contacts:v1") return {
 		kind: "refused",
-		refusal: refused("messages:contacts-domain-unknown", `${path} (domain ${isRecord$1(parsed) ? JSON.stringify(parsed.domain) : "not-an-object"})`)
+		refusal: refused("messages:contacts-domain-unknown", `${path} (domain ${isRecord$2(parsed) ? JSON.stringify(parsed.domain) : "not-an-object"})`)
 	};
 	const document = parseMessagesContactsDocument(parsed);
 	if (document === void 0) return {
@@ -1144,7 +1148,7 @@ function offenderSubject(document) {
 	if (!Array.isArray(contacts)) return "contacts is not an array";
 	for (const [index, raw] of contacts.entries()) {
 		if (parseStoredContact(raw) !== void 0) continue;
-		if (!isRecord$1(raw)) return `entry ${index} is not an object`;
+		if (!isRecord$2(raw)) return `entry ${index} is not an object`;
 		if (typeof raw.npub !== "string" || raw.npub === "") return `entry ${index} names no npub`;
 		if (typeof raw.name !== "string" || raw.name === "") return `entry ${index} (${raw.npub}) names no name`;
 		if (raw.peerControllerKey === void 0) return `entry ${index} (${raw.npub}) records no peerControllerKey`;
@@ -1177,7 +1181,7 @@ function asBindingStatus(value) {
 * @returns the two leaf fields, or null.
 */
 function contactSas(value) {
-	if (!isRecord$1(value)) return null;
+	if (!isRecord$2(value)) return null;
 	const digits = value.digits;
 	const spoken = value.spoken;
 	if (typeof digits !== "string" || digits === "") return null;
@@ -1201,7 +1205,7 @@ function contactSas(value) {
 * @returns the contact as this face serves it.
 */
 function resolveStoredContact(resolveContact, roots, contact) {
-	const declared = isRecord$1(contact.binding) && isRecord$1(contact.binding.statement) ? contact.binding.statement.subject : void 0;
+	const declared = isRecord$2(contact.binding) && isRecord$2(contact.binding.statement) ? contact.binding.statement.subject : void 0;
 	const peer = contact.peerControllerKey;
 	if (peer === "" && contact.binding === null) return {
 		npub: contact.npub,
@@ -1252,7 +1256,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 			peerControllerKey: peer
 		};
 	}
-	if (!isRecord$1(answer)) return {
+	if (!isRecord$2(answer)) return {
 		npub: contact.npub,
 		name: contact.name,
 		state: "FOREIGN",
@@ -1339,7 +1343,7 @@ async function readNodeSecretKey(stateDir) {
 			refusal: refused("messages:key-unreadable", path)
 		};
 	}
-	const secret = isRecord$1(parsed) ? parsed.secretKeyHex : void 0;
+	const secret = isRecord$2(parsed) ? parsed.secretKeyHex : void 0;
 	if (typeof secret !== "string" || !/^[0-9a-f]{64}$/u.test(secret)) return {
 		kind: "refused",
 		refusal: refused("messages:key-unreadable", path)
@@ -1382,7 +1386,7 @@ function openedThreadWraps(wraps, openGiftWrap, spec) {
 	for (const wrap of wraps) {
 		let decoded;
 		try {
-			if (!isRecord$1(wrap) || typeof wrap.id !== "string" || seen.has(wrap.id)) continue;
+			if (!isRecord$2(wrap) || typeof wrap.id !== "string" || seen.has(wrap.id)) continue;
 			const cacheKey = `${recipient}:${wrap.id}`;
 			const wire = JSON.stringify(wrap);
 			const cached = openedCache.get(cacheKey);
@@ -1399,7 +1403,7 @@ function openedThreadWraps(wraps, openGiftWrap, spec) {
 		} catch {
 			continue;
 		}
-		if (!isRecord$1(decoded) || !isRecord$1(decoded.rumor)) continue;
+		if (!isRecord$2(decoded) || !isRecord$2(decoded.rumor)) continue;
 		const rumor = decoded.rumor;
 		const sender = typeof decoded.sender === "string" ? decoded.sender.toLowerCase() : "";
 		const from = sender === self ? "me" : "them";
@@ -1500,7 +1504,7 @@ async function loadContactResolver(specifier = defaultContactModuleSpecifier()) 
 	} catch (cause) {
 		throw Object.assign(/* @__PURE__ */ new Error(`the contact resolver could not be loaded from ${specifier}: ${cause instanceof Error ? cause.message : String(cause)}`), { code: "messages:contact-module-unloadable" });
 	}
-	const resolver = isRecord$1(loaded) ? loaded.resolveContact : void 0;
+	const resolver = isRecord$2(loaded) ? loaded.resolveContact : void 0;
 	if (typeof resolver !== "function") throw Object.assign(/* @__PURE__ */ new Error(`${specifier} exports no resolveContact function`), { code: "messages:contact-module-unloadable" });
 	const typed = resolver;
 	resolverCache.set(specifier, typed);
@@ -1626,98 +1630,38 @@ async function listContacts(resolver, roots) {
 }
 //#endregion
 //#region lib/types/add-contact-route.js
-/**
-* ADD A CONTACT — the write half of a list that until now could only be read.
-*
-* WHY THIS FILE EXISTS. The face registered four endpoints and every one of them READS or SENDS:
-* the listing, the contacts request, the thread, the send. **Nothing in this face wrote
-* `contacts.json`**, so the only way to add a friend was the command line — whose own header says
-* so: *"the step that has no UI, made into a command instead of hand-written JSON."* A list nobody
-* can write to is a list that never grows, and the "+" button in the surface made a local
-* placeholder instead. This is the missing half.
-*
-* IT DELEGATES RATHER THAN REIMPLEMENTS. The release already carries `aukora-nostr/bin/add-contact.mjs`
-* and it already does the hard parts: it validates the npub and the 64-hex controller key, it
-* refuses to overwrite a file it cannot parse, and it writes **atomically** (`<file>.tmp` then
-* `renameSync`, mode `0600`). This route resolves that module exactly the way the face resolves
-* `contact.mjs` — from the tree beside the deployment — and calls its exported `addContact`.
-* **A second implementation of those rules is how the two copies drift.**
-*
-* WHAT IT ADDS ON TOP, AND EACH IS DELIBERATE:
-*
-*   IT REFUSES A DUPLICATE. `addContact` REPLACES an existing entry for the same npub and reports
-*   `replaced`. That is right for a repair tool run by hand and wrong for a button: an unverified
-*   write path must not be able to silently re-point a friend at a different key. So this route
-*   reads the file first and refuses.
-*
-*   IT CANNOT PRODUCE A BOUND OR VERIFIED CONTACT. There is no path through it to either. The
-*   `binding` is **always null**, and a `binding` field in the request body is **ignored** rather
-*   than stored — a caller cannot attach a claim, only a key. Trust arrives afterwards, through the
-*   friend's own binding and then a confirmation the owner signs.
-*
-*   ITS REFUSALS HAVE NAMES, and the ledger line names neither secret: the npub's PREFIX and the
-*   NAME'S LENGTH, never the controller key in full.
-*/
+/** Insert contacts through the release's writer, which validates bindings before taking its lock. */
 var __rewriteRelativeImportExtension$2 = function(path, preserveJsx) {
 	if (typeof path === "string" && /^\.\.?\//.test(path)) return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
 		return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
 	});
 	return path;
 };
-/** The endpoint a sheet POSTs to in order to add a friend. */
 const MESSAGES_ADD_CONTACT_ENDPOINT = "/aukora-messages/add-contact";
-/** Every way this route can refuse, by name. A caller routes on these; none is prose to parse. */
 const MESSAGES_ADD_CONTACT_REFUSALS = Object.freeze({
 	NPUB_INVALID: "messages:add-npub-invalid",
 	CONTROLLER_INVALID: "messages:add-controller-invalid",
+	BINDING_INVALID: "messages:add-binding-invalid",
 	NAME_INVALID: "messages:add-name-invalid",
 	BODY_UNREADABLE: "messages:add-body-unreadable",
-	/** An entry for this npub is already present. THE ANTI-OVERWRITE REFUSAL. */
 	ALREADY_PRESENT: "messages:add-already-present",
-	/** The contacts file exists and this face cannot parse it. Never clobber a list we do not understand. */
 	CONTACTS_UNREADABLE: "messages:add-contacts-unreadable",
-	/** The nostr tree is not beside this deployment, so there is no writer to call. */
 	WRITER_ABSENT: "messages:add-writer-absent",
 	WRITE_FAILED: "messages:add-write-failed"
 });
-/** A 64-character lowercase hex string, which is what a controller public key is. */
-const HEX64 = /^[0-9a-f]{64}$/u;
-/** The ledger, appended to once per accepted add. Beside the state directory, never inside the nostr tree. */
 const MESSAGES_ADD_LEDGER = "contacts-additions.log";
-/**
-* Resolve the release's `add-contact.mjs` the way the face resolves `contact.mjs`.
-*
-* IT IS DERIVED FROM THE RESOLVED CONTACT SPECIFIER RATHER THAN FROM A SECOND ENVIRONMENT VARIABLE.
-* `<nostr>/lib/contact.mjs` and `<nostr>/bin/add-contact.mjs` sit in one tree, so pointing the face
-* at another tree moves both or neither. A second knob could point them at different trees, which is
-* a deployment this route has no reason to support and one more way to be wrong.
-*
-* @returns the module's exports, or `undefined` when no writer is present.
-*/
+/** The writer imports its resolver and encoder from this same nostr tree. */
 async function loadWriter() {
-	let specifier;
 	try {
-		specifier = resolveContactModuleSpecifier();
+		const writer = resolve(dirname(resolveContactModuleSpecifier()), "..", "bin", "add-contact.mjs");
+		if (!existsSync(writer)) return void 0;
+		return await import(__rewriteRelativeImportExtension$2(pathToFileURL(writer).href));
 	} catch {
 		return;
 	}
-	const writer = resolve(dirname(specifier), "..", "bin", "add-contact.mjs");
-	if (!existsSync(writer)) return void 0;
-	try {
-		const loaded = await import(__rewriteRelativeImportExtension$2(pathToFileURL(writer).href));
-		const identity = resolve(dirname(writer), "..", "lib", "identity.mjs");
-		let decode;
-		if (existsSync(identity)) {
-			const lib = await import(__rewriteRelativeImportExtension$2(pathToFileURL(identity).href));
-			if (typeof lib.npubDecode === "function") decode = lib.npubDecode;
-		}
-		return {
-			...loaded,
-			...decode === void 0 ? {} : { npubDecode: decode }
-		};
-	} catch {
-		return;
-	}
+}
+function isRecord$1(value) {
+	return value !== null && typeof value === "object" && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null);
 }
 /** Read the request body as text, bounded by the caller's own limit. */
 async function readBody$1(req, limit = 64 * 1024) {
@@ -1737,13 +1681,32 @@ function refuse$1(res, name, url, status = 400) {
 	res.setHeader("content-type", "application/json");
 	res.end(JSON.stringify(messagesRefusalBody(name, url)));
 }
-/**
-* Build the add-a-contact route.
-*
-* @param admitted - the gate, called before anything is read.
-* @param stateDirOf - the state directory, read per request rather than captured.
-* @returns the route the web server registers.
-*/
+/** Map writer refusals, including duplicate races decided under its lock. */
+function refuseWrite(res, cause, url) {
+	switch (cause !== null && typeof cause === "object" && "code" in cause ? cause.code : void 0) {
+		case "nostr:add-contact-bad-npub":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.NPUB_INVALID, url);
+			return;
+		case "nostr:add-contact-bad-controller":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTROLLER_INVALID, url);
+			return;
+		case "nostr:add-contact-bad-binding":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BINDING_INVALID, url);
+			return;
+		case "nostr:add-contact-already-present":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.ALREADY_PRESENT, url, 409);
+			return;
+		case "nostr:add-contact-existing-unreadable":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTACTS_UNREADABLE, url, 409);
+			return;
+		case "nostr:add-contact-locked":
+		case "EEXIST":
+			res.setHeader("retry-after", "1");
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.WRITE_FAILED, url, 409);
+			return;
+		default: refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.WRITE_FAILED, url, 500);
+	}
+}
 function addContactRoute(admitted, stateDirOf) {
 	return {
 		kind: "exact",
@@ -1751,36 +1714,36 @@ function addContactRoute(admitted, stateDirOf) {
 		handler: async (req, res) => {
 			if (!admitted("POST", req, res)) return;
 			const url = req.url ?? "/aukora-messages/add-contact";
-			const text = await readBody$1(req);
-			if (text === void 0) {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BODY_UNREADABLE, url);
-				return;
-			}
 			let body;
 			try {
+				const text = await readBody$1(req);
+				if (text === void 0) throw new Error("body exceeds limit");
 				body = JSON.parse(text);
 			} catch {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BODY_UNREADABLE, url);
 				return;
 			}
-			if (body === null || typeof body !== "object" || Array.isArray(body)) {
+			if (!isRecord$1(body)) {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BODY_UNREADABLE, url);
 				return;
 			}
 			const fields = body;
-			const npub = typeof fields.npub === "string" ? fields.npub : "";
-			const controller = typeof fields.controller === "string" ? fields.controller.toLowerCase() : "";
-			const name = typeof fields.name === "string" && fields.name.trim() !== "" ? fields.name.trim() : npub.slice(0, 16);
-			if (npub === "") {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.NPUB_INVALID, url);
+			if (Object.keys(fields).some((key) => ![
+				"npub",
+				"controller",
+				"name",
+				"binding"
+			].includes(key))) {
+				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BODY_UNREADABLE, url);
 				return;
 			}
-			if (controller !== "" && !HEX64.test(controller)) {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTROLLER_INVALID, url);
-				return;
-			}
-			if (name.trim() === "") {
+			const name = typeof fields.name === "string" ? fields.name.trim() : "";
+			if (name === "") {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.NAME_INVALID, url);
+				return;
+			}
+			if (fields.binding !== void 0 && fields.binding !== null && !isRecord$1(fields.binding)) {
+				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BINDING_INVALID, url);
 				return;
 			}
 			const writer = await loadWriter();
@@ -1788,74 +1751,33 @@ function addContactRoute(admitted, stateDirOf) {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.WRITER_ABSENT, url, 500);
 				return;
 			}
-			if (typeof writer.npubDecode !== "function") {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.WRITER_ABSENT, url, 500);
-				return;
-			}
-			let canonicalHex;
-			try {
-				const decoded = writer.npubDecode(npub);
-				if (typeof decoded !== "string" || !HEX64.test(decoded)) {
-					refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.NPUB_INVALID, url);
-					return;
-				}
-				canonicalHex = decoded;
-			} catch {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.NPUB_INVALID, url);
-				return;
-			}
 			const stateDir = stateDirOf();
-			let existing;
-			try {
-				const reader = writer.readExistingContacts;
-				if (typeof reader !== "function") {
-					refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.WRITER_ABSENT, url, 500);
-					return;
-				}
-				existing = reader(typeof writer.contactsPath === "function" ? writer.contactsPath(stateDir) : "");
-			} catch {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTACTS_UNREADABLE, url, 409);
-				return;
-			}
-			const keyOf = (value) => {
-				if (typeof value !== "string" || value === "") return void 0;
-				if (value === npub) return canonicalHex;
-				try {
-					const decoded = writer.npubDecode(value);
-					return typeof decoded === "string" && HEX64.test(decoded) ? decoded : void 0;
-				} catch {
-					return;
-				}
-			};
-			if (existing.some((entry) => keyOf(entry?.npub) === canonicalHex)) {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.ALREADY_PRESENT, url, 409);
-				return;
-			}
 			let written;
 			try {
 				written = writer.addContact({
 					stateDir,
-					npub,
-					controller,
+					npub: fields.npub,
+					controller: fields.controller,
 					name,
+					binding: fields.binding,
 					mode: "insert"
 				});
-			} catch {
-				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.WRITE_FAILED, url, 500);
+			} catch (cause) {
+				refuseWrite(res, cause, url);
 				return;
 			}
 			try {
-				appendFileSync(join(stateDir, MESSAGES_ADD_LEDGER), `${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/u, "Z")} add npub=${npub.slice(0, 12)}… name=${name.length} chars\n`, { mode: 384 });
+				appendFileSync(join(stateDir, MESSAGES_ADD_LEDGER), `${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/u, "Z")} add npub=${written.entry.npub.slice(0, 12)}… name=${name.length} chars\n`, { mode: 384 });
 			} catch {}
 			res.statusCode = 200;
 			res.setHeader("content-type", "application/json");
 			res.end(JSON.stringify({
 				status: "ok",
-				npub,
-				name,
-				state: "UNBOUND",
-				binding: null,
-				total: written.total ?? null
+				npub: written.entry.npub,
+				name: written.entry.name,
+				state: written.state,
+				binding: written.bindingStatus,
+				total: written.total
 			}));
 		}
 	};
@@ -2301,6 +2223,7 @@ function messagesRefusalStatus(reason) {
 		case "messages:confirm-writer-unusable": return 500;
 		case "messages:add-npub-invalid": return 400;
 		case "messages:add-controller-invalid": return 400;
+		case "messages:add-binding-invalid": return 400;
 		case "messages:add-name-invalid": return 400;
 		case "messages:add-body-unreadable": return 400;
 		case "messages:add-already-present": return 409;
@@ -3154,7 +3077,6 @@ function apply(ctx) {
 	const gate = () => Reflect.get(ctx, "connection");
 	const rootsOf = () => roots(ctx);
 	ctx.effect(() => register(identityRoute(gate, rootsOf)), "ui-messages: identity route");
-	prepareIdentity(rootsOf()).catch(() => {});
 	ctx.effect(() => register(contactsRoute(gate, rootsOf)), "ui-messages: contacts route");
 	ctx.effect(() => register(requestRoute(gate)), "ui-messages: contacts request route");
 	ctx.effect(() => register(threadRoute(gate, rootsOf)), "ui-messages: thread route");

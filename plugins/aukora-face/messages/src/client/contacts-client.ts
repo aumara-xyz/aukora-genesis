@@ -1,42 +1,3 @@
-/**
- * The browser half of the Messages read and send: same-origin requests to the host's routes.
- *
- * WHAT THIS FILE IS FOR, AND WHAT IT REFUSES TO DO. The screen on the other side of it has
- * to say which of four things is actually known about the person on the other end of an
- * npub, and it cannot work that out from the browser: the contacts file is on disk, the
- * binding is verified against a controller record the page must never be handed, and an
- * npub on its own proves nothing. So every answer here comes from the host, parsed by the
- * parsers the host itself uses (`messages-route.ts`, imported rather than re-spelled). A
- * shape this file accepts is exactly the shape the host half serves, and a shape it does
- * not accept is reported as unreadable rather than half-rendered.
- *
- * NO PATH IS SPELLED HERE. All three endpoints are the route module's own constants, and the
- * state directory is host-owned: the listing is fetched from the bare endpoint, because a
- * request that named a directory would be refused by name (see
- * `MESSAGES_HOST_OWNED_QUERY_FIELDS`) — a route that read whichever directory the caller
- * named would let the page choose which node's contacts and mail this process touches.
- *
- * A REFUSAL IS NEVER READ AS AN EMPTY RESULT. `readJson` follows `documents-loader.ts`: a
- * transport failure, a non-JSON content type, a body this screen cannot parse, a named
- * refusal, and an unnamed HTTP status are five different failures, and the surface prints
- * which one happened. `messages:reads-unavailable` — no relay answered the read — is one of
- * those names, not an empty conversation.
- *
- * A SEND IS ONLY AS DELIVERED AS ITS PARSED BODY SAYS. `parseMessagesSendBody` refuses any
- * body in which `ok` and `accepted` disagree, so this file cannot be handed a 200 that claims
- * success with no relay behind it; a body with an empty `accepted` list reaches the surface as
- * `not-accepted`.
- *
- * THE AGGREGATE IS NOT THE OUTCOME, SO BOTH ARE CARRIED. One NIP-17 send publishes a copy to
- * the recipient AND a copy to this node's own key, and either can be refused on its own: the
- * aggregate `ok` is then true while the recipient's copy never left, which is exactly the
- * sentence a bare `ok` cannot produce. So a sent answer carries the parsed `copies` array
- * beside the aggregate, and the surface reads the per-copy outcomes rather than the sum. The
- * array comes off the body {@link parseMessagesSendBody} already validated — this file adds no
- * validation of its own, so a body the host's parser would refuse still never reaches here.
- *
- * @module @aukora/face-messages/contacts-client
- */
 import {
   MESSAGES_CONFIRM_CONTACT_ENDPOINT,
   MESSAGES_CONTACTS_ENDPOINT,
@@ -170,7 +131,9 @@ async function readJson(
   try {
     value = await response.json()
   } catch (error) {
-    return { kind: 'failed', failure: { kind: 'malformed', detail: `the body is not JSON: ${messageOf(error)}` } }
+    const detail = `the body is not JSON: ${messageOf(error)}`
+    return { kind: 'failed', failure: response.status >= 200 && response.status < 300
+      ? { kind: 'malformed', detail } : { kind: 'http', status: response.status, detail } }
   }
   return { kind: 'ready', value: { status: response.status, value } }
 }
@@ -193,52 +156,22 @@ function refusalOf(status: number, value: unknown): ContactsFailure {
   }
 }
 
-/**
- * The listing path this screen requests.
- *
- * The route module's own constant, with nothing appended: the state directory is host-owned
- * and a request that named one is refused by name.
- *
- * @returns the endpoint to fetch the listing from.
- */
-/**
- * WHAT THE HOST SAID ABOUT ONE ATTEMPT TO ADD A CONTACT.
- *
- * `reason` IS A PLAIN STRING, not this file's closed refusal union, and that is deliberate: the codes come from
- * the add-contact route (`messages:add-npub-invalid`, `add-controller-invalid`, `add-name-invalid`,
- * `add-body-unreadable`, `add-already-present`, `add-contacts-unreadable`, `add-writer-absent`,
- * `add-write-failed`) and a client that re-declared them as its own union would have to be edited every time the
- * route learns a new one. The sheet shows whatever the host named.
- */
 export type AddContactRead =
   | { readonly kind: 'added'; readonly contact: AddContactRow }
   | { readonly kind: 'refused'; readonly reason: string; readonly detail: string }
-  | { readonly kind: 'failed'; readonly detail: string }
+  | { readonly kind: 'failed'; readonly reason: string; readonly detail: string }
 
-/** The row the route answers with on success. `state` is UNBOUND until a person confirms the key in person. */
 export interface AddContactRow {
   readonly npub: string
   readonly name: string
-  readonly state: string
+  readonly state: MessagesWireContactState
   readonly binding: unknown
   readonly path: string
   readonly total: number
 }
 
-/**
- * Add one contact. THE ONLY PLACE A CONTACT IS WRITTEN FROM THIS FACE.
- *
- * THE REQUEST AND RESPONSE SHAPE ARE THE ROUTE'S, taken from `add-contact-route.ts` itself rather than from a
- * memory of it: `POST /aukora-messages/add-contact` with `{ npub, controller, name }` answering
- * `{ status: 'ok', npub, name, state, binding, path, total }` or a refusal `{ ok: false, code }`. Keeping the
- * call in ONE function is what makes that a one-line change if the route moves.
- *
- * @param body - the three fields, already checked by `checkAddContact`.
- * @param fetchImpl - the fetch to use; defaults to the page's own, and is injected by the court.
- * @returns the added row, the route's named refusal, or a transport/malformed failure.
- */
 export async function postContact(
-  body: { readonly npub: string; readonly controller: string; readonly name: string },
+  body: { readonly npub: string; readonly controller?: string; readonly name: string; readonly binding?: object },
   fetchImpl: ContactsFetch = sameOriginFetch,
 ): Promise<AddContactRead> {
   const read = await readJson(
@@ -246,37 +179,44 @@ export async function postContact(
     { method: 'POST', body: JSON.stringify(body) },
     fetchImpl,
   )
-  // THE FAILURE UNION HAS NO COMMON `detail`: a refusal carries `reason` and `subject` instead, which is the
-  // shape the rest of this file uses. Reading `.detail` off it was a type error the build caught, and the
-  // refusal's own two fields are the more useful description anyway.
   if (read.kind === 'failed') {
     const failure = read.failure
+    if (failure.kind === 'refused') return { kind: 'refused', reason: failure.reason, detail: failure.subject }
     return {
       kind: 'failed',
-      detail: failure.kind === 'refused' ? `${failure.reason} (${failure.subject})` : failure.detail,
+      reason: failure.kind === 'transport' || failure.kind === 'http' ? 'messages:add-unreachable' : 'messages:add-response-unreadable',
+      detail: failure.detail,
     }
   }
   const { status, value } = read.value
+  const refusal = parseMessagesRefusalBody(value)
+  if (refusal !== undefined) return { kind: 'refused', reason: refusal.reason, detail: refusal.subject }
   const answer = value as Record<string, unknown> | null
-  if (answer === null || typeof answer !== 'object') {
-    return { kind: 'failed', detail: `the route answered ${String(status)} with something that is not a body` }
+  const failed = (): AddContactRead => ({
+    kind: 'failed',
+    reason: status >= 200 && status < 300 ? 'messages:add-response-unreadable' : 'messages:add-unreachable',
+    detail: `the route did not return an addition or a named refusal (status ${String(status)})`,
+  })
+  if (answer === null || typeof answer !== 'object' || Array.isArray(answer)) return failed()
+  // The shared parser's whitelist may lag new add-contact refusal names.
+  if (answer.status === 'refused' && typeof answer.reason === 'string' && typeof answer.subject === 'string'
+    && Object.keys(answer).length === 3) {
+    return { kind: 'refused', reason: answer.reason, detail: answer.subject }
   }
-  // A REFUSAL IS READ BEFORE A SUCCESS, because a refusal is what a non-200 is for and a body can carry both
-  // shapes' keys; `ok: false` is the route's own way of saying no.
   if (answer.ok === false || typeof answer.code === 'string') {
     const reason = typeof answer.code === 'string' ? answer.code : 'messages:add-refused'
-    const detail = typeof answer.detail === 'string' ? answer.detail : reason
-    return { kind: 'refused', reason, detail }
+    return { kind: 'refused', reason, detail: typeof answer.detail === 'string' ? answer.detail : reason }
   }
-  if (answer.status !== 'ok' || typeof answer.npub !== 'string' || typeof answer.name !== 'string') {
-    return { kind: 'failed', detail: `the route named neither an addition nor a refusal (status ${String(status)})` }
-  }
+  const state = answer.state
+  if (status < 200 || status >= 300 || answer.status !== 'ok' || typeof answer.npub !== 'string'
+    || typeof answer.name !== 'string' || !checkNpub(answer.npub).ok
+    || (state !== 'BOUND' && state !== 'TEST' && state !== 'UNBOUND' && state !== 'FOREIGN' && state !== 'VERIFIED')) return failed()
   return {
     kind: 'added',
     contact: {
       npub: answer.npub,
       name: answer.name,
-      state: typeof answer.state === 'string' ? answer.state : 'UNBOUND',
+      state,
       binding: answer.binding ?? null,
       path: typeof answer.path === 'string' ? answer.path : '',
       total: typeof answer.total === 'number' ? answer.total : 0,
@@ -488,6 +428,8 @@ export async function readIdentity(
   const read = await readJson('/aukora-messages/identity', { method: 'GET' }, fetchImpl)
   if (read.kind === 'failed') return read
   const { status, value } = read.value
+  const refusal = parseMessagesRefusalBody(value)
+  if (refusal !== undefined) return { kind: 'failed', failure: { kind: 'refused', reason: refusal.reason, subject: refusal.subject } }
   if (status !== 200) return { kind: 'failed', failure: refusalOf(status, value) }
   const body = value as { status?: unknown; npub?: unknown; subject?: unknown } | null
   const npub = checkNpub(body?.npub)

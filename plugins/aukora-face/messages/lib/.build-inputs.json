@@ -1,6 +1,6 @@
 {
   "face": "messages",
-  "srcDigest": "c6b2dd174d981024cfc58cf8cbe496ac2bf21c111a87746f624f66eaf6fb8f28",
+  "srcDigest": "f8ec8b714e3930b0ce025509cfd2a98ca9ea7ef55328fd8b69c39030c95d16ac",
   "files": [
     "package.json",
     "src/add-contact-route.ts",
@@ -12,13 +12,19 @@
     "src/client/contacts-client.ts",
     "src/client/index.ts",
     "src/client/locales.ts",
+    "src/client/qr-scanner.ts",
     "src/confirm-contact-route.ts",
     "src/contacts-store.ts",
     "src/css-modules.d.ts",
     "src/index.ts",
     "src/invariant.ts",
     "src/messages-route.ts",
+    "src/vendor/jsqr/LICENSE",
+    "src/vendor/jsqr/jsQR.d.ts",
+    "src/vendor/jsqr/jsQR.js",
+    "src/vendor/jsqr/package.json",
+    "src/vendor/jsqr/upstream-jsqr.json",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T00:38:41Z"
+  "builtAt": "2026-09-30T01:43:41Z"
 }

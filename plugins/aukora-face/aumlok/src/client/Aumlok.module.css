@@ -30,6 +30,126 @@
   box-sizing: border-box;
 }
 
+.identityCard {
+  width: min(100%, 680px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(24px, 4cqi, 40px);
+  padding: clamp(12px, 3cqi, 32px) 0;
+}
+
+.identityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 16px;
+}
+
+.identityHeader h2 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: clamp(32px, 5cqi, 48px);
+  font-weight: 620;
+  letter-spacing: -0.03em;
+}
+
+.identityQr {
+  display: grid;
+  place-items: center;
+  width: min(100%, 360px);
+  aspect-ratio: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--aumlok-anchor) 40%, transparent);
+}
+
+.identityQr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.identityQrPending {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-top-color: #888;
+  border-radius: 50%;
+}
+
+.identityValues {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.identityValue {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px 12px 20px;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-layer-2) 75%, transparent);
+}
+
+.identityValue code {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--dsw-font-family-mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--dsw-alias-label-secondary);
+}
+
+.identityActions {
+  display: flex;
+  gap: 16px;
+}
+
+.identityAction {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 1px solid var(--dsw-alias-border-l1);
+  border-radius: 14px;
+  background: var(--dsw-alias-bg-layer-2);
+  color: var(--aumlok-anchor);
+  cursor: pointer;
+}
+
+.identityAction svg {
+  width: 20px;
+  height: 20px;
+}
+
+.identityAction:hover:not(:disabled),
+.identityAction:focus-visible {
+  border-color: var(--aumlok-anchor);
+  outline: 2px solid color-mix(in srgb, var(--aumlok-anchor) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.identityAction:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.identityAction[data-result='check'] { color: var(--aumlok-root); }
+.identityAction[data-result='error'] { color: #cf695f; }
+
 .hero {
   display: flex;
   align-items: flex-start;

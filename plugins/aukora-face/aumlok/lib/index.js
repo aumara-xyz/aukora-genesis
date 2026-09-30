@@ -1,3 +1,89 @@
+//#region lib/types/identity.js
+const AUMLOK_IDENTITY_ENDPOINT = "/api/aukora/aumlok-identity";
+//#endregion
+//#region lib/types/identity-host.js
+var __rewriteRelativeImportExtension$1 = function(path, preserveJsx) {
+	if (typeof path === "string" && /^\.\.?\//.test(path)) return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
+		return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
+	});
+	return path;
+};
+const qrImages = /* @__PURE__ */ new Map();
+const qrScript = `
+ObjC.import('AppKit')
+ObjC.import('CoreImage')
+function run(argv) {
+  const filter = $.CIFilter.filterWithName('CIQRCodeGenerator')
+  filter.setValueForKey($(argv[0]).dataUsingEncoding($.NSUTF8StringEncoding), 'inputMessage')
+  filter.setValueForKey($('M'), 'inputCorrectionLevel')
+  const image = filter.outputImage
+  const context = $.CIContext.contextWithOptions($.NSDictionary.dictionary)
+  const bitmap = $.NSBitmapImageRep.alloc.initWithCGImage(context.createCGImageFromRect(image, image.extent))
+  return ObjC.unwrap(bitmap.representationUsingTypeProperties($.NSBitmapImageFileTypePNG, $({})).base64EncodedStringWithOptions(0))
+}`;
+async function contactQr(payload) {
+	const cached = qrImages.get(payload);
+	if (cached && Date.now() < cached.expires) return cached.image;
+	const image = (async () => {
+		const child = await import(__rewriteRelativeImportExtension$1(
+			/* @vite-ignore */
+			"node:child_process"
+		));
+		return await new Promise((resolve) => {
+			child.execFile("/usr/bin/osascript", [
+				"-l",
+				"JavaScript",
+				"-e",
+				qrScript,
+				payload
+			], {
+				timeout: 5e3,
+				maxBuffer: 256e3
+			}, (error, stdout) => {
+				const data = stdout?.trim();
+				resolve(!error && data?.startsWith("iVBORw0KGgo") && /^[A-Za-z0-9+/]+={0,2}$/u.test(data) ? `data:image/png;base64,${data}` : null);
+			});
+		});
+	})().catch(() => null);
+	const entry = {
+		image,
+		expires: Infinity
+	};
+	qrImages.set(payload, entry);
+	if (qrImages.size > 4) qrImages.delete(qrImages.keys().next().value);
+	const result = await image;
+	if (!result) entry.expires = Date.now() + 3e4;
+	return result;
+}
+async function readIdentity(controllerDir) {
+	const { env } = await import(__rewriteRelativeImportExtension$1(
+		/* @vite-ignore */
+		"node:process"
+	));
+	const roots = { controllerDir };
+	if (env["DSH_HOME"]?.trim()) roots.stateDir = env["DSH_HOME"];
+	const contactModule = env["AUKORA_NOSTR_CONTACT_MODULE"]?.trim();
+	const bootstrap = await import(__rewriteRelativeImportExtension$1(
+		/* @vite-ignore */
+		contactModule ? `${contactModule.replace(/contact\.mjs$/u, "")}bootstrap.mjs` : new URL("../../../aukora-nostr/lib/bootstrap.mjs", import.meta.url).href
+	));
+	const identity = await bootstrap.readMessagesIdentity(roots);
+	if (identity.subject && !identity.binding) bootstrap.ensureMessagesIdentity(roots).catch(() => {});
+	const contact = identity.binding && identity.peerControllerKey ? JSON.stringify({
+		type: "aukora-contact",
+		version: 1,
+		npub: identity.npub,
+		peerControllerKey: identity.peerControllerKey,
+		binding: identity.binding,
+		label: identity.label
+	}) : `nostr:${identity.npub}`;
+	return {
+		...identity,
+		contact,
+		qrDataUrl: await contactQr(contact)
+	};
+}
+//#endregion
 //#region lib/types/client/record-projection.js
 /**
 * The fields `recordProjection` in `plugins/aukora-aumlok/lib/record-v3.mjs` produces.
@@ -655,6 +741,41 @@ function route(gate, read) {
 		}
 	};
 }
+function identityRoute(gate, directory) {
+	return {
+		kind: "exact",
+		path: AUMLOK_IDENTITY_ENDPOINT,
+		handler: async (req, res) => {
+			const fence = fenceRejectionOf(gate(), req);
+			if (fence.rejection !== void 0) {
+				end(res, fence.rejection);
+				return;
+			}
+			if (req.method !== "GET") {
+				res.setHeader("allow", "GET");
+				end(res, 405);
+				return;
+			}
+			try {
+				const identity = await readIdentity(directory());
+				res.writeHead(200, {
+					"cache-control": "no-store",
+					"content-type": "application/json; charset=utf-8",
+					"x-content-type-options": "nosniff"
+				});
+				res.end(JSON.stringify(identity));
+			} catch (error) {
+				const code = error?.code;
+				res.writeHead(503, {
+					"cache-control": "no-store",
+					"content-type": "application/json; charset=utf-8",
+					"x-content-type-options": "nosniff"
+				});
+				res.end(JSON.stringify({ code: typeof code === "string" && /^[a-z0-9:_-]{1,96}$/u.test(code) ? code : "aumlok:identity-unavailable" }));
+			}
+		}
+	};
+}
 /**
 * Publish the controller's public control on one loopback, same-origin GET route.
 *
@@ -675,6 +796,10 @@ function apply(ctx, config) {
 	};
 	const gate = () => Reflect.get(ctx, "connection");
 	ctx.effect(() => ctx.webServer.register(route(gate, () => readControlWithFallback(controller(), directory))), "ui-aumlok: control status route");
+	ctx.effect(() => ctx.webServer.register(identityRoute(gate, () => {
+		const service = controller();
+		return service === void 0 ? directory : readConfiguredDirectory(service);
+	})), "ui-aumlok: public identity route");
 }
 /**
 * This row's `directory`, when the composition names one.

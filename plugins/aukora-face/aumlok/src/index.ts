@@ -18,6 +18,8 @@
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
+import { AUMLOK_IDENTITY_ENDPOINT } from './identity.ts'
+import { readIdentity } from './identity-host.ts'
 import {
   AUMLOK_CONTROL_STATUS_ENDPOINT,
   aumlokNotConnected,
@@ -61,6 +63,7 @@ const CONTROLLER_ABSENT = 'aumlok-local:unavailable'
 /** The shape this route needs from `ctx.aumlokControl`; the adapter has more. */
 interface AumlokControlService {
   refresh(): unknown
+  readonly directory?: string
 }
 
 /**
@@ -420,6 +423,34 @@ function route(
   }
 }
 
+function identityRoute(gate: () => RouteGate, directory: () => string | undefined): WebRoute {
+  return {
+    kind: 'exact',
+    path: AUMLOK_IDENTITY_ENDPOINT,
+    handler: async (req: StatusRequest, res: StatusResponse) => {
+      const fence = fenceRejectionOf(gate(), req)
+      if (fence.rejection !== undefined) { end(res, fence.rejection); return }
+      if (req.method !== 'GET') {
+        res.setHeader('allow', 'GET')
+        end(res, 405)
+        return
+      }
+      try {
+        const identity = await readIdentity(directory())
+        res.writeHead(200, { 'cache-control': 'no-store', 'content-type': 'application/json; charset=utf-8',
+          'x-content-type-options': 'nosniff' })
+        res.end(JSON.stringify(identity))
+      } catch (error) {
+        const code = (error as { code?: unknown } | null)?.code
+        res.writeHead(503, { 'cache-control': 'no-store', 'content-type': 'application/json; charset=utf-8',
+          'x-content-type-options': 'nosniff' })
+        res.end(JSON.stringify({ code: typeof code === 'string' && /^[a-z0-9:_-]{1,96}$/u.test(code)
+          ? code : 'aumlok:identity-unavailable' }))
+      }
+    },
+  }
+}
+
 /**
  * Publish the controller's public control on one loopback, same-origin GET route.
  *
@@ -450,6 +481,10 @@ export function apply(ctx: Context, config?: unknown): void {
     () => ctx.webServer.register(route(gate, () => readControlWithFallback(controller(), directory))),
     'ui-aumlok: control status route',
   )
+  ctx.effect(() => ctx.webServer.register(identityRoute(gate, () => {
+    const service = controller()
+    return service === undefined ? directory : readConfiguredDirectory(service)
+  })), 'ui-aumlok: public identity route')
 }
 
 /**

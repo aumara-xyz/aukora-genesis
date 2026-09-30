@@ -34,21 +34,7 @@ export function ArchiveIcon({ size = 16, className }: MessagesIconProps) {
   )
 }
 
-/**
- * Shield: the ONE trust mark a list row may carry.
- *
- * The design allows a row four things — avatar, name, preview, time — and this is the fourth: a single
- * small mark saying whether a binding was checked, with the whole story (which state, and the digits to read
- * aloud) one tap away behind it. A row that says trust in words is a row that says it in too many words.
- *
- * THE INNER MARK IS THE SECOND SIGNAL BESIDE THE COLOUR, and it carries the one distinction a row has to
- * make without words: a check means a binding verified, and a slash means it did not — TEST, UNBOUND and
- * FOREIGN are three different reasons for the same "not established", and the row does not pretend to tell
- * them apart by shape. The exact state is the mark's accessible name here and the sheet's own sentence one
- * tap away, so no reader has to separate four colours to learn which one this is.
- * @param props - glyph size, class, and whether a binding verified for this contact.
- * @returns the shield the row's trust mark is built from.
- */
+/** The check is reserved for a host-confirmed identity. */
 export function ShieldIcon({ size = 16, className, verified = true }: MessagesIconProps & { readonly verified?: boolean }) {
   return (
     <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -248,6 +234,34 @@ export function RefreshIcon({ size = 16, className }: MessagesIconProps) {
     <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path d="M13.2 8a5.2 5.2 0 1 1-1.6-3.7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
       <path d="M13.4 2.4v2.9h-2.9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function CameraIcon({ size = 16, className }: MessagesIconProps) {
+  return (
+    <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2 4.5h2.5L6 2.5h4l1.5 2H14v9H2Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+      <circle cx="8" cy="8.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  )
+}
+
+export function ImageIcon({ size = 16, className }: MessagesIconProps) {
+  return (
+    <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="5.5" cy="5.5" r="1" fill="currentColor" />
+      <path d="m2 12 4-4 2.5 2.5L11 7l3 4" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function KeyIcon({ size = 16, className }: MessagesIconProps) {
+  return (
+    <svg width={size} height={size} className={className} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="5" cy="6" r="3" stroke="currentColor" strokeWidth="1.4" />
+      <path d="m7.5 7.5 6 6m-3-3 2-2m0 4 2-2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

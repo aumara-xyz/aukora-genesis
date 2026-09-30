@@ -1,40 +1,7 @@
-/**
- * Person-to-person Messages as a copy of the thread lane: the same brand row, filter
- * cluster, card rows, open-conversation view, and composer — blue accent instead of mint.
- *
- * ONE SOURCE, NAMED ON THE SURFACE. The rows come from this node's contacts, read from the host
- * route through `contacts-client.ts`, and each carries the one thing that is actually known about
- * who is on the other end: VERIFIED, TEST, UNBOUND or FOREIGN. Nothing on this surface is
- * invented. The two ways a read can come back empty are two different facts and each is said in
- * its own words: a listing with nobody in it says there are no contacts yet and what to do about
- * it, and a read that failed says so and names the reason the host returned. The status line and
- * the source line say which read is on screen and which directory was read, so a reader never has
- * to guess where a row came from — and no reader is ever shown a conversation nobody had.
- *
- * A SAS IS SHOWN ONLY WHERE ONE EXISTS. `contact.sas` is non-null only when a binding
- * actually verified — TEST and VERIFIED carry one, UNBOUND and FOREIGN do not — and where it
- * is null the row shows a sentence saying so. It never shows a placeholder, a dash, or
- * anything else that could be mistaken for digits to compare: the whole point of the four
- * states is that nobody reads a string aloud for an identity that was never proven.
- *
- * A SEND IS ONLY SHOWN AS SENT WHEN A RELAY ACCEPTED IT. The send route — the endpoint
- * constants live in `../messages-route.ts` and are never spelled here — answering 200 is not
- * delivery: the response body names the relays that accepted the message, `ok` is derived
- * from that list, and a body that names none is rendered as not delivered, in the same place
- * a successful send would have been confirmed.
- *
- * AND THE AGGREGATE IS NOT THE OUTCOME. One NIP-17 send publishes a copy to the recipient and
- * a copy to this node's own key, and either can be refused on its own, so `ok: true` can mean
- * "your friend has it" OR "only your own copy was kept" — two different facts a flat list
- * collapses into one word. The receipt therefore reads the send body's per-copy outcomes and
- * says which copy the relays kept, naming a refusal wherever one happened. A refused copy is
- * NEVER rendered as delivered: if either copy was refused, the sentence says so even though the
- * aggregate says the send succeeded, because the aggregate is what the route reports and the
- * per-copy sentence is what the person is owed.
- */
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import clsx from 'clsx'
-import { checkAddContact } from './add-contact.ts'
+import { applyContactInput, checkAddContact, parseContactInput, type ContactDraft } from './add-contact.ts'
+import { decodeQrFrame, decodeQrImage } from './qr-scanner.ts'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { MessagesKey } from './locales.ts'
 import {
@@ -44,7 +11,7 @@ import {
 } from './contacts-client.ts'
 import type { MessagesThreadBody, MessagesWireContactState } from '../messages-route.ts'
 import {
-  ArchiveIcon, BackIcon, ChatMarkIcon, CloseIcon, ForeignStateIcon, InfoIcon, PinIcon, PlusIcon, RefreshIcon,
+  ArchiveIcon, BackIcon, CameraIcon, ChatMarkIcon, CloseIcon, ForeignStateIcon, ImageIcon, InfoIcon, KeyIcon, PinIcon, PlusIcon, RefreshIcon,
   SasAbsentIcon, SasIcon, SearchIcon, SendDeliveredIcon, SendIcon, SendPartialIcon, SendPendingIcon,
   SendRefusedIcon, ShieldIcon, TestStateIcon, UnboundStateIcon, UnreadIcon, VerifiedStateIcon,
 } from './MessagesIcons.tsx'
@@ -95,11 +62,6 @@ const CONTACT_STATE: Record<MessagesWireContactState, {
   title: MessagesKey
   sasAbsent: MessagesKey
 }> = {
-  // BOUND AND VERIFIED ARE TWO FACTS AND THE WIRE ALREADY CARRIES BOTH (`messages-route.ts:186`). BOUND is the
-  // key that checks out with nobody having confirmed it in person; VERIFIED is a SIGNED confirmation, which is
-  // something a second person does and which the owner signer's unbuilt `confirm-nostr-sas` window is how a
-  // person would make. Neither copy may borrow the other's word: the first version of this change mapped
-  // VERIFIED onto BOUND's sentence, which erased the distinction Beta's wire keeps.
   VERIFIED: {
     badge: 'state.VERIFIED.word',
     detail: 'state.VERIFIED.detail',
@@ -155,6 +117,7 @@ function initialOf(name: string): string {
 function stateIcon(state: MessagesWireContactState) {
   switch (state) {
     case 'VERIFIED': return <VerifiedStateIcon />
+    case 'BOUND': return <ShieldIcon verified={false} />
     case 'TEST': return <TestStateIcon />
     case 'UNBOUND': return <UnboundStateIcon />
     case 'FOREIGN': return <ForeignStateIcon />
@@ -273,33 +236,39 @@ interface SheetRow {
   readonly ref?: string
 }
 
-/**
- * The sheet both of the surface's one-tap layers sit in: a panel over the lane, a title, one way out.
- *
- * It is positioned inside the surface rather than the viewport, because the surface is what has a
- * width: a fixed panel would cover the shell and measure the window instead of the lane.
- *
- * @param props - the title, the close label, a test hook, the close action, and the body.
- * @returns the sheet.
- */
-function Sheet({ title, closeLabel, hook, onClose, children }: {
+function Sheet({ title, hideTitle = false, closeLabel, hook, onClose, children }: {
   readonly title: string
+  readonly hideTitle?: boolean
   readonly closeLabel: string
   readonly hook: string
   readonly onClose: () => void
   readonly children: ReactNode
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+  useEffect(() => { dialogRef.current?.focus() }, [hook])
+  useEffect(() => {
+    const dismiss = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape' || event.defaultPrevented || isEditableTarget(event.target)) return
+      event.preventDefault()
+      event.stopPropagation()
+      onClose()
+    }
+    document.addEventListener('keydown', dismiss, true)
+    return () => { document.removeEventListener('keydown', dismiss, true) }
+  }, [onClose])
   return (
     <div className={css.sheetBackdrop} data-messages-sheet={hook} onClick={onClose}>
       <div
         className={css.sheet}
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(event) => { event.stopPropagation() }}
       >
         <header className={css.sheetHeader}>
-          <h3 className={css.sheetTitle} data-fit="name">{title}</h3>
+          <h3 className={css.sheetTitle} data-fit="name">{hideTitle ? <span className={css.visuallyHidden}>{title}</span> : title}</h3>
           <button type="button" className={css.iconButton} aria-label={closeLabel} onClick={onClose}>
             <CloseIcon />
           </button>
@@ -388,18 +357,6 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
   )
 }
 
-/**
- * The details sheet: everything true about this conversation or this read that a row must not carry.
- *
- * Peter's rule, applied literally: nothing true gets deleted, it moves one tap away. The key was on
- * every row as a slice; here it is whole. The path the listing was read from was a monospace line
- * under the list; here it is a labelled value. "Relays that answered" was a paragraph in the middle
- * of a conversation; here it is a row. And the receipt sentences — which a mark cannot carry — are
- * rows beside the same outcome the mark shows.
- *
- * @param props - the rows, the copy, and the close action.
- * @returns the details sheet.
- */
 function DetailsSheet({ rows, t, onClose }: {
   readonly rows: readonly SheetRow[]
   readonly t: PropsLocale<'messages'>['t']
@@ -407,8 +364,8 @@ function DetailsSheet({ rows, t, onClose }: {
 }) {
   return (
     <Sheet title={t('details.title')} closeLabel={t('sheet.close')} hook="details" onClose={onClose}>
-      {rows.map(row => (
-        <div className={css.sheetRow} key={row.label} data-details-row={row.ref ?? undefined}>
+      {rows.map((row, index) => (
+        <div className={css.sheetRow} key={row.ref ?? index} data-details-row={row.ref ?? undefined}>
           <span className={css.sheetLabel}>{row.label}</span>
           {row.value !== null && (
             row.mono === true
@@ -421,110 +378,247 @@ function DetailsSheet({ rows, t, onClose }: {
   )
 }
 
-/**
- * THE ADD-CONTACT SHEET: THE ONLY WAY A CONVERSATION WITHOUT A COUNTERPARTY CAN BE STARTED, WHICH IS TO SAY
- * IT CANNOT BE.
- *
- * Three fields, and every one of them is checked before the host is asked anything: the npub is DECODED as
- * bech32 (`checkNpub`), the controller key must be 64 lower-case hex, and the name must exist. A refusal is
- * shown INLINE, WITH THE NAME THE HOST OR THE CHECKER GAVE IT — never a toast, never a silent close, because a
- * person who typed a key is owed the reason it was not written.
- *
- * ON ALREADY-PRESENT THERE IS NO SECOND PRESS. The route refuses to overwrite an existing contact, so a submit
- * button left on screen could only fail again; where the refusal is that one, the button is not rendered at all.
- *
- * ON SUCCESS THE ROW COMES FROM THE HOST, NOT FROM HERE: `onAdded` re-reads the contacts, so the row that
- * appears is the host's own — including its state, which is UNBOUND until somebody confirms that key in person.
- *
- * @param props - the copy, the close action, and the re-read to run once a contact exists.
- * @returns the add-contact sheet.
- */
+function WarningSheet({ message, t, onClose }: {
+  readonly message: MessagesKey
+  readonly t: PropsLocale<'messages'>['t']
+  readonly onClose: () => void
+}) {
+  return (
+    <Sheet title={t('warning.open')} hideTitle closeLabel={t('sheet.close')} hook="warning" onClose={onClose}>
+      <p className={css.sheetSentence} role="alert">{t(message)}</p>
+    </Sheet>
+  )
+}
+
 function AddContactSheet({ t, onClose, onAdded }: {
   readonly t: PropsLocale<'messages'>['t']
   readonly onClose: () => void
   readonly onAdded: () => void
 }) {
-  const [draft, setDraft] = useState({ name: '', npub: '', controller: '' })
-  const [refusal, setRefusal] = useState<{ readonly reason: string; readonly detail: string } | null>(null)
+  const [draft, setDraft] = useState<ContactDraft>({ name: '', npub: '', controller: '' })
+  const [refusal, setRefusal] = useState<string | null>(null)
+  const [warningOpen, setWarningOpen] = useState(false)
+  const [controllerOpen, setControllerOpen] = useState(false)
   const [sending, setSending] = useState(false)
-  // THE ROUTE REFUSES TO OVERWRITE, SO THE SHEET DOES NOT OFFER TO. One code, and no second press.
-  const noRetry = refusal?.reason === 'messages:add-already-present'
-  const ready = draft.name.trim() !== '' && draft.npub.trim() !== ''
-  const submit = (): void => {
-    const checked = checkAddContact(draft)
-    if (checked.ok !== true) {
-      setRefusal({ reason: checked.reason, detail: checked.detail })
-      return
+  const [camera, setCamera] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const frameRef = useRef<number | null>(null)
+  const cameraGeneration = useRef(0)
+  const fileGeneration = useRef(0)
+  const editGeneration = useRef(0)
+  const alive = useRef(true)
+  const submitting = useRef(false)
+
+  const releaseCamera = useCallback((): void => {
+    cameraGeneration.current += 1
+    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current)
+    frameRef.current = null
+    streamRef.current?.getTracks().forEach(track => { track.stop() })
+    streamRef.current = null
+    if (videoRef.current !== null) videoRef.current.srcObject = null
+  }, [])
+  const stopCamera = useCallback((): void => {
+    releaseCamera()
+    setCamera(false)
+  }, [releaseCamera])
+
+  useEffect(() => {
+    alive.current = true
+    return () => {
+      alive.current = false
+      fileGeneration.current += 1
+      releaseCamera()
     }
-    setSending(true)
-    void postContact(checked.body).then((read) => {
-      setSending(false)
-      if (read.kind === 'added') {
-        setRefusal(null)
-        onAdded()
-        onClose()
+  }, [releaseCamera])
+
+  const clearRefusal = (): void => {
+    setRefusal(null)
+    setWarningOpen(false)
+  }
+  const refuse = useCallback((reason: string): void => {
+    setRefusal(reason)
+    if (reason.includes('controller')) setControllerOpen(true)
+  }, [])
+  const importInput = useCallback((raw: string): void => {
+    editGeneration.current += 1
+    setControllerOpen(false)
+    const parsed = parseContactInput(raw)
+    setWarningOpen(false)
+    if (parsed.ok) {
+      setDraft(current => applyContactInput(current, raw))
+      setRefusal(null)
+      if (parsed.binding != null && !parsed.controller) setControllerOpen(true)
+    } else refuse(parsed.reason)
+  }, [refuse])
+
+  useEffect(() => {
+    if (!camera) return undefined
+    const mine = ++cameraGeneration.current
+    const current = (): boolean => alive.current && cameraGeneration.current === mine
+    const start = async (): Promise<void> => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        refuse('camera:unavailable')
+        stopCamera()
         return
       }
-      setRefusal(read.kind === 'refused'
-        ? { reason: read.reason, detail: read.detail }
-        : { reason: 'messages:add-unreachable', detail: read.detail })
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
+        if (!current()) {
+          stream.getTracks().forEach(track => { track.stop() })
+          return
+        }
+        streamRef.current = stream
+        const video = videoRef.current
+        if (video === null) { stopCamera(); return }
+        video.srcObject = stream
+        await video.play()
+        if (!current()) return
+        const canvas = document.createElement('canvas')
+        const frame = async (): Promise<void> => {
+          if (!current()) return
+          const edit = editGeneration.current
+          try {
+            const raw = await decodeQrFrame(video, canvas)
+            if (!current()) return
+            if (raw !== null && edit === editGeneration.current) {
+              stopCamera()
+              importInput(raw)
+              return
+            }
+          } catch (error) {
+            if (!current()) return
+            stopCamera()
+            refuse(error instanceof Error ? error.message : 'qr:unavailable')
+            return
+          }
+          if (current()) frameRef.current = requestAnimationFrame(() => { void frame() })
+        }
+        frameRef.current = requestAnimationFrame(() => { void frame() })
+      } catch (error) {
+        if (!current()) return
+        const name = error instanceof Error ? error.name : ''
+        stopCamera()
+        refuse(name === 'NotAllowedError' || name === 'SecurityError'
+          ? 'camera:permission'
+          : name === 'NotFoundError' || name === 'OverconstrainedError'
+            ? 'camera:unavailable' : 'camera:start-failed')
+      }
+    }
+    void start()
+    return releaseCamera
+  }, [camera, importInput, refuse, releaseCamera, stopCamera])
+
+  const pickImage = async (file: File): Promise<void> => {
+    stopCamera()
+    const mine = ++fileGeneration.current
+    const edit = editGeneration.current
+    const current = (): boolean => alive.current && mine === fileGeneration.current && edit === editGeneration.current
+    clearRefusal()
+    try {
+      const raw = await decodeQrImage(file)
+      if (current()) importInput(raw)
+    } catch (error) {
+      if (current()) refuse(error instanceof Error ? error.message : 'qr:image-unreadable')
+    }
+  }
+
+  const submit = (): void => {
+    if (submitting.current) return
+    const checked = checkAddContact(draft)
+    if (!checked.ok) { refuse(checked.reason); return }
+    stopCamera()
+    fileGeneration.current += 1
+    submitting.current = true
+    setSending(true)
+    clearRefusal()
+    void postContact(checked.body).then((read) => {
+      if (!alive.current) return
+      if (read.kind === 'added') {
+        onAdded()
+        onClose()
+      } else refuse(read.reason)
+    }).finally(() => {
+      submitting.current = false
+      if (alive.current) setSending(false)
     })
+  }
+  if (warningOpen && refusal !== null) {
+    return <WarningSheet message={contactWarningKey(refusal)} t={t} onClose={() => { setWarningOpen(false) }} />
   }
   return (
     <Sheet title={t('add.title')} closeLabel={t('sheet.close')} hook="add" onClose={onClose}>
       <div className={css.addForm}>
         <label className={css.addField}>
-          <input
-            className={css.addInput}
-            value={draft.name}
-            aria-label={t('add.name')}
-            placeholder={t('add.name')}
-            data-add-field="name"
-            onChange={(event) => { setDraft({ ...draft, name: event.target.value }) }}
-          />
+          <input className={css.addInput} value={draft.name} disabled={sending}
+            aria-label={t('add.name')} placeholder={t('add.name')} data-add-field="name"
+            onChange={(event) => {
+              const name = event.target.value
+              editGeneration.current += 1
+              setDraft(current => ({ ...current, name, nameEdited: true }))
+              clearRefusal()
+            }} />
         </label>
         <label className={css.addField}>
-          <input
-            className={css.addInput}
-            value={draft.npub}
-            aria-label={t('add.npub')}
-            placeholder={t('add.npub')}
-            data-add-field="npub"
-            spellCheck={false}
-            autoComplete="off"
-            onChange={(event) => { setDraft({ ...draft, npub: event.target.value }) }}
-          />
+          <input className={css.addInput} value={draft.npub} disabled={sending}
+            aria-label={t('add.npub')} placeholder={t('add.npub')} data-add-field="npub"
+            spellCheck={false} autoComplete="off"
+            onChange={(event) => {
+              const raw = event.target.value
+              editGeneration.current += 1
+              setControllerOpen(false)
+              setDraft(current => applyContactInput(current, raw))
+              clearRefusal()
+              const parsed = parseContactInput(raw)
+              if (parsed.ok && parsed.binding != null && !parsed.controller) setControllerOpen(true)
+              if (!parsed.ok && raw.trim().startsWith('{')) refuse(parsed.reason)
+            }} />
         </label>
-        <label className={css.addField}>
-          <input
-            className={css.addInput}
-            value={draft.controller}
-            aria-label={t('add.controller')}
-            placeholder={t('add.controller')}
-            data-add-field="controller"
-            spellCheck={false}
-            autoComplete="off"
-            onChange={(event) => { setDraft({ ...draft, controller: event.target.value }) }}
-          />
-        </label>
-        {noRetry !== true && (
-          <button
-            type="button"
-            className={css.addSubmit}
-            data-add-submit="ready"
-            disabled={sending || ready !== true}
-            onClick={submit}
-          >
-            {t('add.submit')}
-          </button>
+        <div className={css.addTools}>
+          <button type="button" className={css.iconButton} disabled={sending}
+            aria-label={t(camera ? 'add.camera.stop' : 'add.camera')} aria-pressed={camera}
+            onClick={() => {
+              fileGeneration.current += 1
+              clearRefusal()
+              if (camera) stopCamera()
+              else setCamera(true)
+            }}><CameraIcon /></button>
+          <button type="button" className={css.iconButton} disabled={sending}
+            aria-label={t('add.image')} onClick={() => { fileRef.current?.click() }}><ImageIcon /></button>
+          <button type="button" className={css.iconButton} disabled={sending}
+            aria-label={t('add.controller')} aria-pressed={controllerOpen}
+            onClick={() => { setControllerOpen(open => !open) }}><KeyIcon /></button>
+          <input ref={fileRef} type="file" accept="image/*" hidden disabled={sending}
+            onChange={(event) => {
+              const file = event.target.files?.[0]
+              event.target.value = ''
+              if (file !== undefined) void pickImage(file)
+            }} />
+          {refusal !== null && (
+            <button type="button" className={clsx(css.iconButton, css.addRefusal)} data-add-refusal={refusal}
+              aria-label={t(contactWarningKey(refusal))} title={t(contactWarningKey(refusal))}
+              onClick={() => { stopCamera(); setWarningOpen(true) }}><ForeignStateIcon /></button>
+          )}
+        </div>
+        {camera && <video ref={videoRef} className={css.addVideo} muted playsInline aria-label={t('add.camera')} />}
+        {(controllerOpen || (draft.binding != null && !draft.controller)) && (
+          <label className={css.addField}>
+            <input className={css.addInput} value={draft.controller} disabled={sending}
+              aria-label={t('add.controller')} placeholder={t('add.controller')} data-add-field="controller"
+              spellCheck={false} autoComplete="off"
+              onChange={(event) => {
+                const controller = event.target.value
+                editGeneration.current += 1
+                setControllerOpen(true)
+                setDraft(current => ({ ...current, controller }))
+                clearRefusal()
+              }} />
+          </label>
         )}
+        <button type="button" className={css.addSubmit} data-add-submit="ready"
+          disabled={sending || !draft.name.trim() || !draft.npub.trim()} onClick={submit}>{t('add.submit')}</button>
       </div>
-      {refusal !== null && (
-        <span className={css.addRefusal} data-add-refusal={refusal.reason} role="alert"
-          aria-label={refusal.detail} title={refusal.detail}>
-          <ForeignStateIcon />
-        </span>
-      )}
     </Sheet>
   )
 }
@@ -914,11 +1008,6 @@ function mergeContacts(current: readonly LaneEntry[], contacts: readonly WireCon
   })
 }
 
-/**
- * A one-line, human-readable account of a read failure. Diagnostic, never localized copy.
- * @param failure - the failure the client layer reported.
- * @returns the reason as text.
- */
 function failureText(failure: ContactsFailure): string {
   switch (failure.kind) {
     case 'transport': return `no answer from the host route: ${failure.detail}`
@@ -926,6 +1015,61 @@ function failureText(failure: ContactsFailure): string {
     case 'refused': return `${failure.reason} (${failure.subject})`
     case 'malformed': return `an answer this screen cannot read: ${failure.detail}`
   }
+}
+
+const NAMED_WARNINGS: Record<string, MessagesKey> = {
+  'messages:aumlok-not-linked': 'warning.aumlok',
+  'messages:no-controller-record': 'warning.aumlok',
+  'messages:key-missing': 'warning.identity',
+  'messages:key-unreadable': 'warning.identity',
+  'messages:contact-peer-key-malformed': 'warning.peer-key',
+  'messages:relays-unreachable': 'warning.relays',
+  'messages:reads-unavailable': 'warning.thread',
+  'messages:thread-timeout': 'warning.thread-timeout',
+  'messages:sender-unproven': 'warning.sender',
+  'messages:nobody-accepted': 'warning.send-refused',
+  'messages:send-timeout': 'warning.send-timeout',
+  'messages:text-empty': 'warning.text-empty',
+  'messages:text-too-long': 'warning.text-long',
+  'messages:no-such-route': 'warning.local',
+  'messages:malformed-request': 'warning.request',
+  'messages:request-body-unreadable': 'warning.request',
+  'messages:state-directory-named': 'warning.request',
+}
+
+function readWarningKey(failure: ContactsFailure, context: 'contacts' | 'identity' | 'thread'): MessagesKey {
+  if (failure.kind === 'transport' || failure.kind === 'http') return 'warning.local'
+  const named = failure.kind === 'refused' ? NAMED_WARNINGS[failure.reason] : undefined
+  if (named !== undefined) return named
+  return context === 'contacts' ? 'warning.contacts' : context === 'identity' ? 'warning.identity' : 'warning.thread'
+}
+
+const CONTACT_WARNINGS: Record<string, MessagesKey> = {
+  'messages:add-npub-invalid': 'warning.add-key',
+  'messages:add-name-invalid': 'warning.add-name',
+  'messages:add-controller-invalid': 'warning.add-controller',
+  'messages:add-body-unreadable': 'warning.add-contact',
+  'messages:add-already-present': 'warning.add-duplicate',
+  'messages:add-contacts-unreadable': 'warning.contacts',
+  'messages:add-writer-absent': 'warning.add-writer',
+  'messages:add-write-failed': 'warning.add-write',
+  'messages:add-unreachable': 'warning.local',
+  'messages:add-response-unreadable': 'warning.add-response',
+  'qr:image-unreadable': 'warning.qr-image',
+  'qr:not-found': 'warning.qr-missing',
+  'qr:unavailable': 'warning.qr-unavailable',
+  'camera:permission': 'warning.camera-permission',
+  'camera:unavailable': 'warning.camera-unavailable',
+  'camera:start-failed': 'warning.camera-start',
+}
+
+function contactWarningKey(reason: string): MessagesKey {
+  const named = CONTACT_WARNINGS[reason] ?? NAMED_WARNINGS[reason]
+  if (named !== undefined) return named
+  if (reason.includes('controller')) return 'warning.add-controller'
+  if (reason.startsWith('messages:add-binding')) return 'warning.add-binding'
+  if (reason.startsWith('messages:add-qr')) return 'warning.add-qr'
+  return 'warning.add-contact'
 }
 
 /** Props assembled for the always-mounted Messages center surface. */
@@ -946,6 +1090,8 @@ export type MessagesSurfaceProps =
  */
 export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatus = 'not-connected' }: MessagesSurfaceProps) {
   const active = activeSurface === 'messages'
+  const activeRef = useRef(active)
+  activeRef.current = active
   const [contactsView, setContactsView] = useState<ContactsView>({ kind: 'idle' })
   const [entries, setEntries] = useState<LaneEntry[]>([])
   const [filters, setFilters] = useState<ListFilters>({ pinned: false, unread: false, archived: false })
@@ -959,13 +1105,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
   }
   const [thread, setThread] = useState<ThreadView>({ kind: 'idle' })
   const [receipts, setReceipts] = useState<Record<string, SendReceipt>>({})
-  /**
-   * The one layer over the lane: the verify sheet a chip opens, or the details sheet an info button
-   * opens. One state rather than two booleans, so "both open at once" is not a shape this can be in.
-   * `entry` is the conversation the layer is about, and null for the lane's own read — the list's
-   * details are about a read rather than about a person.
-   */
-  const [sheet, setSheet] = useState<{ readonly kind: 'verify' | 'details' | 'add'; readonly entry: LaneEntry | null } | null>(null)
+  const [sheet, setSheet] = useState<{ readonly kind: 'verify' | 'details' | 'add' | 'warning'; readonly entry: LaneEntry | null } | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const composerRef = useRef<HTMLTextAreaElement>(null)
   const messagesRef = useRef<HTMLDivElement>(null)
@@ -976,16 +1116,17 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
   const sending = useRef(new Set<string>())
   const currentOpen = useRef<string | null>(null)
   currentOpen.current = active ? openId : null
-  const [copyState, setCopyState] = useState<'idle' | 'pending' | 'copied' | 'failed'>('pending')
+  const [copyState, setCopyState] = useState<'idle' | 'pending' | 'copied'>('idle')
+  const [clipboardFailure, setClipboardFailure] = useState(false)
+  const [identityFailure, setIdentityFailure] = useState<ContactsFailure | null>(null)
+  const identityGeneration = useRef(0)
+  const clipboardGeneration = useRef(0)
   const [publicNpub, setPublicNpub] = useState<string | null>(null)
-  const [threadFailure, setThreadFailure] = useState<ContactsFailure | null>(null)
+  const [threadProblem, setThreadProblem] = useState<{ npub: string; failure: ContactsFailure } | null>(null)
+  const threadFailure = threadProblem !== null && threadProblem.npub === openId ? threadProblem.failure : null
 
   const openConversation = entries.find(conversation => conversation.id === openId)
   const openContact = openConversation?.contact
-  // WHICH READ THE LIST IS SHOWING, and it is one of four facts rather than two: the host listed
-  // contacts, the host listed none, the host has not answered yet, or the host refused. An empty
-  // listing is not a failure and a failure is not an empty listing, so the source line says which
-  // one it is and the copy under it says what can be done about that one.
   const showingContacts = contactsView.kind === 'ready'
   const scene: ContactsScene = contactsView.kind === 'ready'
     ? (contactsView.contacts.length === 0 ? 'contacts-empty' : 'contacts')
@@ -994,48 +1135,27 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     ? 'contacts-only'
     : messagingStatus
 
-  // NO KEY FRAGMENT WHERE A NAME GOES. This was `contact.npub.slice(0, 16)`, which is Peter's "truncated
-  // contact name while an npub is shown": half a key standing in for a person, unreadable at a third of the
-  // width and wrong at any width. An unnamed contact now says so, and the WHOLE key is `handleOf`, which the
-  // details sheet shows — a key is a detail, so it lives one tap away rather than shredded into the row.
   const contactName = (contact: WireContact): string =>
     contact.name === '' ? t('contact.unnamed') : contact.name
 
   const nameOf = (entry: LaneEntry): string =>
     entry.contact === undefined ? t('new.title') : contactName(entry.contact)
-  /**
-   * The whole key, and the only place it is read from. `handleOf` is what the details sheet shows and
-   * what nothing on the list shows: a row that displayed it was Peter's "raw key on the main list",
-   * and a row that displayed a slice of it was his "truncated contact name while an npub is shown".
-   */
   const handleOf = (entry: LaneEntry): string =>
     entry.contact === undefined ? t('new.handle') : entry.contact.npub
 
-  /**
-   * The row's one preview line: the newest thing this screen actually holds for that conversation.
-   *
-   * A LISTING READ CARRIES NO MESSAGE TEXT — `readContacts` returns seven leaf fields per contact and
-   * none of them is a message — so for a contact whose conversation has not been read, the honest
-   * preview is that there is nothing here yet, said in words rather than filled with a line this
-   * screen invented. Text sent from this screen is held, so it is what a row shows once there is any.
-   */
   const previewOf = (entry: LaneEntry): string => {
     const said = entry.sent[entry.sent.length - 1]
-    // **"NO MESSAGES YET" CLAIMED MORE THAN THIS FUNCTION KNOWS.** `entry.sent` is what was sent from THIS screen, so
-    // an empty list means nothing was sent from here — not that the conversation is empty, which is what the old
-    // sentence told a person. The row now says what is true of the thing it actually read.
     return said?.text ?? ''
   }
 
-  /** Open one of the two layers. Opening a conversation closes whatever was over it. */
-  const openSheet = (kind: 'verify' | 'details', entry: LaneEntry | null): void => {
+  const openSheet = (kind: 'verify' | 'details' | 'warning', entry: LaneEntry | null): void => {
     setSheet({ kind, entry })
   }
 
   const loadContacts = useCallback((): void => {
     contactsGeneration.current += 1
     const mine = contactsGeneration.current
-    setContactsView(current => (current.kind === 'ready' ? current : { kind: 'loading' }))
+    setContactsView(current => (current.kind === 'idle' ? { kind: 'loading' } : current))
     void readContacts().then((read) => {
       // A read superseded by a newer one — or by the lane closing — must not land.
       if (contactsGeneration.current !== mine) return
@@ -1055,11 +1175,11 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     const work = readThread(npub, null).then((read) => {
       if (threadGeneration.current !== mine || currentOpen.current !== npub) return
       if (read.kind === 'failed') {
-        setThreadFailure(read.failure)
+        setThreadProblem({ npub, failure: read.failure })
         setThread(current => current.kind === 'ready' ? current : { kind: 'failed', failure: read.failure })
         return
       }
-      setThreadFailure(null)
+      setThreadProblem(null)
       setThread(current => {
         const messages = new Map<string, LaneMessage>()
         if (current.kind === 'ready' && current.thread.npub === npub) {
@@ -1080,7 +1200,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     if (!active || openId === null) return undefined
     threadGeneration.current += 1
     setThread({ kind: 'loading' })
-    setThreadFailure(null)
+    setThreadProblem(null)
     let cancelled = false
     let timer: number | undefined
     const poll = async (): Promise<void> => {
@@ -1095,30 +1215,66 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     }
   }, [active, openId, loadThread])
 
+  const loadIdentity = useCallback((): void => {
+    const mine = ++identityGeneration.current
+    void readIdentity().then(read => {
+      if (!activeRef.current || mine !== identityGeneration.current) return
+      if (read.kind === 'ready') {
+        setPublicNpub(read.value.npub)
+        setIdentityFailure(null)
+      } else {
+        setPublicNpub(null)
+        setIdentityFailure(read.failure)
+      }
+    })
+  }, [])
+
+  const refresh = (): void => {
+    loadContacts()
+    loadIdentity()
+  }
+
   const copyIdentity = (): void => {
-    if (publicNpub === null) return
+    if (publicNpub === null) {
+      loadIdentity()
+      if (warningKey !== null) openSheet('warning', null)
+      return
+    }
+    const mine = ++clipboardGeneration.current
     setCopyState('pending')
-    // Start the clipboard operation during the gesture; WebKit loses permission after a fetch.
+    const failed = (): void => {
+      if (mine !== clipboardGeneration.current) return
+      setCopyState('idle')
+      setClipboardFailure(true)
+    }
+    // WebKit requires starting the clipboard write inside this gesture.
     try {
-      void navigator.clipboard.writeText(publicNpub).then(
-        () => { setCopyState('copied') },
-        () => { setCopyState('failed') },
-      )
-    } catch { setCopyState('failed') }
+      void navigator.clipboard.writeText(publicNpub).then(() => {
+        if (mine !== clipboardGeneration.current) return
+        setCopyState('copied')
+        setClipboardFailure(false)
+      }, failed)
+    } catch { failed() }
   }
 
   useEffect(() => {
-    if (!active) return undefined
-    let cancelled = false
-    void readIdentity().then(read => {
-      if (cancelled) return
-      if (read.kind === 'ready') {
-        setPublicNpub(read.value.npub)
-        setCopyState('idle')
-      } else setCopyState('failed')
-    })
-    return () => { cancelled = true }
-  }, [active])
+    if (copyState !== 'copied') return undefined
+    const timer = window.setTimeout(() => { setCopyState('idle') }, 2_000)
+    return () => { window.clearTimeout(timer) }
+  }, [copyState])
+
+  useEffect(() => {
+    if (!active) {
+      setSheet(null)
+      setCopyState(current => current === 'pending' ? 'idle' : current)
+      return undefined
+    }
+    loadIdentity()
+    return () => {
+      identityGeneration.current += 1
+      clipboardGeneration.current += 1
+    }
+  }, [active, loadIdentity])
 
   // One read when the surface mounts, then a slow poll while the lane is open. A closed
   // lane does not poll: the surface is always mounted, so `active` is the only gate.
@@ -1253,6 +1409,20 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     : undefined
   const openOutcome = openCopies === undefined || openCopies.length === 0 ? undefined : copyOutcomeOf(openCopies)
 
+  const warningKey: MessagesKey | null = contactsView.kind === 'failed'
+    ? readWarningKey(contactsView.failure, 'contacts')
+    : identityFailure !== null ? readWarningKey(identityFailure, 'identity')
+      : clipboardFailure ? 'warning.clipboard'
+        : openConversation === undefined ? null
+        : threadFailure !== null ? readWarningKey(threadFailure, 'thread')
+          : openReceipt?.kind === 'failed' ? readWarningKey(openReceipt.failure, 'thread')
+            : openReceipt?.kind === 'not-accepted' ? 'warning.send-refused'
+              : liveThread?.answered.length === 0 ? 'warning.relays' : null
+
+  useEffect(() => {
+    if (sheet?.kind === 'warning' && (warningKey === null || (sheet.entry !== null && sheet.entry.id !== openId))) setSheet(null)
+  }, [warningKey, sheet, openId])
+
   const openState = openContact?.state
   // The sheet's subject, read from the state the sheet is about rather than from whatever is open
   // behind it: a sheet opened from a row keeps describing that row while the lane stays where it is.
@@ -1265,17 +1435,12 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     : (sheetEntry.id === openId ? openThreadSas : sheetEntry.contact?.sas ?? null)
   const closeSheet = (): void => { setSheet(null) }
 
-  /**
-   * Open the add-contact sheet, empty. The '+' USED TO INVENT A LOCAL CONVERSATION HERE (id `local-N`, handle
-   * '@new') that could neither send nor receive and wrote nothing; step 4 deletes that path.
-   */
   const openAddContact = (): void => { setSheet({ kind: 'add', entry: null }) }
-  // EVERYTHING TRUE THAT A ROW MUST NOT CARRY, in one list, built where the facts are. The sheet is
-  // rendered from this and not from a second reading of the state, so a row that moved here cannot
-  // have moved to a place that says something slightly different.
   const detailsOf = (entry: LaneEntry | null): SheetRow[] => {
     const rows: SheetRow[] = []
     if (contactsView.kind === 'failed') rows.push({ label: t('contacts.error.title'), value: failureText(contactsView.failure) })
+    if (identityFailure !== null) rows.push({ label: t('identity.copy'), value: failureText(identityFailure) })
+    if (clipboardFailure) rows.push({ label: t('identity.copy'), value: t('warning.clipboard') })
     if (entry?.id === openId && threadFailure !== null) rows.push({ label: t('details.host'), value: failureText(threadFailure) })
     const contact = entry?.contact
     if (entry !== null) {
@@ -1327,9 +1492,9 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
               <h2 className={css.brandName} data-fit="name">{t('title')}</h2>
               <span className={clsx(css.actions, css.brandActions)}>
                 <button type="button" className={css.iconButton} data-copy-identity={copyState}
-                  aria-label={t(copyState === 'copied' ? 'identity.copied' : copyState === 'failed' ? 'identity.failed' : 'identity.copy')}
-                  disabled={copyState === 'pending' || publicNpub === null} onClick={copyIdentity}>
-                  {copyState === 'copied' ? <VerifiedStateIcon /> : copyState === 'failed' ? <ForeignStateIcon /> : <SasIcon />}
+                  aria-label={t(copyState === 'copied' ? 'identity.copied' : 'identity.copy')}
+                  disabled={copyState === 'pending'} onClick={copyIdentity}>
+                  {copyState === 'copied' ? <VerifiedStateIcon /> : <SasIcon />}
                 </button>
                 <button
                   type="button"
@@ -1343,7 +1508,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
                   type="button"
                   className={css.iconButton}
                   aria-label={t('contacts.refresh')}
-                  onClick={loadContacts}
+                  onClick={refresh}
                 >
                   <RefreshIcon />
                 </button>
@@ -1374,9 +1539,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
                 >
                   <ArchiveIcon />
                 </button>
-                {/* The lane's own read, behind one button: which directory the rows came from, and
-                    what the host says about itself. A path under the list is a line nobody reads and
-                    everybody's eye stops on, and it is a fact about the read rather than about a row. */}
                 <button
                   type="button"
                   className={css.iconButton}
@@ -1388,10 +1550,10 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
                 </button>
               </span>
             </header>
-            {contactsView.kind === 'failed' && (
+            {warningKey !== null && (
               <button type="button" className={css.iconButton} data-messages-error
-                aria-label={failureText(contactsView.failure)} title={failureText(contactsView.failure)}
-                onClick={() => { openSheet('details', null) }}><ForeignStateIcon /></button>
+                aria-label={t(warningKey)} title={t(warningKey)}
+                onClick={() => { openSheet('warning', null) }}><ForeignStateIcon /></button>
             )}
             <div className={css.searchRow}>
               {searchOpen && (
@@ -1504,10 +1666,10 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
               {openContact !== undefined && thread.kind === 'loading' && (
                 <span className={css.threadNotice} data-thread-status="loading" aria-label={t('thread.loading')}><SendPendingIcon /></span>
               )}
-              {threadFailure !== null && (
+              {warningKey !== null && (
                 <button type="button" className={css.iconButton} data-thread-status="failed"
-                  aria-label={failureText(threadFailure)} title={failureText(threadFailure)}
-                  onClick={() => { openSheet('details', openConversation) }}><ForeignStateIcon /></button>
+                  aria-label={t(warningKey)} title={t(warningKey)}
+                  onClick={() => { openSheet('warning', openConversation) }}><ForeignStateIcon /></button>
               )}
               {openLiveMessages.map(message => (
                 <div
@@ -1556,10 +1718,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
             </div>
           </div>
         )}
-      {/* THE TWO ONE-TAP LAYERS, rendered from the state they describe rather than from a second
-          reading of it. The verify sheet is what the "Unverified" chip opens and what the rows' own
-          shields stand for; the details sheet is what every info button opens, with the lane's own
-          read behind it when no conversation is in question. */}
       {sheet !== null && sheet.kind === 'verify' && sheetEntry !== null && sheetState !== undefined && (
         <VerifySheet
           state={sheetState}
@@ -1571,8 +1729,11 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
           onClose={closeSheet}
         />
       )}
-      {sheet !== null && sheet.kind === 'add' && (
+      {active && sheet !== null && sheet.kind === 'add' && (
         <AddContactSheet t={t} onClose={closeSheet} onAdded={loadContacts} />
+      )}
+      {sheet?.kind === 'warning' && warningKey !== null && (
+        <WarningSheet message={warningKey} t={t} onClose={closeSheet} />
       )}
       {sheet !== null && sheet.kind === 'details' && (
         <DetailsSheet rows={detailsOf(sheetEntry)} t={t} onClose={closeSheet} />

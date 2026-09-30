@@ -11,6 +11,7 @@
     "src/client/index.ts",
     "src/client/locales.ts",
     "src/client/add-contact.ts",
+    "src/client/qr-scanner.ts",
     "src/client/contacts-client.ts",
     "src/client/MessagesIcons.tsx",
     "src/client/MessagesMenu.tsx",

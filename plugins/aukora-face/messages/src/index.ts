@@ -506,6 +506,7 @@ export function messagesRefusalStatus(reason: MessagesRefusalReason): number {
     case 'messages:confirm-writer-unusable': return 500
     case 'messages:add-npub-invalid': return 400
     case 'messages:add-controller-invalid': return 400
+    case 'messages:add-binding-invalid': return 400
     case 'messages:add-name-invalid': return 400
     case 'messages:add-body-unreadable': return 400
     case 'messages:add-already-present': return 409
@@ -1504,9 +1505,6 @@ export function apply(ctx: Context): void {
   // be pinned to whatever the composition happened to hold at that instant.
   const rootsOf = (): MessagesContactsRoots => roots(ctx)
   ctx.effect(() => register(identityRoute(gate, rootsOf)), 'ui-messages: identity route')
-  // Create the node's separate Nostr identity on first host startup. A late-mounted
-  // Aumlok service is picked up again when the face asks for its identity.
-  void prepareIdentity(rootsOf()).catch(() => {})
   ctx.effect(() => register(contactsRoute(gate, rootsOf)), 'ui-messages: contacts route')
   ctx.effect(() => register(requestRoute(gate)), 'ui-messages: contacts request route')
   ctx.effect(() => register(threadRoute(gate, rootsOf)), 'ui-messages: thread route')

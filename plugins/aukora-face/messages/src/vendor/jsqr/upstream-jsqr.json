@@ -1,0 +1,44 @@
+{
+  "domain": "aukora:jsqr-pin:v1",
+  "formatVersion": 1,
+  "entry": "jsQR.js",
+  "packages": [
+    {
+      "name": "jsqr",
+      "version": "1.4.0",
+      "license": "Apache-2.0",
+      "licenseFile": "LICENSE",
+      "registry": "https://registry.npmjs.org/jsqr/1.4.0",
+      "tarball": "https://registry.npmjs.org/jsqr/-/jsqr-1.4.0.tgz",
+      "distIntegrity": "sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==",
+      "tarballSha256": "b5299b37917a1fe7a8cab9dd5cc6b8accf82663add80abe5bf7761a921cc6602",
+      "dependencies": "none"
+    }
+  ],
+  "files": [
+    {
+      "path": "jsQR.js",
+      "bytes": 256885,
+      "sha256": "bc40c8a15196236b2314db0856f72ca0b49980cd5413b8c852a7349f5fee0859",
+      "upstreamPackage": "jsqr",
+      "upstreamPath": "package/dist/jsQR.js"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 11358,
+      "sha256": "c6596eb7be8581c18be736c846fb9173b69eccf6ef94c5135893ec56bd92ba08",
+      "upstreamPackage": "jsqr",
+      "upstreamPath": "package/LICENSE"
+    },
+    {
+      "path": "package.json",
+      "bytes": 20,
+      "sha256": "dbf8353f77358bc12169b7bb7301e1978d5b503e002ee927229a8993672818fc"
+    },
+    {
+      "path": "jsQR.d.ts",
+      "bytes": 170,
+      "sha256": "fd729e2989089de70069e6bb3fc215482fedad8aa836a0352b9c155885e7843f"
+    }
+  ]
+}

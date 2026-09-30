@@ -59,6 +59,7 @@ VENDOR_TREES = (
     # OpenViking's licence and install pins (the package itself is installed into a venv by
     # scripts/openviking-setup.sh, never vendored): the LICENSE bytes are held to the manifest here.
     ("vendor/openviking", ("upstream-openviking.json",)),
+    ("plugins/aukora-face/messages/src/vendor/jsqr", ("upstream-jsqr.json",)),
 )
 BUILD_OUTPUT_DIRS = ("target",)
 BOUNDARY_LIVE = "docs/AUKORA-GOLDEN-BOUNDARY.md"

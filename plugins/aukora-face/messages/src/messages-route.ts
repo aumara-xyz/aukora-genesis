@@ -289,6 +289,7 @@ export type MessagesRefusalReason =
   | 'messages:confirm-writer-unusable'
   | 'messages:add-npub-invalid'
   | 'messages:add-controller-invalid'
+  | 'messages:add-binding-invalid'
   | 'messages:add-name-invalid'
   | 'messages:add-body-unreadable'
   | 'messages:add-already-present'
@@ -371,6 +372,7 @@ export const MESSAGES_RELAY_REFUSALS: readonly MessagesRefusalReason[] = [
 export const MESSAGES_REFUSAL_REASONS: readonly MessagesRefusalReason[] = [
   ...MESSAGES_STORE_REFUSALS,
   ...MESSAGES_WIRE_REFUSALS,
+  'messages:add-binding-invalid',
 ]
 
 /**

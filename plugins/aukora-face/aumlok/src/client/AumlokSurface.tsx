@@ -1,33 +1,4 @@
-/**
- * The AUMLOK screen: the ceremony, the status, and nothing else.
- *
- * THE CEREMONY RUNS HERE. Plan §3: the Aumlok screen in the app IS the surface — there is no separate
- * window and no separate page to open, nothing to start first, and the same compact layout always.
- * Everything on this screen is READ or TYPED; it holds no key and approves nothing, because approval
- * stays with a separate signer process on a Unix socket. The single write-shaped control here is the
- * ceremony itself, and even that only asks the shell for the seven words and hands them back: this
- * application derives no root, writes no record and keeps no phrase.
- *
- * ONE LAYOUT, THREE STATES, DRAWN AS PETER DREW IT (2026-09-23 14:19). The gold anchor card sits on
- * top with SIX gold rounded letter boxes in a row — one per letter of the anchor, dots once a binding
- * exists, never a letter afterwards — and the six themed rows sit under it in the three bands, green
- * then blue then purple, each row a small gold rounded box holding that word's first letter and the
- * word beside it. The numbers are there and quiet. The badge is above them: UNBOUND with empty tiles
- * and "Give me my phrase", BOUND with dots, the receipt and "Your Aumlok is bound".
- *
- * AND THE SCREEN IS STRIPPED (Peter, 14:20). It is not a status page: the title, the badge, the tiles
- * and ONE big button per state are the screen, with at most three short lines under "What Aumlok is".
- * Every sentence of technical status — the controller's absence, its own refusal code, the origin the
- * reading came from, the seven public fields — is inside ONE small "details" disclosure that is
- * CLOSED by default, so a person who is not debugging never reads it and an operator still can.
- *
- * THE WORDS ARE SHOWN ONCE AND LEAVE AS THE TILES TURN OVER. They arrive from the shell for display,
- * live only in this component's state while they are on the screen, and are gone the moment the tiles
- * accept input — a screen that showed them while accepting them would be reading the phrase back to
- * the person who is meant to be remembering it. Nothing here logs, stores or transmits them, and the
- * system copy-paste buffer is never touched. The step between typing them back and binding with them
- * is Peter's own warning, and the box that must be ticked before Bind is live.
- */
+/** Public identity when bound; the shell's existing phrase ceremony for creation and rotation. */
 import { useEffect, useState } from 'react'
 import type {
   HostObservable,
@@ -63,6 +34,7 @@ import {
   type AumlokTileFace,
 } from './surface-state.ts'
 import css from './Aumlok.module.css'
+import { IdentityCard, type ReadIdentity } from './IdentityCard.tsx'
 
 // Escape inside a text-entry control edits that control, never the surface. Duck-typed so a target
 // from another realm classifies identically. THIS SCREEN HAS INPUTS NOW: the seven tiles become text
@@ -106,6 +78,7 @@ export interface AumlokSurfaceInjected {
     handle?: string) => Promise<AumlokCeremonyResult>
   /** Re-read the controller's public control, which is what flips the screen's state. */
   refreshControlStatus: () => void
+  readIdentity: ReadIdentity
 }
 
 /** Props assembled for the always-mounted AUMLOK center surface. */
@@ -255,6 +228,7 @@ export function AumlokSurface({
   drawPhrase,
   submitPhrase,
   refreshControlStatus,
+  readIdentity,
 }: AumlokSurfaceProps) {
   const active = activeSurface === 'aumlok'
   const projection = useControlProjection(value => value)
@@ -349,6 +323,7 @@ export function AumlokSurface({
         return
       }
       setBeat('none')
+      setTyped(emptyTyped())
       setRefreshing(false)
       refreshControlStatus()
     })()
@@ -402,6 +377,10 @@ export function AumlokSurface({
       aria-labelledby="aumlok-title"
     >
       <div className={css.canvas}>
+        {state === 'bound' && projection.status === 'connected' && !projection.control.revoked ? (
+          <IdentityCard control={projection.control} active={active} readIdentity={readIdentity} t={t}
+            {...(ceremonyAvailable ? { rotate: () => { begin('refresh') } } : {})} />
+        ) : <>
         <header className={css.hero}>
           <div className={css.heroCopy}>
             <p>{t('eyebrow')}</p>
@@ -782,6 +761,7 @@ export function AumlokSurface({
             ) : null}
           </section>
         </div>
+        </>}
       </div>
     </section>
   )

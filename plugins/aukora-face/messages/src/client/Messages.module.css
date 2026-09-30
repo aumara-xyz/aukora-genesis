@@ -1038,11 +1038,7 @@
   color: var(--dsw-alias-label-secondary, #b8bcc4);
   line-height: 17px;
 }
-/*
- * THE ADD-CONTACT SHEET. Three labelled fields and one action, in the site's own tokens — the audit
- * (`scripts/face/token-audit.mjs`) refuses a colour or a font that does not come from them, and
- * `tests/aukora-surface-tokens.test.mjs` keeps that refusal honest.
- */
+
 .addHint {
   margin: 0 0 var(--dsh-spatial-gap, 8px);
   color: var(--dsw-alias-label-secondary, #b8bcc4);
@@ -1105,4 +1101,22 @@
   margin: var(--dsh-spatial-gap, 8px) 0 0;
   color: var(--dsw-alias-label-secondary, #b8bcc4);
   line-height: 18px;
+}
+
+.addTools {
+  display: flex;
+  align-items: center;
+  gap: var(--dsh-spatial-gap, 8px);
+}
+
+.addTools .addRefusal {
+  margin: 0 0 0 auto;
+}
+
+.addVideo {
+  display: block;
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 8px;
 }

@@ -1,34 +1,10 @@
 #!/usr/bin/env node
-/**
- * ADD A CONTACT — the step that has no UI, made into a command instead of hand-written JSON.
- *
- *   node plugins/aukora-nostr/bin/add-contact.mjs \
- *     --state <stateDir> --npub <npub1…> --controller <64 hex> [--name <name>]
- *
- * WHY THIS EXISTS. The Messages face READS `<stateDir>/nostr/contacts.json` and there is no writer
- * for it anywhere in the repository — so today a contact is added by typing a JSON document by hand.
- * That is the step the friend-facing notes describe, and it is the step most likely to fail: the
- * document needs an exact domain, an exact key set, a 64-hex controller key and a `binding` key that
- * must be PRESENT even when it is null, and the face refuses the whole file — not the entry — when
- * any of that is wrong. A refused file means the Messages screen shows no contacts at all, with no
- * clue which character was wrong.
- *
- * SO THIS VALIDATES BEFORE IT WRITES, AND IT NEVER CLOBBERS. An existing file that this tool cannot
- * parse is a REFUSAL, not something to overwrite: the file may hold contacts this tool does not
- * understand, and silently replacing a contacts list is how someone loses the ability to message
- * people they had already paired with.
- *
- * WHAT THIS TOOL DELIBERATELY DOES NOT DO. It does not invent a binding. A binding is a signed
- * statement by the OTHER person's controller, and fabricating one here would turn a verifiable claim
- * into a made-up one — the contact is added UNBOUND (`binding: null`), which is an honest state the
- * face already understands and reports. Passing `--binding <path>` attaches one they actually issued.
- */
+/** Add a contact atomically, validating any supplied peer binding before touching the contacts file. */
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { randomBytes } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
-
-import { npubDecode } from '../lib/identity.mjs'
+import { npubDecode, npubEncode } from '../lib/identity.mjs'
+import { controllerKeyOf, resolveContact } from '../lib/contact.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 
 /** The `domain` every contacts document must carry. A different one is a different format. */
@@ -97,8 +73,7 @@ function withContactsLock(file, body) {
       try { ageMs = Date.now() - statSync(lock).mtimeMs } catch { ageMs = 0 }
       if (ageMs >= LOCK_STALE_MS) {
         // STALE: the writer that made it is gone. Take it, and say so rather than pretending it was free.
-        try { rmSync(lock, { force: true }) } catch { /* the next open says whether it worked */ }
-        continue
+        try { rmSync(lock, { force: true }); continue } catch { /* removal failure still respects the deadline below */ }
       }
       if (Date.now() >= deadline) {
         throw refuse(ADD_CONTACT_REFUSE.LOCKED,
@@ -123,6 +98,19 @@ function withContactsLock(file, body) {
 
 const HEX64 = /^[0-9a-f]{64}$/iu
 const refuse = (code, detail) => Object.assign(new Error(detail), { code })
+const isRecord = value => value !== null && typeof value === 'object'
+  && (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)
+
+/** Re-encoding closes the decoder's padding loophole; only uniform case may be normalized. */
+function canonicalNpub(value) {
+  if (typeof value !== 'string' || (value !== value.toLowerCase() && value !== value.toUpperCase())) {
+    throw new Error('npub must be a string in uniform case')
+  }
+  const lower = value.toLowerCase()
+  const canonical = npubEncode(npubDecode(lower))
+  if (canonical !== lower) throw new Error('npub is not canonically encoded')
+  return canonical
+}
 
 /** `--flag value`, where an unknown flag is an error rather than something ignored. */
 function parseArgs(argv, known) {
@@ -171,33 +159,62 @@ export function readExistingContacts(file) {
 /**
  * Add or update one contact, and write the document back.
  *
- * @param {Readonly<{stateDir: string, npub: string, controller: string, name?: string, bindingPath?: string}>} input - who to add and where.
+ * @param {Readonly<{stateDir: string, npub: string, controller?: string, name?: string, binding?: object|null, bindingPath?: string, mode?: string}>} input - who to add and where.
  * @returns {Readonly<Record<string, unknown>>} what was written.
  */
 export function addContact(input) {
   const stateDir = resolve(input.stateDir)
-  // VALIDATE EVERYTHING BEFORE TOUCHING THE FILE, so a bad argument cannot leave a half-written list.
+  let npub
   try {
-    npubDecode(input.npub)
+    npub = canonicalNpub(input.npub)
   } catch (cause) {
-    throw refuse(ADD_CONTACT_REFUSE.BAD_NPUB, `--npub is not a decodable npub: ${cause?.message ?? cause}`)
+    throw refuse(ADD_CONTACT_REFUSE.BAD_NPUB, `--npub is invalid: ${cause?.message ?? cause}`)
   }
-  const controller = input.controller ?? ''
-  if ((controller !== '' || input.bindingPath !== undefined) && !HEX64.test(controller)) {
+  if (input.binding !== undefined && input.bindingPath !== undefined) {
+    throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, 'supply a binding object or bindingPath, not both')
+  }
+  const hasBinding = (input.binding !== undefined && input.binding !== null) || input.bindingPath !== undefined
+  const controller = input.controller === undefined ? '' : input.controller
+  if (typeof controller !== 'string' || ((controller !== '' || hasBinding) && !HEX64.test(controller))) {
     throw refuse(ADD_CONTACT_REFUSE.BAD_CONTROLLER,
       '--controller must be the other side\'s controller ed25519 public key: 64 hex characters')
   }
-  let binding = null
-  if (input.bindingPath !== undefined) {
+  let binding = input.binding ?? null
+  if (hasBinding) {
     try {
-      binding = JSON.parse(readFileSync(resolve(input.bindingPath), 'utf8'))
+      if (input.bindingPath !== undefined) {
+        binding = JSON.parse(readFileSync(resolve(input.bindingPath), 'utf8'))
+      }
+      if (!isRecord(binding)) throw new Error('binding must be a JSON record')
+      // Validate the same JSON bytes that will be stored, including serialization failures.
+      binding = JSON.parse(JSON.stringify(binding))
+      if (!isRecord(binding) || !isRecord(binding.statement)
+        || typeof binding.statement.handle !== 'string'
+        || (Object.hasOwn(binding, 'approvalKeyDid') && controllerKeyOf(binding) === null)
+        || (Object.hasOwn(binding, 'label') && typeof binding.label !== 'string')) {
+        throw new Error('binding has malformed fields')
+      }
     } catch (cause) {
-      throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, `--binding could not be read as JSON: ${cause?.message ?? cause}`)
+      throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, `binding is invalid: ${cause?.message ?? cause}`)
+    }
+  }
+
+  // No confirmation is imported. A verified peer signature earns BOUND or TEST only.
+  let resolvedContact = { state: 'UNBOUND', binding: 'absent' }
+  if (controller !== '') {
+    try {
+      resolvedContact = resolveContact({ npub, peerControllerKey: controller, binding })
+      if (hasBinding && (resolvedContact.binding !== 'verified'
+        || !['BOUND', 'TEST'].includes(resolvedContact.state))) {
+        throw new Error(resolvedContact.code ?? 'binding did not resolve')
+      }
+    } catch (cause) {
+      throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, `binding is invalid: ${cause?.message ?? cause}`)
     }
   }
 
   const file = contactsPath(stateDir)
-  const name = input.name ?? input.npub.slice(0, 16)
+  const name = input.name ?? npub.slice(0, 16)
 
   // INSERT-ONLY IS THE DEFAULT FOR A CALLER THAT SAYS SO, AND UPSERT REMAINS FOR THE COMMAND LINE.
   // A person running this by hand to fix a key means to replace it; a BUTTON must not be able to
@@ -208,20 +225,20 @@ export function addContact(input) {
   // exists to close: read, decide, and let another writer land in between.
   return withContactsLock(file, () => {
     const existing = readExistingContacts(file)
-    const already = existing.some(current => {
-      if (current?.npub === input.npub) return true
+    const sameContact = current => {
+      if (current?.npub === npub) return true
       // CANONICAL, NOT LITERAL: two encodings of one key are one friend.
-      try { return npubDecode(current?.npub) === npubDecode(input.npub) } catch { return false }
-    })
-    if (insertOnly && already) {
-      throw refuse(ADD_CONTACT_REFUSE.ALREADY_PRESENT,
-        `${input.npub} is already in ${file}; this writer is insert-only and will not re-point an existing contact.`)
+      try { return npubDecode(current?.npub?.toLowerCase()) === npubDecode(npub) } catch { return false }
     }
-    const entry = { npub: input.npub, name, peerControllerKey: controller.toLowerCase(), binding }
+    if (insertOnly && existing.some(sameContact)) {
+      throw refuse(ADD_CONTACT_REFUSE.ALREADY_PRESENT,
+        `${npub} is already in ${file}; this writer is insert-only and will not re-point an existing contact.`)
+    }
+    const entry = { npub, name, peerControllerKey: controller.toLowerCase(), binding }
 
     // UPSERT BY Npub: re-adding somebody updates them in place. Appending would produce two entries for
     // one person, and the face resolves by npub, so which one won would depend on document order.
-    const others = existing.filter(current => current?.npub !== input.npub)
+    const others = existing.filter(current => !sameContact(current))
     const contacts = [...others, entry]
 
     mkdirSync(dirname(file), { recursive: true, mode: 0o700 })
@@ -237,7 +254,8 @@ export function addContact(input) {
       try { rmSync(temporary, { force: true }) } catch { /* the sweep below catches it */ }
       throw cause
     }
-    return Object.freeze({ path: file, total: contacts.length, replaced: existing.length !== others.length, entry })
+    return Object.freeze({ path: file, total: contacts.length, replaced: existing.length !== others.length,
+      entry, state: resolvedContact.state, bindingStatus: resolvedContact.binding })
   })
 }
 

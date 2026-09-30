@@ -11,6 +11,8 @@ import { AumlokControlProjectionService } from './control-projection.ts'
 import { AumlokControlStatusLoader } from './control-status-loader.ts'
 import { readAumlokCeremonyBridge } from './binding-bridge.ts'
 import { en, zh, type AumlokKey } from './locales.ts'
+import { AUMLOK_IDENTITY_ENDPOINT, type AumlokContactIdentity } from '../identity.ts'
+import type { ReadIdentity } from './IdentityCard.tsx'
 
 export {
   AUMLOK_CONTROL_NOT_CONNECTED,
@@ -49,6 +51,13 @@ export function apply(ctx: ClientContext): void {
   // and nothing else about a phrase crosses it in either direction.
   projection.attachCeremony(readAumlokCeremonyBridge())
   const connection = ctx.get('connection') as ConnectionHandle
+  const readIdentity: ReadIdentity = async signal => {
+    if (!connection.isLoopback) throw new Error('aumlok:identity-non-loopback')
+    const response = await fetch(AUMLOK_IDENTITY_ENDPOINT, { method: 'GET', signal,
+      headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' })
+    if (!response.ok) throw new Error('aumlok:identity-unavailable')
+    return await response.json() as AumlokContactIdentity
+  }
   const loader = new AumlokControlStatusLoader(projection, connection)
   ctx.effect(() => {
     const disposeReset = ctx.on('connection/reset', () => { void loader.refresh() })
@@ -83,7 +92,12 @@ export function apply(ctx: ClientContext): void {
         // every other status read re-reads the controller, so a newly bound subject
         // becomes the seven public fields without a page reload, and a changed phrase
         // moves the record to its new epoch. A refusal never reaches this.
-        refreshControlStatus: () => { void loader.refresh() },
+        refreshControlStatus: () => {
+          void loader.refresh()
+          // A successful ceremony starts the lifecycle even if the surface was closed while it ran.
+          void readIdentity(new AbortController().signal).catch(() => {})
+        },
+        readIdentity,
       }),
     }, AumlokSurface))
   })

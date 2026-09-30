@@ -5,6 +5,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path'
 import { loadOrCreateNostrKey, NOSTR_BINDING_DOMAIN, signerKeyOf, verifyBindingWithKey } from './identity.mjs'
 
 const pending = new Map()
+const attempts = new Map()
 const refuse = (code, detail) => Object.assign(new Error(detail), { code })
 
 function roots(options = {}) {
@@ -24,8 +25,12 @@ function roots(options = {}) {
 
 async function aumlokModule(name) {
   try {
-    // Both the checkout and the materialized release keep these two plugins as siblings.
-    return await import(new URL(`../../aukora-aumlok/lib/${name}.mjs`, import.meta.url).href)
+    // Releases put Nostr at their root and Aumlok under plugins; checkouts keep them as siblings.
+    const candidates = [`../../aukora-aumlok/lib/${name}.mjs`, `../../plugins/aukora-aumlok/lib/${name}.mjs`]
+      .map(path => new URL(path, import.meta.url))
+    const module = candidates.find(path => existsSync(path))
+    if (!module) throw new Error(`Aumlok ${name} is absent from this layout`)
+    return await import(module.href)
   } catch (cause) {
     throw refuse('nostr:identity-aumlok-unavailable', `Aumlok ${name} could not load: ${cause.code || cause.message}`)
   }
@@ -91,7 +96,17 @@ async function snapshot(options) {
 const publicIdentity = ({ nostr, controller, binding }) => Object.freeze({
   npub: nostr.npub,
   subject: controller?.subject ?? null,
-  binding,
+  label: controller?.handle ?? '',
+  peerControllerKey: binding ? signerKeyOf(binding) : null,
+  // Stored documents may carry unrelated fields; only the public binding crosses the host boundary.
+  binding: binding ? {
+    domain: binding.domain,
+    statement: Object.fromEntries(['subject', 'npub', 'nostrPubkeyHex', 'handle', 'createdAt']
+      .map(key => [key, binding.statement[key]])),
+    signature: binding.signature,
+    approvalKeyDid: binding.approvalKeyDid,
+    label: controller.handle,
+  } : null,
 })
 
 /** Create the separate Nostr key if absent, then return public facts without requesting approval. */
@@ -102,7 +117,7 @@ export async function readMessagesIdentity(options = {}) {
 /**
  * Return a verified binding or request one through sign-nostr-binding. The existing signer owns
  * the approval window; this module never signs, reads a seed, or supplies an approval decision.
- * Concurrent callers share one request. A refusal is retryable only when a caller asks again.
+ * Concurrent faces share one request. Declined or expired requests stay quiet for this host session.
  */
 export function ensureMessagesIdentity(options = {}) {
   const paths = roots(options)
@@ -118,6 +133,19 @@ async function bindIdentity(options) {
   if (current.binding) return publicIdentity(current)
   const { paths, nostr, controller } = current
   if (!controller) throw refuse('nostr:identity-controller-unbound', 'Link an Aumlok ID before binding Messages')
+  const attempt = JSON.stringify([paths.stateDir, paths.controllerDir, nostr.npub, controller])
+  const previous = attempts.get(attempt)
+  if (previous && Date.now() < previous.after) throw previous.error
+  try {
+    return await requestBinding(options, current)
+  } catch (error) {
+    const quiet = error?.code === 'signer:declined' || error?.code === 'signer:request-expired'
+    attempts.set(attempt, { error, after: quiet ? Infinity : Date.now() + 30_000 })
+    throw error
+  }
+}
+
+async function requestBinding(options, { paths, nostr, controller }) {
   const socketPath = resolve(options.socketPath || process.env.AUKORA_SIGNER_SOCKET || join(paths.shellState, 'aumlok-signer.sock'))
   if (paths.supportRoot) {
     const within = relative(resolve(paths.supportRoot), socketPath)
