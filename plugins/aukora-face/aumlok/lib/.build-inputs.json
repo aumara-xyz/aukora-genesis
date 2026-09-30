@@ -1,12 +1,11 @@
 {
   "face": "aumlok",
-  "srcDigest": "1007815854eef035bfb4a917ba826b7039ca8230ecb603e327c4add0287a78e6",
+  "srcDigest": "6ea927aab2a8559c4cbc3f3ac98d079b522d32b05e309e53cdc3f7446898000e",
   "files": [
     "package.json",
     "src/client/Aumlok.module.css",
     "src/client/AumlokMenu.tsx",
     "src/client/AumlokSurface.tsx",
-    "src/client/IdentityCard.tsx",
     "src/client/badge.ts",
     "src/client/binding-bridge.ts",
     "src/client/control-projection.ts",
@@ -17,13 +16,9 @@
     "src/client/surface-state.ts",
     "src/control-projection.ts",
     "src/css-modules.d.ts",
-    "src/identity-host.ts",
-    "src/identity.ts",
     "src/index.ts",
     "src/invariant.ts",
-    "src/vendor/qrcodegen/LICENSE",
-    "src/vendor/qrcodegen/qrcodegen.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T02:22:35Z"
+  "builtAt": "2026-09-30T00:06:38Z"
 }

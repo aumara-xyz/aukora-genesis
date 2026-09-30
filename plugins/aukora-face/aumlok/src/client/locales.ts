@@ -2,12 +2,6 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'identity.id': 'Aumlok ID',
-  'identity.qr': '公开联系人二维码',
-  'identity.copyId': '复制 Aumlok ID',
-  'identity.copyNpub': '复制 npub',
-  'identity.copyContact': '复制联系人',
-  'identity.share': '分享联系人',
   'menu.title': 'AUMLOK',
   'menu.description': '七词本地见证',
   'eyebrow': '七词绑定密语',
@@ -91,12 +85,6 @@ export type AumlokKey = keyof typeof zh
 
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
-  'identity.id': 'Aumlok ID',
-  'identity.qr': 'Public contact QR code',
-  'identity.copyId': 'Copy Aumlok ID',
-  'identity.copyNpub': 'Copy npub',
-  'identity.copyContact': 'Copy contact',
-  'identity.share': 'Share contact',
   'menu.title': 'AUMLOK',
   'menu.description': 'seven-word binding witness',
   'eyebrow': 'SEVEN-WORD BINDING PHRASE',
