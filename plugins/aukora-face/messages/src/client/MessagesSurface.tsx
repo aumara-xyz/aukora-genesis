@@ -33,13 +33,6 @@ function isEditableTarget(target: EventTarget | null): boolean {
  */
 export type MessagingStatus = 'not-connected' | 'contacts-only' | 'connected'
 
-/** Runtime-posture copy keys for each messaging-engine state. */
-const RUNTIME_POSTURE = {
-  'not-connected': { status: 'runtime.status' },
-  'contacts-only': { status: 'runtime.status.contacts-only' },
-  'connected': { status: 'runtime.status.connected' },
-} as const satisfies Record<MessagingStatus, Record<'status', MessagesKey>>
-
 /** Which read the rows under the status line came from. */
 type ContactsScene = 'contacts' | 'contacts-reading' | 'contacts-empty' | 'contacts-failed'
 
@@ -1076,10 +1069,7 @@ function contactWarningKey(reason: string): MessagesKey {
 export type MessagesSurfaceProps =
   PropsRuntime<'shell.surface'>
   & PropsLocale<'messages'>
-  & {
-    /** Messaging-engine state; absent means the engine is not connected. */
-    messagingStatus?: MessagingStatus
-  }
+  & {}
 
 /**
  * Render the Messages lane over this node's contacts: a filterable list with one of four
@@ -1088,7 +1078,7 @@ export type MessagesSurfaceProps =
  * @param props - shell visibility, close action, and localized copy.
  * @returns the always-mounted Messages surface.
  */
-export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatus = 'not-connected' }: MessagesSurfaceProps) {
+export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurfaceProps) {
   const active = activeSurface === 'messages'
   const activeRef = useRef(active)
   activeRef.current = active
@@ -1127,13 +1117,9 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
 
   const openConversation = entries.find(conversation => conversation.id === openId)
   const openContact = openConversation?.contact
-  const showingContacts = contactsView.kind === 'ready'
   const scene: ContactsScene = contactsView.kind === 'ready'
     ? (contactsView.contacts.length === 0 ? 'contacts-empty' : 'contacts')
     : contactsView.kind === 'failed' ? 'contacts-failed' : 'contacts-reading'
-  const posture: MessagingStatus = messagingStatus === 'not-connected' && showingContacts
-    ? 'contacts-only'
-    : messagingStatus
 
   const contactName = (contact: WireContact): string =>
     contact.name === '' ? t('contact.unnamed') : contact.name
@@ -1453,7 +1439,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
       mono: contactsView.kind === 'ready',
       ref: 'source',
     })
-    rows.push({ label: t('details.host'), value: t(RUNTIME_POSTURE[posture].status), ref: 'host' })
     // The relays that answered belong to a conversation read, and they were a paragraph in the middle
     // of the conversation itself. They are a fact about the read, so they are a row about the read.
     if (entry !== null && entry.id === openId && liveThread !== undefined) {
