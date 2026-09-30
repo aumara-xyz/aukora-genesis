@@ -790,6 +790,19 @@ def _relative_imports(text: str) -> 'list[str]':
     return found
 
 
+# HUMAN-GRAPH THREE ALIAS (runtime-served, not physical). The release serves
+# `plugins/aukora-face-apps/assets/human-graph/three/<f>` from the packaged
+# `plugins/aukora-face-apps/vendor/three/<f>` — the runtime route is
+# serveHumanGraphFile in plugins/aukora-face/apps/src/embedded-assets.ts:160-171,
+# closed over HUMAN_GRAPH_THREE_FILES (embedded-assets.ts:28). The closure check
+# resolves exactly that alias to the packaged file and requires it to exist, so a
+# genuinely missing vendor file still gaps. Anything outside this closed set gaps
+# exactly as before. Fail-closed on drift: a third runtime file added to the TS
+# set without extending this set refuses the cut, which is the correct direction.
+_HUMAN_GRAPH_ALIAS_IMPORTER = ('plugins', 'aukora-face-apps', 'assets', 'human-graph')
+_HUMAN_GRAPH_THREE_FILES = frozenset({'three.module.min.js', 'three.core.min.js'})
+
+
 def release_import_gaps(release: Path) -> 'list[tuple[str, str]]':
     """Every relative import in the release's authored code whose target the release does not hold, as (target, importer).
 
@@ -821,6 +834,19 @@ def release_import_gaps(release: Path) -> 'list[tuple[str, str]]':
             continue
         for spec in _relative_imports(text):
             target_path = Path(os.path.normpath(module.parent / spec))
+            try:
+                importer_rel = Path(os.path.relpath(module, root))
+            except ValueError:
+                importer_rel = None
+            spec_parts = Path(os.path.normpath(spec)).parts
+            if (importer_rel is not None
+                    and importer_rel.parts[:4] == _HUMAN_GRAPH_ALIAS_IMPORTER
+                    and len(spec_parts) == 2 and spec_parts[0] == 'three'
+                    and spec_parts[1] in _HUMAN_GRAPH_THREE_FILES):
+                # Runtime alias: assets/human-graph/three/<f> is served from the
+                # packaged vendor/three/<f>. Resolve to the packaged file; a missing
+                # one gaps below like any other absent target.
+                target_path = root / 'plugins' / 'aukora-face-apps' / 'vendor' / 'three' / spec_parts[1]
             key = os.path.relpath(target_path, root)
             if key.startswith('..') or not target_path.is_file():
                 gaps.setdefault(key, os.path.relpath(module, root))
