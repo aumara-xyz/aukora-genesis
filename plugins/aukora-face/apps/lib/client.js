@@ -8,7 +8,7 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		//#region \0dsh-css:StockApps.module.css.mjs
-		const css$1 = ".Hx0ChG_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.Hx0ChG_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.Hx0ChG_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.Hx0ChG_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.Hx0ChG_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.Hx0ChG_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
+		const css$1 = ".WWCj2G_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.WWCj2G_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.WWCj2G_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.WWCj2G_surfaceSeat[data-stock-app=human-graph],.WWCj2G_embeddedFrame[data-stock-app-frame=human-graph]{background:0 0}.WWCj2G_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.WWCj2G_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.WWCj2G_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
 		const tagId$1 = "@aukora/face-apps/StockApps.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -18,9 +18,9 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StockApps_module_css_default = {
-			"embeddedFrame": "Hx0ChG_embeddedFrame",
-			"menuCopy": "Hx0ChG_menuCopy",
-			"surfaceSeat": "Hx0ChG_surfaceSeat"
+			"embeddedFrame": "WWCj2G_embeddedFrame",
+			"menuCopy": "WWCj2G_menuCopy",
+			"surfaceSeat": "WWCj2G_surfaceSeat"
 		};
 		//#endregion
 		//#region src/client/EmbeddedAppSurface.tsx
@@ -290,7 +290,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:RoomSurface.module.css.mjs
-		const css = ".jqLY3a_menuLauncher{width:100%}.jqLY3a_room.jqLY3a_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.jqLY3a_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.jqLY3a_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.jqLY3a_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.jqLY3a_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.jqLY3a_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.jqLY3a_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.jqLY3a_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.jqLY3a_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.jqLY3a_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.jqLY3a_meta time{color:var(--aukora-text-muted);font-size:11px}.jqLY3a_message[data-speaker=PETER] .jqLY3a_meta{justify-content:flex-end}.jqLY3a_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.jqLY3a_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.jqLY3a_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.jqLY3a_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.jqLY3a_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
+		const css = ".WpI3KG_menuLauncher{width:100%}.WpI3KG_room.WpI3KG_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.WpI3KG_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.WpI3KG_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.WpI3KG_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.WpI3KG_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.WpI3KG_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.WpI3KG_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.WpI3KG_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.WpI3KG_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.WpI3KG_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.WpI3KG_meta time{color:var(--aukora-text-muted);font-size:11px}.WpI3KG_message[data-speaker=PETER] .WpI3KG_meta{justify-content:flex-end}.WpI3KG_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.WpI3KG_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.WpI3KG_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.WpI3KG_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.WpI3KG_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
 		const tagId = "@aukora/face-apps/RoomSurface.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -300,13 +300,13 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var RoomSurface_module_css_default = {
-			"bubble": "jqLY3a_bubble",
-			"composer": "jqLY3a_composer",
-			"menuLauncher": "jqLY3a_menuLauncher",
-			"message": "jqLY3a_message",
-			"messages": "jqLY3a_messages",
-			"meta": "jqLY3a_meta",
-			"room": "jqLY3a_room"
+			"bubble": "WpI3KG_bubble",
+			"composer": "WpI3KG_composer",
+			"menuLauncher": "WpI3KG_menuLauncher",
+			"message": "WpI3KG_message",
+			"messages": "WpI3KG_messages",
+			"meta": "WpI3KG_meta",
+			"room": "WpI3KG_room"
 		};
 		//#endregion
 		//#region src/client/RoomSurface.tsx
@@ -486,6 +486,34 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
+		//#region src/client/HumanGraphSurface.tsx
+		function MountedGraph(props) {
+			const frame = (0, react.useRef)(null);
+			const receiveWindow = (0, react.useCallback)((value) => {
+				frame.current = value;
+			}, []);
+			(0, react.useLayoutEffect)(() => () => {
+				frame.current?.disposeHumanGraph?.();
+				frame.current = null;
+			}, []);
+			const receiveMessage = (0, react.useCallback)((message) => {
+				const value = message;
+				if (value?.source === "aukora-human-graph" && value.type === "close") props.closeSurface();
+			}, [props.closeSurface]);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(EmbeddedAppSurface, {
+				...props,
+				id: "human-graph",
+				title: props.t("humanGraph.name"),
+				src: "/stock-apps/human-graph/index.html",
+				onFrameWindow: receiveWindow,
+				onFrameMessage: receiveMessage
+			});
+		}
+		/** Inactive shell seats never create a document, fetch three.js, or own a WebGL context. */
+		function HumanGraphSurface(props) {
+			return props.activeSurface === "human-graph" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MountedGraph, { ...props }) : null;
+		}
+		//#endregion
 		//#region src/client/DakiniCode.tsx
 		/** Render the independent Dakini Code app launcher. */
 		function DakiniCodeMenu({ activeSurface, openSurface, t }) {
@@ -530,20 +558,28 @@ window.__ModuleLoader__.load({
 			copy: "harp",
 			presentation: "full-bleed"
 		};
+		const AUMA_CANVAS_APP = {
+			id: "auma-canvas",
+			copy: "canvas",
+			presentation: "full-bleed"
+		};
+		const ROOM_APP = {
+			id: "room",
+			copy: "room",
+			presentation: "contained"
+		};
+		const HUMAN_GRAPH_APP = {
+			id: "human-graph",
+			copy: "humanGraph",
+			presentation: "full-bleed"
+		};
 		const STOCK_APPS = [
 			AUMA_LANGUAGE_APP,
 			AUMA_LIVE_APP,
 			ZETA_HARP_APP,
-			{
-				id: "auma-canvas",
-				copy: "canvas",
-				presentation: "full-bleed"
-			},
-			{
-				id: "room",
-				copy: "room",
-				presentation: "contained"
-			}
+			AUMA_CANVAS_APP,
+			ROOM_APP,
+			HUMAN_GRAPH_APP
 		];
 		function StockAppMenu({ spec, activeSurface, openSurface, t }) {
 			const active = activeSurface === spec.id;
@@ -556,7 +592,7 @@ window.__ModuleLoader__.load({
 				},
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 					className: StockApps_module_css_default.menuCopy,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), spec.copy !== "room" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), spec.copy !== "room" && spec.copy !== "humanGraph" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
 				})
 			});
 		}
@@ -597,11 +633,18 @@ window.__ModuleLoader__.load({
 				})
 			});
 		}
+		function HumanGraphMenu(props) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StockAppMenu, {
+				...props,
+				spec: HUMAN_GRAPH_APP
+			});
+		}
 		//#endregion
 		//#region src/client/locales.ts
 		/** Stock-app launcher, surface, and interaction dictionaries. */
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
+			"humanGraph.name": "人际图谱",
 			"room.name": "房间",
 			"room.message": "房间消息",
 			"room.sendFailed": "发送失败，消息已保留。按回车重试。",
@@ -645,6 +688,7 @@ window.__ModuleLoader__.load({
 		};
 		/** English dictionary, checked complete against the Chinese key set. */
 		const en = {
+			"humanGraph.name": "Human Graph",
 			"room.name": "Room",
 			"room.message": "Room message",
 			"room.sendFailed": "Send failed; message retained. Press Enter to retry.",
@@ -732,6 +776,11 @@ window.__ModuleLoader__.load({
 					app: STOCK_APPS[4],
 					Menu: RoomMenu,
 					Surface: RoomSurface
+				},
+				{
+					app: STOCK_APPS[5],
+					Menu: HumanGraphMenu,
+					Surface: HumanGraphSurface
 				}
 			].forEach(({ app, Menu, Surface }, index) => {
 				ctx.slots.inject("shell.menu.apps", () => ctx.slots.register({
