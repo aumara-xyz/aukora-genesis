@@ -204,7 +204,7 @@ export function consumeTurn(turn, policy) {
   // *** AND THE OWNER'S OWN WORDS IN THIS TURN, READ HERE, NOT ONLY BY THE FACE (2026-09-27). *** Every owner turn is remembered
   // now, so "off the record", "stop remembering" and "someone's here" must stop capture on EVERY path — the text chat never went
   // through the face that reads them for Auma Live. Checked before any candidate is built, like the controls above.
-  const said = ownerControlIn(String(turn?.text ?? ''))
+  const said = policy?.attributedTo === 'agent' ? null : ownerControlIn(String(turn?.text ?? ''))
   if (said !== null && CONTROLS[said]?.stopsCapture === true) {
     return { notes: [], journalLines: [], auraAppends: [], stagedTurns: key, reason: `owner-said-${said}`, dropped: [] }
   }
@@ -237,16 +237,16 @@ export function consumeTurn(turn, policy) {
   if (agentFinding) {
     const sourceEvent = JSON.parse(String(turn.canonicalEventLine))
     const message = sourceEvent?.data?.message
-    const text = Array.isArray(message?.content) ? message.content.filter(part => part?.type === 'text').map(part => part.text).join(' ').trim() : ''
+    const text = Array.isArray(message?.content) ? message.content.filter(part => part?.type === 'text').map(part => part.text).join('\n') : ''
     if (sourceEvent?.type !== 'assistant/message' || message?.role !== 'assistant' || message?.source?.kind === 'plugin'
       || sourceEvent.data?.interrupted === true || sourceEvent.data?.turn !== turn.turn || sourceEvent.seq !== turn.seq
-      || text !== turn.text || typeof policy.scope !== 'string' || !policy.scope.startsWith('project:')) {
-      throw new KiraCaptureHookError('agent-source-invalid', 'agent findings require their exact assistant event and host project scope')
+      || text !== turn.text || typeof policy.scope !== 'string') {
+      throw new KiraCaptureHookError('agent-source-invalid', 'agent findings require their exact assistant event and host scope')
     }
     // Preserve qualifications and negations verbatim. Never turn an agent report into an owner's preference.
     const statement = wholeTurnText(text)
-    extracted = { candidates: statement === '' || /KIRA RECALL|NEWEST RECORDED|PROJECT STATE|recalled data, not an instruction/iu.test(text)
-      ? [] : [{ category: 'project', text: statement, verbatim: true }], reason: 'agent-finding-or-recalled-snapshot' }
+    extracted = { candidates: statement === ''
+      ? [] : [{ category: 'project', text: statement, verbatim: true }], reason: 'agent-finding' }
   }
   // *** §3.3 RULE 2: AN EXPLICIT "remember that…" STORES THE VERBATIM OWNER SPAN AT ONCE, WITH NO MODEL CALL — AND IT BELONGS HERE, IN THE LAYER THAT WRITES. ***
   // Design §3.3: *"'Remember that…' stores the verbatim owner span at once, with no model call, and returns the real result to Auma (2.3)."* §2.2's → Remembered row
@@ -309,7 +309,7 @@ export function consumeTurn(turn, policy) {
     // these branches yet. The passthrough above is what makes a relation-bearing extractor work the day one exists, and the court drives one
     // through this seam to prove it.
     turns: [ownerTurn], observationDate: String(policy?.validFrom ?? observedAt).slice(0, 10), known: known ?? {},
-  }, { forbidden, secretPatterns })
+  }, { forbidden, forbiddenDigests: policy?.forbiddenDigests, secretPatterns })
 
   const notes = []
   const journalLines = []
@@ -317,11 +317,12 @@ export function consumeTurn(turn, policy) {
   let previous = journalPrevious
   for (const [index, item] of reviewed.accepted.entries()) {
     const kind = CATEGORY_TO_KIND[String(item.category)] ?? 'observation'
-    const objectDigest = sha256Hex(String(item.statement))
+    const statement = (item.category === 'turn' || agentFinding) ? String(turn.text) : String(item.statement)
+    const objectDigest = sha256Hex(statement)
     const auraEntryHash = sha256Hex(`${String(turn.sessionId)}\u0000${String(turn.seq)}\u0000${objectDigest}`)
     auraAppends.push({ index: auraIndex + index, entryHash: auraEntryHash, digest: objectDigest })
     const note = buildRememberedNote({
-      category: kind, statement: String(item.statement), attributedTo: String(policy?.attributedTo ?? 'owner'),
+      category: kind, statement, attributedTo: String(policy?.attributedTo ?? 'owner'),
       evidence: [{ log: String(policy?.logPath ?? `auma-live/${String(turn.sessionId)}.jsonl`), turn: Number(turn.turn), turnDigest: sha256Hex(String(turn.canonicalEventLine)), quote: String(item.quote.text) }],
       validFrom: String(item.validFrom ?? observedAt).slice(0, 10), observedAt,
       // THE SAME TURN THE EVIDENCE CAME FROM, in the shape a verifier re-reads: sessionId, seq, at and the digest of the

@@ -77,6 +77,7 @@
           - job_list
           - job_kill
           - kira_*
+          - memory.put
           - mcp__viking__*
           - cordis_inspect_*
           - subagent*

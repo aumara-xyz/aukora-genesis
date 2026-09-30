@@ -37,29 +37,11 @@ export const CHANGE_MARKER = /\b(changed my mind|change of mind|no longer|instea
 /** A fallback span is bounded like every other span, so one long paragraph cannot become a record. */
 export const MAX_SPAN_CHARS = 600
 
-/**
- * THE WHOLE OWNER TURN IS REMEMBERED (2026-09-27: the owner asked Kira to "remember everything from all conversations").
- *
- * Until now a turn became memory only through a marker sentence ("I prefer", "we decided", "measured"), which kept roughly one
- * ask in sixteen and dropped everything else he said. Every finished owner turn now also yields ONE candidate that is his own
- * words, whitespace folded, bounded here. Longer turns are almost always pastes; the prefix is kept, and the receipt (the digest
- * of the exact event line) still cites the whole turn. The marker candidates stay, first, because they carry a kind.
- */
-export const MAX_TURN_CHARS = 2000
-
-/** The category a whole-turn candidate carries; `memory-capture-hook.mjs` files it as an observation. */
+/** Whole turns retain their original bytes; the shared writer splits them into bounded notes. */
 export const WHOLE_TURN_CATEGORY = 'turn'
-
-/**
- * The owner's whole turn as one statement: whitespace folded, control characters refused, bounded.
- * @param {unknown} text
- * @returns {string} the statement, or '' when there is nothing to keep.
- */
 export function wholeTurnText(text) {
-  if (typeof text !== 'string') return ''
-  const folded = text.replace(/\s+/gu, ' ').trim()
-  if (folded === '' || CONTROL_CHARACTERS.test(folded)) return ''
-  return folded.slice(0, MAX_TURN_CHARS).trim()
+  if (typeof text !== 'string' || !text.trim()) return ''
+  return text
 }
 
 /**

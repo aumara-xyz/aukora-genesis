@@ -649,7 +649,8 @@ async function main() {
   writeFileSync(configPath, `${JSON.stringify(next, null, 1)}\n`)
   for (const path of [...livePatchFiles, gateConfig].filter((p) => existsSync(p))) {
     const before = readFileSync(path, 'utf8')
-    const after = swapRelease(before, live, target)
+    const after = basename(path) === 'viking.patch.yml' && existsSync(join(target, 'viking.patch.yml'))
+      ? readFileSync(join(target, 'viking.patch.yml'), 'utf8') : swapRelease(before, live, target)
     if (after !== before) writeFileSync(path, after)
   }
   step('repoint', { note: `rows naming ${basename(live)} now name ${basename(target)}` })

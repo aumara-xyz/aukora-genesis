@@ -187,6 +187,7 @@ try {
   let onTurn = null
   const warnings = []
   const ctx = {
+    sessions: { flush: async () => true },
     on: (name, handler) => { if (name === 'agent/turn-stopping') onTurn = handler; return () => {} },
     reflect: { get: () => ({ readSurface: async () => ({ events: [event] }) }) },
     logger: { warn: line => warnings.push(line), info: () => {} },
@@ -210,7 +211,7 @@ try {
     assert.equal(note.grantsAuthority, false, 'a remembered note must carry grantsAuthority: false')
     assert.equal(note.label, 'unreviewed')
     const signed = await deps.listNotes({ tiers: ['signed'] })
-    assert.ok(signed.some(one => one.id === staged.recordId), 'the approved record should list as signed (vacuity)')
+    assert.equal(signed.length, 0, 'historical signed records enter ordinary memory through backfill, not a second active tier')
     assert.ok(!signed.some(one => one.id === note.id), 'the remembered note is listed as signed')
   })
 

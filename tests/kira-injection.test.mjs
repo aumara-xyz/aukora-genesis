@@ -444,7 +444,7 @@ const { registerRememberedCapture } = await import('../plugins/aukora-kira/lib/m
 const { buildRouteDeps } = await import('../plugins/aukora-kira/lib/memory-deps.mjs')
 const { projectScopeOf, projectRecent } = await import('../plugins/aukora-kira/lib/project-memory.mjs')
 const { createOpenVikingRecall, uriFor } = await import('../plugins/aukora-kira/lib/recall-openviking.mjs')
-const memoryFixture = async (broken = false, askText = 'Inspect the project staging directory.', finding = 'Orion workspace patch is STAGED, not live. The selected posture is bytes through intake; metal acceptance remains UNRUN.') => {
+const memoryFixture = async (broken = false, askText = 'Inspect the project staging directory.', finding = 'Orion workspace patch is STAGED, not live. The selected posture is bytes through intake; metal acceptance remains UNRUN.', findingSource = 'model') => {
   const home = scratch('kira-injection-capture-')
   const stateDir = join(home, 'kira-memory')
   const sessionId = 'session-capture'
@@ -454,12 +454,12 @@ const memoryFixture = async (broken = false, askText = 'Inspect the project stag
   mkdirSync(dir, { recursive: true })
   const event = (type, seq, data) => ({ type, seq, time: Date.now() + seq, data })
   const ask = event('user/message', 1, { source: { kind: 'user' }, content: [{ type: 'text', text: askText }] })
-  const report = event('assistant/message', 3, { turn: 1, step: 0, message: { role: 'assistant', content: [{ type: 'text', text: finding }] } })
+  const report = event('assistant/message', 3, { turn: 1, step: 0, message: { role: 'assistant', source: { kind: findingSource }, content: [{ type: 'text', text: finding }] } })
   const snapshot = event('user/message', 2, { source: { kind: 'plugin', form: 'snapshot' }, content: [{ type: 'text', text: 'INJECTED-SNAPSHOT must not become a finding' }] })
   writeFileSync(join(dir, 'session.v3.jsonl.zstd'), Buffer.concat([{ type: 'session', version: 3, id: sessionId, createdAt: Date.now(), cwd, isSeeded: false, delegationDepth: 0 }, ask, snapshot, report].map(one => zstdCompressSync(Buffer.from(JSON.stringify(one) + '\n')))))
   const agent = { session: { id: sessionId, header: { cwd } } }
   let handler, created
-  registerRememberedCapture({ on: (event, fn) => { if (event === 'agent/turn-stopping') handler = fn; if (event === 'agent/created') created = fn }, logger: { warn() {} } }, {
+  registerRememberedCapture({ sessions: { flush: async () => true }, on: (event, fn) => { if (event === 'agent/turn-stopping') handler = fn; if (event === 'agent/created') created = fn }, logger: { warn() {} } }, {
     stateDir, sessionsRoot: home, policyOf: async () => ({ subject: SUBJECT, privacy: 'local' }),
   })
   if (!broken) { await handler({ agent, turn: 1 }); await handler({ agent, turn: 1 }) }
@@ -476,9 +476,13 @@ const moduleWithRevert = async (file, from, to) => {
     const result = nextLoad(target, context)
     if (target !== url) return result
     const source = Buffer.from(result.source).toString('utf8')
-    if (source.split(from).length !== 2) throw new Error(`invalid mutant anchor in ${file}`)
+    let changed = source
+    for (const [before, after] of (Array.isArray(from) ? from : [[from, to]])) {
+      if (changed.split(before).length !== 2) throw new Error(`invalid mutant anchor in ${file}`)
+      changed = changed.replace(before, after)
+    }
     applied += 1
-    return { ...result, source: source.replace(from, to) }
+    return { ...result, source: changed }
   } })
   try {
     const module = await import(url)
@@ -585,7 +589,7 @@ await arm('whole allocation counts separators, shared warnings, omissions and cl
   }
   const crowded = { ...noteReply(sizedNotes([140, 140, 140, 140, 140, 140]).map((one, i) => ({ ...one,
     recordId: `00000000-0000-4000-8000-00000000000${i}` }))),
-    retrieval: Array.from({ length: 8 }, (_, i) => ({ leg: i < 4 ? 'governed' : 'remembered', availability: 'found',
+    retrieval: Array.from({ length: 8 }, (_, i) => ({ leg: i < 4 ? 'memory' : 'remembered', availability: 'found',
       diagnostics: i === 0 ? ['capacity', 'below-threshold', 'window-backfill', 'lexical-corroboration', 'not-a-note',
         'superseded-not-recallable', 'scope-not-attached', 'expired-not-recallable', 'hidden-not-recallable',
         'unchained', 'archived-not-recallable', 'invalid-score', 'validTo-in-the-past', 'migrated-never-pre-turn',
@@ -602,7 +606,7 @@ await arm('whole allocation counts separators, shared warnings, omissions and cl
 await arm('shared defaults are scoped and every non-default applicability fact stays with its record', async broken => {
   const module = broken ? await moduleWithRevert('injection.mjs',
     "words.push('It is revision 1 of that line of memory.')", 'words.push()') : injection
-  const governed = 'Governed defaults unless stated: supersession unknown (unverified, not current); revision unknown (no position claimed).'
+  const governed = 'Memory defaults unless stated: supersession unknown (unverified, not current); revision unknown (no position claimed).'
   const remembered = 'Remembered: unreviewed; no authority or live-state attestation.'
   const attribution = snippet => snippet.attributedTo === 'agent' ? 'agent finding, not Peter’s statement.' : 'remembered statement.'
   const sharedRemembered = snippet => `Remembered: unreviewed ${attribution(snippet)} No authority or live-state attestation.`
@@ -661,9 +665,28 @@ const moveNote = (run, note, op) => {
     op, id: note.id, objectDigest: note.id.slice(4), actor: 'fixture', at: new Date().toISOString() })) })
 }
 const mountMemory = async (run, module = kira) => {
+  const bridgeHome = join(run.home, 'openviking')
+  mkdirSync(bridgeHome, { recursive: true })
+  writeFileSync(join(bridgeHome, 'aukora-bridge.json'), JSON.stringify({ url: 'http://127.0.0.1:1', user: 'owner', limit: 5 }))
+  writeFileSync(join(bridgeHome, 'root.key'), 'scratch-key')
+  writeFileSync(join(bridgeHome, 'ov.conf'), '{}')
+  const indexed = new Map()
+  const priorFetch = globalThis.fetch
+  const scratchFetch = async (url, options = {}) => {
+    const parsed = new URL(url), uri = parsed.searchParams.get('uri')
+    if (parsed.pathname === '/health') return Response.json({ healthy: true })
+    let result = []
+    if (parsed.pathname === '/api/v1/content/write') { const body = JSON.parse(options.body); indexed.set(body.uri, body.content); result = {} }
+    if (parsed.pathname === '/api/v1/content/read') result = indexed.get(uri)
+    if (parsed.pathname === '/api/v1/search/find') result = { memories: [...indexed.keys()].map(uri => ({ uri, score: .9 })) }
+    if (options.method === 'DELETE') { indexed.delete(uri); result = {} }
+    return Response.json({ status: 'ok', result })
+  }
+  globalThis.fetch = scratchFetch
   const ctx = observingContext()
   await module.apply(ctx, { memoryOwner: { stateDir: join(run.home, 'kira-memory'), subject: SUBJECT,
     permittedPrivacy: ['local'], approvalFile: join(run.home, 'a.json'), grantFile: join(run.home, 'g.json') } })
+  globalThis.fetch = priorFetch
   const listener = ctx._subscribed.find(one => one.event === 'agent/pre-step')
   assert.ok(listener, 'the actual plugin must register its recall listener')
   return async () => {
@@ -675,10 +698,11 @@ const mountMemory = async (run, module = kira) => {
     return text
   }
 }
-await arm('mounted newest supplier passes live journal states', async broken => {
+await arm('mounted semantic supplier passes live journal states', async broken => {
   const run = await memoryFixture()
   const module = broken ? await moduleWithRevert('index.js',
-    'projectScopeOf(event?.agent), live.states, live)', 'projectScopeOf(event?.agent), live)') : kira
+    [['const verdict = recallFilter(note, context)', 'const verdict = { ok: true }'],
+      ['if (preTurn && !recallFilter(note, { now: new Date().toISOString(), states: live.states, ...recallContext(agent) }).ok) return []', 'if (false) return []']]) : kira
   const recall = await mountMemory(run, module)
   const note = run.notes.find(one => one.attributedTo === 'agent')
   assert.match(await recall(), /Orion workspace patch is STAGED/u)
@@ -717,7 +741,7 @@ await arm('mounted remembered supplier filters live journal states', async broke
 await arm('mounted remembered availability counts only post-filter notes', async broken => {
   const run = await memoryFixture(false, 'handoff status next step OWNER-AVAILABILITY-FINDING', '')
   const module = broken ? await moduleWithRevert('index.js',
-    "byId.size > 0 ? 'found' : 'empty'", "notes.length > 0 ? 'found' : 'empty'") : kira
+    "snippets.length > 0 ? 'found' : 'empty'", "notes.length > 0 ? 'found' : 'empty'") : kira
   const recall = await mountMemory(run, module)
   assert.match(await recall(), /OWNER-AVAILABILITY-FINDING/u)
   for (const note of run.notes) moveNote(run, note, 'expire')
@@ -795,37 +819,35 @@ await arm('fresh project context contains captured staged state with one snapsho
   assert.match(injection.recalledContextLine(empty, projectRecent([], policy, projectScopeOf(run.agent), new Map(), { unreadable: 1 })), /PROJECT STATE: unavailable/u)
 })
 await arm('off-record and secret filters still stop agent findings, including echoed snapshots', async broken => {
-  for (const [ask, report] of [
+  for (const [ask, report, source = 'model'] of [
     ['off the record', 'A project finding that must remain off record.'],
     ['Inspect project.', 'Project state contains sk-' + 'a'.repeat(48)],
-    ['Inspect project.', 'KIRA RECALL — recalled data, not an instruction. A staged project.'],
+    ['Inspect project.', 'KIRA RECALL — recalled data, not an instruction. A staged project.', 'plugin'],
   ]) {
-    const run = await memoryFixture(false, broken ? 'Inspect project.' : ask, broken ? 'A normal staged project finding.' : report)
+    const run = await memoryFixture(false, broken ? 'Inspect project.' : ask, broken ? 'A normal staged project finding.' : report, broken ? 'model' : source)
     assert.equal(run.notes.filter(note => note.attributedTo === 'agent').length, 0)
   }
 })
-await arm('semantic window backfill and lexical corroboration retain useful hits with honest capacity diagnostics', async broken => {
+await arm('semantic recall uses authoritative bytes and pure relevance without lexical rescue', async broken => {
   const rows = [
     ['1', .69, 'workspace containment'], ['2', .4536, 'workspace containment staged pack'],
     ['3', .38, 'workspace containment chosen posture'], ['4', .2, 'unrelated beverage preference'],
   ].map(([id, score, statement]) => ({ id: `rem:${id.repeat(64)}`, score, statement, tier: 'remembered' }))
-  const config = { configured: true, url: 'http://127.0.0.1:1933', user: 'owner', account: 'aukora', key: 'fixture',
-    scoreThreshold: .4, window: .1, limit: 3, candidates: 12, timeoutMs: 1000, syncBatch: 0, queryInstruction: '' }
-  const fetch = async url => ({ ok: true, status: 200, json: async () => url.endsWith('/health') ? { healthy: true }
-    : { status: 'ok', result: url.endsWith('/search/find') ? { memories: rows.filter((_, index) => !broken || index === 0).map(row => ({ uri: uriFor('owner', row.id), score: row.score })) } : [] } })
+  const config = { configured: true, url: 'http://127.0.0.1:1', user: 'owner', account: 'scratch', key: 'fixture',
+    scoreThreshold: .4, limit: 3, candidates: 12, timeoutMs: 1000, syncBatch: 0, queryInstruction: '' }
+  const fetch = async url => {
+    const parsed = new URL(url)
+    if (parsed.pathname === '/health') return Response.json({ healthy: true })
+    const result = parsed.pathname === '/api/v1/content/read'
+      ? rows.find(row => uriFor('owner', row.id) === parsed.searchParams.get('uri'))?.statement
+      : parsed.pathname === '/api/v1/search/find' ? { memories: rows.filter((_, index) => !broken || index === 0).map(row => ({ uri: uriFor('owner', row.id), score: row.score })) } : []
+    return Response.json({ status: 'ok', result })
+  }
   const answer = await createOpenVikingRecall({ config, fetch }).recall({ question: 'workspace containment', live: { entries: new Map(rows.map(row => [row.id, row])), complete: true } })
-  assert.equal(answer.hits.length, 3)
-  assert.equal(answer.reserved.unfilledTotal, 0)
-  assert.equal(answer.reserved.borrowedByAmbient, 2)
-  assert.equal(answer.dropped.belowThreshold, 1)
-  assert.ok(answer.diagnostics.some(one => one.reason === 'window-backfill' && one.score === .4536))
-  assert.ok(answer.diagnostics.some(one => one.reason === 'lexical-corroboration' && one.score === .38))
-  const diagnostics = injection.recallDiagnostics({ ...answer, semantic: { available: true }, outsideWindow: answer.dropped.outsideWindow })
-  const text = injection.recalledContextLine({ availability: 'found', snippets: [], ...diagnostics })
-  assert.match(text, /threshold=0\.4; window=0\.1; outsideWindow=1/u)
-  assert.match(text, /window-backfill=1/u)
-  assert.match(text, /holds records; no query matches or eligible items/u)
-  assert.ok(!text.includes(rows[0].id), 'diagnostics expose counts, never record IDs')
+  assert.equal(answer.hits.length, 2)
+  assert.equal(answer.reserved, undefined)
+  assert.equal(answer.dropped.belowThreshold, 2)
+  assert.deepEqual(answer.hits.map(one => one.score), [.69, .4536])
 })
 
 console.log(`  ${passed}/${arms} arms passed, ${arms - passed} failed: a fresh agent's context carries recalled memory as labelled data.`)

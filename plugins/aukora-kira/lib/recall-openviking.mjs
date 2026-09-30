@@ -1,29 +1,7 @@
-/**
- * OPENVIKING FINDS; THE CHAINED STORE ANSWERS.
- *
- * OpenViking (AGPL-3.0, pinned in `vendor/openviking/upstream-openviking.json`, installed by `scripts/openviking-setup.sh`)
- * is Kira's semantic FINDER over remembered notes, and nothing more:
- *
- *   · INDEX. Every live note is one file below the shared semantic root: remembered notes use
- *     `viking://user/<user>/memories/kira/remembered/rem-<hex>.md`; governed notes use `.../governed/<hex>.md` (legacy `governed/kira-<hex>.md` still accepted on read).
- *     Both carry `kira_id=...` and an explicit `tier=...` tag. `sync` reconciles them with the verified ledgers: a note the
- *     id OpenViking holds and the ledger no longer does (forgotten, hidden, unchained, or unsettled) is removed. Capture never waits for
- *     it: the note is written and chained first, and indexed afterwards, so a server that is down only delays the index.
- *   · FIND. A question goes to OpenViking; each hit is mapped back by id to the verified ambient/governed ledgers
- *     (`liveRemembered` plus the owner's settled read in memory-deps.mjs). A hit the ledger does not hold
- *     is DROPPED, counted and removed. The text and `bodyAtCapture` a caller sees are the note file's, never OpenViking's.
- *   · FORGET. A forgotten note is removed at once, and by the next reconcile if that removal could not reach the server.
- *
- * It grants nothing, raises no approval and writes nothing into the Kira store. It is off unless the OpenViking home holds
- * `aukora-bridge.json`. WHERE THE WORDS GO: to the loopback server that file names, and on to the embedding model in its
- * `ov.conf`; a model endpoint off this machine is refused unless the bridge file says `"allowRemoteModels": true`.
- *
- * @module @aukora/dsh-plugin-kira/recall-openviking
- */
-import { contentWords } from './memory-harness.mjs'
+import { sha256Hex } from './memory-tiers.mjs'
 import { dirname } from 'node:path'
-import { readJsonStrict, readTextStrict, stateExists } from './strict-read.mjs'
-import { GOVERNED_RESERVED_SLOTS, SEMANTIC_WINDOW, eligibleByTier, mergeReservedSlots } from './reserved-slots.mjs'
+import { readJsonStrict, readTextStrict, stateExists, durableWrite, ensureDirectory, withFileLock } from './strict-read.mjs'
+import { SEMANTIC_WINDOW } from './reserved-slots.mjs'
 
 /** The method name every semantic answer carries. */
 export const SEMANTIC_METHOD = 'openviking-semantic'
@@ -125,7 +103,7 @@ export function idFromUri(user, uri) {
   const value = String(uri)
   const ambient = value.match(new RegExp(`^viking://user/${user}/memories/kira/remembered/rem-([0-9a-f]{64})\\.md$`, 'u'))
   if (ambient !== null) return `rem:${ambient[1]}`
-  const governed = value.match(new RegExp(`^viking://user/${user}/memories/kira/governed/(?:kira-)?([0-9a-f]{64})\.md$`, 'u'))
+  const governed = value.match(new RegExp(`^viking://user/${user}/memories/kira/governed/(?:kira-)?([0-9a-f]{64})\\.md$`, 'u'))
   return governed === null ? null : `kira:${governed[1]}`
 }
 
@@ -138,268 +116,239 @@ export class OpenVikingError extends Error {
   }
 }
 
-/**
- * The bridge over one configured OpenViking server. The ledger it is handed is `{entries: Map<id, note>, complete}`, or a function that reads it;
- * `complete` false (the store could not be read) means nothing is removed, because a reconcile never deletes what it
- * could not see.
- * @param {{config: ReturnType<typeof readBridgeConfig>, fetch?: typeof fetch, logger?: {warn?: Function}, now?: () => number}} input
- */
-export function createOpenVikingRecall(input) {
-  const config = input?.config
-  const doFetch = input?.fetch ?? globalThis.fetch
-  const now = input?.now ?? Date.now
-  const configured = config?.configured === true
-  const root = configured ? `viking://user/${config.user}/memories/kira` : ''
-  /** Ids OpenViking holds, as last listed (re-listed every ten minutes) and kept current by this process. */
-  let indexed = null
-  let listedAt = 0
-  let health = { at: 0, ok: false, reason: 'not-probed' }
-  /**
-   * ONE RECONCILE OR FORGET AT A TIME, IN CALL ORDER, EACH READING THE LEDGER ONLY WHEN ITS TURN COMES. A ledger read before
-   * the wait still held a note forgotten meanwhile, and the reconcile wrote it back after the forget had said removed.
-   */
-  let queue = Promise.resolve()
-  const inTurn = task => { const turn = queue.then(task); queue = turn.catch(() => {}); return turn }
-  /** The ledger, or a function that reads it now. */
-  const ledgerNow = async ledger => (typeof ledger === 'function' ? await ledger() : ledger)
-  /** Normalize the two ledgers while accepting the old ambient-only `{entries}` shape. */
-  const ledgerShape = value => {
-    const ambient = value?.ambient instanceof Map
-      ? value.ambient
-      : value?.entries instanceof Map ? value.entries : new Map()
-    const governed = value?.governed instanceof Map
-      ? value.governed
-      : new Map([...ambient].filter(([, note]) => note?.tier === 'signed'))
-    const entries = new Map([...ambient, ...governed])
-    return { ambient, governed, entries, complete: value?.complete === true }
-  }
-
-  const call = async (method, path, body) => {
-    let response
-    try {
-      response = await doFetch(`${config.url}${path}`, {
-        method,
-        headers: { 'content-type': 'application/json', 'x-api-key': config.key, 'x-openviking-account': config.account, 'x-openviking-user': config.user },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-        signal: AbortSignal.timeout(config.timeoutMs),
-      })
-    } catch (error) {
-      throw new OpenVikingError('unreachable', `${method} ${path.split('?')[0]} did not reach ${config.url} (${String(error?.cause?.code ?? error?.name ?? 'unknown')})`)
-    }
-    const parsed = await response.json().catch(() => null)
-    if (!response.ok || parsed?.status !== 'ok') {
-      const why = String(parsed?.error?.code ?? parsed?.error?.message ?? parsed?.error ?? `HTTP ${String(response.status)}`).slice(0, 200)
-      throw new OpenVikingError(response.status === 404 ? 'not-found' : 'refused', `${method} ${path.split('?')[0]} was refused: ${why}`)
-    }
-    return parsed.result
-  }
-
-  /** Whether the server answers; a healthy answer is trusted for ten seconds, a failure is probed again next time. */
-  const available = async () => {
-    if (!configured) return { ok: false, reason: config?.reason ?? 'openviking-not-configured' }
-    if (health.ok && now() - health.at < 10_000) return health
-    try {
-      const response = await doFetch(`${config.url}/health`, { signal: AbortSignal.timeout(Math.min(config.timeoutMs, 2000)) })
-      const body = await response.json().catch(() => null)
-      const ok = response.ok && body?.healthy === true
-      health = { at: now(), ok, reason: ok ? 'healthy' : `openviking-unhealthy (HTTP ${String(response.status)})` }
-    } catch (error) {
-      health = { at: now(), ok: false, reason: `openviking-unreachable at ${config.url} (${String(error?.cause?.code ?? error?.name ?? 'unknown')})` }
-    }
-    return health
-  }
-
-  const listIndexed = async () => {
-    /** id -> EVERY uri that id was LISTED under. An id can appear under the A1 shape and the
-     *  legacy `governed/kira-<hex>.md` shape at once, and only a URI that was actually listed can
-     *  be deleted: a name rebuilt from the id removes the A1 file and leaves the other serving. */
-    const found = new Map()
-    // List both leaf directories: an OpenViking `ls` at the shared root may return
-    // only the `remembered/` and `governed/` child directories, not their files.
-    for (const branch of ['remembered', 'governed']) for (let offset = 0; ; offset += 1000) {
-      let rows
-      try {
-        rows = await call('GET', `/api/v1/fs/ls?uri=${encodeURIComponent(`${root}/${branch}`)}&simple=true&sort_by=name&limit=1000&offset=${String(offset)}`)
-      } catch (error) {
-        if (error?.code === 'kira.semantic:not-found') break // never written: an empty index, not a failure
-        throw error
-      }
-      rows = Array.isArray(rows) ? rows : []
-      for (const row of rows) {
-        const uri = typeof row === 'string' ? row : String(row?.uri ?? '')
-        const id = idFromUri(config.user, uri)
-        if (id === null) continue
-        if (!found.has(id)) found.set(id, new Set())
-        found.get(id).add(uri)
-      }
-      if (rows.length < 1000) break
-    }
-    return found
-  }
-
-  /** Delete ONE listed URI. Already absent is not a failure; could not be deleted is, and is
-   *  REPORTED rather than swallowed, because `sync` counts a removal only when the delete landed. */
-  const removeUri = async uri => {
-    try { await call('DELETE', `/api/v1/fs?uri=${encodeURIComponent(uri)}`); return { uri, ok: true } }
-    catch (error) {
-      if (error?.code === 'kira.semantic:not-found') return { uri, ok: true, absent: true }
-      return { uri, ok: false, because: String(error?.code ?? error?.message) }
-    }
-  }
-
-  /** Reconcile OpenViking with the ledger: add at most `budget` missing notes now, remove every id the ledger no longer holds. */
-  const sync = (ledger, options = {}) => inTurn(async () => {
-    const live = ledgerShape(await ledgerNow(ledger))
-    if (indexed === null || now() - listedAt > 600_000) { indexed = await listIndexed(); listedAt = now() }
-    const budget = Number.isFinite(options.budget) ? Number(options.budget) : Number.POSITIVE_INFINITY
-    const missing = [...live.entries.values()].filter(note => !indexed.has(note.id) && typeof note.statement === 'string' && note.statement !== '')
-    const gone = live.complete === true ? [...indexed.keys()].filter(id => !live.entries.has(id)) : []
-    let added = 0
-    let removed = 0
-    const failed = []
-    for (const id of gone) {
-      // EVERY SHAPE LISTED FOR THIS ID, never one name rebuilt from the id.
-      const results = []
-      for (const uri of indexed.get(id) ?? []) results.push(await removeUri(uri))
-      const unreached = results.filter(one => one.ok !== true)
-      // A REMOVAL IS COUNTED ONLY WHEN EVERY LISTED SHAPE IS GONE. Counting the attempt reports a
-      // legacy file removed while it is still being served, and `indexed.delete` stops the retry.
-      if (results.length === 0) failed.push(`remove ${id.slice(0, 12)}: listed with no uri`)
-      else if (unreached.length === 0) { indexed.delete(id); removed += 1 }
-      else failed.push(`remove ${id.slice(0, 12)}: ${unreached.map(one => String(one.because)).join('; ')}`)
-    }
-    for (const note of missing.slice(0, budget)) {
-      try {
-        await call('POST', '/api/v1/content/write', {
-          uri: uriFor(config.user, note.id), content: note.statement, mode: 'replace', wait: true,
-          timeout: Math.max(1, Math.round(config.timeoutMs / 1000)),
-          tags: [`kira_id=${note.id}`, `tier=${note.tier === 'signed' ? 'signed' : 'remembered'}`],
-        })
-        indexed.set(note.id, new Set([uriFor(config.user, note.id)]))
-        added += 1
-      } catch (error) {
-        failed.push(`add ${note.id.slice(0, 12)}: ${String(error?.code)}`)
-        if (error?.code === 'kira.semantic:unreachable') break
-      }
-    }
-    return { added, removed, pending: Math.max(0, missing.length - added), indexed: indexed.size, failed }
-  })
-
-  /** Remove a forgotten id in its turn, after a reconcile already writing it. Never throws: the answer says whether OpenViking was reached. */
-  const forgetNow = async id => {
-    const value = String(id)
-    if (!configured || (!NOTE_ID.test(value) && !GOVERNED_ID.test(value))) return { reached: false, because: configured ? 'not a Kira memory id' : String(config?.reason) }
-    // BOTH SHAPES. The write shape is always known; the LEGACY shape is known only if this index
-    // listed it. A record written before the A1 rename lives at `governed/kira-<hex>.md`, and
-    // removing only the A1 name leaves it serving while the forget reports it reached the server.
-    const uris = new Set([uriFor(config.user, value), ...(indexed?.get(value) ?? [])])
-    const results = []
-    for (const uri of uris) results.push(await removeUri(uri))
-    const unreached = results.find(one => one.ok !== true)
-    if (unreached !== undefined) {
-      return { reached: false, uri: unreached.uri, because: `${String(unreached.because)}; the next reconcile removes it, and recall never shows an id the ledger does not hold` }
-    }
-    indexed?.delete(value)
-    return { reached: true, uri: [...uris][0] }
-  }
-  const forget = id => inTurn(() => forgetNow(id))
-
-  /** Ask OpenViking, then keep ONLY hits whose id the ledger holds, above the threshold and within the window of the best. */
-  const recall = async ({ question, live: ledger, accept = () => true }) => {
-    const dropped = { unmapped: [], belowThreshold: 0, outsideWindow: 0, invalidScore: 0 }
-    const diagnostics = []
-    // WHETHER THE MEMORY STORE COULD BE READ IS REPORTED ON EVERY PATH, including the paths where
-    // OpenViking could not be reached at all. An unreachable INDEX and an unreadable LEDGER are
-    // different faults, and a caller that cannot tell them apart treats an unreadable store as an
-    // empty one. Read here for the report; read again after the search for the filter.
-    let ledgerComplete = false
-    try { ledgerComplete = ledgerShape(await ledgerNow(ledger)).complete === true } catch { ledgerComplete = false }
-    const up = await available()
-    if (!up.ok) return { available: false, reason: up.reason, hits: [], dropped, ledgerComplete }
-    let synced
-    try { synced = await sync(ledger, { budget: config.syncBatch }) } catch (error) { synced = { error: String(error?.code ?? error?.message) } }
-    let result
-    try {
-      result = await call('POST', '/api/v1/search/find', { query: `${config.queryInstruction}${String(question)}`, target_uri: root, limit: config.candidates })
-    } catch (error) {
-      health = { at: now(), ok: false, reason: String(error?.message) }
-      return { available: false, reason: String(error?.message), hits: [], dropped, sync: synced, ledgerComplete }
-    }
-    // READ AFTER THE SEARCH, not before the wait for the reconcile: a note forgotten meanwhile is not shown.
-    const live = ledgerShape(await ledgerNow(ledger))
-    ledgerComplete = live.complete === true
-    const candidates = []
-    for (const hit of [...(result?.memories ?? []), ...(result?.resources ?? [])].slice(0, Math.min(50, config.candidates))) {
-      const id = idFromUri(config.user, hit?.uri)
-      // THE LEDGER FILTER: an id the chained store does not hold is never shown, and is removed so it stops coming back.
-      const note = id === null ? undefined : live.entries.get(id)
-      if (note === undefined) {
-        dropped.unmapped.push(String(id ?? hit?.uri).slice(0, 160))
-        if (id !== null && live.complete === true) void forget(id)
-        continue
-      }
-      if (!accept(note)) continue // Scope/privacy exclusions are not stale index entries and must never be deleted.
-      const score = Number(hit?.score)
-      const tier = note.tier === 'signed' ? 'signed' : 'remembered'
-      if (!Number.isFinite(score)) { dropped.invalidScore += 1; diagnostics.push({ id, tier, score: null, reason: 'invalid-score' }); continue }
-      // Independent lexical evidence can rescue a weak embedding match. Two distinct
-      // content words, at least half the question, never retrieval frequency or tier.
-      const terms = [...new Set(contentWords(question))]
-      const words = new Set(contentWords(note.statement))
-      const overlap = terms.filter(term => words.has(term)).length
-      const lexical = score > 0 && overlap >= Math.max(2, Math.ceil(terms.length / 2))
-      if (score < config.scoreThreshold && !lexical) {
-        dropped.belowThreshold += 1
-        diagnostics.push({ id, tier, score, reason: 'below-threshold', lexicalOverlap: overlap })
-        continue
-      }
-      if (!candidates.some(one => one.id === id)) candidates.push({ id, score, note, tier,
-        relevance: score >= config.scoreThreshold ? 'semantic-threshold' : 'lexical-corroboration', lexicalOverlap: overlap })
-    }
-    candidates.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
-    // A4: THE WINDOW IS MEASURED WITHIN A TIER, NOT FROM THE BEST SCORE OVERALL. Measured from the
-    // global best (usually an ambient note), a governed record that cleared the threshold on its
-    // own was discarded because ambient text scored `window` higher — so its reserved slots stayed
-    // empty and governed memory was reachable only by near-tying the best ambient match.
-    const byTier = eligibleByTier(candidates, { threshold: config.scoreThreshold, window: config.window })
-    const preferred = new Set([...byTier.ambient, ...byTier.governed].map(one => one.id))
-    dropped.outsideWindow = candidates.filter(one => one.score >= config.scoreThreshold && !preferred.has(one.id)).length
-    // The window is a precision preference, not grounds to leave usable capacity empty.
-    // Governed still has first use of its reservation and may never exceed it.
-    const ordered = signed => candidates.filter(one => (one.tier === 'signed') === signed)
-      .sort((a, b) => Number(preferred.has(b.id)) - Number(preferred.has(a.id)) || b.score - a.score || a.id.localeCompare(b.id))
-    const reserved = mergeReservedSlots({ ambient: ordered(false), governed: ordered(true),
-      ceiling: config.limit, reserved: GOVERNED_RESERVED_SLOTS })
-    const selected = new Set(reserved.selected.map(one => one.id))
-    for (const one of candidates) diagnostics.push({ id: one.id, tier: one.tier, score: one.score,
-      reason: !selected.has(one.id) ? 'capacity' : one.relevance === 'lexical-corroboration' ? one.relevance
-        : preferred.has(one.id) ? 'semantic-threshold' : 'window-backfill', lexicalOverlap: one.lexicalOverlap })
-
-    const byId = new Map(candidates.map(one => [one.id, one]))
-    const hits = reserved.selected.map(slot => ({ ...byId.get(slot.id), slot: slot.slot }))
-    return { available: true, hits, dropped, reserved, diagnostics, threshold: config.scoreThreshold, window: config.window, sync: synced, ledgerComplete }
-  }
-
-  return Object.freeze({ configured, reason: configured ? undefined : config?.reason, available, sync, forget, recall })
+/** URI identity is the SHA-256 of the exact UTF-8 capture bytes, never a title or summary. */
+export function contentUri(user, hash) {
+  if (!/^[a-zA-Z0-9_-]{1,64}$/u.test(user) || !/^[0-9a-f]{64}$/u.test(hash)) throw new Error('memory-uri-invalid')
+  return `viking://user/${user}/memories/kira/content/${hash}.md`
 }
 
-/**
- * `kira_recall`'s `remembered` field for semantic hits, in the lexical field's own shape plus the score. Every value but
- * the score and the order is the note file's.
- */
-export function semanticNotes(answer, chars = 600) {
-  return Object.freeze({
-    state: 'found', method: SEMANTIC_METHOD, grantsAuthority: false,
-    notes: answer.hits.map(({ id, score, note, slot, relevance }) => ({
-      id, text: String(note.statement).slice(0, chars), observedAt: note.observedAt ?? null, score,
-      tier: note.tier === 'signed' ? 'signed' : 'remembered', slot, relevance, attributedTo: note.attributedTo, scope: note.scope,
-      source: { sessionId: note.source?.sessionId ?? null, seq: note.source?.seq ?? null }, bodyAtCapture: note.bodyAtCapture ?? null,
-      rememberedChain: { index: note.aura?.index ?? null, entryHash: note.aura?.entryHash ?? null },
-    })),
-    droppedUnmapped: answer.dropped.unmapped.length, droppedBelowThreshold: answer.dropped.belowThreshold,
-    outsideWindow: answer.dropped.outsideWindow, diagnostics: answer.diagnostics ?? [], threshold: answer.threshold, window: answer.window,
-    ...(answer.reserved === undefined ? {} : { reserved: answer.reserved }),
-    ...(answer.sync === undefined ? {} : { index: answer.sync }),
-    ceiling: SEMANTIC_CEILING,
+export function createOpenVikingRecall(input) {
+  const config = { ...SEMANTIC_DEFAULTS, ...input?.config }
+  const configured = config.configured === true
+  const doFetch = input.fetch ?? globalThis.fetch
+  const root = `viking://user/${config.user}/memories/kira`
+  const acknowledgementFile = input.stateDir ? `${input.stateDir}/remembered/index/ack.json` : null
+  let acknowledgements = {}
+  if (acknowledgementFile && stateExists(acknowledgementFile)) {
+    try { acknowledgements = readJsonStrict(acknowledgementFile) } catch { /* retry every chain entry */ }
+  }
+  let serial = Promise.resolve()
+  const inTurn = task => { const next = serial.then(task); serial = next.catch(() => {}); return next }
+  const ledgerNow = async source => {
+    const value = typeof source === 'function' ? await source() : source
+    const entries = value?.entries instanceof Map ? value.entries : new Map([...(value?.ambient ?? []), ...(value?.governed ?? [])])
+    return { ...value, entries, complete: value?.complete === true }
+  }
+  const hashOf = note => note.contentHash ?? sha256Hex(note.statement)
+  const call = async (method, path, body) => {
+    try {
+      const response = await doFetch(`${config.url}${path}`, { method, redirect: 'error',
+        headers: { 'content-type': 'application/json', 'x-api-key': config.key ?? '', 'x-openviking-account': config.account, 'x-openviking-user': config.user },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(config.timeoutMs) })
+      const parsed = await response.json()
+      if (!response.ok || parsed?.status !== 'ok') throw new OpenVikingError(response.status === 404 ? 'not-found' : 'refused', 'index request refused')
+      return parsed.result
+    } catch (error) {
+      if (error instanceof OpenVikingError) throw error
+      throw new OpenVikingError('unreachable', 'index request failed')
+    }
+  }
+  const available = async () => {
+    if (!configured) return { ok: false, reason: config.reason ?? 'openviking-not-configured' }
+    try {
+      const response = await doFetch(`${config.url}/health`, { redirect: 'error', signal: AbortSignal.timeout(Math.min(2000, config.timeoutMs)) })
+      return response.ok && (await response.json()).healthy === true ? { ok: true } : { ok: false, reason: 'openviking-unhealthy' }
+    } catch { return { ok: false, reason: 'openviking-unreachable' } }
+  }
+  const ack = (uri, ids) => {
+    acknowledgements[uri] = ids
+    if (acknowledgementFile) {
+      // Multiple capture processes can share a store. Merge under the chain's lock.
+      ensureDirectory(dirname(acknowledgementFile))
+      withFileLock(acknowledgementFile, () => {
+        let current = {}
+        if (stateExists(acknowledgementFile)) { try { current = readJsonStrict(acknowledgementFile) } catch {} }
+        if (ids === null) delete current[uri]
+        else current[uri] = ids
+        acknowledgements = current
+        durableWrite(acknowledgementFile, `${JSON.stringify(current)}\n`, { dir: dirname(acknowledgementFile) })
+      })
+    } else if (ids === null) delete acknowledgements[uri]
+  }
+  const removeUri = async uri => {
+    try { await call('DELETE', `/api/v1/fs?uri=${encodeURIComponent(uri)}`) }
+    catch (error) { if (error.code !== 'kira.semantic:not-found') throw error }
+  }
+  let auditOffset = 0
+  const auditAcknowledged = async grouped => {
+    const uris = Object.keys(acknowledgements).filter(uri => grouped.has(uri))
+    const unreadable = [], tampered = []
+    const count = Math.min(uris.length, config.syncBatch)
+    for (let i = 0; i < count; i++) {
+      const uri = uris[(auditOffset + i) % uris.length]
+      try {
+        const bytes = await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`)
+        if (typeof bytes !== 'string') { ack(uri, null); unreadable.push(uri) }
+        else if (grouped.get(uri).some(note => note.statement !== bytes || hashOf(note) !== sha256Hex(bytes))) tampered.push(uri)
+      } catch (error) {
+        if (error.code === 'kira.semantic:not-found') { ack(uri, null); unreadable.push(uri) }
+      }
+    }
+    auditOffset = uris.length ? (auditOffset + count) % uris.length : 0
+    return { unreadable, tampered }
+  }
+  const groupLedger = live => {
+    const grouped = new Map()
+    for (const note of live.entries.values()) {
+      if (typeof note.statement !== 'string' || !note.statement || hashOf(note) !== sha256Hex(note.statement)) continue
+      const uri = contentUri(config.user, hashOf(note))
+      if (!grouped.has(uri)) grouped.set(uri, [])
+      grouped.get(uri).push(note)
+    }
+    return grouped
+  }
+  const sync = (source, options = {}) => inTurn(async () => {
+    if (!configured) return { added: 0, removed: 0, pending: 0, failed: ['openviking-not-configured'] }
+    const live = await ledgerNow(options.snapshot ?? source), grouped = groupLedger(live)
+    let added = 0, removed = 0
+    const failed = [], written = []
+    const audit = options.verifyAcknowledged ? await auditAcknowledged(grouped) : { unreadable: [], tampered: [] }
+    if (live.complete) for (const uri of Object.keys(acknowledgements)) if (uri.startsWith(`${root}/`) && !grouped.has(uri)) {
+      try { await removeUri(uri); ack(uri, null); removed++ } catch { failed.push('remove-failed') }
+    }
+    const missing = [...grouped].filter(([uri]) => !acknowledgements[uri])
+    const priority = new Set(options.priorityHashes ?? [])
+    const current = missing.filter(([, notes]) => priority.has(hashOf(notes[0])))
+    const older = missing.filter(([, notes]) => !priority.has(hashOf(notes[0])))
+    // New captures get the first bounded batch; a large old outbox cannot starve this turn.
+    const selected = [...current.slice(0, config.syncBatch), ...older.slice(0, options.budget ?? config.syncBatch)]
+    for (const [uri, notes] of selected) {
+      try {
+        await call('POST', '/api/v1/content/write', { uri, content: notes[0].statement, mode: 'replace', wait: true,
+          timeout: Math.max(1, Math.round(config.timeoutMs / 1000)), tags: [`content_sha256=${hashOf(notes[0])}`, 'source=kira-memory'] })
+        written.push(uri)
+      } catch { failed.push('index-write-failed'); break }
+    }
+    // One latest snapshot after the entire async batch protects forget races without an N-by-N store scan.
+    const latest = await ledgerNow(source), latestGroups = groupLedger(latest)
+    for (const uri of written) {
+      const alive = latestGroups.get(uri) ?? []
+      if (!alive.length) {
+        if (latest.complete) { try { await removeUri(uri); ack(uri, null); removed++ } catch { failed.push('remove-failed') } }
+        continue
+      }
+      ack(uri, alive.map(note => note.id)); added++
+    }
+    return { added, removed, pending: [...latestGroups.keys()].filter(uri => !acknowledgements[uri]).length,
+      indexed: Object.keys(acknowledgements).length, failed, audit }
   })
+  const forget = id => inTurn(async () => {
+    const uris = Object.entries(acknowledgements).filter(([, ids]) => Array.isArray(ids) && ids.includes(id)).map(([uri]) => uri)
+    if (NOTE_ID.test(id) || GOVERNED_ID.test(id)) uris.push(uriFor(config.user, id))
+    if (GOVERNED_ID.test(id)) uris.push(`${root}/governed/kira-${id.slice(5)}.md`)
+    let failedUri
+    for (const uri of new Set(uris)) {
+      try { await removeUri(uri); ack(uri, null) }
+      catch { ack(uri, [id]); failedUri ??= uri }
+    }
+    return failedUri ? { reached: false, uri: failedUri, because: 'index deletion pending; recall excludes forgotten records' }
+      : { reached: true, uri: uris[0] }
+
+  })
+  const recall = async ({ question, live: source, accept = () => true, candidates: readCandidates, govern = notes => notes, limit = config.limit }) => {
+    const dropped = { unmapped: [], tampered: [], unreadable: [], belowThreshold: 0, outsideWindow: 0, invalidScore: 0 }
+    const diagnostics = []
+    let live = await ledgerNow(source)
+    const up = await available()
+    if (!up.ok) return { available: false, reason: up.reason, hits: [], dropped, ledgerComplete: live.complete }
+    let synced
+    try { synced = await sync(source, { budget: config.syncBatch, snapshot: live }) } catch { synced = { failed: ['index-sync-failed'] } }
+    let result
+    try { result = await call('POST', '/api/v1/search/find', { query: `${config.queryInstruction}${String(question)}`, target_uri: root, limit: config.candidates }) }
+    catch { return { available: false, reason: 'semantic-recall-failed', hits: [], dropped, ledgerComplete: live.complete } }
+    const candidateNotes = typeof readCandidates === 'function' ? await readCandidates() : []
+    // Read content concurrently, then govern everything with one latest ledger after network I/O.
+    const byUri = new Map()
+    for (const note of live.entries.values()) {
+      const uri = contentUri(config.user, hashOf(note))
+      if (!byUri.has(uri)) byUri.set(uri, [])
+      byUri.get(uri).push(note.id)
+    }
+    const reads = await Promise.all([...(result?.memories ?? []), ...(result?.resources ?? [])].slice(0, config.candidates).map(async hit => {
+      const uri = String(hit?.uri ?? '')
+      const named = idFromUri(config.user, uri)
+      const ids = byUri.get(uri) ?? (named && live.entries.has(named) ? [named] : [])
+      if (!uri.startsWith(`${root}/`) || !ids.length) return { uri, ids: [], unmapped: true }
+      try { return { uri, ids, score: Number(hit.score), bytes: await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`) } }
+      catch { return { uri, ids, unreadable: true } }
+    }))
+    live = await ledgerNow(source)
+    const verified = [], raw = []
+    for (const read of reads) {
+      const { uri, score, bytes, ids } = read
+      if (read.unmapped) { dropped.unmapped.push(uri); continue }
+      if (read.unreadable || typeof bytes !== 'string') { dropped.unreadable.push(uri); ack(uri, null); continue }
+      const matches = ids.map(id => live.entries.get(id)).filter(Boolean)
+      if (!matches.length) { dropped.unmapped.push(uri); continue }
+      if (typeof bytes !== 'string' || matches.some(note => hashOf(note) !== sha256Hex(bytes) || note.statement !== bytes)) {
+        dropped.tampered.push(uri); diagnostics.push({ reason: 'content-hash-mismatch', uri }); continue
+      }
+      if (!Number.isFinite(score)) { dropped.invalidScore++; continue }
+      if (score < config.scoreThreshold) { dropped.belowThreshold++; continue }
+      for (const note of matches) if (!raw.some(one => one.id === note.id)) raw.push({ id: note.id, score, note, uri, tier: 'remembered', relevance: 'semantic-threshold' })
+    }
+    if (candidateNotes.length) govern(candidateNotes, live)
+    const filtered = new Map(govern(raw.map(hit => hit.note), live).map(note => [note.id, note]))
+    // A rebuilt index may return no hits at all. Probe a bounded rotating acknowledgement batch;
+    // missing documents become durable retries, while changed bytes stay withheld, never overwritten.
+    if (reads.length === 0) {
+      const audit = await inTurn(() => auditAcknowledged(groupLedger(live)))
+      dropped.unreadable.push(...audit.unreadable); dropped.tampered.push(...audit.tampered)
+    }
+    for (const hit of raw) {
+      const note = filtered.get(hit.id)
+      if (note && accept(note)) verified.push({ ...hit, note })
+    }
+    verified.sort((a, b) => b.score - a.score || String(b.note.observedAt ?? '').localeCompare(String(a.note.observedAt ?? '')) || (Number.isSafeInteger(b.note.aura?.index) ? b.note.aura.index : -1) - (Number.isSafeInteger(a.note.aura?.index) ? a.note.aura.index : -1) || a.id.localeCompare(b.id))
+    const hits = verified.slice(0, Math.max(1, Math.min(50, limit)))
+    return { available: true, hits, dropped, diagnostics, threshold: config.scoreThreshold, sync: synced, ledgerComplete: live.complete }
+  }
+  const listLegacy = async () => {
+    const found = []
+    const visit = async (uri, depth = 0) => {
+      if (depth > 12) throw new Error('memory-legacy-tree-too-deep')
+      for (let offset = 0; ; offset += 1000) {
+        let rows
+        try { rows = await call('GET', `/api/v1/fs/ls?uri=${encodeURIComponent(uri)}&simple=false&limit=1000&offset=${offset}`) }
+        catch (error) { if (error.code === 'kira.semantic:not-found') return; throw error }
+        if (!Array.isArray(rows)) throw new Error('memory-legacy-list-invalid')
+        for (const row of rows) {
+          const child = typeof row === 'string' ? row : row.uri
+          if (typeof child !== 'string' || !child.startsWith(`${uri}/`) || child.startsWith(`${root}/content/`)) continue
+          if (/\.(md|txt)$/u.test(child)) found.push(child)
+          else if (typeof row === 'object' && (row.is_dir || row.isDir || row.type === 'directory')) await visit(child, depth + 1)
+        }
+        if (rows.length < 1000) return
+      }
+    }
+    await visit(`viking://user/${config.user}/memories`)
+    return found
+  }
+  const readContent = uri => {
+    if (!String(uri).startsWith(`viking://user/${config.user}/memories/`)) throw new Error('memory-legacy-uri-out-of-scope')
+    return call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`)
+  }
+  return Object.freeze({ configured, reason: config.reason, available, sync, forget, recall, listLegacy, readContent })
+}
+
+export function semanticNotes(answer, chars = 600) {
+  return { state: answer.hits.length ? 'found' : 'empty', method: SEMANTIC_METHOD, grantsAuthority: false,
+    notes: answer.hits.map(({ id, score, note, relevance, uri }) => ({ id, text: note.statement.slice(0, chars), score,
+      contentHash: note.contentHash ?? sha256Hex(note.statement), uri, observedAt: note.observedAt ?? null,
+      tier: 'remembered', relevance, attributedTo: note.attributedTo, scope: note.scope, source: note.source,
+      bodyAtCapture: note.bodyAtCapture ?? null, rememberedChain: note.aura,
+      advisoryOnly: true, grantsAuthority: false, containment: note.containment, staleness: note.staleness })),
+    droppedUnmapped: answer.dropped.unmapped.length, droppedTampered: answer.dropped.tampered.length,
+    droppedUnreadable: answer.dropped.unreadable.length, droppedBelowThreshold: answer.dropped.belowThreshold,
+    diagnostics: answer.diagnostics, threshold: answer.threshold, index: answer.sync, ceiling: SEMANTIC_CEILING }
 }

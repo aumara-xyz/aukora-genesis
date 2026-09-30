@@ -39,14 +39,14 @@ const makeServer = (uris, { deleteFails = false } = {}) => {
     if (parsed.pathname === '/api/v1/fs' && options.method === 'DELETE') {
       const target = parsed.searchParams.get('uri')
       attempts.push(target)
-      if (deleteFails) return { ok: false, status: 500, async json() { return { status: 'error', error: { code: 'WRITE_FAILED' } } } }
+      if (deleteFails === true || deleteFails === target) return { ok: false, status: 500, async json() { return { status: 'error', error: { code: 'WRITE_FAILED' } } } }
       const known = files.delete(target)
       if (!known) return { ok: false, status: 404, async json() { return { status: 'error', error: { code: 'NOT_FOUND' } } } }
       return response(200, {})
     }
     return { ok: false, status: 404, async json() { return { status: 'error', error: { code: 'NOT_FOUND' } } } }
   }
-  return { files, attempts, bridge: createOpenVikingRecall({ config, fetch }) }
+  return { files, attempts, bridge: createOpenVikingRecall({ config, fetch }), setDeleteFailure: value => { deleteFails = value } }
 }
 
 const holds = () => ({ ambient: new Map(), governed: new Map([[ID, { id: ID, tier: 'signed', statement: 'governed one' }]]), complete: true })
@@ -61,30 +61,19 @@ const arm = async (name, body) => {
 
 process.stdout.write('\nA1 court — removal is counted only when the file is gone\n\n')
 
-await arm('a legacy-named file IS removed (was: left serving while reported removed)', async () => {
-  const { files, bridge } = makeServer([LEGACY])
-  const done = await bridge.sync(holdsNothing(), { budget: 0 })
-  assert.equal(files.has(LEGACY), false, 'the legacy-named file must actually be deleted')
-  assert.equal(done.removed, 1, 'and the removal must be counted')
-  assert.deepEqual(done.failed, [], 'with no failure reported')
-})
-
-// THE BINDING ARM: the counter may never claim a removal the server did not perform.
-await arm('THE BINDING ARM: removed is 0 whenever the file survives', async () => {
-  const { files, bridge } = makeServer([LEGACY], { deleteFails: true })
-  const done = await bridge.sync(holdsNothing(), { budget: 0 })
-  assert.equal(files.has(LEGACY), true, 'the stub keeps the file when DELETE fails')
-  assert.equal(done.removed, 0,
-    `sync reported ${String(done.removed)} removed while the file is still there`)
-  assert.ok(done.failed.length > 0, 'and the unreached removal must be named')
-})
-
-await arm('both shapes present are both removed, counted once', async () => {
+await arm('reconciliation preserves legacy originals for backfill instead of erasing untracked memory', async () => {
   const { files, bridge } = makeServer([A1, LEGACY])
   const done = await bridge.sync(holdsNothing(), { budget: 0 })
-  assert.equal(files.has(A1), false, 'the A1 file must be deleted')
-  assert.equal(files.has(LEGACY), false, 'and the legacy file too')
-  assert.equal(done.removed, 1, 'one id removed, not two')
+  assert.equal(files.has(A1), true); assert.equal(files.has(LEGACY), true)
+  assert.equal(done.removed, 0)
+})
+
+await arm('an explicit forget reports failed deletion without claiming removal', async () => {
+  const { files, bridge } = makeServer([LEGACY], { deleteFails: true })
+  assert.equal((await bridge.forget(ID)).reached, false)
+  const done = await bridge.sync(holdsNothing(), { budget: 0 })
+  assert.equal(files.has(LEGACY), true); assert.equal(done.removed, 0)
+  assert.ok(done.failed.length > 0)
 })
 
 await arm('the control arm: an id the ledger HOLDS is never removed', async () => {
@@ -120,6 +109,36 @@ await arm('forget() reports NOT reached when a delete fails, and does not claim 
   const answer = await bridge.forget(ID)
   assert.equal(answer.reached, false, 'a failed delete may not be reported as reached')
   assert.equal(files.has(A1), true, 'and the file is still there, as reported')
+})
+
+await arm('cold forget removes legacy-only and both shapes without a prior listing', async () => {
+  for (const uris of [[LEGACY], [A1, LEGACY]]) {
+    const { files, attempts, bridge } = makeServer(uris)
+    assert.equal((await bridge.forget(ID)).reached, true)
+    assert.equal(files.size, 0)
+    assert.deepEqual(new Set(attempts), new Set([A1, LEGACY]))
+  }
+})
+
+await arm('partial legacy deletion failure reports failure and survives cold and warm retries', async () => {
+  for (const warm of [false, true]) {
+    const { files, bridge, setDeleteFailure } = makeServer([A1], { deleteFails: LEGACY })
+    if (warm) await bridge.sync(holds(), { budget: 0 })
+    files.add(LEGACY) // Even a warm listing has never seen the legacy URI.
+    const forgotten = await bridge.forget(ID)
+    assert.equal(forgotten.reached, false)
+    assert.equal(forgotten.uri, LEGACY)
+    assert.equal(files.has(A1), false)
+    assert.equal(files.has(LEGACY), true)
+    const failed = await bridge.sync(holdsNothing(), { budget: 0 })
+    assert.equal(failed.removed, 0)
+    assert.equal(failed.failed.length, 1)
+    setDeleteFailure(false)
+    const retried = await bridge.sync(holdsNothing(), { budget: 0 })
+    assert.equal(retried.removed, 1)
+    assert.deepEqual(retried.failed, [])
+    assert.equal(files.size, 0)
+  }
 })
 
 process.stdout.write(`\nkira-a1-legacy-forget: ${String(passed)} passed, ${String(failures)} failed\n\n`)

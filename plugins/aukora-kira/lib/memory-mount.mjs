@@ -117,9 +117,6 @@ export function mountKiraRoutes(context, deps) {
     ['list', KIRA_ROUTES.list, 'GET'],
     ['verify', KIRA_ROUTES.verify, 'POST'],
     ['forget', KIRA_ROUTES.forget, 'POST'],
-    ['trust', KIRA_ROUTES.trust, 'POST'],
-    ['pending', KIRA_ROUTES.pending, 'GET'],
-    ['approve', KIRA_ROUTES.approve, 'POST'],
   ]
   const mounted = []
   const disposers = []

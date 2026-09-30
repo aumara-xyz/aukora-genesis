@@ -22,6 +22,9 @@
  *
  * @module @aukora/dsh-plugin-kira/memory-auma-hook
  */
+import { createTrackedMemory } from './tracked-memory.mjs'
+import { openVikingHome, readBridgeConfig } from './recall-openviking.mjs'
+import { CONTROLS, ownerControlIn } from './memory-forget.mjs'
 import { STORE_PATHS, planStoreWrite, objectFileName } from './memory-store.mjs'
 // THE LOG'S OWN WRITER, for the aura appends below: `planStoreWrite` writes exactly what it is given, and this path was giving it unchained lines.
 import { chainAuraEntries } from './memory-owner.mjs'
@@ -134,54 +137,20 @@ export function registerAumaTurnCapture(ctx, options = {}) {
   const { stateDir, policyOf, logger, now, onRemembered, events = AUMA_TURN_EVENTS } = options
   if (typeof ctx?.on !== 'function') refuse('ctx-without-on', 'the consumer needs a context whose `on` can subscribe to the turn-finished event')
   if (typeof stateDir !== 'string' || stateDir === '') refuse('state-dir-missing', 'the store is inside the user\'s state directory, so a capture without one has nowhere to write')
-  const seenTurns = new Map()
+  let memory
 
   const capture = async payload => {
     try {
       const turn = readAumaTurn(payload)
       const key = `${turn.sessionId}\u0000${String(turn.turn)}`
-      if (seenTurns.get(turn.sessionId) === turn.turn) return
-      seenTurns.set(turn.sessionId, turn.turn)
       const policy = typeof policyOf === 'function' ? await policyOf() : {}
       const at = canonicalInstant(turn.at)
-      // *** THE ANCHOR IS WRITTEN ON ARRIVAL, BEFORE ANY EXTRACTION, AND IT IS ALSO THE WATERMARK (§3.3 rules 1 and 3). *** Two properties in one
-      // entry, which is why the design names the digest in both: the anchor says the turn ARRIVED — so "she heard it and kept nothing" stays
-      // distinguishable from "she never heard it" — and because its `id` IS the turn's canonical digest, reading it back is how a RESTART knows the
-      // turn was already processed: *"The watermark is persisted in the journal … extraction is idempotent per turn digest, so a backend restart
-      // during c[apture neither re-extracts nor skips]"*.
-      //
-      // `seenTurns` ABOVE DIES WITH THE PROCESS AND WAS THE ONLY GUARD, so a restart re-extracted a turn it had already anchored — C26's "neither
-      // re-extracts nor skips" failing on its first half. The map stays as the cheap path for the common case; the journal is the one that survives.
-      const turnDigest = sha256Hex(String(turn.canonicalEventLine))
-      const journalFile = `${stateDir}/${STORE_PATHS.journal}`
-      const priorLines = readLinesIfPresent(journalFile)
-      let priorEntry = null
-      if (priorLines.length > 0) {
-        try { priorEntry = JSON.parse(priorLines[priorLines.length - 1]) } catch { priorEntry = null }
-      }
-      const alreadyAnchored = priorLines.some(line => {
-        try {
-          const entry = JSON.parse(line)
-          return entry?.op === 'turn' && String(entry?.id) === turnDigest
-        } catch { return false }
-      })
-      if (alreadyAnchored) return
-      const turnEntry = nextEntry({
-        previous: priorEntry, op: 'turn', id: turnDigest, objectDigest: turnDigest, actor: 'kira.auma-turn/v1',
-        reason: `turn ${String(turn.sessionId)} seq ${String(turn.seq)} arrived`, at,
-      })
-      // THE JOURNAL'S OWN DIRECTORY, NOT THE STORE ROOT: the anchor is written to `${stateDir}/remembered/journal.jsonl`, and ensuring only
-      // `stateDir` left `remembered/` missing on a store that had never been written to — so `appendJournalLine` threw ENOENT, the catch below
-      // turned it into a warning, and the FIRST capture of a fresh store produced nothing at all. The court caught it as "got 0" on the arm that
-      // asserts one record, which is what that arm is for.
+      if ((turn.quotedFrom === 'ownerText' && ownerControlIn(turn.text)) || policy.offTheRecord || Object.entries(CONTROLS).some(([k,v]) => v.stopsCapture && policy.controls?.[k])) return
+      if (FACE_CONTROL_INTENTS[turn.control]) return
       ensureDirectory(`${stateDir}/${STORE_PATHS.remembered}`)
-      appendJournalLine({ file: journalFile, line: JSON.stringify(turnEntry) })
-      // THE UNSIGNED TIER'S OWN CHAIN (the original memory law, `memory-law.mjs`), never the approved `aura.jsonl` the export copies.
+      const journalFile = `${stateDir}/${STORE_PATHS.journal}`
       const auraFile = `${stateDir}/${STORE_PATHS.rememberedAura}`
-      // ONE WRITER AT A TIME ON THE CHAIN (2026-09-27, red team). The lock is held from reading the log's length (the index each
-      // note records) to the last append, so every entry names the head it follows. `remembered/` was ensured above, so the
-      // directory the lock lives in exists. Settle writes the approved chain, a different file, and no longer shares this lock.
-      const remembered = withFileLock(auraFile, () => {
+      withFileLock(auraFile, () => {
         // *** §6.1's VOICE FORGET: THE DECISION IS MINE, THE CALLER WAS MISSING, AND THIS IS THE CALLER. ***
         //
         // Measured 2026-09-29 with AUMA: `voiceForgetDecision` had ONE hit in this lane — its own declaration — while every input it takes was already on the wire. `forget that` reached
@@ -191,7 +160,7 @@ export function registerAumaTurnCapture(ctx, options = {}) {
         //
         // Everything below is read OFF THE PAYLOAD: `ownerText`, `memoryInjected` (the handles she was shown, with tiers), `spokenMemory` (the outside words). **Nothing is invented**,
         // which is the property AUMA's own court asserts about its side of this wire.
-        if (turn.control === 'forget') {
+        if (turn.quotedFrom === 'ownerText' && turn.control === 'forget') {
           const injected = Array.isArray(payload?.memoryInjected) ? payload.memoryInjected : []
           // THE PAIR LIST MY OWN ADAPTER RETURNS (`[[id, handle]]`), accepted when a face passes it through. Either shape resolves the handle; neither is guessed.
           const pairs = Array.isArray(payload?.handles) ? payload.handles : []
@@ -284,100 +253,19 @@ export function registerAumaTurnCapture(ctx, options = {}) {
             }
           }
         }
-        // THE LOG'S LENGTH IS READ HERE, UNDER THE LOCK AND AFTER A SPOKEN FORGET'S OWN ENTRY, so each note's `aura.index` is the
-        // position its entry actually lands at. Read before the forget branch, it was one short whenever a turn both hid and remembered.
-        const auraIndex = readLinesIfPresent(auraFile).length
-        const captured = consumeTurn(
-          {
-            sessionId: turn.sessionId, sessionTitle: turn.sessionTitle, seq: turn.seq, at,
-            turn: turn.turn, text: turn.text, canonicalEventLine: turn.canonicalEventLine,
-          },
-          {
-            subject: String(policy?.subject ?? ''), privacy: String(policy?.privacy ?? 'local'),
-            // *** PASSED, NOT DEFAULTED. *** Without these two the filter is empty and the refusal above fires — which is the point: a capture path
-            // that forgets to configure its secret filter must fail loudly rather than remember a key.
-            forbidden: FORBIDDEN_WINDOW_DIGESTS, secretPatterns: SECRET_PATTERNS,
-            observedAt: at, auraIndex, validFrom: String(at).slice(0, 10),
-            // *** THE ENTRY MUST NAME ITS PREDECESSOR, AND THE LIB ALREADY HAD THE PARAMETER. *** `consumeTurn` destructures `journalPrevious = null` and threads it into
-            // `nextEntry`; this call never passed it, so every capture wrote `previous: null`. On the court's EMPTY fixture that is correct and invisible — there is no
-            // predecessor. MEASURED ON A COPY OF PETER'S REAL STORE (round 114): a capture onto a 143-entry chain wrote two entries both claiming `previous: null`, so the chain
-            // had three heads and nothing joined the new note to everything before it. The same defect the forget entry once had, on the path AK-UI and AUMA both write through.
-            //
-            // THE TAIL IS PARSED STRICTLY AND A BAD TAIL REFUSES: if the last line cannot be read, `previous` would fall back to null and the capture would append an unlinked
-            // entry to a chain that is already damaged — silently making it worse. Refusing is the honest answer, and `refuse` is already this hook's vocabulary.
-            journalPrevious: (() => {
-              const priorLines = readLinesIfPresent(journalFile)
-              if (priorLines.length === 0) return null
-              try {
-                return JSON.parse(priorLines[priorLines.length - 1])
-              } catch {
-                refuse('journal-tail-unreadable', 'the journal\'s last line is not JSON, so a new entry cannot name its predecessor — refusing rather than appending an unlinked entry to a damaged chain')
-                return null
-              }
-            })(),
-            // *** §3.3 RULE 2's FLAG, SET FROM THE APP'S OWN DECISION. *** `explicitRemember` has existed on the lib's candidate mapper since before tonight and
-            // NOTHING EVER SET IT — so the marker path had a flag, a consumer for it, and no producer. The app already decided this turn matched
-            // `/\bremember (?:that|this)\b/iu` and says so in `control`; this passes that decision down rather than re-reading the owner's words in a second place.
-            explicitRemember: turn.control === 'remember',
-            // THE FACE'S OWN READING OF THE OWNER'S WORDS, honoured here too: an off-the-record, stop-remembering or someone-here turn
-            // that reaches this consumer (an older face, another emitter) is still not captured. `consumeTurn` also reads the words itself.
-            controls: Object.hasOwn(FACE_CONTROL_INTENTS, turn.control) ? { [FACE_CONTROL_INTENTS[turn.control]]: true } : {},
-          }
-        )
-        // *** A DROPPED CANDIDATE SAYS WHY, AND NEVER SAYS WHAT. *** The bare 64-hex pattern drops notes that quote a digest,
-        // which is the right trade (a false positive costs a record; a leaked key costs everything) — but a silent drop cannot be told
-        // from a broken extractor, so each one is reported by RULE with a SHA-256 OF THE STATEMENT as its identifier. The statement
-        // itself is never logged: the log is exactly where a leaked key would travel.
-        for (const drop of captured.dropped ?? []) {
-          logger?.warn?.(`aukora-kira: a candidate was not remembered (${String(drop.rule)}): statement sha256 ${sha256Hex(String(drop.statement ?? '')).slice(0, 16)}… — the text is deliberately not logged`)
-        }
-        // *** THE SAME BOUND THE REMEMBERED TIER ENFORCES, AND THIS HOOK HAD NONE. *** Measured 2026-09-26: a live presence turn could write
-        // unbounded notes while `memory-remembered-hook.mjs` stopped at eight — one contract, two behaviours. Reported by COUNT, never by text.
-              // THE SAME BOUND THE REMEMBERED TIER ENFORCES, through the same function.
-        const notes = boundedNotes(captured.notes, { logger })
-        if (notes.length === 0) {
-          // THE ANCHOR IS ALREADY WRITTEN, above — which is what writing it on arrival buys: a turn that remembered nothing still left its mark, and
-          // the early return here costs the store nothing.
-          return notes
-        }
-        // *** AND THE NOTES' LINES ARE BUILT BY THE JOURNAL, WHICH THEY WERE NOT. *** This hook hand-rolled them as
-        // `{op:'remember', id, at, previous, actor}`: an op OUTSIDE the design's twelve (`nextEntry` refuses it by name — `kira.journal:op-unknown`)
-        // in a shape carrying no `objectDigest`, no `seq` and no `hash`. `planStoreWrite` checks only that the counts match and writes what it is
-        // given, so those lines reached disk unhashed and `verifyChain` reads the tail as DAMAGED — "the entry does not hash to what it claims".
-        // A damaged store is exactly what §5.1 step 1 must STOP housekeeping on, so the first live turn would have frozen the nightly job. Every line
-        // is chained now: onto the anchor, then onto each other, the way the housekeeping command chains its record and its changes.
-        const journalLines = []
-        let chained = turnEntry
-        for (const note of notes) {
-          const entry = nextEntry({ previous: chained, op: 'add', id: note.id, objectDigest: String(note.id).slice(4), actor: 'kira.auma-turn/v1', reason: 'a live presence turn became a remembered note', at })
-          journalLines.push(JSON.stringify(entry))
-          chained = entry
-        }
-        const plan = planStoreWrite({
-          stateDir,
-          notes,
-          journalLines,
-          // *** THE LINE CARRIES THE HASH THE NOTE POINTS AT, READ FROM THE NOTE. *** The note has carried `aura:{index, entryHash}` since the
-          // capture hook was written; THIS append did not, so a verifier holding the note could not confirm its own chain entry and
-          // answered MISSING. `kira-auma-live-end-to-end` — the end-to-end court Fable asked for — caught it on its first real run.
-          //
-          // *** AND THE LINE IS NOW CHAINED, WHICH IS THE HALF THAT WAS STILL MISSING. *** `index` and `entryHash` say WHERE IN THE LOG the note's entry sits and what the note
-          // thinks its hash is; neither is a position in the CHAIN. This path goes through `planStoreWrite`, which serialises exactly what it is given — so every captured turn
-          // appended a line with no `sequence`, no `prev` and no `hash`. MEASURED on Peter's real store: 143 of its 146 aura lines are that shape, and three of this lane's
-          // writers were producing them. The stored consequences are not theoretical: a capture leaves an unchained TAIL, and the next `appendAura` — any settle through the owner,
-          // a tool, the queue, AK-UI's approve — calls `readHead()`, which refuses a hashless tail by name. **Fixing the tail alone would be undone by the very next capture.**
-          //
-          // `chainAuraEntries` is called ONCE for the whole batch so each entry names the one before it, including its predecessor inside this batch.
-          auraAppends: chainAuraEntries(stateDir, notes.map(note => ({ op: 'add', id: note.id, at, tier: note.tier, by: 'kira.auma-turn/v1', index: note.aura?.index, entryHash: note.aura?.entryHash, digest: String(note.id).slice(4) })), { file: auraFile }),
-        })
-        for (const dir of plan.dirs) ensureDirectory(dir)
-        for (const write of plan.writes) durableWrite(write.file, write.contents, { dir: stateDir })
-        // THE BOUNDARY'S APPENDER, which terminates the line and fsyncs — the same repair the migration forced on the older path.
-        for (const append of plan.appends) appendJournalLine({ file: append.file, line: append.line })
-        return notes
       })
-      if (remembered.length === 0) return
-      onRemembered?.({ sessionId: turn.sessionId, turn: turn.turn, seq: turn.seq, remembered: remembered.length, ids: remembered.map(note => note.id), quotedFrom: turn.quotedFrom })
+      memory = options.memory ? (typeof options.memory === 'function' ? options.memory() : options.memory)
+        : memory ?? createTrackedMemory({ stateDir, subject: policy.subject, policyOf,
+            config: options.config ?? readBridgeConfig(openVikingHome(stateDir)), fetch: options.fetch })
+      const result = turn.quotedFrom === 'ownerText' ? await memory.captureTurn(turn, { ...policy, attributedTo: 'owner-voice', explicitRemember: turn.control === 'remember' }) : { remembered: 0 }
+      if (result.remembered) onRemembered?.({ sessionId: turn.sessionId, turn: turn.turn, ...result })
+      // The voice reply is a distinct agent report. Its source is the emitted reply, not a fabricated assistant session line.
+      if (typeof payload.text === 'string' && payload.text.trim()) {
+        const reply = await memory.remember({ text: payload.text, from: 'auma-live', at,
+          migrationKey: `auma-reply:${turn.sessionId}:${turn.seq}:${sha256Hex(turn.canonicalEventLine)}`,
+          source: { state: 'UNLINKED', cited: false, because: 'host auma/turn-finished reply; request line identifies the turn, not the reply bytes' } })
+        if (reply.remembered) onRemembered?.({ sessionId: turn.sessionId, turn: turn.turn, ...reply })
+      }
     } catch (error) {
       // THE ONLY OUTLET, and it is loud rather than silent: a capture fault costs a record and must never cost the reply. The
       // refusal names the field, so a mismatched emit is visible in the log rather than only in the absence of memories.

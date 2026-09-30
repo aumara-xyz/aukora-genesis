@@ -36,7 +36,8 @@ const fakeFetch = async (url, options = {}) => {
   const parsed = new URL(url)
   if (parsed.pathname === '/health') return { ok: true, status: 200, async json() { return { healthy: true } } }
   if (parsed.pathname === '/api/v1/fs/ls') return response(200, [...files.keys()])
-  if (parsed.pathname === '/api/v1/content/write') return response(200, {})
+  if (parsed.pathname === '/api/v1/content/write') { const body = JSON.parse(options.body); files.set(body.uri, body); return response(200, {}) }
+  if (parsed.pathname === '/api/v1/content/read') return response(200, files.get(parsed.searchParams.get('uri'))?.content)
   if (parsed.pathname === '/api/v1/fs' && options.method === 'DELETE') {
     files.delete(parsed.searchParams.get('uri')); return response(200, {})
   }

@@ -10,6 +10,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { backfillTrackedMemory } from '../plugins/aukora-kira/lib/tracked-backfill.mjs'
 import { createMemoryOwner } from '../plugins/aukora-kira/lib/memory-owner.mjs'
 import { stageKiraMemoryRecord } from '../plugins/aukora-kira/lib/record.mjs'
 import { createKiraRecallService, readOnlySurface } from '../plugins/aukora-kira/lib/recall-service.mjs'
@@ -86,11 +87,13 @@ try {
   })
   assert.equal(typeof preStep, 'function')
 
+  const backfill = await backfillTrackedMemory({ stateDir, subject: SUBJECT })
+  assert.equal(backfill.imported, 1)
   const callers = [
     ['kira.recall', () => service.recall(WORDS)],
     ['kira_recall', () => tool.execute({ action: 'query', text: WORDS }, {})],
     ['injection/snapshot', () => preStep({ agent: { session: {} } }, async () => ({ kind: 'continue', messages: [] }))],
-    ['Memory list', () => routeRequest({ method: 'GET', path: KIRA_ROUTES.list, query: { tier: 'signed' } }, deps)],
+    ['Memory list', () => routeRequest({ method: 'GET', path: KIRA_ROUTES.list, query: { tier: 'remembered' } }, deps)],
     ['Memory verify', () => routeRequest({ method: 'POST', path: KIRA_ROUTES.verify, body: { id: staged.recordId } }, deps)],
   ]
   for (const [name, call] of callers) {
@@ -100,7 +103,8 @@ try {
     const recalled = JSON.stringify(answer).includes(WORDS)
     const verifies = name === 'Memory verify'
     process.stdout.write(`settled ${name}: verifiedCalls=${calls} ${verifies ? `source=${answer.body?.source}` : `recalled=${recalled}`}\n`)
-    assert.ok(calls > 0, `${name} must call the verified reader (got ${calls})`)
+    if (name === 'Memory list') assert.equal(calls, 0, 'ordinary memory reads the remembered chain, not approval evidence')
+    else assert.ok(calls > 0, `${name} must call the verified reader (got ${calls})`)
     if (verifies) {
       assert.equal(answer.status, 200)
       assert.equal(answer.body.source, 'VERIFIED')
@@ -127,7 +131,7 @@ try {
     ), { rank: makeRecordRanker() })
     for (const [name, call] of [
       ['kira.recall', () => scopedService.recall(WORDS)],
-      ['Memory list', () => routeRequest({ method: 'GET', path: KIRA_ROUTES.list, query: { tier: 'signed' } }, scopedDeps)],
+      ['Memory list', () => routeRequest({ method: 'GET', path: KIRA_ROUTES.list, query: { tier: 'remembered' } }, scopedDeps)],
       ['Memory verify', () => routeRequest({ method: 'POST', path: KIRA_ROUTES.verify, body: { id: staged.recordId } }, scopedDeps)],
     ]) {
       const before = verifiedCalls
@@ -135,7 +139,7 @@ try {
       const calls = verifiedCalls - before
       const recalled = JSON.stringify(answer).includes(WORDS)
       process.stdout.write(`filtered ${restriction} ${name}: verifiedCalls=${calls} recalled=${recalled}\n`)
-      assert.ok(calls > 0, `${name} must enforce ${restriction} through the verified reader`)
+      if (name !== 'Memory list') assert.ok(calls > 0, `${name} must enforce ${restriction} through the verified reader`)
       assert.equal(recalled, false, `${name} must withhold a record outside the ${restriction} policy`)
       assert.notEqual(answer.body?.source, 'VERIFIED', 'an excluded record must not produce a verification claim')
       if (name === 'kira.recall') assert.equal(answer.status, 'empty')
@@ -178,6 +182,9 @@ try {
         const calls = verifiedCalls - before
         const recalled = JSON.stringify(answer).includes(WORDS)
         process.stdout.write(`tampered ${damage} ${name}: verifiedCalls=${calls} recalled=${recalled}\n`)
+        if (name === 'Memory list') {
+          assert.equal(calls, 0); assert.equal(recalled, true, 'migrated memory is independent of old approval evidence'); continue
+        }
         assert.ok(calls > 0, `${name} must verify the damaged ${damage}`)
         assert.equal(recalled, false, `${name} must withhold the damaged ${damage}`)
         if (name === 'kira.recall') assert.equal(answer.status, 'undetermined')

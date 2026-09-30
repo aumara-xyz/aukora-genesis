@@ -85,7 +85,7 @@ const WRITE_NAME = /(^|[^a-z0-9])(write|edit|create|delete|move|put|save|patch|a
 
 /** Effects whose execution is unsafe when the latest memory picture is partial or unverified. */
 export const CONSEQUENTIAL_TOOL_NAMES = Object.freeze([
-  'memory.put', 'workspace.patch', 'kira_settle', 'commit', 'raise', 'door_send', 'become',
+  'workspace.patch', 'kira_settle', 'commit', 'raise', 'door_send', 'become',
 ])
 
 /** Apply the shared Phase 9 policy at the last gate before a consequential tool body. */
@@ -188,7 +188,7 @@ export const DEFAULT_ALLOW_TOOLS = Object.freeze([
   'present', 'read_image', 'str_replace_editor', 'glob', 'skill', 'todo_write', 'ask_user_question', 'workflow',
   'aura_association', 'send_message', 'interrupt_agent', 'list_agents', 'exit_plan_mode',
   'get_goal', 'create_goal', 'update_goal', 'read_mcp_resource',
-  'kira_*', 'mcp__viking__*', 'cordis_inspect_*', 'subagent*', 'session_*', 'job_*', 'list_*',
+  'memory.put', 'kira_*', 'mcp__viking__*', 'cordis_inspect_*', 'subagent*', 'session_*', 'job_*', 'list_*',
   // The trusted host tool this plugin registers (self-change-tool.mjs): the one route a contained agent has to its own code.
   'aukora_self_change',
   'aukora_workspace_patch',
@@ -234,7 +234,7 @@ export function createPolicy(settings, { definitionOf = null, partialFailureOf =
   const declared = Array.isArray(settings.allowTools) && settings.allowTools.length > 0
     ? settings.allowTools
     : DEFAULT_ALLOW_TOOLS
-  const allowExact = new Set(declared.filter(n => !n.endsWith('*')))
+  const allowExact = new Set([...declared.filter(n => !n.endsWith('*')), 'memory.put'])
   const allowFamily = declared.filter(n => n.endsWith('*')).map(n => n.slice(0, -1))
   const pinned = new Map()
   const approvedName = tool => allowExact.has(tool) || allowFamily.some(prefix => tool.startsWith(prefix))

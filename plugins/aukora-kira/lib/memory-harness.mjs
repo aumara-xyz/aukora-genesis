@@ -18,6 +18,7 @@
  * @module @aukora/dsh-plugin-kira/memory-harness
  */
 import { sha256Hex } from './memory-tiers.mjs'
+import { carriesForbiddenPhrase } from './compaction-export.mjs'
 
 /** The most items one extraction run may contribute (§3.5: "Output: at most 12 items"). */
 export const MAX_ITEMS_PER_RUN = 12
@@ -124,7 +125,9 @@ export function quoteCheck(item, turns) {
  */
 export function applyHarness(input, policy = {}) {
   const { items = [], turns = [], observationDate, known = {} } = input ?? {}
-  const forbidden = policy.forbidden ?? []
+  // Preserve the legacy plaintext API, but a digest is never a plaintext phrase.
+  const forbidden = (policy.forbidden ?? []).filter(value => !/^[0-9a-f]{64}$/iu.test(value))
+  const digests = [...(policy.forbiddenDigests ?? []), ...(policy.forbidden ?? []).filter(value => /^[0-9a-f]{64}$/iu.test(value))].map(value => value.toLowerCase())
   const sensitivePatterns = policy.secretPatterns ?? []
   const accepted = []
   const dropped = []
@@ -140,10 +143,11 @@ export function applyHarness(input, policy = {}) {
 
     // §3.5 rule 3: filters. A secret or a forbidden phrase is dropped whether or not the quote checked out.
     const haystack = `${statement} ${normalize(item?.quote?.text)}`
-    const sensitive = sensitivePatterns.find(pattern => pattern.test(haystack))
+    const sensitive = sensitivePatterns.find(pattern => { pattern.lastIndex = 0; return pattern.test(haystack) })
     if (sensitive !== undefined) { drop('filter-secret', `the text matches a secret pattern (${String(sensitive)})`); continue }
     const banned = forbidden.find(phrase => haystack.toLowerCase().includes(normalize(phrase).toLowerCase()))
     if (banned !== undefined) { drop('filter-forbidden', `the text contains the forbidden phrase ${JSON.stringify(banned)}`); continue }
+    if (digests.length && carriesForbiddenPhrase(haystack, digests)) { drop('filter-forbidden', 'the text matches a forbidden window digest'); continue }
 
     // §3.5 rule 7: TIME. validFrom is the observation date unless a deterministic parser FINDS the model's date in the
     // quote itself; otherwise the model's date is thrown away. There is no trust in a model-supplied date.

@@ -1,53 +1,17 @@
-/**
- * REMEMBERED CAPTURE AT THE TURN BOUNDARY — the tier that needs no approval, written where a turn actually ends.
- *
- * **WHY THIS IS A SIBLING OF `autostage-hook.mjs` RATHER THAN A CHANGE TO IT.** That hook already listens at
- * `agent/turn-stopping`, picks the turn's own real ask with `lastRealAsk`, and hands a candidate to the PENDING QUEUE — the
- * approval route. Peter's complaint is that route: three settled, one hundred and twenty-five waiting, and nobody told him he
- * had to approve anything. This hook listens at the SAME boundary with the SAME selector and writes a **remembered** note:
- * automatic, unsigned, receipt-backed, usable in recall at once. The two paths coexist on purpose — `trusted` is still the
- * route to authority, and it stays optional.
- *
- * FABLE'S ITEM (3) NAMES `auma.turnFinished`, WHICH DOES NOT EXIST: measured across plugins, packages and notes, zero matches.
- * The real boundary is `agent/turn-stopping`, a serial dispatch where the handler takes one parameter and calls no `next`.
- * This hook uses that, and the event name is stated here so a reader comparing the two does not think a subscription is
- * missing.
- *
- * *** NO LINE, NO RECEIPT, NO NOTE. *** A remembered note's whole claim is that a verifier can re-read the event it came from
- * and re-hash it. The digest path in the sibling hook carries only the ask TEXT, which cannot be re-hashed to anything — so
- * this hook reads the exact canonical event line through the audited boundary and refuses to write when it cannot. A
- * remembered note with no receipt would be a note nobody can check, which is precisely what the tier exists to prevent.
- *
- * EVERY FAULT COSTS A RECORD, NEVER A TURN: the whole body is inside one guard whose only outlet is a warning, following the
- * sibling hook's rule, because a turn is a person's work and a capture is bookkeeping.
- *
- * @module @aukora/dsh-plugin-kira/memory-remembered-hook
- */
+/** Automatic prompt and final-answer capture, sharing the tracked memory writer. */
 import { randomUUID } from 'node:crypto'
 import { basename, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { eventText, isRealAsk, sessionIdOfAgent } from './autostage-hook.mjs'
-import { setLaneDoorMessageIds } from './autostage-hook.mjs'
+import { eventText, isRealAsk, sessionIdOfAgent, setLaneDoorMessageIds } from './autostage-hook.mjs'
 import { laneDoorMessageIds } from './lane-door-messages.mjs'
-import { STORE_PATHS, planStoreWrite } from './memory-store.mjs'
-import { nextEntry } from './memory-journal.mjs'
-import { chainAuraEntries } from './memory-owner.mjs'
-import { sha256Hex, canonicalInstant } from './memory-tiers.mjs'
-import { MAX_NOTES_PER_TURN, boundedNotes, consumeTurn } from './memory-capture-hook.mjs'
-// THE SECRET SHAPES COME FROM THE ONE PLACE THEY ARE DEFINED, so the capture path and the compaction path cannot drift apart.
-import { FORBIDDEN_WINDOW_DIGESTS, SECRET_PATTERNS } from './compaction-export.mjs'
-import { appendJournalLine, durableWrite, ensureDirectory, readJsonStrict, readLinesIfPresent, withFileLock } from './strict-read.mjs'
-import { readMemoryTurn, recentSessionHeaders } from './session-read.mjs'
+import { readJsonStrict, readLinesIfPresent } from './strict-read.mjs'
+import { readMemoryTurn, recentSessionHeaders, readLastUserMessage } from './session-read.mjs'
 import { projectScopeOf } from './project-memory.mjs'
 import { CONTROLS, ownerControlIn } from './memory-forget.mjs'
-import { proposeMemoryPutThroughCell } from './wasm-proposal.mjs'
-import { MEMORY_PUT_PROPOSAL_WASM_SHA256 } from './wasm-cell/aukora/guest/wasm-proposal-cell.mjs'
-import { canonicalJSON } from './wasm-cell/aukora/kernel-seed/canonical-json.mjs'
+import { createTrackedMemory } from './tracked-memory.mjs'
+import { openVikingHome, readBridgeConfig } from './recall-openviking.mjs'
+export { MAX_NOTES_PER_TURN, boundedNotes } from './memory-capture-hook.mjs'
 
-/**
- * `bodyAtCapture` (AUKORA-37's name; the formats are versioned apart): the release directory, its plugin-set digest and the code
- * Aura chain head this process reports. HOST-REPORTED, never attestation: a same-UID writer could say otherwise.
- */
 export function bodyAtCaptureReader({ releaseRoot, home }) {
   let pluginSetDigest = null
   try { pluginSetDigest = readJsonStrict(`${releaseRoot}/.dsh-build/plugin-set.json`).setDigest ?? null } catch { /* a checkout has none */ }
@@ -63,238 +27,93 @@ export function bodyAtCaptureReader({ releaseRoot, home }) {
   }
 }
 
-/** The directory holding a file, for a durability sync. The boundary derives this too; naming it here keeps the call explicit. */
-
-/** How many notes one turn may remember. The contract's "small bound": a turn is a turn, not a corpus. */
-// THE BOUND IS DEFINED ONCE, in the module that decides what a turn yields; this re-export keeps the name this hook has always had.
-export { MAX_NOTES_PER_TURN, boundedNotes } from './memory-capture-hook.mjs'
-
-/**
- * Register the remembered-capture listener on a Cordis context.
- *
- * @param {{on?: Function, reflect?: {get?: Function}, logger?: {warn?: Function}}} ctx
- * @param {{stateDir: string, sessionsRoot: string, policyOf: () => Promise<{subject: string, privacy: string}>,
- *          readerService?: string, logger?: {warn?: Function}, seen?: Map<string, string>, now?: () => number}} options
- * @returns {() => void} a disposer, following `ctx.on`'s own contract.
- */
 export function registerRememberedCapture(ctx, options = {}) {
   const { stateDir, sessionsRoot, policyOf } = options
-  const logger = options.logger ?? ctx?.logger
-  if (typeof ctx?.on !== 'function') return () => {}
-  if (typeof stateDir !== 'string' || typeof sessionsRoot !== 'string' || typeof policyOf !== 'function') {
-    // REFUSED BY NAME rather than registered and failing per turn: a capture hook with nowhere to write would warn on every
-    // turn of every session, which is noise a reader learns to ignore.
-    logger?.warn?.('aukora-kira: remembered capture not registered (stateDir, sessionsRoot and policyOf are all required)')
-    return () => {}
-  }
-  // **TELL THE PREDICATE WHICH MESSAGES THE LANE DOOR CAUSED, BEFORE ANY TURN IS READ.**
-  //
-  // *Without this the id check is inert and the exclusion is the text prefix alone* — **which is the state this item
-  // exists to leave.** *Loaded once here rather than per turn:* the file is append-only and grows slowly, **and a hook
-  // that re-read it on every turn would put a file read on the path of every session.**
-  //
-  // **A STATE ROOT THAT HOLDS NO DOOR FILE YIELDS AN EMPTY SET**, so a machine where no lane has ever spoken behaves
-  // exactly as before — *the prefix still applies, and nothing Peter says is lost.*
-  // FIXED ON MERGE (Fable, 2026-09-27): the door writes under the SHELL's state root (<state>/lane-door/), and this store sits
-  // at <state>/home/kira-memory, so the root is two levels up; reading at stateDir found nothing. And the set is re-read per
-  // turn (below), because a set loaded once at registration misses every message the door sends after the app starts.
-  const laneDoorRoot = dirname(dirname(stateDir))
-  setLaneDoorMessageIds(laneDoorMessageIds(laneDoorRoot))
-  // SESSION → THE LAST ASK CAPTURED, mirroring the staging hook's own gate.
-  const seenTurns = options.seen ?? new Map()
+  const logger = options.logger ?? ctx.logger
+  if (typeof ctx.on !== 'function' || !stateDir || !sessionsRoot || typeof policyOf !== 'function') return () => {}
   const bootedAt = Date.now()
   const bodyNow = bodyAtCaptureReader({ releaseRoot: options.releaseRoot ?? fileURLToPath(new URL('../../..', import.meta.url)), home: sessionsRoot })
-  // ONCE PER CAUSE, ON STDOUT: `ctx.logger` never reaches <state>/logs/server.log, so every failure here was silent. Never the text.
-  const failed = new Set()
-  const fail = cause => {
-    const key = String(cause).replace(/\d+/gu, '#').slice(0, 160)
-    if (!failed.has(key)) { failed.add(key); console.log(`[kira-capture] automatic memory FAILED: ${String(cause).slice(0, 240)}`) }
+  const laneDoorRoot = dirname(dirname(stateDir))
+  let fallback
+  const memoryFor = async () => {
+    if (options.memory) return typeof options.memory === 'function' ? options.memory() : options.memory
+    const p = await policyOf()
+    return fallback ??= createTrackedMemory({ stateDir, subject: p.subject, policyOf,
+      config: options.config ?? readBridgeConfig(openVikingHome(stateDir)), fetch: options.fetch })
   }
-
   const capture = async (payload, recovery = false) => {
     try {
-      setLaneDoorMessageIds(laneDoorMessageIds(laneDoorRoot))
       const sessionId = sessionIdOfAgent(payload?.agent)
-      if (sessionId === null) return
-      let turn = Number.isInteger(payload?.turn) ? payload.turn : undefined
-      if (turn === undefined && !recovery) return
-      // *** DEDUPED ON THE ASK, NOT ON THE TURN, AND THAT IS A MEASURED LIMIT RATHER THAN A CHOICE. *** The surface's
-      // `user/message` disposition carries `['role', 'id', 'content', 'source']` and NO turn field, so a message cannot be
-      // attributed to the turn that is stopping — `lastRealAsk`'s own docstring says so, and the sibling hook dedupes on the
-      // ask for the same reason. Keying on the turn here would have re-remembered the same sentence on every later turn of
-      // the session: a memory multiplier, and the worst kind, because each copy would carry a valid receipt.
-      // THE RAW LOG'S TAIL (2026-09-27): this read the whole surface every turn (126 MB for the owner's session), then re-read the
-      // ask with a decoder that saw only the first zstd frame, so no turn was remembered. An absent ask (a lane-door turn) is normal.
-      const readTurn = readMemoryTurn({ stateRoot: sessionsRoot, sessionId, turn, beforeSeq: recovery ? payload.beforeSeq : undefined, ...(recovery ? { maxBytes: 2 * 1024 * 1024 } : {}) })
-      if (readTurn === null) return fail(`no session log under ${sessionsRoot}/sessions`)
-      if (!readTurn.ask) return
-      turn = readTurn.turn ?? turn
-      if (!Number.isInteger(turn)) return { previousSeq: readTurn.ask.event.seq, count: 0 }
-      const control = ownerControlIn(eventText(readTurn.ask.event))
-      if (control !== null && CONTROLS[control]?.stopsCapture) return
-      const scope = projectScopeOf(payload.agent)
-      const sources = [
-        ...(!recovery && isRealAsk(readTurn.ask.event) ? [readTurn.ask] : []),
-        ...(scope === null ? [] : readTurn.findings),
-      ]
-      const policy = await policyOf()
-      if (policy?.privacy !== 'local' || policy?.offTheRecord === true
-        || Object.entries(CONTROLS).some(([name, effect]) => policy?.controls?.[name] === true && effect.stopsCapture)) return
-      let remaining = MAX_NOTES_PER_TURN
-      for (const read of sources) {
-      const { event, line } = read
-      const agentFinding = event.type === 'assistant/message'
-      const ask = agentFinding ? event.data.message.content.filter(part => part?.type === 'text').map(part => part.text).join(' ').trim() : eventText(event)
-      const seq = Number.isInteger(event.seq) ? event.seq : null
-      if (seq === null || ask === '' || remaining <= 0) continue
-      const seenKey = `${sessionId}:${seq}`
-      if (seenTurns.has(seenKey)) continue
-      // AN ASK OLDER THAN THIS PROCESS gets `null` (UNKNOWN): this body is never pinned to a message it did not see.
-      const bodyAtCapture = !recovery && event.time >= bootedAt ? bodyNow() : null
-
-      // THE EVENT'S OWN TIME, because that is the canonical record: the surface event carries `{type, seq, time, data}` and its
-      // `time` is what the receipt's `at` must say. The first version took the time from the boundary's read, which answered a
-      // different clock and made the note disagree with the line it came from.
-      const stamp = Number.isFinite(event?.time) ? event.time : (Number.isFinite(read?.time) ? read.time : (options.now?.() ?? Date.now()))
-      const at = canonicalInstant(stamp)
-      // THE UNSIGNED TIER'S OWN CHAIN (the original memory law, `memory-law.mjs`): a remembered note is never chained into the
-      // approved `aura.jsonl`, which is what the public export copies. Settle no longer shares this file, so the lock below
-      // serializes the unsigned-tier writers only.
-      const auraFile = `${stateDir}/${STORE_PATHS.rememberedAura}`
-      // ONE WRITER AT A TIME ON THE CHAIN (2026-09-27, red team). The lock is held from reading the log's length (the index
-      // each note records) to the last append, so every entry names the head it follows. The lock file lives beside the
-      // chain, in `remembered/`, so that directory must exist before the lock is taken.
-      ensureDirectory(stateDir)
-      ensureDirectory(`${stateDir}/${STORE_PATHS.remembered}`)
-      const remembered = withFileLock(auraFile, () => {
-        // *** A TURN ALREADY REMEMBERED IS NOT REMEMBERED AGAIN AFTER A RESTART. *** The seq key above lives in memory; a goal
-        // lane re-armed after a restart runs an agent turn with no new ask, and its last ask would be captured a second time.
-        // The journal's `turn` anchor (the digest of the exact event line, no words) is what survives, as the Auma hook uses it.
-        const journalFile = `${stateDir}/${STORE_PATHS.journal}`
-        const turnDigest = sha256Hex(line)
-        const alreadyAnchored = readLinesIfPresent(journalFile).some(one => {
-          try {
-            const entry = JSON.parse(one)
-            return entry?.op === 'turn' && String(entry?.id) === turnDigest
-          } catch { return false }
-        })
-        if (alreadyAnchored) return []
-        const auraIndex = readLinesIfPresent(auraFile).length
-        const captured = consumeTurn(
-          { sessionId, sessionTitle: 'auma', seq, at, turn, text: ask, canonicalEventLine: line },
-          { ...policy, attributedTo: agentFinding ? 'agent' : 'owner', scope: scope ?? 'owner', subject: String(policy?.subject ?? ''), privacy: 'local', observedAt: at, auraIndex, validFrom: at.slice(0, 10), forbidden: FORBIDDEN_WINDOW_DIGESTS, secretPatterns: SECRET_PATTERNS },
-        )
-        // *** A DROPPED CANDIDATE SAYS WHY, AND NEVER SAYS WHAT. *** The bare 64-hex pattern drops notes that quote a digest,
-        // which is the right trade (a false positive costs a record; a leaked key costs everything) — but a silent drop cannot be told
-        // from a broken extractor, so each one is reported by RULE with a SHA-256 OF THE STATEMENT as its identifier. The statement
-        // itself is never logged: the log is exactly where a leaked key would travel.
-        for (const drop of captured.dropped ?? []) {
-          logger?.warn?.(`aukora-kira: a candidate was not remembered (${String(drop.rule)}): statement sha256 ${sha256Hex(String(drop.statement ?? '')).slice(0, 16)}… — the text is deliberately not logged`)
-        }
-        // THE BOUND AND ITS REPORT COME FROM ONE PLACE, so the court that drives them drives what RUNS.
-        const notes = boundedNotes(captured.notes, { logger, cap: remaining }).map(note => {
-          // The complete note carries statement/text, subject, category and provenance
-          // as the value of the closed memory.put pair. Keep an independent binding
-          // before entering the cell; persist only the host-validated snapshot.
-          const args = { key: note.id, value: { ...note, bodyAtCapture } }
-          const reviewed = JSON.parse(canonicalJSON(args))
-          const proposal = proposeMemoryPutThroughCell(args, reviewed)
-          return {
-            ...proposal.value,
-            wasmCell: {
-              sha256: MEMORY_PUT_PROPOSAL_WASM_SHA256,
-              // Hash of the validated canonical argumentsJson, without a trailing LF.
-              proposalDigest: sha256Hex(canonicalJSON(proposal)),
-            },
-          }
-        })
-        if (notes.length === 0) return notes
-        // THE TURN'S ANCHOR, a digest and a seq, never the words: CHAINED FIRST, WRITTEN ONLY AFTER THE NOTE (2026-09-27 review).
-        // It is the durable "done" mark, and appended before the plan, a refusal below (AURA_TAIL_TORN) left the ask anchored with
-        // no note, so no later turn retried it: measured, every ask during a torn tail was lost for good.
-        const prior = readLinesIfPresent(journalFile)
-        let previous = null
-        if (prior.length > 0) {
-          try { previous = JSON.parse(prior[prior.length - 1]) } catch { throw new Error('aukora-kira: the remembered journal tail is not JSON; refusing to append an unchained entry') }
-        }
-        const anchor = nextEntry({ previous, op: 'turn', id: turnDigest, objectDigest: turnDigest, actor: 'kira.capture/v1', reason: `turn ${String(sessionId)} seq ${String(seq)} was remembered`, at })
-
-        // ONE PLAN, THEN THE WRITES: a note and its journal line travel together, so a caller cannot write a note the store
-        // cannot account for — the rule `planStoreWrite` refuses a mismatch over.
-        const plan = planStoreWrite({
-          stateDir,
-          notes,
-          // CHAINED AFTER THE ANCHOR (2026-09-27, red team), as memory-auma-hook.mjs does: an unhashed 'remember' line
-          // is not one of the journal's ops and verifyChain reads it as DAMAGED, so the first captured turn would have broken it.
-          journalLines: (() => {
-            let chained = anchor
-            return notes.map(note => {
-              const entry = nextEntry({ previous: chained, op: 'add', id: note.id, objectDigest: String(note.id).slice(4), actor: 'kira.capture/v1', reason: 'remembered from a conversation turn', at })
-              chained = entry
-              return JSON.stringify(entry)
-            })
-          })(),
-          // *** AND NOT `JSON.stringify`: THE PLAN ENCODES IT EXACTLY ONCE. *** This line stringified the entry and `planStoreWrite` encoded the
-          // string again, so every aura entry this path wrote was double-encoded — the same defect the migration's first apply produced, alive
-          // in the path Peter's conversations go through. It also lacked `entryHash`, so the chain could not confirm the note's own entry.
-          // CHAINED, as memory-auma-hook.mjs does: an unhashed line here left an unchained TAIL, and the next settle refused AURA_TAIL_TORN
-          // (measured live 2026-09-27). One call for the batch, so each entry names the one before it.
-          auraAppends: chainAuraEntries(stateDir, notes.map(note => ({ op: 'remember', id: note.id, at, tier: note.tier, by: 'kira.capture/v1', index: note.aura?.index, entryHash: note.aura?.entryHash, digest: String(note.id).slice(4), bodyAtCapture, wasmCell: note.wasmCell })), { file: auraFile }),
-        })
-        // THE DIRECTORIES FIRST: the store's first write needs `remembered/` to exist, and creating it is a named act here
-        // rather than something the writer does quietly to any path it is handed.
-        for (const dir of plan.dirs) ensureDirectory(dir)
-        for (const write of plan.writes) durableWrite(write.file, write.contents, { dir: stateDir })
-        appendJournalLine({ file: journalFile, line: JSON.stringify(anchor) })
-        // `durableAppend` READS `options.readExisting` UNCONDITIONALLY, so every caller must hand it an options object or it
-        // throws inside itself with a message about a property rather than about the argument. Passing `{}` is the honest
-        // call; the trap is worth an arm of its own and is noted in the commit.
-        // *** THE SAME BUG THE MIGRATION FOUND, IN THE PATH PETER'S CONVERSATIONS GO THROUGH. *** `durableAppend` concatenates raw
-        // bytes and terminates nothing, so a turn's notes would reach the journal as ONE line with no separators — a chain that is
-        // not a chain. `appendJournalLine` writes `${line}\n` under `O_APPEND` and fsync, and REFUSES a line that already carries a
-        // newline, so the shape is enforced rather than hoped for.
-        for (const append of plan.appends) appendJournalLine({ file: append.file, line: append.line })
-        return notes
-      })
-      if (seenTurns.size >= 2048) seenTurns.delete(seenTurns.keys().next().value)
-      seenTurns.set(seenKey, seq)
-      remaining -= remembered.length
-      if (remembered.length === 0) continue
-      // REPORTED, NOT SILENT: a reader of the log can see what was remembered and how many, which is the only way to notice a
-      // capture path that has quietly stopped producing notes.
-      options.onRemembered?.({ sessionId, turn, seq, remembered: remembered.length, ids: remembered.map(note => note.id) })
+      if (!sessionId) return
+      if (!recovery && (typeof ctx.sessions?.flush !== 'function' || await ctx.sessions.flush(payload.agent.session) !== true)) {
+        logger?.warn?.('aukora-kira: capture deferred; session persistence did not confirm flush')
+        return
       }
-      return { previousSeq: readTurn.ask.event.seq, count: MAX_NOTES_PER_TURN - remaining }
-    } catch (error) {
-      // THE ONLY OUTLET. A capture fault costs a record; it must never cost the turn.
-      fail(error?.code ?? error?.message ?? String(error))
-    }
+      setLaneDoorMessageIds(laneDoorMessageIds(laneDoorRoot))
+      const read = readMemoryTurn({ stateRoot: sessionsRoot, sessionId, turn: payload.turn,
+        beforeSeq: recovery ? payload.beforeSeq : undefined })
+      if (!read) return
+      const control = read.ask ? ownerControlIn(eventText(read.ask.event)) : null
+      if (control && CONTROLS[control]?.stopsCapture) return
+      const p = await policyOf()
+      if (p?.privacy !== 'local' || p.offTheRecord || Object.entries(CONTROLS).some(([k,v]) => v.stopsCapture && p.controls?.[k])) return
+      const memory = await memoryFor()
+      let count = 0
+      for (const source of [...(read.ask && isRealAsk(read.ask.event) ? [read.ask] : []), ...read.findings]) {
+        const { event, line } = source
+        const agentFinding = event.type === 'assistant/message'
+        const parts = agentFinding ? event.data.message.content : event.data.content
+        const text = typeof parts === 'string' ? parts : (parts ?? []).filter(part => part?.type === 'text').map(part => part.text).join('\n')
+        if (!text?.trim()) continue
+        const result = await memory.captureTurn({ sessionId, sessionTitle: payload.agent.session?.header?.title ?? 'auma',
+          seq: event.seq, at: event.time, turn: read.turn ?? payload.turn ?? 0, text, canonicalEventLine: line },
+          { ...p, attributedTo: agentFinding ? 'agent' : 'owner', scope: projectScopeOf(payload.agent) ?? 'owner',
+            bodyAtCapture: !recovery && event.time >= bootedAt ? bodyNow() : null })
+        count += result.remembered
+        if (result.remembered) options.onRemembered?.({ sessionId, turn: read.turn, seq: event.seq, ...result })
+      }
+      return { previousSeq: read.boundarySeq ?? read.ask?.event.seq, count }
+    } catch (error) { logger?.warn?.(`aukora-kira: capture failed (${String(error?.code ?? error?.name ?? 'error')})`) }
   }
-  const stop = ctx.on('agent/turn-stopping', capture)
+  const stops = [ctx.on('agent/turn-stopping', capture)]
+  // Native and in-process children append assistant/message before turn-stopping.
+  // Codex, Claude Code and ACP do not run that loop: their common lifecycle emits subagent/end.
+  // local=true is already captured from its session receipt; do not duplicate it from the lifecycle summary.
+  const runs = new Map()
+  stops.push(ctx.on('subagent/start', async info => {
+    const parent = ctx.agents?.currentInitiator?.()
+    const sessionId = sessionIdOfAgent(parent)
+    const ask = sessionId ? readLastUserMessage({ stateRoot: sessionsRoot, sessionId }) : null
+    runs.set(info.runId, { scope: projectScopeOf(parent) ?? 'owner', paused: Boolean(ask && ownerControlIn(eventText(ask.event))), at: Date.now() })
+  }))
+  stops.push(ctx.on('subagent/end', async info => {
+    const run = runs.get(info.runId)
+    runs.delete(info.runId)
+    if (info.local || info.stopReason !== 'completed' || run?.paused) return
+    const text = (info.lastAssistantMessage ?? []).filter(part => part?.type === 'text').map(part => part.text).join('\n')
+    if (!text.trim()) return
+    try {
+      const result = await (await memoryFor()).remember({ text, from: `agent:${info.provider}`, scope: run?.scope ?? 'owner',
+        migrationKey: `subagent:${info.id}:${info.runId}`, at: run?.at ?? Date.now(), bodyAtCapture: bodyNow(),
+        source: { state: 'UNLINKED', cited: false, because: 'host subagent/end result; no local session event was claimed', runId: info.runId, agentId: info.id } })
+      if (result.remembered) options.onRemembered?.({ sessionId: info.id, turn: info.runId, ...result })
+    } catch (error) { logger?.warn?.(`aukora-kira: child capture failed (${String(error?.code ?? error?.name ?? 'error')})`) }
+  }))
   const recovered = new Set()
-  // One bounded bootstrap per project in this process. Capture owns the writes;
-  // injection and the read owner still have no write capability. Old assistant
-  // reports retain their original receipts, observation times and unknown body.
-  const created = ctx.on('agent/created', async ({ agent }) => {
-    const scope = projectScopeOf(agent)
-    if (scope === null || recovered.has(scope)) return
+  stops.push(ctx.on('agent/created', async ({ agent }) => {
+    const scope = projectScopeOf(agent) ?? 'owner'
+    if (recovered.has(scope)) return
     recovered.add(scope)
     try {
-      const headers = recentSessionHeaders(sessionsRoot).filter(header => header.id !== sessionIdOfAgent(agent)
-        && projectScopeOf({ session: { header } }) === scope).slice(0, 8)
-      let count = 0
-      for (const header of headers) {
+      for (const header of recentSessionHeaders(sessionsRoot).filter(header => (projectScopeOf({ session: { header } }) ?? 'owner') === scope).slice(0, 8)) {
         let beforeSeq
-        // The latest ask may be unanswered; walk up to eight prior asks, never a
-        // whole transcript. Source receipts and capture filters are unchanged.
-        for (let round = 0; round < 8 && count < 24; round += 1) {
+        for (let round = 0; round < 8; round++) {
           const result = await capture({ agent: { session: { id: header.id, header } }, beforeSeq }, true)
-          if (!result || !Number.isInteger(result.previousSeq)) break
+          if (!Number.isInteger(result?.previousSeq)) break
           beforeSeq = result.previousSeq
-          count += result.count
         }
       }
-    } catch (error) { fail(error?.code ?? error?.message ?? String(error)) }
-  })
-  return () => { stop?.(); created?.() }
+    } catch (error) { logger?.warn?.(`aukora-kira: capture recovery failed (${String(error?.name ?? 'error')})`) }
+  }))
+  return () => { for (const stop of stops) stop?.() }
 }

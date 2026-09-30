@@ -297,8 +297,12 @@ export function readMemoryTurn({ stateRoot, sessionId, turn, beforeSeq = Infinit
       let event
       try { event = JSON.parse(line) } catch { continue }
       if (Number.isInteger(event?.seq) && event.seq >= beforeSeq) continue
-      if (event?.type === 'user/message' && event?.data?.source?.kind === 'user') {
-        return { ask: { event, line }, findings: findings.reverse(), turn: selectedTurn }
+      if (event?.type === 'user/message' && event?.data?.source?.kind !== 'plugin') {
+        return { ask: event?.data?.source?.kind === 'user' ? { event, line } : null,
+          findings: findings.reverse(), turn: selectedTurn, boundarySeq: event.seq }
+      }
+      if (event?.type === 'turn/start' && (selectedTurn === undefined || event.data?.turn === selectedTurn)) {
+        return { ask: null, findings: findings.reverse(), turn: selectedTurn ?? event.data?.turn, boundarySeq: event.seq }
       }
       if (event?.type !== 'assistant/message' || event.data?.interrupted === true) continue
       if (selectedTurn === undefined && Number.isInteger(event.data?.turn)) selectedTurn = event.data.turn
@@ -309,10 +313,10 @@ export function readMemoryTurn({ stateRoot, sessionId, turn, beforeSeq = Infinit
       if (!Array.isArray(content) || !content.some(part => part?.type === 'text' && part.text?.trim())) continue
       // Tool requests, reasoning and failed attempts are not reports of what was found.
       if (content.some(part => part?.type === 'tool-call')) continue
-      if (findings.length < 3) findings.push({ event, line })
+      if (findings.length === 0) findings.push({ event, line })
     }
   }
-  return { ask: null, findings: [] } // Without an ask the owner's capture controls cannot be checked.
+  return { ask: null, findings: findings.reverse(), turn: selectedTurn } // Native child sessions may start from a delegated message.
 }
 
 

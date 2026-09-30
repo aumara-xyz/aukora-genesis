@@ -58,7 +58,12 @@ export function rememberedReadOwner(deps) {
   return {
     // THE NARROWING THE SERVICE TRIES FIRST. It may be handed a policy; this surface does not widen or narrow anything with it,
     // because the store's own listing is already the read owner's decision about subject and privacy.
-    createReadOwner: () => surface,
+    createReadOwner: policy => ({ async read() {
+      const answer = await surface.read()
+      const records = (answer.records ?? []).filter(note => (!policy?.subject || note.subject === policy.subject)
+        && (!policy?.permittedPrivacy || policy.permittedPrivacy.includes(note.privacy)))
+      return { ...answer, records, ...(answer.status === 'undetermined' ? {} : { status: records.length ? 'match' : 'empty' }) }
+    } }),
   }
 }
 

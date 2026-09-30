@@ -95,7 +95,7 @@ export function recallFilter(note, context) {
   // IT IS INERT UNTIL THE CUTOVER, like everything else here: the release carries none of these modules, so this changes what a future recall injects rather than
   // what she recalls now. And its consequence is honest rather than small: the live store's contents are ALL migrated, so with this rule a post-cutover recall
   // injects none of them — which is exactly what §8.1 says should happen, and is worth stating plainly rather than being discovered later.
-  if (String(note.origin?.by ?? '') === 'migration/queue-v1') return { ok: false, why: 'migrated-never-pre-turn' }
+  // Migrated notes are ordinary memory; scope, privacy and staleness still apply.
   // *** §3's ITEM 3 RECORDS ARE "DERIVED, AUTHORITY-FREE" — SO THEY ARE NOT INJECTED AS THOUGH THEY WERE REMEMBERED. *** The retention probe stores its own score as a
   // record, which is what "store it as a derived record" asks for; what it must not do is come back as something she knows. MEASURED OVER PETER'S REAL STORE: four probe
   // records are `scope: 'owner'`, `tier: 'remembered'`, `validTo: null` — so every other gate passes them — and their statements are four STALE readings of the same number

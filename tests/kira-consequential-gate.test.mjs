@@ -31,7 +31,7 @@ const settings = {
   allowLoopback: true,
   mainBranch: 'main',
   defaultWorkspace: root,
-  allowTools: [...CONSEQUENTIAL_TOOL_NAMES],
+  allowTools: ['memory.put', ...CONSEQUENTIAL_TOOL_NAMES],
 }
 const agent = { id: 'phase9-gate-agent', session: { header: { cwd: root } } }
 const calls = (name, state, id = name) => {
@@ -54,10 +54,8 @@ const arm = (name, body) => {
 
 process.stdout.write('kira-consequential-gate (Phase 9 H1)\n')
 
-arm('missing trusted recall state stops memory.put', () => {
-  const message = calls('memory.put', undefined, 'missing')
-  assert.match(message, /STOP/u)
-  assert.match(message, /memory:partial-failure:stop/u)
+arm('memory.put is automatic even before recall; it grants no authority', () => {
+  assert.equal(calls('memory.put', undefined, 'missing'), undefined)
 })
 
 arm('outer undetermined stops workspace.patch', () => {
@@ -77,7 +75,7 @@ arm('verified determined state allows the guarded effect', () => {
 })
 
 arm('all named consequential tools fail closed without a trusted handoff', () => {
-  for (const name of ['memory.put', 'workspace.patch', 'kira_settle', 'commit', 'raise', 'door_send', 'become']) {
+  for (const name of ['workspace.patch', 'kira_settle', 'commit', 'raise', 'door_send', 'become']) {
     const message = calls(name, undefined, `missing-${name}`)
     assert.match(message, /partial-failure:stop/u, name)
   }

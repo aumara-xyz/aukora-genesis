@@ -596,7 +596,7 @@ export function recallTool(dispatch) {
       + `use more, select, not-that, clarify: original|current, new, or stop within at most ${RETRIEVAL_LIMITS.references} references. `
       + 'The subject and permitted privacy classes come from the host and cannot be chosen or widened here. '
       + 'remembered holds the automatic notes: matched by meaning (method openviking-semantic) when the owner installed OpenViking, '
-      + 'only notes the chained store holds, each with its bodyAtCapture; otherwise matched by words.',
+      + 'only notes the chained store holds, each with its bodyAtCapture; unavailable indexing is reported explicitly.',
     parameters: RECALL_PARAMETERS,
     output: {
       schema: {
@@ -605,6 +605,7 @@ export function recallTool(dispatch) {
         properties: {
           availability: { type: 'string', enum: ['found', 'empty', 'undetermined'] },
           status: { type: 'string', enum: ['match', 'ambiguous', 'insufficient', 'exhausted'] },
+          grantsAuthority: { type: 'boolean' },
           reason: { type: 'string' },
           subject: { type: 'string' },
           policyRevision: { type: 'string' },
@@ -619,6 +620,9 @@ export function recallTool(dispatch) {
           state: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           counters: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           remembered: { type: 'object', additionalProperties: true, properties: {}, required: [] },
+          memory: { type: 'object', additionalProperties: false, properties: {
+            dropped: { type: 'integer', minimum: 0 }, reasons: { type: 'object', additionalProperties: { type: 'integer', minimum: 0 } },
+          }, required: ['dropped', 'reasons'] },
           // *** DECLARED, NOT STRIPPED, AND THIS FIELD IS WHY. *** `reconcileRecallAvailability`
           // returns `partialFailure` on every reconciled answer, and this schema's
           // `additionalProperties: false` REJECTED THE WHOLE TOOL RESULT while the field was
@@ -661,13 +665,15 @@ export function recallTool(dispatch) {
  * THE REMEMBERED TIER IN `kira_recall` (2026-09-27; it read signed records only). The question's words (3+ letters) go through the
  * Memory app's own `listNotes`, ranked by how many match; each hit keeps its `bodyAtCapture` (`null` = UNKNOWN). Never authority.
  */
-export async function recallRemembered(listNotes, text, limit = 5) {
+export async function recallRemembered(listNotes, text, limit = 5, govern = notes => notes) {
   const terms = [...new Set(String(text).toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(term => term.length >= 3))]
   if (typeof listNotes !== 'function' || terms.length === 0) return { state: 'not-asked', notes: [] }
   let notes
   // EVERY MATCH, THEN RARER WORDS WEIGH MORE (2026-09-27 review): capped at 500 in file order and scored by a plain count, a
   // 701-note store answered "where is the quokka figurine" with five notes that only shared "where" and "the".
   try { notes = await listNotes({ tiers: ['remembered'], q: terms.join(' '), limit: Number.MAX_SAFE_INTEGER }) } catch (error) { return { state: 'undetermined', reason: String(error?.code ?? error?.message).slice(0, 200), notes: [] } }
+  notes = govern(notes).map(note => ({ ...note, text: note.statement ?? note.text }))
+    .filter(note => terms.some(term => String(note.text).toLowerCase().includes(term)))
   const has = notes.map(note => new Set(terms.filter(term => String(note.text).toLowerCase().includes(term))))
   const weight = new Map(terms.map(term => [term, 1 / Math.max(1, has.filter(set => set.has(term)).length)]))
   const score = new Map(notes.map((note, at) => [note, [...has[at]].reduce((sum, term) => sum + weight.get(term), 0)]))
@@ -676,6 +682,7 @@ export async function recallRemembered(listNotes, text, limit = 5) {
     notes: notes.sort((a, b) => score.get(b) - score.get(a)).slice(0, limit).map(note => ({
       id: note.id, text: String(note.text).slice(0, 600), observedAt: note.observedAt ?? null,
       source: { sessionId: note.source?.sessionId ?? null, seq: note.source?.seq ?? null }, bodyAtCapture: note.bodyAtCapture ?? null,
+      ...(note.containment ? { advisoryOnly: true, grantsAuthority: false, containment: note.containment, staleness: note.staleness } : {}),
     })),
   }
 }

@@ -1,44 +1,12 @@
-/**
- * AUKORA Kira — a stock DSH host plugin for deterministic memory staging and
- * cited, bounded conversational retrieval.
- *
- * Mount it as a composition row and give it a read owner:
- *
- * ```yaml
- * - id: aukora-kira
- *   name: ./plugins/aukora-kira/lib/index.js
- *   config:
- *     retrieval: lexical
- *     readOwner:
- *       module: ./owners/auma-memory-owner.mjs
- *       options: {}
- * ```
- *
- * The read owner is the only thing that decides whose memory is read and which
- * privacy classes are visible. This plugin holds no subject, no store path, no
- * key, no grant, and no authority route, and it never writes memory: `kira_stage`
- * returns an inert proposal for the admitted memory path to carry.
- *
- * A `memoryOwner` configuration ALSO names two operator documents, and both are
- * mandatory: `grantFile`, this installation's one-use authorization, and
- * `approvalFile`, the owner's signed approval for the exact content. Mounting
- * without either is refused rather than degraded, because a write tool that could
- * load without an approval route is the defect the approval path exists to close.
- *
- * @module @aukora/dsh-plugin-kira
- */
+/** Automatic tracked memory. Historical operator config fields remain readable for migration only. */
 import { KiraConversation, KiraConversationError } from './conversation.mjs'
 import { projectScopeOf, projectRecent, rememberedSnippet, visibleRemembered } from './project-memory.mjs'
 import { registerRecallInjection, recallDiagnostics } from './injection.mjs'
 import { recallFilter } from './memory-frame.mjs'
 import { laneForSession, readReflectFor } from './compaction-export-hook.mjs'
 import { sessionIdOfAgent } from './autostage-hook.mjs'
-import { registerAutoStage } from './autostage-hook.mjs'
 import { registerRememberedCapture } from './memory-remembered-hook.mjs'
 import { registerAumaTurnCapture } from './memory-auma-hook.mjs'
-import { registerCompactionExport } from './compaction-export-hook.mjs'
-import { readForbiddenDigests } from './forbidden-digests.mjs'
-import { autoStageCandidate } from './autostage.mjs'
 import { buildRouteDeps } from './memory-deps.mjs'
 import { NOT_LINKED, UNLINKED_SUBJECT, mountKiraRoutes, mountUnlinkedKiraRoutes } from './memory-mount.mjs'
 import { makeRecordRanker } from './memory-frame-adapter.mjs'
@@ -55,22 +23,23 @@ import {
   KiraStageError,
 } from './record.mjs'
 import { createMemoryOwner } from './memory-owner.mjs'
-import { DID_KEY_SHAPE } from './approval.mjs'
-import { loadReadOwner, readOwnerPolicy } from './read-owner.mjs'
+import { loadReadOwner, readOwnerPolicy, readOwnerSnapshot } from './read-owner.mjs'
 import { provideKiraRecall } from './recall-service.mjs'
 // §10.2's ceilings travel with every recall reply, and THIS is the module allowed to name them: `recall-service.mjs` has no imports at all, by design and by court.
 import { RECALL_CEILINGS } from './memory-tiers.mjs'
 import { provideKiraCite } from './cite-service.mjs'
 import { RETRIEVAL_LIMITS, RETRIEVAL_OPTIONS } from './retrieval.mjs'
-import { queueTool, recallRemembered, recallTool, settleTool, stageTool } from './tools.mjs'
+import { recallRemembered, recallTool } from './tools.mjs'
 import { createOpenVikingRecall, openVikingHome, readBridgeConfig, semanticNotes } from './recall-openviking.mjs'
 import { createPartialFailureLedger, PARTIAL_FAILURE_SERVICE, reconcileRecallAvailability, rememberedWithLedger } from './partial-failure.mjs'
+import { countDrop, governRecords, recallAnnotations } from './recall-filter/filter.mjs'
+import { createTrackedMemory, readTrackedMemory } from './tracked-memory.mjs'
 
 /** Cordis plugin name. */
 export const name = 'aukora-kira'
 
 /** This plugin consumes the harness tool registry. */
-export const inject = ['tools']
+export const inject = ['tools', 'sessions']
 
 /** The only retrieval implementation this build runs. */
 export const IMPLEMENTED_RETRIEVAL = 'lexical'
@@ -169,63 +138,7 @@ export function readConfig(config) {
     if (typeof memoryRecord.subject !== 'string' || memoryRecord.subject === '') {
       refuse('memory-owner-invalid', 'memoryOwner.subject must be a non-empty string: the owner supplies the subject, never the model')
     }
-    // AN ADMITTED MEMORY OWNER WITHOUT AN APPROVAL ROUTE IS REFUSED AT MOUNT.
-    //
-    // This is the configuration form of the defect this increment fixes. Before it, a composition
-    // could offer `kira_settle` with a grant file alone, and a grant is minted by whatever runs
-    // `bin/kira-grant.mjs` — including the turn that wants the write. Naming a memoryOwner and no
-    // approval file is that same shape one level up, and it must not load: a build that cannot
-    // obtain an owner approval must not offer a write tool, and must say why rather than degrade.
-    if (typeof memoryRecord.approvalFile !== 'string' || memoryRecord.approvalFile === '') {
-      refuse('memory-owner-approval-unconfigured',
-        'memoryOwner must name approvalFile: settlement requires a verified owner approval for the exact content, '
-        + 'and a composition that names no approval route would offer a write nothing can authorize. '
-        + 'Produce the file with the approval command (the Aumlok owner approval channel; a labelled stand-in of '
-        + 'that shape exists until it lands) and name it here.')
-    }
-    if (typeof memoryRecord.grantFile !== 'string' || memoryRecord.grantFile === '') {
-      refuse('memory-owner-grant-unconfigured',
-        'memoryOwner must name grantFile: an operator command mints the one-use grant, and this plugin holds no key '
-        + 'and mints nothing. Name the file the operator command writes.')
-    }
-    // THE PIN, WHEN NAMED. A composition that knows its registered approver key names it here, and an
-    // approval signed by any other key is refused by name. It is optional because a disposable store
-    // has no registered key; naming a value that is not a `did:key` is refused rather than ignored.
-    if (memoryRecord.approverDid !== undefined
-      && (typeof memoryRecord.approverDid !== 'string' || !DID_KEY_SHAPE.test(memoryRecord.approverDid))) {
-      refuse('memory-owner-approver-invalid',
-        'memoryOwner.approverDid must be a did:key identifier (did:key:z…) naming the registered approver key')
-    }
-    // ── THE CONTROL HEAD, SO A SETTLEMENT CAN BE PINNED RATHER THAN MERELY REPORTED ───────────────
-    // This is the plumbing half of "supported, unenforced". The library refuses a stale control head
-    // and the tool reports `controlPinned` — but until the composition SUPPLIES a head, every live
-    // settlement is unpinned and `controlPinned: false` is the honest answer rather than an enforced
-    // one. Accepting the field here is what lets a deployment name the head it serves.
-    //
-    // OPTIONAL, and malformed is REFUSED rather than ignored — the same discipline as `approverDid`
-    // above, and for the same measured reason: a caller who mistyped a pin must get a usage fault, not
-    // the weaker check. Shape only; whether the head is CURRENT is decided at settlement against the
-    // artifact, never here.
-    if (memoryRecord.activeControlDigest !== undefined
-      && (typeof memoryRecord.activeControlDigest !== 'string' || !/^[0-9a-f]{64}$/.test(memoryRecord.activeControlDigest))) {
-      refuse('memory-owner-control-invalid',
-        'memoryOwner.activeControlDigest must be a 64-character lowercase hex sha256 naming the control head this deployment serves')
-    }
-    // ── THE PENDING REVIEW QUEUE, AND WHY IT IS OPT-IN ────────────────────────────────────────────
-    // Naming `queueDir` is what makes `kira_stage` leave a durable entry behind for a person to
-    // review. It is opt-in rather than a new default because WITHOUT it staging is inert by contract —
-    // "this tool wrote nothing" is a ceiling printed on every un-queued stage result and asserted by
-    // courts — and flipping that silently would turn a true sentence into a false one for every
-    // composition that never asked for a queue.
-    //
-    // MALFORMED IS REFUSED, NOT IGNORED — the same discipline as `approverDid` and
-    // `activeControlDigest` above, and for the same measured reason: a caller who mistyped a queue path
-    // must get a usage fault rather than a build that quietly stages nothing and looks reviewed-clean.
-    if (memoryRecord.queueDir !== undefined
-      && (typeof memoryRecord.queueDir !== 'string' || memoryRecord.queueDir === '')) {
-      refuse('memory-owner-queue-invalid',
-        'memoryOwner.queueDir must be a non-empty path when supplied; omit it to leave staging inert with no review queue')
-    }
+    // Historical operator fields are accepted for overlay compatibility, never required for memory.
     return Object.freeze({
       retrieval,
       maxSessions,
@@ -298,32 +211,18 @@ export async function apply(ctx, config) {
   const partialFailureState = createPartialFailureLedger()
   if (typeof ctx.provide === 'function') ctx.provide(PARTIAL_FAILURE_SERVICE, partialFailureState)
 
-  // One owner instance when `memoryOwner` is configured: the same store backs
-  // both the governed write and the read path, which is what makes a settled
-  // record recallable in the same session.
-  const memoryOwner = normalized.memoryOwner === undefined
-    ? undefined
-    : createMemoryOwner({
-        stateDir: normalized.memoryOwner.stateDir,
-        // *** FABLE'S ITEM (7): THE FIELDS `readConfig` REQUIRES WERE VALIDATED AND THEN DROPPED HERE. *** `readConfig` refuses a
-        // memoryOwner without `grantFile` and `approvalFile`, and the owner was then built with `stateDir` alone — so the owner
-        // held no grant and no approval to verify against, and settlement could never have succeeded on a real deployment. A
-        // value that is checked in one place and not passed in another is worse than an unchecked one: the refusal says the
-        // configuration is complete.
-        ...(normalized.memoryOwner.queueDir === undefined ? {} : { queueDir: normalized.memoryOwner.queueDir }),
-        ...(normalized.memoryOwner.subject === undefined ? {} : { subject: normalized.memoryOwner.subject }),
-        ...(normalized.memoryOwner.grantFile === undefined ? {} : { grantFile: normalized.memoryOwner.grantFile }),
-        ...(normalized.memoryOwner.approvalFile === undefined ? {} : { approvalFile: normalized.memoryOwner.approvalFile }),
-        ...(normalized.memoryOwner.approverDid === undefined ? {} : { approverDid: normalized.memoryOwner.approverDid }),
-        ...(normalized.memoryOwner.activeControlDigest === undefined ? {} : { activeControlDigest: normalized.memoryOwner.activeControlDigest }),
-      })
-  const owner = memoryOwner === undefined
-    ? await loadReadOwner(normalized.readOwner)
-    : memoryOwner.createReadOwner({
-        subject: normalized.memoryOwner.subject,
-        policyRevision: normalized.memoryOwner.policyRevision,
-        permittedPrivacy: normalized.memoryOwner.permittedPrivacy,
-      })
+  // Normal memory uses the remembered chain and the deployment's plain data policy.
+  // Explicit readOwner modules retain their isolated historical compatibility path.
+  const memoryOwner = normalized.memoryOwner
+  const owner = memoryOwner === undefined ? await loadReadOwner(normalized.readOwner) : {
+    describe: async () => ({ subject: memoryOwner.subject, policyRevision: memoryOwner.policyRevision,
+      permittedPrivacy: memoryOwner.permittedPrivacy }),
+    read: async () => {
+      const live = readTrackedMemory(memoryOwner.stateDir)
+      return { availability: live.complete ? (live.notes.length ? 'found' : 'empty') : 'undetermined',
+        records: live.notes.filter(note => note.subject === memoryOwner.subject && memoryOwner.permittedPrivacy.includes(note.privacy)) }
+    },
+  }
   // Fail at mount, not at first call: a read owner that cannot describe its own
   // policy is a configuration fault, and an operator must see it on load. The
   // policy itself is deliberately not retained here — every turn reacquires it,
@@ -340,88 +239,58 @@ export async function apply(ctx, config) {
     }
   }
 
-  // ── OPENVIKING FINDS, THE CHAINED STORE ANSWERS (`recall-openviking.mjs`) ──────────────────────────────────────────
-  // Off unless the OpenViking home beside the store holds `aukora-bridge.json`, re-read per use so an install or a changed
-  // bridge takes effect without a restart. Captures are indexed AFTER they are durable and never waited on; a recall asks
-  // OpenViking first and shows only notes the chained store holds. It grants nothing and raises no approval.
-  let semantic
-  let semanticConfig = ''
-  const semanticRecall = () => {
-    if (normalized.memoryOwner === undefined) return undefined
+  let memory, memoryConfig
+  const memoryFor = () => {
+    if (!normalized.memoryOwner) return undefined
     const config = readBridgeConfig(openVikingHome(normalized.memoryOwner.stateDir))
-    const same = JSON.stringify(config)
-    if (same !== semanticConfig) { semanticConfig = same; semantic = createOpenVikingRecall({ config, logger: ctx.logger }) }
-    return semantic
+    const key = JSON.stringify(config)
+    if (!memory || key !== memoryConfig) {
+      memoryConfig = key
+      memory = createTrackedMemory({ stateDir: normalized.memoryOwner.stateDir, subject: normalized.memoryOwner.subject, config,
+        policyOf: async () => {
+          const policy = readOwnerPolicy(await owner.describe())
+          return { subject: policy.subject, privacy: policy.permittedPrivacy.includes('local') ? 'local' : null }
+        } })
+    }
+    return memory
   }
-  const semanticLedger = async () => {
-    try {
-      const deps = storeDepsForRecall()
-      const ambient = deps.liveRemembered()
-      const policy = readOwnerPolicy(await owner.describe())
-      const governed = await deps.liveGoverned()
-      return {
-        ambient: new Map(ambient.notes.filter(note => note.subject === policy.subject && note.privacy === 'local' && policy.permittedPrivacy.includes('local')).map(note => [String(note.id), note])),
-        governed: new Map(governed.map(note => [String(note.id), note])),
-        complete: true,
-      }
-    } catch { return { ambient: new Map(), governed: new Map(), complete: false } }
-  }
-  /** Reconcile in the background: a capture, the mount and a changed bridge all land here, so a note missed while down is indexed later. */
-  const semanticIndex = () => {
-    const bridge = semanticRecall()
-    if (bridge?.configured !== true) return
-    void (async () => {
-      if ((await bridge.available()).ok !== true) return
-      const done = await bridge.sync(semanticLedger)
-      if (done.failed.length > 0) ctx.logger?.warn?.(`aukora-kira: OpenViking index: ${String(done.failed.length)} not indexed (${done.failed.slice(0, 2).join('; ')})`)
-    })().catch(error => ctx.logger?.warn?.(`aukora-kira: OpenViking index stopped (${String(error?.code ?? error?.message ?? 'unknown')})`))
-  }
+  const recallContext = agent => ({ sessionId: sessionIdOfAgent(agent), attachedProjects: [projectScopeOf(agent)].filter(Boolean) })
+  const semanticIndex = () => void memoryFor()?.retry().catch(() => ctx.logger?.warn?.('aukora-kira: memory indexing pending retry'))
   semanticIndex()
-  /** A forget also removes the note from OpenViking, and names it among what it did not reach when it could not. */
-  const withSemanticForget = deps => ({
-    ...deps,
-    forgetNote: async args => {
-      const answer = await deps.forgetNote(args)
-      const bridge = answer?.forgotten === true ? semanticRecall() : undefined
-      if (bridge?.configured !== true) return answer
-      const reached = await bridge.forget(String(answer.id))
-      return reached.reached === true
-        ? { ...answer, openviking: { removed: true, uri: reached.uri } }
-        : { ...answer, notReached: [...(Array.isArray(answer.notReached) ? answer.notReached : []), { what: 'openviking', ref: String(reached.uri ?? 'openviking'), because: String(reached.because) }] }
-    },
-  })
-  /** The reason recall last said it answered lexically: said once per reason, not on every call. */
-  let semanticNotice = null
-  /** `kira_recall`'s remembered notes: by meaning through OpenViking when it answers, else lexical as before. */
-  const rememberedFor = async (listNotes, text, scope = null, preTurn = false) => {
+  const retryTimer = normalized.memoryOwner ? setInterval(semanticIndex, 30_000) : null
+  retryTimer?.unref?.()
+  ctx.effect(() => () => { if (retryTimer) clearInterval(retryTimer) }, 'aukora-kira: memory index retry')
+  const withSemanticForget = deps => ({ ...deps, forgetNote: async args => {
+    const answer = await deps.forgetNote(args)
+    if (!answer.forgotten) return answer
+    const result = await memoryFor().bridge.forget(String(answer.id))
+    return { ...answer, openviking: { removed: result.reached === true },
+      ...(result.reached ? {} : { notReached: [...(answer.notReached ?? []), { what: 'openviking', because: result.because }] }) }
+  } })
+  const rememberedFor = async (listNotes, text, agent, preTurn = false, report = { dropped: 0, reasons: {} }) => {
+    const store = memoryFor()
+    if (!store) return recallRemembered(listNotes, text, 5)
+    const result = await store.recall({ question: text, context: recallContext(agent) })
+    Object.assign(report, result.memory)
+    return result
+  }
+  const publishRecall = async (answers, agent, report, preTurn = false) => {
+    if (!memoryFor()) return answers
     const policy = readOwnerPolicy(await owner.describe())
-    const allowed = note => visibleRemembered([note], policy, scope).length > 0
-    const scopedList = typeof listNotes !== 'function' ? undefined : async args => (await listNotes(args)).filter(allowed)
-    const bridge = semanticRecall()
-    if (bridge === undefined) {
-      const remembered = await recallRemembered(scopedList, text)
-      return preTurn ? { ...remembered, semantic: { available: false, reason: 'openviking-not-configured' } } : remembered
-    }
-    let found = { available: false, reason: String(bridge.reason) }
-    if (bridge.configured === true) {
-      try { found = await bridge.recall({ question: text, live: semanticLedger, accept: note => note.tier === 'signed' || allowed(note) }) } catch (error) { found = { available: false, reason: `semantic-recall-failed (${String(error?.code ?? error?.message ?? 'unknown')})` } }
-    }
-    if (found.available === true && found.hits.length > 0 && found.ledgerComplete === true) { if (!preTurn) semanticNotice = null; return { ...semanticNotes(found), semantic: { available: true } } }
-    const lexical = await recallRemembered(scopedList, text)
-    // AN UNREADABLE LEDGER IS NOT AN EMPTY ONE: the lexical fallback's own `found`/`empty` would
-    // otherwise reach the phase 9 gate as a determined picture and the gate would proceed.
-    const remembered = bridge.configured === true ? rememberedWithLedger({ lexical, ledgerComplete: found.ledgerComplete }) : lexical
-    const ledgerUnread = bridge.configured === true && found.ledgerComplete !== true
-    if (found.available === true) {
-      if (!preTurn) semanticNotice = null
-      return { ...remembered, semantic: { available: true, mapped: 0, droppedUnmapped: found.dropped.unmapped.length, droppedBelowThreshold: found.dropped.belowThreshold, diagnostics: found.diagnostics ?? [], outsideWindow: found.dropped.outsideWindow, threshold: found.threshold, window: found.window, ...(ledgerUnread ? { ledgerUnread: true } : {}), ...(found.reserved === undefined ? {} : { reserved: found.reserved }) } }
-    }
-    if (!preTurn) {
-      if (found.reason === semanticNotice) return remembered
-      semanticNotice = found.reason
-      if (bridge.configured === true) ctx.logger?.warn?.(`aukora-kira: semantic recall is not available (${found.reason}); kira_recall answers lexically`)
-    }
-    return { ...remembered, semantic: { available: false, reason: found.reason, ...(ledgerUnread ? { ledgerUnread: true } : {}) } }
+    const live = memoryFor().read()
+    const checked = new Map(governRecords(live.notes, { ...policy, ...recallContext(agent), nowMs: Date.now(),
+      forgotten: live.forgotten, states: live.states }, report).map(note => [note.id, note]))
+    return answers.map(answer => {
+      if (!answer) return answer
+      const project = notes => (notes ?? []).flatMap(shown => {
+        const note = checked.get(String(shown.id ?? shown.recordId))
+        if (!note) return []
+        if (preTurn && !recallFilter(note, { now: new Date().toISOString(), states: live.states, ...recallContext(agent) }).ok) return []
+        return [{ ...shown, ...recallAnnotations(note) }]
+      })
+      return { ...answer, snippets: project(answer.snippets), memory: report,
+        ...(answer.remembered ? { remembered: { ...answer.remembered, notes: project(answer.remembered.notes) } } : {}) }
+    })
   }
 
   // ── `kira.recall`: THE READ-ONLY DOOR ONTO THE MEMORY ──────────────────────
@@ -438,6 +307,17 @@ export async function apply(ctx, config) {
       // question was asked — the defect kira-119 fixed in the tool and left here, on the service the face actually reads.
       // *** BOTH TIERS, ONE READ: the remembered store AND the deployment's own owner. *** Item (3)'s second half — a
       // recall that read only the settled store would hide every note the capture hook writes, which is all of them.
+      if (memoryOwner && typeof ctx.provide === 'function') {
+        ctx.provide('kira.recall', Object.freeze({
+          describe: () => ({ ...policy, grantsAuthority: false }),
+          read: async () => ({ status: 'match', records: memoryFor().read().notes }),
+          recall: async question => {
+            const result = await memoryFor().recall({ question: typeof question === 'string' ? question : question?.text ?? '' })
+            return { ...result, status: result.state === 'found' ? 'match' : result.state, records: result.notes }
+          },
+        }))
+        return
+      }
       const outcome = provideKiraRecall(ctx, {
         // AND THE STORE DEPS ARE BUILT HERE, IN A GUARD, BECAUSE `buildRouteDeps` REFUSES A MISSING HOME ON PURPOSE
         // (item 2's ladder) — and a recall service that threw would provide NOTHING, silently, because the whole block is
@@ -494,47 +374,6 @@ export async function apply(ctx, config) {
       + 'to cite from; a composition that wants citations must name one')
   }
 
-  // ── THE PENDING REVIEW QUEUE, WHEN THE COMPOSITION NAMED ONE ────────────────────────────────────
-  // The owner holds the filesystem route; this entry only decides whether the queue exists for this
-  // build at all. It is one handle, so staging and listing cannot disagree about where the queue is or
-  // what an entry looks like — an enqueue and a listing that read different directories would be the
-  // exact split that makes a staged record invisible to the person reviewing it.
-  const pendingQueue = memoryOwner === undefined || normalized.memoryOwner.queueDir === undefined
-    ? undefined
-    : Object.freeze({
-        enqueuePending: staged => memoryOwner.enqueuePending(staged),
-        // THE DECLINE WRITER, because superseding a lane's older summary must mark it DECLINED rather than
-        // delete it. One handle, so a stage and a decline cannot disagree about where the queue is.
-        writeDeclined: memoryPut => memoryOwner.writeDeclined(memoryPut),
-        list: () => memoryOwner.listPending(),
-        read: recordId => memoryOwner.readPending(recordId),
-      })
-
-  // ── AUTO-STAGING, AND ONLY WHEN THERE IS SOMEWHERE TO STAGE TO ──────────────────────────────────
-  // A candidate with no queue would have nowhere to wait, so the listener is registered only with one:
-  // a hook that read every finishing turn's ask in order to throw it away would be pure cost on the
-  // hot path of every turn in the app.
-  //
-  // The subject and privacy come from the READ OWNER, re-read per turn rather than captured here, so
-  // the model cannot widen either and a policy change is picked up without a remount. The candidate is
-  // built by the pure classifier and handed straight to the queue, whose `enqueuePending` re-verifies
-  // the record against its own identifier before a byte is written.
-  // ── REMEMBERED CAPTURE, AT THE SAME BOUNDARY AND FOR THE TIER PETER ASKED FOR ────────────
-  // **AND IT IS REGISTERED HERE BECAUSE A HOOK THAT IS BUILT, COURTED AND NOT REGISTERED IS THE DEFECT FABLE CAUGHT THREE
-  // TIMES TODAY**: a router with no mount, a ranker with nobody to pass it, a recall frame with no caller. The remembered
-  // tier is the one that needs no approval, so it must not be the fourth.
-  //
-  // `sessionsRoot` IS THE HOME, not the store root and not `<home>/sessions`: the boundary looks for
-  // `<root>/sessions/<project>/<id>/session.v3.jsonl.zstd` and appends `sessions` itself. The store root is
-  // `<home>/kira-memory`, so the home is its parent — the same relationship the deployment's `dshHomePath` sets up.
-  // *** A READOWNER-ONLY COMPOSITION HAS NO STORE ROOT, AND THIS CRASHED ON `undefined.stateDir` AT MOUNT. *** Fable's steps 425/526, found
-  // on Linux by two courts that mount the plugin: `readOwner` supplies a READ SURFACE and carries no `stateDir` (only `memoryOwner` is
-  // built over a state directory — the normalizer refuses both at once), so `normalized.memoryOwner.stateDir` threw
-  // `TypeError: Cannot read properties of undefined (reading 'stateDir')` and NO readOwner composition could mount Kira at all.
-  //
-  // The remembered tier is written by this plugin, so it needs a store root; the host's read surface is not one and this plugin must not
-  // guess at one. So the registration is SKIPPED BY NAME — the same shape as the mount's `refused: ['no-web-server']` — rather than
-  // crashing or silently pretending to capture. Everything else in the composition still mounts.
   const captureStateDir = typeof normalized.memoryOwner?.stateDir === 'string' ? normalized.memoryOwner.stateDir : null
   if (captureStateDir === null) {
     ctx.logger?.warn?.('aukora-kira: remembered capture NOT registered — this composition names a readOwner and no memoryOwner, so it has no store root to write remembered notes into (refused: no-state-dir). Reading still works through the read owner.')
@@ -548,6 +387,7 @@ export async function apply(ctx, config) {
     stateDir: captureStateDir,
     sessionsRoot: String(normalized.memoryOwner.stateDir).replace(/\/[^/]+$/u, ''),
     policyOf: capturePolicyOf,
+    memory: memoryFor,
     logger: ctx.logger,
     onRemembered: info => { ctx.logger?.info?.(`aukora-kira: remembered ${String(info.remembered)} note(s) from ${info.sessionId} turn ${String(info.turn)}`); semanticIndex() },
   })
@@ -559,6 +399,7 @@ export async function apply(ctx, config) {
     registerAumaTurnCapture(ctx, {
       stateDir: captureStateDir,
       policyOf: capturePolicyOf,
+    memory: memoryFor,
       logger: ctx.logger,
       onRemembered: info => { ctx.logger?.info?.(`aukora-kira: remembered ${String(info.remembered)} note(s) from Auma Live ${info.sessionId} turn ${String(info.turn)}`); semanticIndex() },
     })
@@ -567,71 +408,6 @@ export async function apply(ctx, config) {
   }
   }
 
-
-  // AUTO-STAGE IS OFF UNLESS A DEPLOYMENT ASKS FOR IT (2026-09-27): it staged memories for a signed approval nobody wants, and
-  // it decoded the whole session log on every turn, which grew the backend past the 3.4 GB restart line in 40 minutes.
-  if (pendingQueue !== undefined && config?.autoStage === true) {
-    registerAutoStage(ctx, {
-      stageFromDigest: async (digest) => {
-        const policy = readOwnerPolicy(await owner.describe())
-        const privacy = policy.permittedPrivacy.includes('local') ? 'local' : policy.permittedPrivacy[0]
-        const candidate = autoStageCandidate(digest, policy.subject, privacy)
-        if (candidate.category === null) return { staged: false, reason: candidate.reason }
-        const queued = pendingQueue.enqueuePending({
-          recordId: candidate.recordId,
-          record: candidate.record,
-          memoryPut: candidate.memoryPut,
-        })
-        return {
-          staged: true,
-          recordId: candidate.recordId,
-          category: candidate.category,
-          queueState: queued.state,
-        }
-      },
-      logger: ctx.logger,
-    })
-    // ── COMPACTION EXPORT, BESIDE IT AND FOR THE SAME REASON ─────────────────
-    // A manual compaction is the thread's own account of what it was doing. With a queue to stage to, it
-    // becomes ONE inert summary proposal per compaction — and with no queue, this is not registered at all,
-    // exactly as auto-staging is not: a listener that read every compaction in order to throw it away would
-    // be pure cost on the hot path of every session.
-    // ── THE PROHIBITION'S CONFIGURATION, READ FROM THE STORE'S OWN DIRECTORY ──────────────────────
-    // FABLE'S BOOT-RISK REVIEW, 2026-09-25. `FORBIDDEN_WINDOW_DIGESTS` ships EMPTY, and after the Codex sweep an
-    // empty list makes every candidate refuse as `not-configured` — right by doctrine, because an empty list used
-    // to allow everything while reading as enforced. But registering with that shipped list meant the live app
-    // would STOP staging Kira summaries the moment this release went live: memory stops growing, silently, in the
-    // safe direction. The digests come from `tools/kira/forbidden-window-digests.mjs`, which the person who owns
-    // the phrases runs himself.
-    //
-    // READ PER COMPACTION, NOT ONCE AT MOUNT, so generating them does not require restarting the app: the hook
-    // reads this property on every event, so a getter is what makes it live.
-    //
-    // A MISSING FILE STAYS NOT-CONFIGURED, AND NAMED: `undefined` here, `not-configured` from the module, and the
-    // line below says which command changes that.
-    const forbiddenStateDir = normalized.memoryOwner.stateDir
-    const forbiddenAtMount = readForbiddenDigests(forbiddenStateDir)
-    if (forbiddenAtMount.state === 'configured') {
-      ctx.logger?.info?.(`kira: forbidden-phrase digests configured — ${String(forbiddenAtMount.digests.length)} window digest(s)`)
-    } else {
-      ctx.logger?.warn?.(
-        `kira: forbidden-phrase digests are ${forbiddenAtMount.state} — EVERY compaction export will refuse `
-        + '(not-configured) until they are generated: node tools/kira/forbidden-window-digests.mjs '
-        + `--state-dir ${String(forbiddenStateDir)}`
-        + (forbiddenAtMount.detail === undefined ? '' : ` [${forbiddenAtMount.detail}]`))
-    }
-    registerCompactionExport(ctx, {
-      queue: pendingQueue,
-      readOwnerPolicy: async () => readOwnerPolicy(await owner.describe()),
-      logger: ctx.logger,
-      get forbiddenWindowDigests() {
-        const read = readForbiddenDigests(forbiddenStateDir)
-        // ANY STATE THAT IS NOT `configured` YIELDS `undefined`, which the module treats as unconfigured and
-        // refuses. A malformed or empty file therefore cannot become "nothing is forbidden".
-        return read.state === 'configured' ? read.digests : undefined
-      },
-    })
-  }
 
   // ── RECALL REACHES A FRESH CONTEXT WITHOUT BEING ASKED FOR ──────────────────────────────────────
   // Measured 2026-09-21: a child agent inherits the workspace, the organs and memory reach and starts
@@ -647,13 +423,14 @@ export async function apply(ctx, config) {
   //
   // A FAILURE HERE MUST NOT BREAK A TURN. `registerRecallInjection` contains every read fault and
   // contributes a named fault snapshot while preserving the delegate's decision kind.
-  const recallConversation = new KiraConversation(owner, 'recall-injection', undefined)
+  const recallConversation = memoryOwner ? { turn: async () => ({ availability: 'empty', status: 'empty', snippets: [] }) }
+    : new KiraConversation(owner, 'recall-injection', undefined)
   registerRecallInjection(ctx, {
     conversation: recallConversation,
     remembered: memoryOwner === undefined ? undefined : async (text, event) => {
       const scope = projectScopeOf(event?.agent)
       const deps = storeDepsForRecall()
-      const reply = await rememberedFor(deps.listNotes, text, scope, true)
+      const reply = await rememberedFor(deps.recallCandidates, text, event?.agent, true)
       const policy = readOwnerPolicy(await owner.describe())
       const live = deps.liveRemembered()
       const notes = visibleRemembered(live.notes, policy, scope)
@@ -666,14 +443,11 @@ export async function apply(ctx, config) {
       }).map(note => [note.id, note]))
       for (const reason of ['unreadable', 'unchained']) if (live[reason] > 0) diagnostics.diagnostics.push({ reason, count: live[reason] })
       const unavailable = !['found', 'empty'].includes(reply.state) || live.unreadable > 0 || live.unchained > 0
-      return { availability: unavailable ? 'undetermined' : byId.size > 0 ? 'found' : 'empty', ...diagnostics,
-        snippets: (reply.notes ?? []).filter(note => byId.has(note.id)).map(note => rememberedSnippet(byId.get(note.id))) }
+      const snippets = (reply.notes ?? []).filter(note => byId.has(note.id)).map(note => rememberedSnippet(byId.get(note.id)))
+      return { availability: unavailable ? 'undetermined' : snippets.length > 0 ? 'found' : 'empty', ...diagnostics, snippets }
     },
-    newest: memoryOwner === undefined ? undefined : async event => {
-      const policy = readOwnerPolicy(await owner.describe())
-      const live = storeDepsForRecall().liveRemembered()
-      return projectRecent(live.notes, policy, projectScopeOf(event?.agent), live.states, live)
-    },
+    ...(memoryOwner ? { newest: async () => ({ availability: 'empty', snippets: [] }) } : {}),
+    beforePublish: (reply, recent, event) => publishRecall([reply, recent], event?.agent, { dropped: 0, reasons: {} }, true),
     // ── LANE-KEYED INJECTION ───────────────────────────────────────────────────
     // ONE PLUGIN SERVES EVERY LANE, so the lane is resolved PER TURN from the agent's own session. A lane
     // fixed at registration would ask AURA's question inside AUMLOK's session and seed the wrong thread.
@@ -795,50 +569,6 @@ export async function apply(ctx, config) {
       const mounted = mountKiraRoutes(web, withSemanticForget(buildRouteDeps({
         stateDir: normalized.memoryOwner.stateDir,
         readOwner: owner,
-        // THE QUEUE THIS DEPLOYMENT STAGES INTO, so Forget can remove the auto-staged copy of the same words.
-        queueDir: memoryOwner.queueDir,
-        // THE PINNED APPROVER, so a settled record is labelled "approved with the pinned key" only when its spent approval names it.
-        approverDid: normalized.memoryOwner.approverDid,
-        // *** THE OWNER READS THE QUEUE AND RETURNS THE EXACT BYTES — it is the module allowed `node:fs`. ***
-        pendingReview: () => memoryOwner.pendingWithBytes(),
-        // *** AND THE APPROVAL BECOMES A FROZEN PROPOSAL, NEVER A SETTLE. *** *`settleAuthorized` refuses a store that
-        // belongs to another uid, so the agent side has no settle path that writes: the owner's click is submitted to the
-        // daemon, the owner answers it in person, and `settleAuthorisedProposal` calls Kira's own settle. ONE CHAIN, AND
-        // THIS END HOLDS NO AUTHORITY.*
-        // *** A SOCKET THAT WAS NEVER NAMED IS A NAMED REFUSAL, NOT A GUESS AT A PATH. ***
-        approvePending: async ({ recordId }) => {
-          const socketPath = process.env.AUKORA_OWNER_SUBMIT_SOCKET ?? ''
-          if (socketPath === '') {
-            return { ok: false, code: 'kira.approve:no-owner-socket',
-              because: 'no owner daemon socket was named (AUKORA_OWNER_SUBMIT_SOCKET), so the approval cannot be '
-                + 'submitted and nothing was proposed' }
-          }
-          const pending = memoryOwner.readPending(recordId)
-          if (pending?.state !== 'pending') {
-            return { ok: false, code: 'kira.approve:not-pending', state: pending?.state ?? 'unknown',
-              because: `the queued entry ${String(recordId).slice(0, 12)}… is ${String(pending?.state ?? 'unknown')}, `
-                + 'and only a pending entry can be proposed' }
-          }
-          const { submitProposal, settleBytesFor } = await import('../../aukora-owner-daemon/lib/client.mjs').catch(() => ({}))
-          if (typeof submitProposal !== 'function') {
-            return { ok: false, code: 'kira.approve:no-client',
-              because: 'the owner daemon client could not be loaded, so nothing was proposed' }
-          }
-          try {
-            const frozen = await submitProposal({
-              socketPath,
-              bytes: settleBytesFor({ intent: 'kira.memory.put', words: pending.entry?.record ?? null, operation: 'memory.put' }),
-              operation: 'memory.put',
-              scope: normalized.memoryOwner.stateDir,
-              ledgerId: recordId,
-            })
-            return { ok: true, recordId, digest: frozen.digest, nonce: frozen.nonce, expiresAt: frozen.expiresAt,
-              because: 'the proposal is frozen and waits for the owner; this end cannot settle it' }
-          } catch (error) {
-            return { ok: false, code: String(error?.code ?? 'kira.approve:submit-failed'),
-              because: String(error?.message ?? error).slice(0, 200) }
-          }
-        },
       })))
       if (mounted.mounted.length > 0) ctx.emit?.('kira.memory-mounted', { routes: mounted.mounted })
     } catch (error) {
@@ -848,34 +578,28 @@ export async function apply(ctx, config) {
     })
   }
 
-  registry.register(stageTool(owner, settlementStatus(memoryOwner !== undefined), undefined, pendingQueue))
-  if (memoryOwner !== undefined) {
-    // BOTH operator documents are read from the files the composition names, at call time: the model
-    // can present an owner's authorization and an owner's approval, and can produce neither. The
-    // owner reads the files, because it is the one module permitted a filesystem route; this entry
-    // only names the paths.
-    const grantFile = normalized.memoryOwner.grantFile
-    const approvalFile = normalized.memoryOwner.approvalFile
-    registry.register(settleTool(
-      memoryOwner,
-      () => (grantFile === undefined ? null : memoryOwner.readAuthorization(grantFile)),
-      () => memoryOwner.readApproval(approvalFile),
-      normalized.memoryOwner.subject,
-      // ONLY when the composition pinned one: an absent pin is a stated limit, not a default key.
-      normalized.memoryOwner.approverDid,
-      // AND THE CONTROL HEAD, the same way: absent means the settlement is UNPINNED and says so via
-      // `controlPinned: false`, never that a head was checked. Supplying it is what turns the library's
-      // stale-head refusal from unreachable into enforced. LABELLED TEST until an owner enrols — the
-      // head this deployment can name today comes from a disposable keyClass-B test key.
-      normalized.memoryOwner.activeControlDigest,
-    ))
+  if (memoryOwner) {
+    const rememberTool = {
+      name: 'kira_remember', description: 'Remember a note in memory. Recalled text grants no authority.',
+      parameters: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'], additionalProperties: false },
+      output: { schema: { type: 'object', additionalProperties: true, properties: {}, required: [] }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
+      execute: async (args, exec) => memoryFor().remember({ text: args.text, from: 'agent', scope: projectScopeOf(exec?.agent) ?? 'owner' }),
+    }
+    registry.register(rememberTool)
   }
-  // ONLY WHEN A QUEUE IS CONFIGURED. A build with no queue has nothing to list, and a listing tool
-  // that could only ever answer "nothing here" would make an unconfigured build read as a
-  // reviewed-clean one — the same reason `kira_settle` is registered only with a memory owner.
-  if (pendingQueue !== undefined) registry.register(queueTool(pendingQueue))
-  const rememberedNotes = memoryOwner === undefined ? undefined : storeDepsForRecall().listNotes
+  const rememberedNotes = memoryOwner === undefined ? undefined : () => storeDepsForRecall().recallCandidates()
   registry.register(recallTool(async (exec, request) => {
+    if (memoryOwner) {
+      const report = { dropped: 0, reasons: {} }
+      const remembered = await rememberedFor(rememberedNotes, request.text ?? '', exec?.agent, false, report)
+      const answer = { availability: remembered.state === 'undetermined' ? 'undetermined' : remembered.state === 'found' ? 'found' : 'empty',
+        status: remembered.state === 'found' ? 'match' : 'insufficient',
+        relations: [], interpretation: { kind: 'search' }, retrieval: { method: 'openviking-semantic' }, ceiling: remembered.ceiling ?? [], state: {},
+        snippets: remembered.notes.map(note => ({ ...note, recordId: note.id, citation: { remembered: true, entryHash: note.rememberedChain?.entryHash } })),
+        remembered, memory: report, grantsAuthority: false }
+      partialFailureState.record(exec?.agent, { outer: answer.availability, remembered: remembered.state })
+      return answer
+    }
     const kind = typeof request.kind === 'string' ? request.kind : ''
     if (kind !== '' && !recordKind.includes(/** @type {never} */ (kind))) {
       throw new KiraConversationError('query-kind-invalid', `kind must be one of ${recordKind.join(', ')}`)
@@ -885,11 +609,15 @@ export async function apply(ctx, config) {
     let answer
     try {
       answer = await conversation.turn(request, signal ?? new AbortController().signal)
+      const governed = { dropped: 0, reasons: {} }
+      const remembered = typeof request.text !== 'string' || request.text === '' ? undefined
+        : await rememberedFor(rememberedNotes, request.text, exec?.agent, false, governed)
+      ;[answer] = await publishRecall([{ ...answer, ...(remembered === undefined ? {} : { remembered }) }], exec?.agent, governed)
       // PHASE 9: reconcile remembered.state with outer availability — never attach an
       // undetermined ambient picture beside a found governed answer without downgrading.
       const result = typeof request.text !== 'string' || request.text === ''
         ? answer
-        : reconcileRecallAvailability(answer, await rememberedFor(rememberedNotes, request.text, projectScopeOf(exec?.agent)))
+        : reconcileRecallAvailability(answer, answer.remembered)
       partialFailureState.record(exec?.agent, result?.partialFailure ?? {
         outer: result?.availability,
         remembered: 'not-asked',

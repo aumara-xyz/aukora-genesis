@@ -40,7 +40,10 @@ default_home() {
 }
 
 cmd=${1:-}
-[ -n "$cmd" ] || die "usage: $0 install|serve|status [HOME]"
+case "$cmd" in
+    door|mcp) shift; exec node "$REPO/scripts/kira/viking-$cmd.mjs" "$@" ;;
+esac
+[ -n "$cmd" ] || die "usage: $0 install|serve|status [HOME], or door|mcp --installed (or --state-dir PATH --subject SUBJECT)"
 H=${2:-}
 [ -n "$H" ] || H=$(default_home "$cmd")
 case "$H" in /*) ;; *) die "HOME must be an absolute path: $H" ;; esac
@@ -181,5 +184,5 @@ case "$cmd" in
     install) install_home ;;
     serve) serve_home ;;
     status) status_home ;;
-    *) die "usage: $0 install|serve|status [HOME]" ;;
+    *) die "usage: $0 install|serve|status [HOME], or door|mcp --installed (or --state-dir PATH --subject SUBJECT)" ;;
 esac

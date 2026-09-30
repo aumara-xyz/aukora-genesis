@@ -29,11 +29,13 @@ import { verifyRecord } from './memory-verify.mjs'
 // AND IT REACHES THE FILESYSTEM ONLY THROUGH THE BOUNDARY: `listJsonFiles` is the boundary's own listing, added
 // because this module importing `node:fs` was refused BY NAME by `kira-recall` — the widening the boundary exists to
 // catch, caught by a court rather than by a reviewer.
-import { appendJournalLine, listJsonFiles, readJsonStrict, readLinesIfPresent, stateExists } from './strict-read.mjs'
+import { appendJournalLine, listJsonFiles, readJsonStrict, readLinesIfPresent, stateExists, withFileLock } from './strict-read.mjs'
 // THE FORGOTTEN SET COMES FROM THE CHAIN, not from a field on the note: the tombstone IS the `forget` entry.
 import { forgottenIds, noteStates } from './memory-forget.mjs'
 import { nextEntry } from './memory-journal.mjs'
 import { contentFreeTombstone } from './memory-law.mjs'
+import { signedRecallRecord } from './recall-filter/filter.mjs'
+import { readTrackedMemory } from './tracked-memory.mjs'
 import { readSessionEventStreamed } from './session-read.mjs'
 
 /**
@@ -242,7 +244,8 @@ export function buildRouteDeps(input) {
     }
     const pinned = typeof approverDid === 'string' && approverDid !== '' ? approverDid : null
     const shortDid = did => `did:key:…${did.slice(-8)}`
-    return snapshot.records.map(({ record, citation, settlement }) => {
+    return snapshot.records.map(entry => {
+      const { record, citation, settlement } = entry
       const did = settlement?.approverDid ?? null
       const label = did === null ? 'no approval record'
         : did === pinned ? 'approved in the AUKORA popup with the pinned key'
@@ -250,10 +253,11 @@ export function buildRouteDeps(input) {
         : `settled with an earlier key (${shortDid(did)})`
       const at = Number.isFinite(settlement?.issuedAt) ? settlement.issuedAt * 1000 : null
       return {
+        ...signedRecallRecord(entry, snapshot.records),
         id: record.recordId, tier: 'signed', kind: record.kind,
         statement: typeof record.content?.note === 'string' ? record.content.note : JSON.stringify(record.content),
         createdAt: record.createdAt, observedAt: record.createdAt, label: 'signed',
-        source: { sessionTitle: `${label}, Aura entry ${String(citation.auraSequence)}`, at },
+        source: { ...record.source, sessionTitle: `${label}, Aura entry ${String(citation.auraSequence)}`, at },
         aura: { index: citation.auraSequence, entryHash: citation.auraEntryHash, verifiedHead: citation.verifiedHead },
         citation, trusted: at === null ? null : { at },
       }
@@ -284,7 +288,9 @@ export function buildRouteDeps(input) {
       // the expression at the first `const` — the `.slice()` and `.map()` below became dead code, and the route answered 400 items where it had answered 50.
       const forgottenSet = forgottenNow()
       const hiddenStates = hiddenNow()
-    return [...objects().filter(note => note.tier === 'remembered'), ...(asked.includes('signed') ? await settledRecords() : [])]
+    const policy = typeof input.readOwner?.describe === 'function' ? await input.readOwner.describe() : null
+    return liveRemembered().notes
+      .filter(note => !policy || (note.subject === policy.subject && policy.permittedPrivacy?.includes(note.privacy)))
       .filter(note => note.unreadable !== true && asked.includes(note.tier))
       .filter(note => !forgottenSet.has(String(note.id)))
       // A HIDDEN NOTE LEAVES THE LIST AT ONCE — the state the voice forget writes, and the half of §6.1 this route was missing.
@@ -347,7 +353,8 @@ export function buildRouteDeps(input) {
     }
   }
 
-  const forgetNote = ({ id, reason }) => {
+  const forgetNote = args => withFileLock(`${stateDir}/${STORE_PATHS.rememberedAura}`, () => forgetNoteLocked(args))
+  const forgetNoteLocked = ({ id, reason }) => {
     const found = objectById(id)
     if (found === undefined) return { id, forgotten: false, because: 'no note with that id is in the store' }
     if (found.tier === 'signed') {
@@ -456,34 +463,11 @@ export function buildRouteDeps(input) {
    * its entry with the note's own entryHash. A note that fails any of these is not in the ledger, so a hit on it is never shown.
    * @returns {{notes: Array<Record<string, unknown>>, unreadable: number, unchained: number}}
    */
-  const liveRemembered = () => {
-    let names
-    try {
-      names = listJsonFiles(rememberedDir)
-    } catch (error) {
-      throw new KiraDepsError('store-unreadable', `the remembered store could not be read (${String(error?.code ?? error?.name ?? 'unknown')})`)
-    }
-    const chained = chainedRememberedIds(stateDir)
-    const forgottenSet = forgottenNow()
-    const hiddenStates = hiddenNow()
-    const notes = []
-    let unreadable = 0
-    let unchained = 0
-    for (const name of names) {
-      const file = `${rememberedDir}/${name}`
-      if (!insideStateDir(file, stateDir)) continue
-      let note
-      try { note = readJsonStrict(file) } catch { unreadable += 1; continue }
-      const id = String(note?.id ?? '')
-      let expected = null
-      try { expected = objectFileName(id) } catch { expected = null }
-      if (expected !== name) { unreadable += 1; continue }
-      if (forgottenSet.has(id) || hiddenStates.get(id) === 'hidden') continue
-      if (typeof note.statement !== 'string' || note.statement === '') continue
-      if (chained.get(id) !== note.aura?.entryHash) { unchained += 1; continue }
-      notes.push({ ...note, tier: 'remembered' })
-    }
-    return { notes, states: hiddenStates, unreadable, unchained }
+  const liveRemembered = ({ includeWithheld = false } = {}) => {
+    const live = readTrackedMemory(stateDir)
+    return { notes: includeWithheld ? [...live.notes, ...live.withheld] : live.notes, states: live.states,
+      unreadable: live.withheld.filter(note => note.recallRefusal !== 'unchained').length,
+      unchained: live.withheld.filter(note => note.recallRefusal === 'unchained').length }
   }
 
   /** The `queue-backup-*` directories `scripts/kira/migrate-queue.mjs --apply` sets aside beside the store. */
@@ -515,9 +499,12 @@ export function buildRouteDeps(input) {
   // stub answering `{items: []}` would tell the owner he has nothing to approve when in fact nobody looked. ***
   return {
     listNotes, verifyNote, forgetNote, trustNotes, liveRemembered,
+    // Withheld placeholders are for refusal accounting only, never the index ledger.
+    recallCandidates: () => liveRemembered({ includeWithheld: true }).notes,
+    recallState: () => ({ forgotten: forgottenNow(), states: hiddenNow() }),
     // The semantic bridge receives governed records only from this verified reader; it never
     // reconstructs them from keys, objects, or receipt files.
-    liveGoverned: settledRecords,
+    liveMemory: () => liveRemembered().notes,
     pendingReview: typeof input?.pendingReview === 'function' ? input.pendingReview : undefined,
     approvePending: typeof input?.approvePending === 'function' ? input.approvePending : undefined,
   }

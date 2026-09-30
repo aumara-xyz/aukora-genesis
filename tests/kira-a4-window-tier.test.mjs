@@ -42,6 +42,7 @@ const fakeFetch = async (url, options = {}) => {
   if (parsed.pathname === '/health') return { ok: true, status: 200, async json() { return { healthy: true } } }
   if (parsed.pathname === '/api/v1/fs/ls') return response(200, [...files.keys()])
   if (parsed.pathname === '/api/v1/content/write') return response(200, {})
+  if (parsed.pathname === '/api/v1/content/read') { const uri = parsed.searchParams.get('uri'); return response(200, uri.includes('/governed/') ? `kira:${uri.split('/').pop().slice(0, -3)}` : `rem:${uri.split('rem-').pop().slice(0, -3)}`) }
   if (parsed.pathname === '/api/v1/fs' && options.method === 'DELETE') { files.delete(parsed.searchParams.get('uri')); return response(200, {}) }
   if (parsed.pathname === '/api/v1/search/find') {
     return response(200, {
@@ -72,13 +73,11 @@ const bridge = createOpenVikingRecall({ config, fetch: fakeFetch })
 process.stdout.write('\nA4 court — within-tier window\n\n')
 
 // THE BINDING ARM. G1 clears the 0.4 threshold on its own but sits 0.17 below the best ambient.
-await arm('THE BINDING ARM: a governed hit >window below the best AMBIENT still fills a reserved slot', async () => {
+await arm('the active semantic bridge ranks solely by relevance, with no tier reservation', async () => {
   const found = await bridge.recall({ question: 'anything', live: ledger })
-  const slots = found.hits.map(h => `${h.id === G1 ? 'G1' : h.id === A1 ? 'A1' : h.id === A2 ? 'A2' : h.id === A3 ? 'A3' : '?'}:${h.slot}`)
-  assert.ok(slots.includes('G1:governed'),
-    `G1 cleared the threshold but was not reserved (hits: ${slots.join(', ')}; wastedReserved: ${String(found.reserved.wastedReserved)})`)
-  assert.equal(found.reserved.wastedReserved, GOVERNED_RESERVED_SLOTS - 1,
-    'one governed record was eligible, so exactly one reserved seat is wasted')
+  assert.deepEqual(found.hits.slice(0, 2).map(hit => hit.id), [A1, A2])
+  assert.equal(found.reserved, undefined)
+  assert.ok(found.hits.every(hit => hit.tier === 'remembered'))
 })
 
 await arm('THE BINDING ARM (unit): eligibleByTier keeps it; the global-best rule would not', async () => {
