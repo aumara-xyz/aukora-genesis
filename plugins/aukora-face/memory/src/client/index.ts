@@ -1,17 +1,4 @@
-/**
- * The Memory face's browser plugin: one launcher in the right-side menu, one surface in the centre.
- *
- * WHERE IT SITS. The design's §7.1 puts the launcher in the shell's menu and opens the Memory view in the centre
- * canvas with `openSurface('memory', undefined, 'contained')`; the surface registers into `shell.surface`, which is
- * the slot the layout face renders for a centre panel. Both are `single`-adjacent list seats, so this plugin adds an
- * entry rather than shadowing one.
- *
- * IT OWNS NO ROUTES AND NO STORE. The four routes the app reads belong to the engine that owns the memories
- * (`.agents/live/MEMORY-CONTRACT-v0.md`), and until they land the app reads the stub in `memory-api.ts` — which says
- * so on the screen. A face that kept its own copy of a memory would be a second answer to one question.
- *
- * @module @aukora/face-memory/client
- */
+/** Memory launcher and centre surface. Host routes combine the Kira ledger and OpenViking. */
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 // **THE TWO SIDE-EFFECT IMPORTS THAT LOAD THE `slots` AUGMENTATION.** `aumlok/src/client/index.ts:3-4` carries both;
 // `memory` carried neither, so `ctx.slots` was *"Property 'slots' does not exist on type 'Context'"* at four sites.

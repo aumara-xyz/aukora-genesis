@@ -11,6 +11,10 @@
 
 /** The Chinese dictionary. */
 export const zh = {
+  'action.more': '加载更多记忆',
+  'source.unknown': '来源未知',
+  'when.modified': '更新于',
+  'when.created': '记录于',
   'menu.memory': '记忆',
   'menu.memory.tip': '看看她在记什么',
   'view.title': 'Auma 记得的事',
@@ -77,7 +81,7 @@ export const zh = {
   'surface.loading': '正在读…',
   'surface.failed': '没能读到记忆。她没有说"没有"，她说的是"读不到"。',
   'surface.selected': '已勾选',
-  'surface.actionFailed': '这一步没成功——什么都没变。等一下再试。',
+  'surface.actionFailed': '没能确认这一步的结果。请重试。',
   'provenance.youSaid': '你说的',
   'provenance.heard': '在对话里听到的',
   'provenance.edited': '你改过的',
@@ -101,6 +105,10 @@ export const zh = {
 
 /** The English dictionary. */
 export const en: Record<keyof typeof zh, string> = {
+  'action.more': 'Load more memories',
+  'source.unknown': 'Unknown source',
+  'when.modified': 'Updated',
+  'when.created': 'Recorded',
   'menu.memory': 'Memory',
   'menu.memory.tip': 'See what she remembers',
   'view.title': 'What Auma remembers',
@@ -167,7 +175,7 @@ export const en: Record<keyof typeof zh, string> = {
   'surface.loading': 'Reading…',
   'surface.failed': 'Could not read the memories. She is not saying "there are none" — she is saying "I cannot see them".',
   'surface.selected': 'selected',
-  'surface.actionFailed': 'That did not work, and nothing changed. Try again in a moment.',
+  'surface.actionFailed': 'The action could not be confirmed. Try again.',
   'provenance.youSaid': 'you said',
   'provenance.heard': 'heard in your session',
   'provenance.edited': 'edited by you',

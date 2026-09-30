@@ -218,6 +218,9 @@ export type ProvenanceKind = (typeof PROVENANCE_KINDS)[number]
 export interface MemoryItem {
   readonly id: string
   readonly tier: Tier
+  readonly backend: 'kira' | 'openviking'
+  readonly author: 'Peter' | 'agent' | null
+  readonly dateKind: 'created' | 'modified'
   readonly kind: Kind
   /** The words Peter reads. */
   readonly text: string
@@ -325,6 +328,9 @@ export function itemOf(record: unknown, receipts: Readonly<Record<string, Receip
   return {
     id,
     tier,
+    backend: raw.backend === 'openviking' ? 'openviking' : 'kira',
+    author: raw.author === 'Peter' || raw.author === 'agent' ? raw.author : null,
+    dateKind: raw.dateKind === 'modified' ? 'modified' : 'created',
     kind,
     // AN ERASED ROW CARRIES NO WORDS; an unreadable one carries a sentence saying so.
     text: erased ? '' : text ?? '(this one could not be read)',
@@ -374,7 +380,7 @@ export function itemOf(record: unknown, receipts: Readonly<Record<string, Receip
  */
 export function itemsOf(
   answer: unknown,
-  view: Pick<MemoryView, 'tier' | 'query' | 'kind' | 'citedIds'> & { readonly receipts?: Readonly<Record<string, ReceiptBadge>> },
+  view: Pick<MemoryView, 'tier' | 'query' | 'kind' | 'citedIds'> & { readonly receipts?: Readonly<Record<string, ReceiptBadge>>; readonly ranked?: boolean },
 ): { readonly items: readonly MemoryItem[]; readonly skipped: number } {
   const list = Array.isArray(answer)
     ? answer
@@ -398,7 +404,7 @@ export function itemsOf(
   }
   // NEWEST FIRST, AND A RECORD WITH NO READABLE TIME SORTS LAST: an unreadable date is not "the newest thing she
   // remembers", and putting it on top would let a parse failure look like a fresh memory.
-  items.sort((a, b) => {
+  if (!view.ranked) items.sort((a, b) => {
     if (a.createdAt === null && b.createdAt === null) return a.id < b.id ? -1 : 1
     if (a.createdAt === null) return 1
     if (b.createdAt === null) return -1
