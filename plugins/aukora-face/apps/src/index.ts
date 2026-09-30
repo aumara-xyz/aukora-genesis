@@ -953,6 +953,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     { kind: 'exact', path: '/stock-apps/auma-live.html', handler: assetHandlers.serveAumaLiveEntry },
     { kind: 'prefix', path: '/stock-apps/zeta-harp', handler: assetHandlers.serveZetaHarpFile },
     { kind: 'prefix', path: '/stock-apps/dakini-code', handler: assetHandlers.serveDakiniCodeFile },
+    { kind: 'prefix', path: '/stock-apps/human-graph', handler: assetHandlers.serveHumanGraphFile },
     { kind: 'exact', path: '/api/auma-live/chat/recent', handler: liveHttp.recentChat.bind(liveHttp) },
     // THE FIELD'S OWN REPORT. Without a route the renderer's `field-degraded` posts went nowhere, so a
     // degradation left no record behind — and a limit that does not print did not happen.

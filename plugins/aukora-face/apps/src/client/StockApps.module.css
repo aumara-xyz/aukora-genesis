@@ -23,6 +23,11 @@
   background: var(--dsw-specific-spatial-canvas, #111520);
 }
 
+.surfaceSeat[data-stock-app="human-graph"],
+.embeddedFrame[data-stock-app-frame="human-graph"] {
+  background: transparent;
+}
+
 .menuCopy {
   display: flex;
   width: 100%;

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human Graph</title>
+  <link rel="stylesheet" href="./graph.css">
+</head>
+<body>
+  <main id="graph" aria-label="Human Graph">
+    <canvas id="field" tabindex="0" role="application" aria-label="Human Graph. Drag to orbit, scroll to zoom. Arrow keys select a node, Enter focuses it, Home returns to the root, Space pauses motion, plus and minus zoom."></canvas>
+    <div class="glass badge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m8 14 4-6 4 6H8Z"/><circle cx="12" cy="8" r="1"/></svg><span>demo data</span></div>
+    <nav class="glass controls" aria-label="Graph controls">
+      <button id="motion" disabled aria-label="Pause motion" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="pause" d="M9 6v12M15 6v12"/><path class="play" d="m9 6 9 6-9 6Z"/></svg></button>
+      <button id="home" disabled aria-label="Show entire graph"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg></button>
+      <button id="zoom-in" disabled aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+      <button id="zoom-out" disabled aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+      <button id="close" aria-label="Close Human Graph"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+    </nav>
+    <div id="fallback" hidden><button id="retry" class="glass" aria-label="Graph unavailable. Retry WebGL"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10a8 8 0 1 0-2 8M20 4v6h-6"/></svg></button></div>
+    <span id="announcement" class="visually-hidden" aria-live="polite"></span>
+  </main>
+  <script type="module" src="./bootstrap.js"></script>
+</body>
+</html>

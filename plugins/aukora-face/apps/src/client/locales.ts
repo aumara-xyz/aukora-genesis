@@ -2,6 +2,7 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'humanGraph.name': '人际图谱',
   'room.name': '房间',
   'room.message': '房间消息',
   'room.sendFailed': '发送失败，消息已保留。按回车重试。',
@@ -49,6 +50,7 @@ export type StockAppsKey = keyof typeof zh
 
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
+  'humanGraph.name': 'Human Graph',
   'room.name': 'Room',
   'room.message': 'Room message',
   'room.sendFailed': 'Send failed; message retained. Press Enter to retry.',

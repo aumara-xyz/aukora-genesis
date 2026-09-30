@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { VENDOR_ROOT } from './vendor-paths.ts'
 
@@ -12,6 +13,7 @@ interface EmbeddedAssetHandlers {
   serveAumaLiveEntry(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
   serveZetaHarpFile(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
   serveDakiniCodeFile(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
+  serveHumanGraphFile(this: void, req: IncomingMessage, res: ServerResponse): Promise<void>
 }
 
 const LINGWA_ROOT = join(VENDOR_ROOT, 'auma-lingwa', 'runtime')
@@ -21,6 +23,9 @@ const LIVE_ROOT = join(VENDOR_ROOT, 'auma-live', 'runtime')
 const LIVE_APP_ROOT = join(LIVE_ROOT, 'app')
 const ZETA_HARP_ROOT = join(VENDOR_ROOT, 'zeta-harp')
 const DAKINI_CODE_ROOT = join(VENDOR_ROOT, 'dakini-code')
+const HUMAN_GRAPH_ROOT = fileURLToPath(new URL('../assets/human-graph', import.meta.url))
+const HUMAN_GRAPH_FILES = new Set(['index.html', 'graph.css', 'bootstrap.js', 'graph.js', 'graph-data.js'])
+const HUMAN_GRAPH_THREE_FILES = new Set(['three.module.min.js', 'three.core.min.js'])
 
 const LINGWA_MODULE_ROUTE = 'auma/auma.js'
 const LINGWA_MODULE_PATH = join(LINGWA_APP_ROOT, 'auma', 'auma.js')
@@ -151,6 +156,20 @@ async function serveOpenedLingwaModule(req: IncomingMessage, res: ServerResponse
  */
 export function createEmbeddedAssetHandlers(serveStatic: ServeStatic): EmbeddedAssetHandlers {
   return {
+    /** Exact local asset closure: no arbitrary vendor files, directory indexes, or traversal. */
+    async serveHumanGraphFile(req: IncomingMessage, res: ServerResponse): Promise<void> {
+      if (!acceptsStaticMethod(req, res)) return
+      let relative: string
+      try { relative = mountedSuffix(req, '/stock-apps/human-graph') }
+      catch { res.writeHead(400); res.end(); return }
+      const threeFile = relative.startsWith('three/') ? relative.slice(6) : ''
+      const root = HUMAN_GRAPH_FILES.has(relative) ? HUMAN_GRAPH_ROOT
+        : HUMAN_GRAPH_THREE_FILES.has(threeFile) ? join(VENDOR_ROOT, 'three') : undefined
+      if (root === undefined) { res.writeHead(404); res.end(); return }
+      res.setHeader('X-Content-Type-Options', 'nosniff')
+      res.setHeader('Content-Security-Policy', "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'")
+      await serveFile(serveStatic, req, res, root, root === HUMAN_GRAPH_ROOT ? relative : threeFile)
+    },
     /** Serve the overlay at `/app`: the exact Lingwa and Live runtime files. */
     async serveStockAppFile(req: IncomingMessage, res: ServerResponse): Promise<void> {
       const relative = mountedSuffix(req, '/app')

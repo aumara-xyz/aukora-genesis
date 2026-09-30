@@ -94,6 +94,14 @@ async function makeManifest() {
   return {
     schemaVersion: 1,
     sources: {
+      three: {
+        repository: 'https://github.com/mrdoob/three.js',
+        pin: 'r180',
+        version: '0.180.0',
+        license: 'MIT',
+        provenance: 'three/upstream-three.json',
+        runtimeEntry: 'three/three.module.min.js',
+      },
       dakiniCode: {
         repository: 'aumara-xyz/dakini-code',
         commit: '1fc98117a9a6234e1179bc7c5084a58ade378963',

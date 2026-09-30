@@ -1,0 +1,29 @@
+{
+  "repository": "https://github.com/mrdoob/three.js",
+  "pin": "r180",
+  "version": "0.180.0",
+  "license": "MIT",
+  "usage": "Unmodified ES modules for the local Human Graph WebGL renderer; no CDN or addons.",
+  "files": {
+    "package.json": {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r180/package.json",
+      "bytes": 4635,
+      "sha256": "aa42494664dba4cf76d89c6975ee38321a402f09a048672e190bad6f13beec93"
+    },
+    "LICENSE": {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r180/LICENSE",
+      "bytes": 1081,
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    "three.module.min.js": {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r180/build/three.module.min.js",
+      "bytes": 338908,
+      "sha256": "e2b5ee6bccd38fd6d8a2428546b83c5f2426d84b152ef82be8055556e3b40eb6"
+    },
+    "three.core.min.js": {
+      "url": "https://raw.githubusercontent.com/mrdoob/three.js/r180/build/three.core.min.js",
+      "bytes": 381124,
+      "sha256": "61ba0df005b05991361d040d8ff670e1aadfd0ce7aeebd1fdb0725957a8957de"
+    }
+  }
+}

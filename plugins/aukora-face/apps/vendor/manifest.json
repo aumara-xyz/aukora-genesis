@@ -1,6 +1,14 @@
 {
   "schemaVersion": 1,
   "sources": {
+    "three": {
+      "repository": "https://github.com/mrdoob/three.js",
+      "pin": "r180",
+      "version": "0.180.0",
+      "license": "MIT",
+      "provenance": "three/upstream-three.json",
+      "runtimeEntry": "three/three.module.min.js"
+    },
     "dakiniCode": {
       "repository": "aumara-xyz/dakini-code",
       "commit": "1fc98117a9a6234e1179bc7c5084a58ade378963",
@@ -619,6 +627,26 @@
     "dakini-code/index.html": {
       "bytes": 512,
       "sha256": "87fda9f9027637a5d3b448194ae63c8ac03480964e8aa3a853f7ca82326bdf3b"
+    },
+    "three/LICENSE": {
+      "bytes": 1081,
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    "three/package.json": {
+      "bytes": 4635,
+      "sha256": "aa42494664dba4cf76d89c6975ee38321a402f09a048672e190bad6f13beec93"
+    },
+    "three/three.core.min.js": {
+      "bytes": 381124,
+      "sha256": "61ba0df005b05991361d040d8ff670e1aadfd0ce7aeebd1fdb0725957a8957de"
+    },
+    "three/three.module.min.js": {
+      "bytes": 338908,
+      "sha256": "e2b5ee6bccd38fd6d8a2428546b83c5f2426d84b152ef82be8055556e3b40eb6"
+    },
+    "three/upstream-three.json": {
+      "bytes": 1129,
+      "sha256": "db09ad40e2d66ab8a6a0664d2791aff202816ac281ad777e3739cc349c64a40f"
     },
     "zeta-harp/fold.html": {
       "bytes": 38325,

@@ -4,9 +4,9 @@ import { ActionButton } from '@aukora/face-layout/client'
 import roomCss from './RoomSurface.module.css'
 import css from './StockApps.module.css'
 
-export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room'
+export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room' | 'human-graph'
 
-type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'room'
+type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'room' | 'humanGraph'
 
 interface MenuSpec {
   id: StockAppId
@@ -20,6 +20,7 @@ const AUMA_LIVE_APP = { id: 'auma-live', copy: 'live', presentation: 'full-bleed
 const ZETA_HARP_APP = { id: 'zeta-harp', copy: 'harp', presentation: 'full-bleed' } as const
 const AUMA_CANVAS_APP = { id: 'auma-canvas', copy: 'canvas', presentation: 'full-bleed' } as const
 const ROOM_APP = { id: 'room', copy: 'room', presentation: 'contained' } as const
+const HUMAN_GRAPH_APP = { id: 'human-graph', copy: 'humanGraph', presentation: 'full-bleed' } as const
 
 export const STOCK_APPS = [
   AUMA_LANGUAGE_APP,
@@ -27,6 +28,7 @@ export const STOCK_APPS = [
   ZETA_HARP_APP,
   AUMA_CANVAS_APP,
   ROOM_APP,
+  HUMAN_GRAPH_APP,
 ] as const satisfies readonly MenuSpec[]
 
 function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps & { spec: MenuSpec }) {
@@ -40,7 +42,7 @@ function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps
     >
       <span className={css.menuCopy}>
         <strong>{t(`${spec.copy}.name`)}</strong>
-        {spec.copy !== 'room' && <span>{t(`${spec.copy}.menu`)}</span>}
+        {spec.copy !== 'room' && spec.copy !== 'humanGraph' && <span>{t(`${spec.copy}.menu`)}</span>}
       </span>
     </button>
   )
@@ -73,4 +75,8 @@ export function RoomMenu({ activeSurface, openSurface, t }: StockAppMenuProps) {
     onClick={() => { openSurface('room', undefined, 'contained') }}>
     <span className={css.menuCopy}><strong>{t('room.name')}</strong></span>
   </ActionButton>
+}
+
+export function HumanGraphMenu(props: StockAppMenuProps) {
+  return <StockAppMenu {...props} spec={HUMAN_GRAPH_APP} />
 }
