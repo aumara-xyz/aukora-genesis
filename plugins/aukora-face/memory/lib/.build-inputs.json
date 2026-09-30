@@ -1,6 +1,6 @@
 {
   "face": "memory",
-  "srcDigest": "ac5c1d6f5b7e25541b31842c0d55b1a8cba09eb420ab7c29c0794607992af26a",
+  "srcDigest": "c8b58311f8e1fdab4e50ff7b733b5232a054e0131a1f275980bfbe711387f635",
   "files": [
     "package.json",
     "src/client/Memory.module.css",
@@ -14,5 +14,5 @@
     "src/index.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T08:20:02Z"
+  "builtAt": "2026-09-30T12:17:56Z"
 }

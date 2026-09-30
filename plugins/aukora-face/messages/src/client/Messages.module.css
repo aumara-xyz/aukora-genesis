@@ -15,8 +15,8 @@
   position: relative;
   /* Lane width answers the hot-corner clearance query below. */
   container-type: inline-size;
-  /* The same surface as the surrounding lane, including at the single-lane measure. */
-  background: var(--aukora-background);
+  /* Reveal the frame's tinted lane surface, including at the single-lane measure. */
+  background: transparent;
   color: var(--aukora-text);
 }
 

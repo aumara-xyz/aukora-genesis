@@ -187,7 +187,7 @@ export function DocumentsSurface({ activeSurface, closeSurface, t }: DocumentsSu
 
   const blocks = useMemo(
     () => (opened.kind === 'ready' ? parseMarkdown(opened.markdown) : []),
-    [document],
+    [opened],
   )
 
   useEffect(() => {

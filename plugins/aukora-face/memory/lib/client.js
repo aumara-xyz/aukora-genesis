@@ -4,11 +4,11 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
+		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		//#region \0dsh-css:Memory.module.css.mjs
-		const css = ".jpB1KW_memoryView[hidden]{display:none!important}.jpB1KW_memoryView{z-index:1;box-sizing:border-box;overscroll-behavior:contain;scrollbar-gutter:stable;width:100%;min-width:0;max-width:46rem;height:100%;min-height:0;color:var(--aukora-text);background:0 0;flex-direction:column;gap:18px;margin:0 auto;padding:22px 20px 48px;display:flex;position:relative;overflow:hidden auto;container-type:inline-size}.jpB1KW_memoryHead{flex-direction:column;flex:none;align-items:flex-start;gap:4px;padding:0 4px}.jpB1KW_memoryTitle{margin:0;font-size:20px;font-weight:600;line-height:28px}.jpB1KW_portals{flex-direction:column;flex:none;gap:10px;min-width:0;display:flex}.jpB1KW_portalDot{background:currentColor;border-radius:50%;width:9px;height:9px}.jpB1KW_portalBody{flex-direction:column;gap:8px;display:flex}.jpB1KW_portalSearch{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-accent) 30%, transparent);border-radius:var(--aukora-radius);background:var(--aukora-surface);width:100%;max-width:420px;height:38px;color:var(--aukora-text);font:inherit;text-align:center;margin:2px auto 8px;padding:0 16px;font-size:13px;display:block}.jpB1KW_portalSearch::placeholder{color:var(--aukora-text-muted)}.jpB1KW_portalSearch:focus-visible{outline:2px solid var(--aukora-accent);outline-offset:2px}.jpB1KW_portalQuiet{color:var(--aukora-text-muted);text-align:center;margin:4px 0;font-size:12px}.jpB1KW_memoryList{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.jpB1KW_memoryPortal{gap:12px;min-height:48px;padding:10px 14px}.jpB1KW_memoryWords{overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;font-size:14px;font-weight:400;line-height:20px;display:block}.jpB1KW_memoryItem[data-open=no] .jpB1KW_memoryWords{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.jpB1KW_memoryWhen{color:var(--aukora-text-muted);flex-direction:column;flex:none;align-items:flex-end;gap:3px;font-size:12px;display:flex}.jpB1KW_memoryDetail{padding:0 14px 12px}.jpB1KW_memoryActions{flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;display:flex}.jpB1KW_pill{padding:4px 12px;font-size:12px}.jpB1KW_memoryProblem{color:var(--aukora-red-warning);align-self:center}.jpB1KW_retry,.jpB1KW_more{align-self:center}.jpB1KW_more{padding:8px 20px}.jpB1KW_portalBody,.jpB1KW_memoryList,.jpB1KW_memoryItem,.jpB1KW_memoryDetail{min-width:0}.jpB1KW_memoryMenuItem{width:100%}@container (width<=340px){.jpB1KW_memoryPortal{flex-direction:column;align-items:flex-start;gap:6px}.jpB1KW_memoryWhen{flex-flow:wrap;gap:8px;font-size:11px}.jpB1KW_portalHead{gap:10px;padding:10px 12px}.jpB1KW_portalBody{padding:2px 8px 12px}}";
+		const css = ".Rjr40G_memoryView[hidden]{display:none!important}.Rjr40G_memoryView{z-index:1;box-sizing:border-box;overscroll-behavior:contain;scrollbar-gutter:stable;width:100%;min-width:0;max-width:46rem;height:100%;min-height:0;color:var(--aukora-text);background:0 0;flex-direction:column;gap:18px;margin:0 auto;padding:22px 20px 48px;display:flex;position:relative;overflow:hidden auto;container-type:inline-size}.Rjr40G_memoryHead{flex-direction:column;flex:none;align-items:flex-start;gap:4px;padding:0 4px}.Rjr40G_memoryTitle{margin:0;font-size:20px;font-weight:600;line-height:28px}.Rjr40G_portals{flex-direction:column;flex:none;gap:10px;min-width:0;display:flex}.Rjr40G_portalDot{background:currentColor;border-radius:50%;width:9px;height:9px}.Rjr40G_portalBody{flex-direction:column;gap:8px;display:flex}.Rjr40G_portalSearch{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-accent) 30%, transparent);border-radius:var(--aukora-radius);background:var(--aukora-surface);width:100%;max-width:420px;height:38px;color:var(--aukora-text);font:inherit;text-align:center;margin:2px auto 8px;padding:0 16px;font-size:13px;display:block}.Rjr40G_portalSearch::placeholder{color:var(--aukora-text-muted)}.Rjr40G_portalSearch:focus-visible{outline:2px solid var(--aukora-accent);outline-offset:2px}.Rjr40G_portalQuiet{color:var(--aukora-text-muted);text-align:center;margin:4px 0;font-size:12px}.Rjr40G_memoryList{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.Rjr40G_memoryPortal{gap:12px;min-height:48px;padding:10px 14px}.Rjr40G_memoryWords{overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;font-size:14px;font-weight:400;line-height:20px;display:block}.Rjr40G_memoryItem[data-open=no] .Rjr40G_memoryWords{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.Rjr40G_memoryWhen{color:var(--aukora-text-muted);flex-direction:column;flex:none;align-items:flex-end;gap:3px;font-size:12px;display:flex}.Rjr40G_memoryDetail{padding:0 14px 12px}.Rjr40G_memoryActions{flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;display:flex}.Rjr40G_pill{padding:4px 12px;font-size:12px}.Rjr40G_memoryProblem{color:var(--aukora-red-warning);align-self:center}.Rjr40G_retry,.Rjr40G_more{align-self:center}.Rjr40G_more{padding:8px 20px}.Rjr40G_portalBody,.Rjr40G_memoryList,.Rjr40G_memoryItem,.Rjr40G_memoryDetail{min-width:0}.Rjr40G_memoryMenuItem{width:100%}@container (width<=340px){.Rjr40G_memoryPortal{flex-direction:column;align-items:flex-start;gap:6px}.Rjr40G_memoryWhen{flex-flow:wrap;gap:8px;font-size:11px}.Rjr40G_portalHead{gap:10px;padding:10px 12px}.Rjr40G_portalBody{padding:2px 8px 12px}}";
 		const tagId = "@aukora/face-memory/Memory.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -18,27 +18,27 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Memory_module_css_default = {
-			"memoryActions": "jpB1KW_memoryActions",
-			"memoryDetail": "jpB1KW_memoryDetail",
-			"memoryHead": "jpB1KW_memoryHead",
-			"memoryItem": "jpB1KW_memoryItem",
-			"memoryList": "jpB1KW_memoryList",
-			"memoryMenuItem": "jpB1KW_memoryMenuItem",
-			"memoryPortal": "jpB1KW_memoryPortal",
-			"memoryProblem": "jpB1KW_memoryProblem",
-			"memoryTitle": "jpB1KW_memoryTitle",
-			"memoryView": "jpB1KW_memoryView",
-			"memoryWhen": "jpB1KW_memoryWhen",
-			"memoryWords": "jpB1KW_memoryWords",
-			"more": "jpB1KW_more",
-			"pill": "jpB1KW_pill",
-			"portalBody": "jpB1KW_portalBody",
-			"portalDot": "jpB1KW_portalDot",
-			"portalHead": "jpB1KW_portalHead",
-			"portalQuiet": "jpB1KW_portalQuiet",
-			"portalSearch": "jpB1KW_portalSearch",
-			"portals": "jpB1KW_portals",
-			"retry": "jpB1KW_retry"
+			"memoryActions": "Rjr40G_memoryActions",
+			"memoryDetail": "Rjr40G_memoryDetail",
+			"memoryHead": "Rjr40G_memoryHead",
+			"memoryItem": "Rjr40G_memoryItem",
+			"memoryList": "Rjr40G_memoryList",
+			"memoryMenuItem": "Rjr40G_memoryMenuItem",
+			"memoryPortal": "Rjr40G_memoryPortal",
+			"memoryProblem": "Rjr40G_memoryProblem",
+			"memoryTitle": "Rjr40G_memoryTitle",
+			"memoryView": "Rjr40G_memoryView",
+			"memoryWhen": "Rjr40G_memoryWhen",
+			"memoryWords": "Rjr40G_memoryWords",
+			"more": "Rjr40G_more",
+			"pill": "Rjr40G_pill",
+			"portalBody": "Rjr40G_portalBody",
+			"portalDot": "Rjr40G_portalDot",
+			"portalHead": "Rjr40G_portalHead",
+			"portalQuiet": "Rjr40G_portalQuiet",
+			"portalSearch": "Rjr40G_portalSearch",
+			"portals": "Rjr40G_portals",
+			"retry": "Rjr40G_retry"
 		};
 		//#endregion
 		//#region src/client/MemoryMenu.tsx
@@ -53,8 +53,7 @@ window.__ModuleLoader__.load({
 		*/
 		function MemoryMenu({ activeSurface, openSurface, t }) {
 			const active = activeSurface === "memory";
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
-				variant: "green",
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 				type: "button",
 				"data-memory-launcher": true,
 				className: Memory_module_css_default.memoryMenuItem,

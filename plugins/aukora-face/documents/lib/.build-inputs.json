@@ -1,6 +1,6 @@
 {
   "face": "documents",
-  "srcDigest": "7c07cab4adcb8e2ae7bc635f4d4edd8f8b251cc2134e10fa99cbee445027350d",
+  "srcDigest": "79622a9d01aabd2851e4757da929c45360897f69c2182501b1404454c2988cdb",
   "files": [
     "package.json",
     "src/client/Documents.module.css",
@@ -19,5 +19,5 @@
     "src/invariant.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T07:50:46Z"
+  "builtAt": "2026-09-30T12:17:47Z"
 }

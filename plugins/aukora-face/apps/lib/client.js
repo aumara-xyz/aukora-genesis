@@ -8,7 +8,7 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		//#region \0dsh-css:StockApps.module.css.mjs
-		const css$1 = ".WWCj2G_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.WWCj2G_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.WWCj2G_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.WWCj2G_surfaceSeat[data-stock-app=human-graph],.WWCj2G_embeddedFrame[data-stock-app-frame=human-graph]{background:0 0}.WWCj2G_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.WWCj2G_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.WWCj2G_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
+		const css$1 = ".r6Oi3W_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.r6Oi3W_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.r6Oi3W_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.r6Oi3W_surfaceSeat[data-stock-app=human-graph],.r6Oi3W_embeddedFrame[data-stock-app-frame=human-graph]{background:0 0}.r6Oi3W_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.r6Oi3W_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.r6Oi3W_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
 		const tagId$1 = "@aukora/face-apps/StockApps.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -18,9 +18,9 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StockApps_module_css_default = {
-			"embeddedFrame": "WWCj2G_embeddedFrame",
-			"menuCopy": "WWCj2G_menuCopy",
-			"surfaceSeat": "WWCj2G_surfaceSeat"
+			"embeddedFrame": "r6Oi3W_embeddedFrame",
+			"menuCopy": "r6Oi3W_menuCopy",
+			"surfaceSeat": "r6Oi3W_surfaceSeat"
 		};
 		//#endregion
 		//#region src/client/EmbeddedAppSurface.tsx
@@ -290,7 +290,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:RoomSurface.module.css.mjs
-		const css = ".WpI3KG_menuLauncher{width:100%}.WpI3KG_room.WpI3KG_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.WpI3KG_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.WpI3KG_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.WpI3KG_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.WpI3KG_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.WpI3KG_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.WpI3KG_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.WpI3KG_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.WpI3KG_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.WpI3KG_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.WpI3KG_meta time{color:var(--aukora-text-muted);font-size:11px}.WpI3KG_message[data-speaker=PETER] .WpI3KG_meta{justify-content:flex-end}.WpI3KG_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.WpI3KG_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.WpI3KG_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.WpI3KG_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.WpI3KG_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
+		const css = ".w-UMFa_menuLauncher{width:100%}.w-UMFa_room.w-UMFa_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.w-UMFa_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.w-UMFa_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.w-UMFa_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.w-UMFa_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.w-UMFa_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.w-UMFa_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.w-UMFa_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.w-UMFa_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.w-UMFa_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.w-UMFa_meta time{color:var(--aukora-text-muted);font-size:11px}.w-UMFa_message[data-speaker=PETER] .w-UMFa_meta{justify-content:flex-end}.w-UMFa_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.w-UMFa_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.w-UMFa_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.w-UMFa_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.w-UMFa_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
 		const tagId = "@aukora/face-apps/RoomSurface.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -300,13 +300,13 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var RoomSurface_module_css_default = {
-			"bubble": "WpI3KG_bubble",
-			"composer": "WpI3KG_composer",
-			"menuLauncher": "WpI3KG_menuLauncher",
-			"message": "WpI3KG_message",
-			"messages": "WpI3KG_messages",
-			"meta": "WpI3KG_meta",
-			"room": "WpI3KG_room"
+			"bubble": "w-UMFa_bubble",
+			"composer": "w-UMFa_composer",
+			"menuLauncher": "w-UMFa_menuLauncher",
+			"message": "w-UMFa_message",
+			"messages": "w-UMFa_messages",
+			"meta": "w-UMFa_meta",
+			"room": "w-UMFa_room"
 		};
 		//#endregion
 		//#region src/client/RoomSurface.tsx
@@ -618,19 +618,10 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/** Render the Room launcher without a subtitle. */
-		function RoomMenu({ activeSurface, openSurface, t }) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
-				variant: "purple",
-				className: RoomSurface_module_css_default.menuLauncher,
-				"data-stock-app-launcher": "room",
-				"aria-current": activeSurface === "room" ? "page" : void 0,
-				onClick: () => {
-					openSurface("room", void 0, "contained");
-				},
-				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-					className: StockApps_module_css_default.menuCopy,
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t("room.name") })
-				})
+		function RoomMenu(props) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StockAppMenu, {
+				...props,
+				spec: ROOM_APP
 			});
 		}
 		function HumanGraphMenu(props) {
