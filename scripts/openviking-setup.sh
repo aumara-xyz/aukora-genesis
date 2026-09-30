@@ -16,6 +16,8 @@
 #
 # Environment knobs for install: AUKORA_OPENVIKING_PORT (default 1933), AUKORA_OPENVIKING_EMBED_PORT (1934),
 # AUKORA_OPENVIKING_MODEL (an existing Qwen3-Embedding-0.6B-Q8_0.gguf to use in place; its sha256 is checked).
+# For serve: AUKORA_OPENVIKING_EMBED_RSS_MIB (positive integer, default 1536) limits both RSS and
+# macOS physical footprint, sampled every two seconds. Exceeding it restarts only the embedder.
 set -eu
 
 REPO=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
@@ -149,25 +151,7 @@ json.dump({
 serve_home() {
     [ -x "$H/venv/bin/openviking-server" ] || die "not installed in $H; run: sh $0 install \"$H\""
     command -v llama-server >/dev/null 2>&1 || die "llama-server is not on PATH (brew install llama.cpp)"
-    model=$(conf_get embedding.model)
-    embed_port=$(conf_get embedding.port)
-    ctx=$(conf_get embedding.context)
-    llama-server -m "$model" --embedding --pooling last --host 127.0.0.1 --port "$embed_port" \
-        -c "$ctx" -b "$ctx" -ub "$ctx" --alias qwen3-embedding-0.6b >"$H/embed.log" 2>&1 &
-    embed_pid=$!
-    trap 'kill "$embed_pid" 2>/dev/null || :' EXIT INT TERM HUP
-    tries=0
-    until curl -fs -m 2 "http://127.0.0.1:$embed_port/health" >/dev/null 2>&1; do
-        tries=$((tries + 1))
-        [ "$tries" -lt 60 ] || die "the embedding server did not answer on 127.0.0.1:$embed_port (see $H/embed.log)"
-        kill -0 "$embed_pid" 2>/dev/null || die "the embedding server exited (see $H/embed.log)"
-        sleep 1
-    done
-    say "embedding server up on 127.0.0.1:$embed_port (pid $embed_pid)"
-    AUKORA_OPENVIKING_HOME=$H
-    AUKORA_OPENVIKING_ROOT_KEY=$(cat "$H/root.key")
-    export AUKORA_OPENVIKING_HOME AUKORA_OPENVIKING_ROOT_KEY
-    "$H/venv/bin/openviking-server" --config "$H/ov.conf"
+    exec python3 "$REPO/scripts/openviking-supervisor.py" "$H"
 }
 
 status_home() {
