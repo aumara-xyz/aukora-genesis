@@ -2,6 +2,9 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'identity.copy': '复制我的 npub',
+  'identity.copied': '已复制',
+  'identity.failed': '无法复制 npub',
   'row.nothing-sent': '这里还没发出过消息。',
   'send.outcome.unread': '这条已经发出去了，但每一份去了哪里还没读回来。',
   'menu.title': '消息',
@@ -101,7 +104,7 @@ export const zh = {
   'add.title': '添加联系人',
   'add.name': '名字',
   'add.npub': 'npub',
-  'add.controller': '对方的控制密钥（64 位小写十六进制）',
+  'add.controller': '控制密钥（可选）',
   'add.submit': '添加',
   'add.hint': '这三个字段由你核对。添加后为「已绑定」——密钥对得上，但还没有人当面确认过。',
   'add.added': '已添加 {name}（{npub}），状态 {state}。',
@@ -117,6 +120,9 @@ export type MessagesKey = keyof typeof zh
 
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
+  'identity.copy': 'Copy my npub',
+  'identity.copied': 'Copied',
+  'identity.failed': 'Could not copy npub',
   'row.nothing-sent': 'Nothing has been sent from here yet.',
   'send.outcome.unread': 'This was accepted; what happened to each copy has not been read yet.',
   'menu.title': 'Messages',
@@ -216,7 +222,7 @@ export const en = {
   'add.title': 'Add a contact',
   'add.name': 'Name',
   'add.npub': 'npub',
-  'add.controller': 'Their controller key (64 lower-case hex)',
+  'add.controller': 'Controller key (optional)',
   'add.submit': 'Add',
   'add.hint': 'You check these three yourself. The contact is added as Bound — the key checks out, and nobody has confirmed it in person.',
   'add.added': 'Added {name} ({npub}), shown as {state}.',

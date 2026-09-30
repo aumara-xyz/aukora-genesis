@@ -1,9 +1,9 @@
 import { appendFileSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { createHash, randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { randomBytes } from "node:crypto";
 //#region lib/types/messages-route.js
 /**
 * The Messages face's wire contract, written once for both ends.
@@ -455,7 +455,8 @@ function parseMessagesContactEntry(value) {
 	])) return void 0;
 	if (!isText(value.npub) || !isText(value.name)) return void 0;
 	if (!isMessagesContactState(value.state)) return void 0;
-	if (typeof value.peerControllerKey !== "string" || !/^[0-9a-f]{64}$/iu.test(value.peerControllerKey)) return void 0;
+	if (typeof value.peerControllerKey !== "string") return void 0;
+	if (!/^[0-9a-f]{64}$/iu.test(value.peerControllerKey) && !(value.peerControllerKey === "" && value.state === "UNBOUND" && value.binding === "absent")) return void 0;
 	if (typeof value.reason !== "string") return void 0;
 	if (value.subject !== null && !isText(value.subject)) return void 0;
 	const binding = value.binding;
@@ -1008,7 +1009,9 @@ function isRecord$1(value) {
 */
 function messagesStateDir() {
 	const configured = environmentValue(MESSAGES_STATE_DIR_ENV_NAME);
-	return resolve(configured === void 0 || configured.trim() === "" ? join(homedir(), ".dsh") : configured);
+	if (configured?.trim()) return resolve(configured);
+	const support = process.env.AUKORA_SUPPORT_ROOT;
+	return support?.trim() ? resolve(support, "state", "home") : join(homedir(), ".dsh");
 }
 /**
 * The directory holding this node's NOSTR state for a given state directory.
@@ -1200,6 +1203,16 @@ function contactSas(value) {
 function resolveStoredContact(resolveContact, roots, contact) {
 	const declared = isRecord$1(contact.binding) && isRecord$1(contact.binding.statement) ? contact.binding.statement.subject : void 0;
 	const peer = contact.peerControllerKey;
+	if (peer === "" && contact.binding === null) return {
+		npub: contact.npub,
+		name: contact.name,
+		state: "UNBOUND",
+		reason: "contact:no-binding",
+		subject: null,
+		sas: null,
+		binding: "absent",
+		peerControllerKey: ""
+	};
 	if (typeof peer !== "string" || !/^[0-9a-f]{64}$/iu.test(peer)) return {
 		npub: contact.npub,
 		name: contact.name,
@@ -1359,17 +1372,30 @@ async function readNodeSecretKey(stateDir) {
 * @param spec - `{recipientSecretKey, senderPubkeyHex, selfPubkey}`.
 * @returns the opened, attributed wraps, oldest first.
 */
+const openedCache = /* @__PURE__ */ new Map();
 function openedThreadWraps(wraps, openGiftWrap, spec) {
 	const wanted = spec.senderPubkeyHex.toLowerCase();
 	const self = spec.selfPubkey.toLowerCase();
 	const opened = [];
+	const seen = /* @__PURE__ */ new Set();
+	const recipient = createHash("sha256").update(spec.recipientSecretKey).digest("hex");
 	for (const wrap of wraps) {
 		let decoded;
 		try {
-			decoded = openGiftWrap(wrap, {
-				recipientSecretKey: spec.recipientSecretKey,
-				expectSender: spec.senderPubkeyHex
-			});
+			if (!isRecord$1(wrap) || typeof wrap.id !== "string" || seen.has(wrap.id)) continue;
+			const cacheKey = `${recipient}:${wrap.id}`;
+			const wire = JSON.stringify(wrap);
+			const cached = openedCache.get(cacheKey);
+			if (cached?.wire === wire) decoded = cached.decoded;
+			else {
+				decoded = openGiftWrap(wrap, { recipientSecretKey: spec.recipientSecretKey });
+				if (openedCache.size >= 2048) openedCache.delete(openedCache.keys().next().value);
+				openedCache.set(cacheKey, {
+					wire,
+					decoded
+				});
+			}
+			seen.add(wrap.id);
 		} catch {
 			continue;
 		}
@@ -1378,6 +1404,10 @@ function openedThreadWraps(wraps, openGiftWrap, spec) {
 		const sender = typeof decoded.sender === "string" ? decoded.sender.toLowerCase() : "";
 		const from = sender === self ? "me" : "them";
 		if (from === "them" && sender !== wanted) continue;
+		if (rumor.kind !== 14 || !Array.isArray(rumor.tags)) continue;
+		const recipients = rumor.tags.filter((tag) => Array.isArray(tag) && tag[0] === "p" && typeof tag[1] === "string").map((tag) => tag[1]?.toLowerCase());
+		if (!recipients.includes(from === "me" ? wanted : self) || recipients.some((recipient) => recipient !== wanted && recipient !== self)) continue;
+		if (typeof rumor.id !== "string" || typeof rumor.content !== "string" || !Number.isInteger(rumor.created_at) || Number(rumor.created_at) < 0) continue;
 		const at = typeof rumor.created_at === "number" && Number.isFinite(rumor.created_at) ? rumor.created_at : 0;
 		const id = typeof rumor.id === "string" && rumor.id !== "" ? rumor.id : `${sender}:${String(at)}:${typeof rumor.content === "string" ? rumor.content : ""}`;
 		opened.push({
@@ -1390,7 +1420,7 @@ function openedThreadWraps(wraps, openGiftWrap, spec) {
 			}
 		});
 	}
-	return opened.sort((left, right) => left.message.at - right.message.at);
+	return opened.sort((left, right) => left.message.at - right.message.at || left.message.id.localeCompare(right.message.id));
 }
 /**
 * Read the thread for one requested npub: the conversation, and the wraps it came from.
@@ -1740,12 +1770,12 @@ function addContactRoute(admitted, stateDirOf) {
 			const fields = body;
 			const npub = typeof fields.npub === "string" ? fields.npub : "";
 			const controller = typeof fields.controller === "string" ? fields.controller.toLowerCase() : "";
-			const name = typeof fields.name === "string" ? fields.name : "";
+			const name = typeof fields.name === "string" && fields.name.trim() !== "" ? fields.name.trim() : npub.slice(0, 16);
 			if (npub === "") {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.NPUB_INVALID, url);
 				return;
 			}
-			if (!HEX64.test(controller)) {
+			if (controller !== "" && !HEX64.test(controller)) {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTROLLER_INVALID, url);
 				return;
 			}
@@ -2197,7 +2227,11 @@ async function loadMailModules(resolverSpecifier = resolveContactModuleSpecifier
 		fetchGiftWraps: [relay, "fetchGiftWraps"],
 		publishToRelays: [relay, "publishToRelays"],
 		npubDecode: [identity, "npubDecode"],
-		publicKeyOf: [event, "publicKeyOf"]
+		publicKeyOf: [event, "publicKeyOf"],
+		publishDmRelays: [relay, "publishDmRelays"],
+		fetchDmRelays: [relay, "fetchDmRelays"],
+		readStoredGiftWraps: [evidence ?? {}, "readStoredGiftWraps"],
+		retainGiftWrap: [evidence ?? {}, "retainGiftWrap"]
 	};
 	for (const [name, [module, key]] of Object.entries(exports)) if (typeof module[key] !== "function") throw unloadable(name, "it is not a function");
 	if (!Array.isArray(relay.DEFAULT_RELAYS)) throw unloadable("DEFAULT_RELAYS", "it is not an array");
@@ -2213,7 +2247,11 @@ async function loadMailModules(resolverSpecifier = resolveContactModuleSpecifier
 			writeMessageEvidence: evidence.writeMessageEvidence,
 			evidenceDir: evidence.evidenceDir
 		},
-		evidenceAbsent
+		evidenceAbsent,
+		readStoredGiftWraps: evidence?.readStoredGiftWraps,
+		retainGiftWrap: evidence?.retainGiftWrap,
+		publishDmRelays: relay.publishDmRelays,
+		fetchDmRelays: relay.fetchDmRelays
 	};
 	mailModules.set(resolverSpecifier, modules);
 	return modules;
@@ -2504,6 +2542,56 @@ function controllerDirectory(ctx) {
 function roots(ctx) {
 	return messagesContactsRoots(controllerDirectory(ctx));
 }
+const identityAttempts = /* @__PURE__ */ new Map();
+const inboxAnnouncements = /* @__PURE__ */ new Map();
+async function prepareIdentity(stateRoots) {
+	const bootstrap = await import(__rewriteRelativeImportExtension(`${resolveContactModuleSpecifier().replace(/contact\.mjs$/u, "")}bootstrap.mjs`));
+	const identity = await bootstrap.readMessagesIdentity(stateRoots);
+	const attempt = `${stateRoots.stateDir}:${identity.subject}`;
+	if (identity.subject && !identity.binding && Date.now() >= (identityAttempts.get(attempt) ?? 0)) {
+		identityAttempts.set(attempt, Infinity);
+		bootstrap.ensureMessagesIdentity(stateRoots).then(() => {
+			identityAttempts.set(attempt, Date.now() + 3e4);
+		}).catch((error) => {
+			if (error?.code !== "signer:declined" && error?.code !== "signer:request-expired") identityAttempts.set(attempt, Date.now() + 3e4);
+		});
+	}
+	if (Date.now() >= (inboxAnnouncements.get(stateRoots.stateDir) ?? 0)) {
+		inboxAnnouncements.set(stateRoots.stateDir, Date.now() + 3e4);
+		(async () => {
+			const modules = await loadMailModules();
+			const key = await readNodeSecretKey(stateRoots.stateDir);
+			if (key.kind !== "key") return;
+			const publication = await modules.publishDmRelays({
+				secretKeyHex: key.secretKeyHex,
+				relays: messagesRelays(modules.DEFAULT_RELAYS),
+				timeoutMs: 2e3
+			});
+			const accepted = isRecord(publication) && Array.isArray(publication.accepted) && publication.accepted.length > 0;
+			inboxAnnouncements.set(stateRoots.stateDir, Date.now() + (accepted ? 15 * 6e4 : 3e4));
+		})().catch(() => {
+			inboxAnnouncements.set(stateRoots.stateDir, Date.now() + 3e4);
+		});
+	}
+	return identity;
+}
+function identityRoute(gate, rootsOf) {
+	return {
+		kind: "exact",
+		path: "/aukora-messages/identity",
+		handler: async (req, res) => {
+			if (!admitted(gate, "GET", req, res)) return;
+			try {
+				json(res, 200, {
+					status: "ok",
+					...await prepareIdentity(rootsOf())
+				});
+			} catch (error) {
+				answer(res, messagesRefusalBody("messages:unreadable-state", causeMessage(error)));
+			}
+		}
+	};
+}
 /** The mail modules, or the refusal when they cannot be loaded. */
 async function modulesOrRefusal() {
 	try {
@@ -2631,6 +2719,7 @@ function contactsRoute(gate, rootsOf) {
 				answer(res, resolver.refusal);
 				return;
 			}
+			await prepareIdentity(rootsOf());
 			answer(res, await listContacts(resolver.resolver, rootsOf()));
 		}
 	};
@@ -2678,6 +2767,7 @@ function threadRoute(gate, rootsOf) {
 				return;
 			}
 			const stateRoots = rootsOf();
+			await prepareIdentity(stateRoots);
 			const modules = await modulesOrRefusal();
 			if (!modules.ok) {
 				answer(res, modules.refusal);
@@ -2705,38 +2795,24 @@ function threadRoute(gate, rootsOf) {
 			}
 			const budgetMs = MESSAGES_THREAD_BUDGET_MS;
 			const selfPubkey = modules.modules.publicKeyOf(key.secretKeyHex);
+			const stored = modules.modules.readStoredGiftWraps(stateRoots.stateDir);
 			const read = await withinBudget(budgetMs, () => fetchWraps(modules.modules, {
 				recipientPubkey: selfPubkey,
-				since: requested.since,
+				secretKeyHex: key.secretKeyHex,
+				since: requested.since ?? 0,
 				relays: messagesRelays(modules.modules.DEFAULT_RELAYS),
-				timeoutMs: budgetedRelayTimeoutMs(messagesRelayTimeoutMs(8), budgetMs)
+				timeoutMs: budgetedRelayTimeoutMs(messagesRelayTimeoutMs(4), budgetMs)
 			}));
-			if (read.kind === "timeout") {
-				answer(res, messagesRefusalBody("messages:thread-timeout", `${requested.npub} — no relay settled within ${budgetMs}ms, so this read has no answer`));
-				return;
-			}
-			if (read.kind === "failed") {
-				answer(res, messagesRefusalBody("messages:unreadable-state", causeMessage(read.cause)));
-				return;
-			}
-			const settled = read.value;
-			if (settled === void 0) {
-				answer(res, messagesRefusalBody("messages:reads-unavailable", requested.npub));
-				return;
-			}
-			if (settled.answered.length === 0) {
-				answer(res, messagesRefusalBody("messages:relays-unreachable", requested.npub));
-				return;
-			}
-			const threadRead = readMailThread(settled.wraps, modules.modules.openGiftWrap, {
+			const settled = read.kind === "answered" ? read.value : void 0;
+			const threadRead = readMailThread([...stored, ...settled?.wraps ?? []], modules.modules.openGiftWrap, {
 				recipientSecretKey: key.secretKeyHex,
 				selfPubkey,
 				senderPubkeyHex: recipientPubkey,
 				senderNpub: requested.npub,
 				contact: found.contact
 			});
-			if (settled.wraps.length > 0 && threadRead.opened.length === 0) {
-				answer(res, messagesRefusalBody("messages:sender-unproven", `${requested.npub} — ${settled.wraps.length} wrap(s) arrived and none could be opened and attributed to this contact`));
+			if (!settled?.answered.length && threadRead.thread.messages.length === 0) {
+				answer(res, messagesRefusalBody(read.kind === "timeout" ? "messages:thread-timeout" : read.kind === "failed" ? "messages:unreadable-state" : settled === void 0 ? "messages:reads-unavailable" : "messages:relays-unreachable", read.kind === "failed" ? causeMessage(read.cause) : requested.npub));
 				return;
 			}
 			const thread = threadRead.thread;
@@ -2752,7 +2828,7 @@ function threadRoute(gate, rootsOf) {
 					text: message.text,
 					at: message.at
 				})),
-				answered: settled.answered,
+				answered: settled?.answered ?? [],
 				...evidence
 			});
 		}
@@ -2802,6 +2878,10 @@ function sendRoute(gate, rootsOf) {
 				return;
 			}
 			const stateRoots = rootsOf();
+			if (!(await prepareIdentity(stateRoots)).binding) {
+				answer(res, messagesRefusalBody("messages:aumlok-not-linked", "Approve the Messages identity binding in the Aumlok popup before sending."));
+				return;
+			}
 			const modules = await modulesOrRefusal();
 			if (!modules.ok) {
 				answer(res, modules.refusal);
@@ -2832,6 +2912,21 @@ function sendRoute(gate, rootsOf) {
 				return;
 			}
 			const relays = messagesRelays(modules.modules.DEFAULT_RELAYS);
+			const discovered = await modules.modules.fetchDmRelays({
+				pubkey: recipientPubkey,
+				relays,
+				secretKeyHex: key.secretKeyHex,
+				timeoutMs: 2500
+			});
+			const inbox = isRecord(discovered) && Array.isArray(discovered.relays) ? discovered.relays.filter((relay) => typeof relay === "string") : [];
+			if (!isRecord(discovered) || !Array.isArray(discovered.answered) || discovered.answered.length === 0) {
+				answer(res, messagesRefusalBody("messages:relays-unreachable", requested.npub));
+				return;
+			}
+			if (inbox.length === 0) {
+				answer(res, messagesRefusalBody("messages:reads-unavailable", "nostr:dm-relays-missing"));
+				return;
+			}
 			const budgetMs = MESSAGES_SEND_BUDGET_MS;
 			const relayTimeoutMs = budgetedRelayTimeoutMs(messagesRelayTimeoutMs(8), budgetMs);
 			const outcome = await withinBudget(budgetMs, async () => {
@@ -2841,17 +2936,26 @@ function sendRoute(gate, rootsOf) {
 					recipientPubkeys: [recipientPubkey]
 				});
 				if (!isRecord(composed) || !Array.isArray(composed.wraps) || !isRecord(composed.rumor)) return messagesRefusalBody("messages:reads-unavailable", "the composer returned no wraps");
-				const publishedWraps = (await Promise.all(composed.wraps.map(async (entry) => {
-					if (!isRecord(entry) || !isRecord(entry.wrap)) return void 0;
-					const one = await publishOne(modules.modules, entry.wrap, relays, relayTimeoutMs);
-					return {
+				const publishedWraps = [];
+				let recipientAccepted = false;
+				const ordered = [...composed.wraps].sort((a, b) => Number(isRecord(b) && b.recipient === recipientPubkey) - Number(isRecord(a) && a.recipient === recipientPubkey));
+				for (const entry of ordered) {
+					if (!isRecord(entry) || !isRecord(entry.wrap)) continue;
+					const recipient = entry.recipient === recipientPubkey;
+					if (!recipient && recipientAccepted) modules.modules.retainGiftWrap(stateRoots.stateDir, entry.wrap);
+					const one = recipient || recipientAccepted ? await publishOne(modules.modules, entry.wrap, recipient ? inbox : relays, Math.min(3500, relayTimeoutMs), key.secretKeyHex) : {
+						accepted: [],
+						verdict: "nostr:recipient-not-accepted"
+					};
+					if (recipient) recipientAccepted = one.accepted.length > 0;
+					publishedWraps.push({
 						wrap: entry.wrap,
-						copy: entry.recipient === recipientPubkey ? "recipient" : "self",
+						copy: recipient ? "recipient" : "self",
 						eventId: typeof entry.wrap.id === "string" ? entry.wrap.id : "",
 						accepted: one.accepted,
 						verdict: one.verdict
-					};
-				}))).filter((entry) => entry !== void 0);
+					});
+				}
 				const accepted = publishedWraps.flatMap((entry) => entry.accepted);
 				const verdict = publishedWraps.find((entry) => entry.verdict !== null)?.verdict ?? null;
 				const acceptedCopies = publishedWraps.filter((entry) => entry.accepted.length > 0);
@@ -2920,6 +3024,7 @@ async function fetchWraps(modules, spec) {
 	try {
 		const result = await modules.fetchGiftWraps({
 			recipientPubkey: spec.recipientPubkey,
+			secretKeyHex: spec.secretKeyHex,
 			...spec.since === null ? {} : { since: spec.since },
 			relays: spec.relays,
 			timeoutMs: spec.timeoutMs
@@ -2934,11 +3039,12 @@ async function fetchWraps(modules, spec) {
 	}
 }
 /** One publish, reduced to the accounting this face reports. */
-async function publishOne(modules, wrap, relays, timeoutMs) {
+async function publishOne(modules, wrap, relays, timeoutMs, secretKeyHex) {
 	try {
 		const result = await modules.publishToRelays(wrap, {
 			relays,
-			timeoutMs
+			timeoutMs,
+			secretKeyHex
 		});
 		if (!isRecord(result)) return {
 			accepted: [],
@@ -3034,14 +3140,27 @@ async function withinBudget(budgetMs, work) {
 */
 function apply(ctx) {
 	if (ctx.webServer.host !== "127.0.0.1") throw new Error("ui-messages: the messages routes require a loopback web server");
+	const register = (route) => ctx.webServer.register({
+		...route,
+		handler: async (req, res) => {
+			try {
+				await route.handler(req, res);
+			} catch (cause) {
+				if (!res.headersSent) answer(res, messagesRefusalBody("messages:unreadable-state", causeMessage(cause)));
+				else if (!res.writableEnded) res.end();
+			}
+		}
+	});
 	const gate = () => Reflect.get(ctx, "connection");
 	const rootsOf = () => roots(ctx);
-	ctx.effect(() => ctx.webServer.register(contactsRoute(gate, rootsOf)), "ui-messages: contacts route");
-	ctx.effect(() => ctx.webServer.register(requestRoute(gate)), "ui-messages: contacts request route");
-	ctx.effect(() => ctx.webServer.register(threadRoute(gate, rootsOf)), "ui-messages: thread route");
-	ctx.effect(() => ctx.webServer.register(sendRoute(gate, rootsOf)), "ui-messages: send route");
-	ctx.effect(() => ctx.webServer.register(addContactRoute((method, req, res) => admitted(gate, method, req, res), () => rootsOf().stateDir)), "ui-messages: add-contact route");
-	ctx.effect(() => ctx.webServer.register(confirmContactRoute((method, req, res) => admitted(gate, method, req, res), () => rootsOf())), "ui-messages: confirm-contact route");
+	ctx.effect(() => register(identityRoute(gate, rootsOf)), "ui-messages: identity route");
+	prepareIdentity(rootsOf()).catch(() => {});
+	ctx.effect(() => register(contactsRoute(gate, rootsOf)), "ui-messages: contacts route");
+	ctx.effect(() => register(requestRoute(gate)), "ui-messages: contacts request route");
+	ctx.effect(() => register(threadRoute(gate, rootsOf)), "ui-messages: thread route");
+	ctx.effect(() => register(sendRoute(gate, rootsOf)), "ui-messages: send route");
+	ctx.effect(() => register(addContactRoute((method, req, res) => admitted(gate, method, req, res), () => rootsOf().stateDir)), "ui-messages: add-contact route");
+	ctx.effect(() => register(confirmContactRoute((method, req, res) => admitted(gate, method, req, res), () => rootsOf())), "ui-messages: confirm-contact route");
 }
 //#endregion
 export { MESSAGES_CONTACTS_DOMAIN, MESSAGES_CONTACTS_ENDPOINT, MESSAGES_CONTACTS_REFUSAL_REASONS, MESSAGES_CONTACTS_REQUEST_ENDPOINT, MESSAGES_CONTACT_MODULE_CANDIDATES, MESSAGES_CONTACT_MODULE_ENV, MESSAGES_CONTROLLER_SERVICE_NAME, MESSAGES_COPY_ROLES, MESSAGES_EVIDENCE_MODULE_ABSENT, MESSAGES_EVIDENCE_NO_PUBLISH, MESSAGES_EVIDENCE_NO_WRAP_OPENED, MESSAGES_EVIDENCE_OUTCOMES, MESSAGES_EVIDENCE_UNWRITABLE, MESSAGES_HOST_OWNED_QUERY_FIELDS, MESSAGES_NOSTR_TREE_ABSENT, MESSAGES_REFUSAL_REASONS, MESSAGES_RELAYS_ENV, MESSAGES_RELAY_REFUSALS, MESSAGES_RELAY_TIMEOUT_ENV, MESSAGES_SEND_BUDGET_MS, MESSAGES_SEND_ENDPOINT, MESSAGES_STATE_DIR_ENV, MESSAGES_STORE_REFUSALS, MESSAGES_TEXT_MAX_BYTES, MESSAGES_THREAD_BUDGET_MS, MESSAGES_THREAD_ENDPOINT, MESSAGES_WIRE_CONTACT_STATES, MESSAGES_WIRE_REFUSALS, apply, contactSas, defaultContactModuleSpecifier, fenceRejectionOf, inject, isMessagesContactBinding, isMessagesContactState, isMessagesCopyRole, isMessagesEvidenceOutcome, isMessagesRefusalReason, listContacts, loadContactResolver, loadMailModules, mailThread, messagesContactsPath, messagesContactsRequest, messagesContactsRoots, messagesEvidenceFields, messagesHostOwnedQueryField, messagesNostrDir, messagesRefusalBody, messagesRefusalStatus, messagesRelayTimeoutMs, messagesRelays, messagesStateDir, messagesTextBytes, openedThreadWraps, parseMessagesContactEntry, parseMessagesContactsAnswer, parseMessagesContactsBody, parseMessagesContactsDocument, parseMessagesContactsRequest, parseMessagesRefusalBody, parseMessagesSendBody, parseMessagesSendRequest, parseMessagesThreadBody, parseMessagesThreadRequest, parseMessagesWireMessage, parseStoredContact, readContactsFile, readMailThread, readNodeSecretKey, resolveContactModuleSpecifier, resolveStoredContact, writerAbsenceName };

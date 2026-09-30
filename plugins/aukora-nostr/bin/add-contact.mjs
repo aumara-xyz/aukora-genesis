@@ -182,7 +182,8 @@ export function addContact(input) {
   } catch (cause) {
     throw refuse(ADD_CONTACT_REFUSE.BAD_NPUB, `--npub is not a decodable npub: ${cause?.message ?? cause}`)
   }
-  if (!HEX64.test(input.controller ?? '')) {
+  const controller = input.controller ?? ''
+  if ((controller !== '' || input.bindingPath !== undefined) && !HEX64.test(controller)) {
     throw refuse(ADD_CONTACT_REFUSE.BAD_CONTROLLER,
       '--controller must be the other side\'s controller ed25519 public key: 64 hex characters')
   }
@@ -216,7 +217,7 @@ export function addContact(input) {
       throw refuse(ADD_CONTACT_REFUSE.ALREADY_PRESENT,
         `${input.npub} is already in ${file}; this writer is insert-only and will not re-point an existing contact.`)
     }
-    const entry = { npub: input.npub, name, peerControllerKey: input.controller.toLowerCase(), binding }
+    const entry = { npub: input.npub, name, peerControllerKey: controller.toLowerCase(), binding }
 
     // UPSERT BY Npub: re-adding somebody updates them in place. Appending would produce two entries for
     // one person, and the face resolves by npub, so which one won would depend on document order.
@@ -289,8 +290,8 @@ const USAGE = [
 async function main(argv) {
   try {
     const args = parseArgs(argv, new Set(['--state', '--npub', '--controller', '--name', '--binding', '--mode']))
-    if (args.state === undefined || args.npub === undefined || args.controller === undefined) {
-      throw refuse(ADD_CONTACT_REFUSE.USAGE, '--state, --npub and --controller are all required')
+    if (args.state === undefined || args.npub === undefined) {
+      throw refuse(ADD_CONTACT_REFUSE.USAGE, '--state and --npub are required')
     }
     const result = addContact({
       stateDir: args.state,

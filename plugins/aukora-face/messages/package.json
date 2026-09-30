@@ -1,6 +1,6 @@
 {
   "name": "@aukora/face-messages",
-  "description": "Messages: a thread lane over this node's real contacts and threads, read from the host route, with an honest empty state and no invented conversations. No messaging engine or transport is connected; a Nostr transport is planned, not shipped.",
+  "description": "Messages: encrypted NIP-17 conversations over public Nostr relays, with a separate Aumlok-bound identity and local encrypted history.",
   "version": "0.1.1-rc.2",
   "publishConfig": {
     "access": "public"

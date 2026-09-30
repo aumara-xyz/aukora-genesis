@@ -104,6 +104,7 @@
  * @module @aukora/face-messages/contacts-store
  */
 import { existsSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -355,7 +356,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 export function messagesStateDir(): string {
   const configured = environmentValue(MESSAGES_STATE_DIR_ENV_NAME)
-  return resolve(configured === undefined || configured.trim() === '' ? join(homedir(), '.dsh') : configured)
+  if (configured?.trim()) return resolve(configured)
+  const support = process.env.AUKORA_SUPPORT_ROOT
+  return support?.trim() ? resolve(support, 'state', 'home') : join(homedir(), '.dsh')
 }
 
 /**
@@ -578,6 +581,10 @@ export function resolveStoredContact(
   // "did I issue this?", which is a question about us and not about them. `controllerDir` is
   // used only when the record carries no peer key, the self-issued case.
   const peer = contact.peerControllerKey
+  if (peer === '' && contact.binding === null) {
+    return { npub: contact.npub, name: contact.name, state: 'UNBOUND',
+      reason: 'contact:no-binding', subject: null, sas: null, binding: 'absent', peerControllerKey: '' }
+  }
   if (typeof peer !== 'string' || !/^[0-9a-f]{64}$/iu.test(peer)) {
     // A mistyped or truncated key is a DIFFERENT FACT from a peer whose binding fails: reporting
     // it as FOREIGN would send someone hunting an attacker instead of re-reading a key. So it is
@@ -839,6 +846,8 @@ export interface MessagesOpenedWrap {
  * @param spec - `{recipientSecretKey, senderPubkeyHex, selfPubkey}`.
  * @returns the opened, attributed wraps, oldest first.
  */
+const openedCache = new Map<string, { wire: string; decoded: unknown }>()
+
 export function openedThreadWraps(
   wraps: readonly unknown[],
   openGiftWrap: MessagesGiftWrapDecoder,
@@ -847,6 +856,8 @@ export function openedThreadWraps(
   const wanted = spec.senderPubkeyHex.toLowerCase()
   const self = spec.selfPubkey.toLowerCase()
   const opened: MessagesOpenedWrap[] = []
+  const seen = new Set<string>()
+  const recipient = createHash('sha256').update(spec.recipientSecretKey).digest('hex')
   for (const wrap of wraps) {
     let decoded: unknown
     try {
@@ -854,7 +865,17 @@ export function openedThreadWraps(
       // pubkey after the seal's signature has proved it. The filter below repeats the comparison
       // rather than trusting the decoder alone, so a caller that omits the expectation still
       // cannot get another sender's message into this thread.
-      decoded = openGiftWrap(wrap, { recipientSecretKey: spec.recipientSecretKey, expectSender: spec.senderPubkeyHex })
+      if (!isRecord(wrap) || typeof wrap.id !== 'string' || seen.has(wrap.id)) continue
+      const cacheKey = `${recipient}:${wrap.id}`
+      const wire = JSON.stringify(wrap)
+      const cached = openedCache.get(cacheKey)
+      if (cached?.wire === wire) decoded = cached.decoded
+      else {
+        decoded = openGiftWrap(wrap, { recipientSecretKey: spec.recipientSecretKey })
+        if (openedCache.size >= 2048) openedCache.delete(openedCache.keys().next().value!)
+        openedCache.set(cacheKey, { wire, decoded })
+      }
+      seen.add(wrap.id)
     } catch {
       // Not ours to read, or not from this contact. See the header: dropped, deliberately,
       // rather than reported as a message that could not be described.
@@ -867,13 +888,21 @@ export function openedThreadWraps(
     // this node's key, never by anything the sender chose to put in the message.
     const from: 'them' | 'me' = sender === self ? 'me' : 'them'
     if (from === 'them' && sender !== wanted) continue
+    if (rumor.kind !== 14 || !Array.isArray(rumor.tags)) continue
+    const recipients = rumor.tags.filter((tag: unknown) => Array.isArray(tag) && tag[0] === 'p' && typeof tag[1] === 'string')
+      .map((tag: string[]) => tag[1]?.toLowerCase())
+    // A group or a different friend's self-copy is not this one-to-one conversation.
+    if (!recipients.includes(from === 'me' ? wanted : self)
+      || recipients.some(recipient => recipient !== wanted && recipient !== self)) continue
+    if (typeof rumor.id !== 'string' || typeof rumor.content !== 'string'
+      || !Number.isInteger(rumor.created_at) || Number(rumor.created_at) < 0) continue
     const at = typeof rumor.created_at === 'number' && Number.isFinite(rumor.created_at) ? rumor.created_at : 0
     const id = typeof rumor.id === 'string' && rumor.id !== ''
       ? rumor.id
       : `${sender}:${String(at)}:${typeof rumor.content === 'string' ? rumor.content : ''}`
     opened.push({ wrap, message: { id, from, text: typeof rumor.content === 'string' ? rumor.content : '', at } })
   }
-  return opened.sort((left, right) => left.message.at - right.message.at)
+  return opened.sort((left, right) => left.message.at - right.message.at || left.message.id.localeCompare(right.message.id))
 }
 
 

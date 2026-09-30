@@ -173,7 +173,9 @@ export function checkAddContact(draft: {
   if (name.ok !== true) return name
   const npub = checkNpub(draft?.npub)
   if (npub.ok !== true) return npub
-  const controller = checkController(draft?.controller)
+  const controller = draft?.controller === undefined || (typeof draft.controller === 'string' && draft.controller.trim() === '')
+    ? { ok: true as const, controller: '' }
+    : checkController(draft.controller)
   if (controller.ok !== true) return controller
   return { ok: true, body: { npub: npub.npub, controller: controller.controller, name: name.name } }
 }

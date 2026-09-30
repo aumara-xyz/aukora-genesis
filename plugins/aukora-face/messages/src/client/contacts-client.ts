@@ -57,6 +57,7 @@ import {
   type MessagesWireContactState,
 } from '../messages-route.ts'
 import { MESSAGES_ADD_CONTACT_ENDPOINT } from '../add-contact-route.ts'
+import { checkNpub } from './add-contact.ts'
 
 /** Why a request produced no data. Each kind is a different condition on the wire. */
 export type ContactsFailure =
@@ -368,12 +369,16 @@ export type WireCopyOutcome = MessagesCopyOutcome
 export type SendRead =
   | {
     readonly kind: 'accepted'
+    readonly id: string
+    readonly at: number
     readonly accepted: readonly string[]
     readonly verdict: string
     readonly copies: readonly MessagesCopyOutcome[]
   }
   | {
     readonly kind: 'not-accepted'
+    readonly id: string
+    readonly at: number
     readonly accepted: readonly string[]
     readonly verdict: string
     readonly copies: readonly MessagesCopyOutcome[]
@@ -424,10 +429,10 @@ export async function sendMessage(
   if (answer.status !== 'sent') {
     return { kind: 'failed', failure: { kind: 'malformed', detail: `${MESSAGES_SEND_ENDPOINT} named neither a send nor a refusal` } }
   }
-  if (!answer.ok || answer.accepted.length === 0) {
-    return { kind: 'not-accepted', accepted: answer.accepted, verdict: answer.verdict ?? '', copies: answer.copies }
+  if (!answer.ok || !answer.copies.some(copy => copy.copy === 'recipient' && copy.accepted)) {
+    return { kind: 'not-accepted', id: answer.id, at: answer.at, accepted: answer.accepted, verdict: answer.verdict ?? '', copies: answer.copies }
   }
-  return { kind: 'accepted', accepted: answer.accepted, verdict: answer.verdict ?? '', copies: answer.copies }
+  return { kind: 'accepted', id: answer.id, at: answer.at, accepted: answer.accepted, verdict: answer.verdict ?? '', copies: answer.copies }
 }
 
 /**
@@ -474,4 +479,20 @@ export async function confirmSas(
   return status === 200
     ? { kind: 'failed', failure: { kind: 'malformed', detail: `${MESSAGES_CONFIRM_CONTACT_ENDPOINT} answered 200 without naming VERIFIED` } }
     : { kind: 'failed', failure: refusalOf(status, value) }
+}
+
+/** Read only the shareable public identity; the host never returns the secret key. */
+export async function readIdentity(
+  fetchImpl: ContactsFetch = sameOriginFetch,
+): Promise<ContactsRead<{ readonly npub: string; readonly subject: string | null }>> {
+  const read = await readJson('/aukora-messages/identity', { method: 'GET' }, fetchImpl)
+  if (read.kind === 'failed') return read
+  const { status, value } = read.value
+  if (status !== 200) return { kind: 'failed', failure: refusalOf(status, value) }
+  const body = value as { status?: unknown; npub?: unknown; subject?: unknown } | null
+  const npub = checkNpub(body?.npub)
+  if (body?.status !== 'ok' || !npub.ok || (body.subject !== null && typeof body.subject !== 'string')) {
+    return { kind: 'failed', failure: { kind: 'malformed', detail: 'The host did not return a public identity' } }
+  }
+  return { kind: 'ready', value: { npub: npub.npub, subject: body.subject } }
 }

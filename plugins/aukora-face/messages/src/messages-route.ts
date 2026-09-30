@@ -807,7 +807,9 @@ export function parseMessagesContactEntry(value: unknown): MessagesWireContactEn
   if (!isMessagesContactState(value.state)) return undefined
   // The anchor is 64 hex characters or the entry is not one this face wrote. An empty string is
   // how the store reports a malformed key, and it is refused here as well as there.
-  if (typeof value.peerControllerKey !== 'string' || !/^[0-9a-f]{64}$/iu.test(value.peerControllerKey)) return undefined
+  if (typeof value.peerControllerKey !== 'string') return undefined
+  if (!/^[0-9a-f]{64}$/iu.test(value.peerControllerKey)
+    && !(value.peerControllerKey === '' && value.state === 'UNBOUND' && value.binding === 'absent')) return undefined
   // `reason` may be empty here and only here: a resolver answer with no reason is reported
   // as an empty string rather than invented, and the state is what a caller routes on.
   if (typeof value.reason !== 'string') return undefined

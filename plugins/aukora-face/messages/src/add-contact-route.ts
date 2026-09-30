@@ -164,12 +164,12 @@ export function addContactRoute(
       const fields = body as Record<string, unknown>
       const npub = typeof fields.npub === 'string' ? fields.npub : ''
       const controller = typeof fields.controller === 'string' ? fields.controller.toLowerCase() : ''
-      const name = typeof fields.name === 'string' ? fields.name : ''
+      const name = typeof fields.name === 'string' && fields.name.trim() !== '' ? fields.name.trim() : npub.slice(0, 16)
       // `fields.binding` IS NEVER READ. A caller may send one; it is not an error and it is not
       // stored. The only way a binding reaches this file is the friend issuing it and the owner
       // attaching it deliberately — never a field on a request.
       if (npub === '') { refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.NPUB_INVALID, url); return }
-      if (!HEX64.test(controller)) { refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTROLLER_INVALID, url); return }
+      if (controller !== '' && !HEX64.test(controller)) { refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTROLLER_INVALID, url); return }
       if (name.trim() === '') { refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.NAME_INVALID, url); return }
 
       const writer = await loadWriter()

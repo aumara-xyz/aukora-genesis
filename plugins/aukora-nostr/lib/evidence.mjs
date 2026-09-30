@@ -44,7 +44,7 @@
  * @module @aukora/dsh-plugin-nostr/evidence
  */
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, renameSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { eventId } from './event.mjs'
@@ -140,48 +140,106 @@ export const wirePath = (stateDir, contentDigest) => join(wireDir(stateDir), `${
 /** The path one record occupies. Named by event id, so writing twice is writing the same file. */
 export const evidencePath = (stateDir, eventId) => join(evidenceDir(stateDir), `${eventId}.json`)
 
+const retainedCache = new Map()
+const RETAINED_CACHE_LIMIT = 128
+const fileStamp = path => {
+  const stat = statSync(path, { bigint: true })
+  return `${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeNs}:${stat.ctimeNs}`
+}
+
+function writeChanged(path, bytes) {
+  try { if (readFileSync(path, 'utf8') === bytes) return false } catch (error) {
+    if (error.code !== 'ENOENT') throw error
+  }
+  const temporary = `${path}.${process.pid}.tmp`
+  writeFileSync(temporary, bytes, { mode: 0o600 })
+  renameSync(temporary, path)
+  retainedCache.delete(path)
+  return true
+}
+
+// Retain ciphertext even when the sender's relay copy failed. The recipient's
+// accepted copy establishes publication; this local copy establishes only history.
+export function retainGiftWrap(stateDir, wrap) {
+  const record = messageEvidence({ wrap })
+  if (eventId(wrap) !== record.eventId) throw refuse(EVIDENCE_REFUSE.NOT_A_WRAP, 'gift wrap id does not match its event')
+  mkdirSync(wireDir(stateDir), { recursive: true, mode: 0o700 })
+  writeChanged(wirePath(stateDir, record.contentDigest), JSON.stringify(wrap))
+}
+
+export function readStoredGiftWraps(stateDir) {
+  let files
+  try { files = readdirSync(wireDir(stateDir)) } catch (error) {
+    if (error.code === 'ENOENT') return []
+    throw error
+  }
+  const wraps = []
+  for (const file of files) {
+    if (!/^[0-9a-f]{64}\.json$/.test(file)) continue
+    const digest = file.slice(0, -5)
+    const path = wirePath(stateDir, digest)
+    try {
+      const stamp = fileStamp(path)
+      const cached = retainedCache.get(path)
+      if (cached?.stamp === stamp) { wraps.push(cached.wrap); continue }
+      retainedCache.delete(path)
+      const wrap = JSON.parse(readWire(stateDir, digest))
+      if ((wrap.kind !== 1059 && wrap.kind !== 21059) || eventId(wrap) !== wrap.id) continue
+      for (const tag of wrap.tags) Object.freeze(tag)
+      Object.freeze(wrap.tags)
+      Object.freeze(wrap)
+      if (fileStamp(path) === stamp) {
+        retainedCache.set(path, { stamp, wrap })
+        if (retainedCache.size > RETAINED_CACHE_LIMIT) retainedCache.delete(retainedCache.keys().next().value)
+      }
+      wraps.push(wrap)
+    } catch { retainedCache.delete(path) /* Damaged ciphertext cannot be displayed. */ }
+  }
+  return wraps
+}
+
+function validStoredRecord(record, wantedId) {
+  if (record.domain !== EVIDENCE_DOMAIN || record.kind !== EVIDENCE_KIND || record.version !== EVIDENCE_VERSION
+      || record.eventId !== wantedId || !/^[0-9a-f]{64}$/.test(record.contentDigest)
+      || typeof record.observedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(record.observedAt)) return false
+  const date = new Date(record.observedAt)
+  return Number.isFinite(date.getTime()) && canonicalInstant(date) === record.observedAt
+}
+
 /**
- * Write the evidence record for a published gift wrap.
- *
- * WRITING IS IDEMPOTENT BY CONSTRUCTION: the path is the event id, and the bytes are a pure
- * function of the event, so re-reading the same message off a relay rewrites identical bytes rather
- * than accumulating copies. A second record for one message would be a second claim about it.
- *
- * @param {object} spec - `{stateDir, wrap, observedAt?}`.
- * @returns {{record: object, path: string, rewritten: boolean}} the record and where it went.
- * @throws {Error} `nostr-evidence-unwritable` when the directory or file cannot be written.
+ * Retain a published gift wrap once, preserving the first valid observation. Re-reading the same
+ * event, even with a different JSON key order, reuses its audited wire and record without writes.
+ * The legacy `rewritten` flag still identifies an already-held matching record.
  */
 export function writeMessageEvidence({ stateDir, wrap, observedAt }) {
-  const record = messageEvidence({ wrap, observedAt })
+  let record = messageEvidence({ wrap, observedAt })
+  if (eventId(wrap) !== record.eventId) throw refuse(EVIDENCE_REFUSE.NOT_A_WRAP, 'gift wrap id does not match its event')
   const directory = evidenceDir(stateDir)
   const path = evidencePath(stateDir, record.eventId)
-  let rewritten = false
+  let existing
+  try {
+    const stored = readMessageEvidence(path)
+    if (validStoredRecord(stored, record.eventId)) existing = stored
+  } catch { /* A missing or malformed record is repaired from the actual wrap. */ }
+  if (existing) {
+    try {
+      readRecordWire(stateDir, existing)
+      return { record: existing, path, wire: wirePath(stateDir, existing.contentDigest), rewritten: true }
+    } catch {
+      // When these exact wire bytes can repair the record, its first observation remains valid.
+      if (existing.contentDigest === record.contentDigest) record = existing
+    }
+  }
   const wire = wirePath(stateDir, record.contentDigest)
-  // THE EXACT BYTES THE DIGEST IS OF. Written first: a record whose wire is absent is a record nobody
-  // can audit, so it is better to have the wire and no record than a record and no wire.
-  const wireBytes = JSON.stringify(wrap)
   try {
     mkdirSync(wireDir(stateDir), { recursive: true, mode: 0o700 })
-    // EXACTLY THE BYTES THE DIGEST IS OF, with no trailing newline. A `\n` here made the file on
-    // disk hash to something other than the digest it is filed under, so `sha256sum <wire>` — the
-    // one audit a third party can actually run — disagreed with the record beside it. Measured by
-    // the Aura lane: sha256(file) 59f73adc… against the record's 48fec06c…, equal minus the newline.
-    // An audit trail nobody can check with the tools they already have is not an audit trail.
-    writeFileSync(wire, wireBytes, { mode: 0o600 })
-  } catch (cause) {
-    throw refuse(EVIDENCE_REFUSE.UNWRITABLE, `could not write the wire to ${wire}: ${cause.message}`)
-  }
-  try {
+    writeChanged(wire, JSON.stringify(wrap))
     mkdirSync(directory, { recursive: true, mode: 0o700 })
-    try {
-      // Identical bytes already on disk is the normal case for a re-read, not an error.
-      rewritten = readFileSync(path, 'utf8') === `${JSON.stringify(record, null, 2)}\n`
-    } catch { /* absent is the first write, which is not a failure */ }
-    writeFileSync(path, `${JSON.stringify(record, null, 2)}\n`, { mode: 0o600 })
+    writeChanged(path, `${JSON.stringify(record, null, 2)}\n`)
   } catch (cause) {
-    throw refuse(EVIDENCE_REFUSE.UNWRITABLE, `could not write evidence to ${path}: ${cause.message}`)
+    throw refuse(EVIDENCE_REFUSE.UNWRITABLE, `could not retain evidence at ${path}: ${cause.message}`)
   }
-  return { record, path, wire, rewritten }
+  return { record, path, wire, rewritten: existing === record }
 }
 
 /**
@@ -294,7 +352,7 @@ export function readRecordWire(stateDir, record) {
       `the retained wire filed under ${contentDigest} is not an event at all: ${cause.message}`)
   }
   const actual = eventId(parsed)
-  if (actual !== claimedEventId) {
+  if (actual !== claimedEventId || parsed.id !== claimedEventId) {
     throw refuse(EVIDENCE_REFUSE.WIRE_UNBOUND,
       `the retained wire is event ${actual} and this record is filed under ${claimedEventId}, so it is some other message's wire`)
   }

@@ -255,22 +255,32 @@ export function npubDecode(npub) {
 export function loadOrCreateNostrKey(stateDir) {
   const dir = join(stateDir, 'nostr')
   const file = join(dir, 'identity.json')
-  if (existsSync(file)) {
-    let parsed
-    try { parsed = JSON.parse(readFileSync(file, 'utf8')) } catch (cause) {
-      throw Object.assign(new Error(`the Nostr identity at ${file} is unreadable: ${cause?.message ?? cause}`), { code: NOSTR_REFUSE.KEY_UNREADABLE })
+  const readExisting = (attempts = 1) => {
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        const parsed = JSON.parse(readFileSync(file, 'utf8'))
+        if (!HEX64.test(parsed?.secretKeyHex ?? '')) throw new Error('unusable key')
+        const xonlyHex = Buffer.from(schnorr.getPublicKey(Buffer.from(parsed.secretKeyHex, 'hex'))).toString('hex')
+        return Object.freeze({ secretKeyHex: parsed.secretKeyHex, xonlyHex, npub: npubEncode(xonlyHex), created: false })
+      } catch {
+        // Another process may have exclusively created the file but not finished its write.
+        if (attempt + 1 < attempts) Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 10)
+      }
     }
-    if (!HEX64.test(parsed?.secretKeyHex ?? '')) {
-      throw Object.assign(new Error(`the Nostr identity at ${file} carries no usable secret key`), { code: NOSTR_REFUSE.KEY_UNREADABLE })
-    }
-    const xonlyHex = Buffer.from(schnorr.getPublicKey(Buffer.from(parsed.secretKeyHex, 'hex'))).toString('hex')
-    return Object.freeze({ secretKeyHex: parsed.secretKeyHex, xonlyHex, npub: npubEncode(xonlyHex), created: false })
+    // JSON parser messages can quote the secret-bearing file; never include them in a refusal.
+    throw Object.assign(new Error(`the Nostr identity at ${file} is unreadable; retry after its writer finishes`), { code: NOSTR_REFUSE.KEY_UNREADABLE })
   }
+  if (existsSync(file)) return readExisting(6)
   mkdirSync(dir, { recursive: true, mode: 0o700 })
   try { chmodSync(dir, 0o700) } catch { /* a mode we cannot set is reported by the courts, not hidden */ }
   const secretKeyHex = randomBytes(32).toString('hex')
   const xonlyHex = Buffer.from(schnorr.getPublicKey(Buffer.from(secretKeyHex, 'hex'))).toString('hex')
-  writeFileSync(file, `${JSON.stringify({ domain: 'aukora:nostr-identity:v1', secretKeyHex, xonlyHex, npub: npubEncode(xonlyHex) }, null, 2)}\n`, { mode: 0o600 })
+  try {
+    writeFileSync(file, `${JSON.stringify({ domain: 'aukora:nostr-identity:v1', secretKeyHex, xonlyHex, npub: npubEncode(xonlyHex) }, null, 2)}\n`, { mode: 0o600, flag: 'wx' })
+  } catch (cause) {
+    if (cause?.code === 'EEXIST') return readExisting(6)
+    throw Object.assign(new Error(`the Nostr identity at ${file} could not be created (${cause?.code || 'write failed'})`), { code: NOSTR_REFUSE.KEY_UNREADABLE })
+  }
   return Object.freeze({ secretKeyHex, xonlyHex, npub: npubEncode(xonlyHex), created: true })
 }
 

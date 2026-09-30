@@ -318,6 +318,10 @@ export interface MessagesMailModules {
   readonly evidence: MessagesEvidenceWriter | undefined
   /** The named reason {@link evidence} is undefined, or null when it is loaded. */
   readonly evidenceAbsent: string | null
+  readonly readStoredGiftWraps: (stateDir: string) => readonly unknown[]
+  readonly retainGiftWrap: (stateDir: string, wrap: unknown) => void
+  readonly publishDmRelays: (spec: unknown) => Promise<unknown>
+  readonly fetchDmRelays: (spec: unknown) => Promise<unknown>
 }
 
 /**
@@ -413,6 +417,10 @@ export async function loadMailModules(
     publishToRelays: [relay, 'publishToRelays'],
     npubDecode: [identity, 'npubDecode'],
     publicKeyOf: [event, 'publicKeyOf'],
+    publishDmRelays: [relay, 'publishDmRelays'],
+    fetchDmRelays: [relay, 'fetchDmRelays'],
+    readStoredGiftWraps: [evidence ?? {}, 'readStoredGiftWraps'],
+    retainGiftWrap: [evidence ?? {}, 'retainGiftWrap'],
   } as const
   for (const [name, [module, key]] of Object.entries(exports)) {
     if (typeof module[key] !== 'function') throw unloadable(name, 'it is not a function')
@@ -431,6 +439,10 @@ export async function loadMailModules(
       evidenceDir: evidence.evidenceDir as MessagesEvidenceWriter['evidenceDir'],
     },
     evidenceAbsent,
+    readStoredGiftWraps: evidence?.readStoredGiftWraps as MessagesMailModules['readStoredGiftWraps'],
+    retainGiftWrap: evidence?.retainGiftWrap as MessagesMailModules['retainGiftWrap'],
+    publishDmRelays: relay.publishDmRelays as MessagesMailModules['publishDmRelays'],
+    fetchDmRelays: relay.fetchDmRelays as MessagesMailModules['fetchDmRelays'],
   }
   mailModules.set(resolverSpecifier, modules)
   return modules
@@ -773,6 +785,50 @@ function roots(ctx: Context): MessagesContactsRoots {
   return messagesContactsRoots(controllerDirectory(ctx))
 }
 
+const identityAttempts = new Map<string, number>()
+const inboxAnnouncements = new Map<string, number>()
+async function prepareIdentity(stateRoots: MessagesContactsRoots): Promise<Record<string, unknown>> {
+  const directory = resolveContactModuleSpecifier().replace(/contact\.mjs$/u, '')
+  const bootstrap = await import(`${directory}bootstrap.mjs`)
+  const identity = await bootstrap.readMessagesIdentity(stateRoots)
+  const attempt = `${stateRoots.stateDir}:${identity.subject}`
+  if (identity.subject && !identity.binding && Date.now() >= (identityAttempts.get(attempt) ?? 0)) {
+    identityAttempts.set(attempt, Infinity)
+    // The existing owner popup may take minutes; the chat never waits on that UI.
+    void bootstrap.ensureMessagesIdentity(stateRoots).then(() => {
+      identityAttempts.set(attempt, Date.now() + 30_000)
+    }).catch((error: { code?: string }) => {
+      // The shell signer can start after the host. Retry transport failures on
+      // the next request, but never reopen a popup after an explicit refusal.
+      if (error?.code !== 'signer:declined' && error?.code !== 'signer:request-expired') {
+        identityAttempts.set(attempt, Date.now() + 30_000)
+      }
+    })
+  }
+  if (Date.now() >= (inboxAnnouncements.get(stateRoots.stateDir) ?? 0)) {
+    inboxAnnouncements.set(stateRoots.stateDir, Date.now() + 30_000)
+    // Contacts and local history do not depend on a relay announcement succeeding.
+    void (async () => {
+      const modules = await loadMailModules()
+      const key = await readNodeSecretKey(stateRoots.stateDir)
+      if (key.kind !== 'key') return
+      const publication = await modules.publishDmRelays({ secretKeyHex: key.secretKeyHex,
+        relays: messagesRelays(modules.DEFAULT_RELAYS), timeoutMs: 2000 })
+      const accepted = isRecord(publication) && Array.isArray(publication.accepted) && publication.accepted.length > 0
+      inboxAnnouncements.set(stateRoots.stateDir, Date.now() + (accepted ? 15 * 60_000 : 30_000))
+    })().catch(() => { inboxAnnouncements.set(stateRoots.stateDir, Date.now() + 30_000) })
+  }
+  return identity
+}
+
+function identityRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots): WebRoute {
+  return { kind: 'exact', path: '/aukora-messages/identity', handler: async (req, res) => {
+    if (!admitted(gate, 'GET', req, res)) return
+    try { json(res, 200, { status: 'ok', ...await prepareIdentity(rootsOf()) }) }
+    catch (error) { answer(res, messagesRefusalBody('messages:unreadable-state', causeMessage(error))) }
+  } }
+}
+
 /** The mail modules, or the refusal when they cannot be loaded. */
 async function modulesOrRefusal(): Promise<
   { readonly ok: true; readonly modules: MessagesMailModules } | { readonly ok: false; readonly refusal: ReturnType<typeof messagesRefusalBody> }
@@ -923,6 +979,7 @@ function contactsRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoo
       // ASKED PER REQUEST, NOT PER PROCESS: the store keeps no cache, so a listing always
       // describes the contacts file as it is now — and the controller directory as the mounted
       // service names it now.
+      await prepareIdentity(rootsOf())
       answer(res, await listContacts(resolver.resolver, rootsOf()))
     },
   }
@@ -973,6 +1030,7 @@ function threadRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots
         return
       }
       const stateRoots = rootsOf()
+      await prepareIdentity(stateRoots)
       const modules = await modulesOrRefusal()
       if (!modules.ok) {
         answer(res, modules.refusal)
@@ -998,79 +1056,34 @@ function threadRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots
         answer(res, recipientPubkey)
         return
       }
-      // THE FILTER IS THIS NODE'S OWN KEY, NOT THE CONTACT'S. A gift wrap's `p` tag names its
-      // RECIPIENT, so the relay is asked for wraps addressed to US and the messages are then
-      // selected by their proven SENDER. Asking for wraps addressed to the contact asked the
-      // relay for the wrong person's mail: it answered honestly, the thread came back empty, and
-      // nothing errored — which is exactly the silent-empty-result failure `relay.mjs` exists to
-      // prevent, arriving here through a swapped argument.
-      //
-      // AND THE WHOLE READ IS UNDER THIS ROUTE'S OWN BUDGET. A relay that accepts the socket and
-      // never sends EOSE is otherwise a request that never answers: the screen aborts at 15s and the
-      // person is told nothing, which is the same failure the send route answers for. The per-relay
-      // timeout is clamped to fit inside the budget so a deployment that configured a long wait
-      // cannot push the answer past the deadline, and the deadline itself catches anything the
-      // clamp does not — a name is always the answer.
       const budgetMs = MESSAGES_THREAD_BUDGET_MS
       const selfPubkey = modules.modules.publicKeyOf(key.secretKeyHex)
+      const stored = modules.modules.readStoredGiftWraps(stateRoots.stateDir)
       const read = await withinBudget(budgetMs, () => fetchWraps(modules.modules, {
         recipientPubkey: selfPubkey,
-        since: requested.since,
+        secretKeyHex: key.secretKeyHex,
+        // Keep the two-day gift-wrap jitter, including when returning after weeks away.
+        since: requested.since ?? 0,
         relays: messagesRelays(modules.modules.DEFAULT_RELAYS),
-        timeoutMs: budgetedRelayTimeoutMs(messagesRelayTimeoutMs(8), budgetMs),
+        timeoutMs: budgetedRelayTimeoutMs(messagesRelayTimeoutMs(4), budgetMs),
       }))
-      if (read.kind === 'timeout') {
-        answer(res, messagesRefusalBody(
-          'messages:thread-timeout',
-          `${requested.npub} — no relay settled within ${budgetMs}ms, so this read has no answer`,
-        ))
-        return
-      }
-      if (read.kind === 'failed') {
-        answer(res, messagesRefusalBody('messages:unreadable-state', causeMessage(read.cause)))
-        return
-      }
-      const settled = read.value
-      if (settled === undefined) {
-        answer(res, messagesRefusalBody('messages:reads-unavailable', requested.npub))
-        return
-      }
-      if (settled.answered.length === 0) {
-        // NOBODY ANSWERED IS NOT AN EMPTY CONVERSATION. A read that reached no relay cannot say
-        // whether there are messages, and answering `messages: []` would tell a person their
-        // conversation is empty when the truth is that nobody was asked successfully.
-        answer(res, messagesRefusalBody('messages:relays-unreachable', requested.npub))
-        return
-      }
-      const threadRead = readMailThread(settled.wraps, modules.modules.openGiftWrap, {
+      const settled = read.kind === 'answered' ? read.value : undefined
+      const threadRead = readMailThread([...stored, ...(settled?.wraps ?? [])], modules.modules.openGiftWrap, {
         recipientSecretKey: key.secretKeyHex,
         selfPubkey,
-        // HEX, NOT THE NPUB. `openGiftWrap` compares `expectSender` against the RUMOR's pubkey,
-        // which is 32 bytes of x-only hex; passing the friendly npub here made every genuine
-        // message fail its sender check and vanish from the thread, with no error anywhere.
         senderPubkeyHex: recipientPubkey,
         senderNpub: requested.npub,
         contact: found.contact,
       })
-      // WRAPS ARRIVED AND NOT ONE OF THEM PROVED A SENDER. This is the silent empty list from the
-      // other side: the relay answered, mail addressed to this node was served, and every wrap of it
-      // either would not open or was written by somebody else. Answering `messages: []` here would
-      // state that nobody wrote to this contact, which is a different and false claim — the mail
-      // really did arrive and this face cannot say whose it is. So the read is refused by name, and
-      // the name says which fact is missing. A read that served NOTHING at all is not this case and
-      // stays the honest empty conversation below.
-      if (settled.wraps.length > 0 && threadRead.opened.length === 0) {
-        answer(res, messagesRefusalBody(
-          'messages:sender-unproven',
-          `${requested.npub} — ${settled.wraps.length} wrap(s) arrived and none could be opened and attributed to this contact`,
-        ))
+      if (!settled?.answered.length && threadRead.thread.messages.length === 0) {
+        const reason = read.kind === 'timeout' ? 'messages:thread-timeout'
+          : read.kind === 'failed' ? 'messages:unreadable-state'
+          : settled === undefined ? 'messages:reads-unavailable' : 'messages:relays-unreachable'
+        answer(res, messagesRefusalBody(reason, read.kind === 'failed' ? causeMessage(read.cause) : requested.npub))
         return
       }
+      // Mail for another contact (or a malformed unsolicited wrap) cannot fail this thread.
       const thread = threadRead.thread
-      // ONE RECORD PER WRAP THIS READ OPENED AND ATTRIBUTED, and the wraps come from the same call
-      // that produced the messages above, so a record cannot be written for a wrap this face could
-      // not read and a message cannot be shown with no record behind it. A wrap that failed to open,
-      // or that came from somebody else, was never selected and is owed nothing.
       const evidence = await recordOpenedWraps(modules.modules, stateRoots.stateDir, threadRead.opened)
       const body: MessagesThreadBody = {
         status: 'ok',
@@ -1083,7 +1096,7 @@ function threadRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots
           text: message.text,
           at: message.at,
         })),
-        answered: settled.answered,
+        answered: settled?.answered ?? [],
         ...evidence,
       }
       answer(res, body)
@@ -1139,6 +1152,11 @@ function sendRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots):
         return
       }
       const stateRoots = rootsOf()
+      const identity = await prepareIdentity(stateRoots)
+      if (!identity.binding) {
+        answer(res, messagesRefusalBody('messages:aumlok-not-linked', 'Approve the Messages identity binding in the Aumlok popup before sending.'))
+        return
+      }
       const modules = await modulesOrRefusal()
       if (!modules.ok) {
         answer(res, modules.refusal)
@@ -1173,6 +1191,18 @@ function sendRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots):
         return
       }
       const relays = messagesRelays(modules.modules.DEFAULT_RELAYS)
+      const discovered = await modules.modules.fetchDmRelays({ pubkey: recipientPubkey, relays,
+        secretKeyHex: key.secretKeyHex, timeoutMs: 2500 })
+      const inbox = isRecord(discovered) && Array.isArray(discovered.relays)
+        ? discovered.relays.filter((relay): relay is string => typeof relay === 'string') : []
+      if (!isRecord(discovered) || !Array.isArray(discovered.answered) || discovered.answered.length === 0) {
+        answer(res, messagesRefusalBody('messages:relays-unreachable', requested.npub))
+        return
+      }
+      if (inbox.length === 0) {
+        answer(res, messagesRefusalBody('messages:reads-unavailable', 'nostr:dm-relays-missing'))
+        return
+      }
       const budgetMs = MESSAGES_SEND_BUDGET_MS
       // THE PUBLISH IS CLAMPED TO THE ROUTE'S BUDGET. `messagesRelayTimeoutMs(8)` is the
       // deployment's own per-relay wait (8s by default); a value larger than the budget would let one
@@ -1192,34 +1222,23 @@ function sendRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots):
         if (!isRecord(composed) || !Array.isArray(composed.wraps) || !isRecord(composed.rumor)) {
           return messagesRefusalBody('messages:reads-unavailable', 'the composer returned no wraps')
         }
-        // ONE WRAP PER RECIPIENT, INCLUDING THIS NODE. NIP-17 wraps a copy to the sender so the
-        // sent message is readable back; that copy is what makes the thread show `from: 'me'`.
-        //
-        // THE TWO COPIES ARE PUBLISHED AT ONCE, AND THEY CAN STILL LAND DIFFERENTLY. Published one
-        // after the other they cost one relay wait EACH, so a relay that never acknowledged spent
-        // the whole budget twice over — 16s against the client's 15s abort, which is precisely how
-        // Peter's send became `signal timed out`. Concurrently, the wall clock is one wait however
-        // many copies there are, and the per-copy accounting below is unchanged: each copy still
-        // carries its own id, its own relay list and, when nothing took it, its own named reason.
-        const published: (PublishedCopy | undefined)[] = await Promise.all(composed.wraps.map(async entry => {
-          if (!isRecord(entry) || !isRecord(entry.wrap)) return undefined
-          const one = await publishOne(modules.modules, entry.wrap, relays, relayTimeoutMs)
-          return {
-            wrap: entry.wrap,
-            // WHICH COPY THIS IS, from the wrap's own addressee: the wrap addressed to the requested
-            // contact is the recipient's copy, and everything else this face composes is this node's
-            // own. Named here rather than inferred later from the position in the list, because a
-            // position is not a fact about the event.
-            copy: entry.recipient === recipientPubkey ? 'recipient' as const : 'self' as const,
-            eventId: typeof entry.wrap.id === 'string' ? entry.wrap.id : '',
-            accepted: one.accepted,
-            verdict: one.verdict,
-          }
-        }))
-        const publishedWraps = published.filter((entry): entry is PublishedCopy => entry !== undefined)
-        // IN COPY ORDER, BECAUSE THE AGGREGATE AND THE OUTCOMES MUST READ AS ONE FACT. `Promise.all`
-        // preserves the order of the list it was given however the publishes interleave, so what the
-        // screen shows for the recipient's copy does not depend on which relay answered first.
+        // Publish the recipient first. A rejected send must not reappear as a sent
+        // bubble later simply because its self-copy reached a different relay.
+        const publishedWraps: PublishedCopy[] = []
+        let recipientAccepted = false
+        const ordered = [...composed.wraps].sort((a, b) =>
+          Number(isRecord(b) && b.recipient === recipientPubkey) - Number(isRecord(a) && a.recipient === recipientPubkey))
+        for (const entry of ordered) {
+          if (!isRecord(entry) || !isRecord(entry.wrap)) continue
+          const recipient = entry.recipient === recipientPubkey
+          if (!recipient && recipientAccepted) modules.modules.retainGiftWrap(stateRoots.stateDir, entry.wrap)
+          const one: { accepted: readonly string[]; verdict: string | null } = recipient || recipientAccepted
+            ? await publishOne(modules.modules, entry.wrap, recipient ? inbox : relays, Math.min(3500, relayTimeoutMs), key.secretKeyHex)
+            : { accepted: [], verdict: 'nostr:recipient-not-accepted' }
+          if (recipient) recipientAccepted = one.accepted.length > 0
+          publishedWraps.push({ wrap: entry.wrap, copy: recipient ? 'recipient' : 'self',
+            eventId: typeof entry.wrap.id === 'string' ? entry.wrap.id : '', accepted: one.accepted, verdict: one.verdict })
+        }
         const accepted = publishedWraps.flatMap(entry => entry.accepted)
         // THE RELAY MODULE'S OWN NAME FOR WHY, taken from the first copy that carried one. A copy
         // that was accepted carries none, and `verdict` is only ever surfaced when nothing was.
@@ -1329,11 +1348,12 @@ function npubHexOrRefusal(
 /** One relay read, or undefined when the read itself failed before it could answer. */
 async function fetchWraps(
   modules: MessagesMailModules,
-  spec: { readonly recipientPubkey: string; readonly since: number | null; readonly relays: MessagesRelays; readonly timeoutMs: number },
+  spec: { readonly recipientPubkey: string; readonly secretKeyHex?: string; readonly since: number | null; readonly relays: MessagesRelays; readonly timeoutMs: number },
 ): Promise<{ readonly wraps: readonly unknown[]; readonly answered: readonly string[] } | undefined> {
   try {
     const result = await modules.fetchGiftWraps({
       recipientPubkey: spec.recipientPubkey,
+      secretKeyHex: spec.secretKeyHex,
       ...(spec.since === null ? {} : { since: spec.since }),
       relays: spec.relays,
       timeoutMs: spec.timeoutMs,
@@ -1355,9 +1375,10 @@ async function publishOne(
   wrap: unknown,
   relays: MessagesRelays,
   timeoutMs: number,
+  secretKeyHex?: string,
 ): Promise<{ readonly accepted: readonly string[]; readonly verdict: string | null }> {
   try {
-    const result = await modules.publishToRelays(wrap, { relays, timeoutMs })
+    const result = await modules.publishToRelays(wrap, { relays, timeoutMs, secretKeyHex })
     if (!isRecord(result)) return { accepted: [], verdict: 'nostr:no-relay-accepted' }
     const accepted = Array.isArray(result.accepted) ? result.accepted.filter(relay => typeof relay === 'string') : []
     const verdict = typeof result.verdict === 'string' ? result.verdict : null
@@ -1470,24 +1491,35 @@ export function apply(ctx: Context): void {
     // than this one. Failing the mount says so; serving it quietly would not.
     throw new Error('ui-messages: the messages routes require a loopback web server')
   }
+  const register = (route: WebRoute) => ctx.webServer.register({ ...route, handler: async (req: IncomingMessage, res: ServerResponse) => {
+    try { await route.handler(req, res) }
+    catch (cause) {
+      if (!res.headersSent) answer(res, messagesRefusalBody('messages:unreadable-state', causeMessage(cause)))
+      else if (!res.writableEnded) res.end()
+    }
+  } })
   const gate = (): RouteGate => Reflect.get(ctx, 'connection') as RouteGate
   // THE SERVICE IS READ THROUGH THE CLOSURE, PER REQUEST, AND NEVER CAPTURED HERE. `apply` may run
   // before the row that publishes `aumlokControl` does, so a directory resolved at mount time would
   // be pinned to whatever the composition happened to hold at that instant.
   const rootsOf = (): MessagesContactsRoots => roots(ctx)
-  ctx.effect(() => ctx.webServer.register(contactsRoute(gate, rootsOf)), 'ui-messages: contacts route')
-  ctx.effect(() => ctx.webServer.register(requestRoute(gate)), 'ui-messages: contacts request route')
-  ctx.effect(() => ctx.webServer.register(threadRoute(gate, rootsOf)), 'ui-messages: thread route')
-  ctx.effect(() => ctx.webServer.register(sendRoute(gate, rootsOf)), 'ui-messages: send route')
+  ctx.effect(() => register(identityRoute(gate, rootsOf)), 'ui-messages: identity route')
+  // Create the node's separate Nostr identity on first host startup. A late-mounted
+  // Aumlok service is picked up again when the face asks for its identity.
+  void prepareIdentity(rootsOf()).catch(() => {})
+  ctx.effect(() => register(contactsRoute(gate, rootsOf)), 'ui-messages: contacts route')
+  ctx.effect(() => register(requestRoute(gate)), 'ui-messages: contacts request route')
+  ctx.effect(() => register(threadRoute(gate, rootsOf)), 'ui-messages: thread route')
+  ctx.effect(() => register(sendRoute(gate, rootsOf)), 'ui-messages: send route')
   // THE WRITE HALF. Registered like the others and gated the same way: a loopback bind, the same
   // request gate, and the same host-owned refusal before anything is read.
-  ctx.effect(() => ctx.webServer.register(addContactRoute(
+  ctx.effect(() => register(addContactRoute(
     (method, req, res) => admitted(gate, method, req, res),
     () => rootsOf().stateDir,
   )), 'ui-messages: add-contact route')
   // THE CONFIRM BUTTON'S ROUTE. It asks the signer over the socket the binding path already uses, waits
   // for the person to click, verifies what comes back and stores it only then.
-  ctx.effect(() => ctx.webServer.register(confirmContactRoute(
+  ctx.effect(() => register(confirmContactRoute(
     (method, req, res) => admitted(gate, method, req, res),
     () => rootsOf(),
   )), 'ui-messages: confirm-contact route')

@@ -38,8 +38,8 @@ import { checkAddContact } from './add-contact.ts'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { MessagesKey } from './locales.ts'
 import {
-  readContacts, readThread, sendMessage,
-  postContact, type AddContactRow,
+  readContacts, readThread, sendMessage, readIdentity,
+  postContact,
   type ContactsFailure, type WireContact, type WireCopyOutcome, type WireSas, confirmSas,
 } from './contacts-client.ts'
 import type { MessagesThreadBody, MessagesWireContactState } from '../messages-route.ts'
@@ -83,41 +83,6 @@ const SCENE = {
   'contacts-empty': { source: 'source.contacts.empty' },
   'contacts-failed': { source: 'source.contacts.failed' },
 } as const satisfies Record<ContactsScene, Record<'source', MessagesKey>>
-
-/**
- * The posture an engine state paints with. `contacts-only` is NOT green: the messaging engine is
- * absent in that state too — the local route answers and nothing is received — so painting it as a
- * connected route would be the one thing this line must never do, which is say something untrue.
- */
-const POSTURE_TONE = {
-  'not-connected': 'disconnected',
-  'contacts-only': 'disconnected',
-  'connected': 'connected',
-} as const satisfies Record<MessagingStatus, 'disconnected' | 'connected'>
-
-/**
- * The statuses the banner is shown for, and it is not every status.
- *
- * A banner is for something being wrong. `connected` is absent from this record BY CONSTRUCTION, so a
- * green "everything is fine" line cannot be rendered from it: the copy that says the engine is
- * connected belongs in the details sheet, where a reader who wants it can look, and the lane keeps a
- * banner for the two states that are a warning — nothing read yet, and contacts-only with no engine.
- */
-type WrongStatus = Exclude<MessagingStatus, 'connected'>
-
-const BANNER_STATUS = {
-  'not-connected': 'runtime.status',
-  'contacts-only': 'runtime.status.contacts-only',
-} as const satisfies Record<WrongStatus, MessagesKey>
-
-/**
- * The banner a status earns, or null when nothing is wrong and there is nothing to say.
- * @param status - the posture on screen.
- * @returns the status the banner is shown for, or null.
- */
-function bannerFor(status: MessagingStatus): WrongStatus | null {
-  return status === 'connected' ? null : status
-}
 
 /**
  * The one thing known about each contact, as copy. The four states are the wire's own
@@ -481,11 +446,10 @@ function AddContactSheet({ t, onClose, onAdded }: {
 }) {
   const [draft, setDraft] = useState({ name: '', npub: '', controller: '' })
   const [refusal, setRefusal] = useState<{ readonly reason: string; readonly detail: string } | null>(null)
-  const [added, setAdded] = useState<AddContactRow | null>(null)
   const [sending, setSending] = useState(false)
   // THE ROUTE REFUSES TO OVERWRITE, SO THE SHEET DOES NOT OFFER TO. One code, and no second press.
   const noRetry = refusal?.reason === 'messages:add-already-present'
-  const ready = draft.name.trim() !== '' && draft.npub.trim() !== '' && draft.controller.trim() !== ''
+  const ready = draft.name.trim() !== '' && draft.npub.trim() !== ''
   const submit = (): void => {
     const checked = checkAddContact(draft)
     if (checked.ok !== true) {
@@ -496,9 +460,9 @@ function AddContactSheet({ t, onClose, onAdded }: {
     void postContact(checked.body).then((read) => {
       setSending(false)
       if (read.kind === 'added') {
-        setAdded(read.contact)
         setRefusal(null)
         onAdded()
+        onClose()
         return
       }
       setRefusal(read.kind === 'refused'
@@ -508,22 +472,23 @@ function AddContactSheet({ t, onClose, onAdded }: {
   }
   return (
     <Sheet title={t('add.title')} closeLabel={t('sheet.close')} hook="add" onClose={onClose}>
-      <p className={css.addHint}>{t('add.hint')}</p>
       <div className={css.addForm}>
         <label className={css.addField}>
-          <span className={css.addLabel}>{t('add.name')}</span>
           <input
             className={css.addInput}
             value={draft.name}
+            aria-label={t('add.name')}
+            placeholder={t('add.name')}
             data-add-field="name"
             onChange={(event) => { setDraft({ ...draft, name: event.target.value }) }}
           />
         </label>
         <label className={css.addField}>
-          <span className={css.addLabel}>{t('add.npub')}</span>
           <input
             className={css.addInput}
             value={draft.npub}
+            aria-label={t('add.npub')}
+            placeholder={t('add.npub')}
             data-add-field="npub"
             spellCheck={false}
             autoComplete="off"
@@ -531,10 +496,11 @@ function AddContactSheet({ t, onClose, onAdded }: {
           />
         </label>
         <label className={css.addField}>
-          <span className={css.addLabel}>{t('add.controller')}</span>
           <input
             className={css.addInput}
             value={draft.controller}
+            aria-label={t('add.controller')}
+            placeholder={t('add.controller')}
             data-add-field="controller"
             spellCheck={false}
             autoComplete="off"
@@ -554,15 +520,10 @@ function AddContactSheet({ t, onClose, onAdded }: {
         )}
       </div>
       {refusal !== null && (
-        <p className={css.addRefusal} data-add-refusal={refusal.reason}>
-          <span className={css.addReason}>{refusal.reason}</span>
-          {` — ${refusal.detail}`}
-        </p>
-      )}
-      {added !== null && (
-        <p className={css.addAdded} data-add-added={added.state}>
-          {t('add.added', { name: added.name, npub: added.npub, state: added.state })}
-        </p>
+        <span className={css.addRefusal} data-add-refusal={refusal.reason} role="alert"
+          aria-label={refusal.detail} title={refusal.detail}>
+          <ForeignStateIcon />
+        </span>
       )}
     </Sheet>
   )
@@ -804,12 +765,14 @@ interface LaneEntry {
   pinned: boolean
   unread: boolean
   archived: boolean
-  /** Text the viewer sent here, oldest first, stored exactly as typed. */
-  sent: readonly string[]
+  /** Messages acknowledged by the host, keyed by the NIP-17 rumor id. */
+  sent: readonly LaneMessage[]
 }
 
 /** One rendered message. `live` messages came from the host and are shown as they arrived. */
 interface LaneMessage {
+  id: string
+  at: number
   from: 'me' | 'them'
   text: string
 }
@@ -826,6 +789,8 @@ type SendReceipt =
   | { readonly kind: 'pending' }
   | {
     readonly kind: 'accepted'
+    readonly id: string
+    readonly at: number
     readonly accepted: readonly string[]
     readonly verdict: string
     /** One parsed outcome per copy of the send: `recipient` and/or `self`. */
@@ -833,6 +798,8 @@ type SendReceipt =
   }
   | {
     readonly kind: 'not-accepted'
+    readonly id: string
+    readonly at: number
     readonly accepted: readonly string[]
     readonly verdict: string
     readonly copies: readonly WireCopyOutcome[]
@@ -924,6 +891,7 @@ type ContactsView =
 
 /** How often the listing is re-read while the lane is open. Slow on purpose. */
 const CONTACTS_POLL_MS = 60_000
+const THREAD_POLL_MS = 3_000
 
 /**
  * Fold a contacts listing into the local rows, keeping every flag the viewer set.
@@ -984,7 +952,11 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
   const [searchOpen, setSearchOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [openId, setOpenId] = useState<string | null>(null)
-  const [draft, setDraft] = useState('')
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
+  const draft = openId === null ? '' : drafts[openId] ?? ''
+  const setDraft = (text: string): void => {
+    if (openId !== null) setDrafts(current => ({ ...current, [openId]: text }))
+  }
   const [thread, setThread] = useState<ThreadView>({ kind: 'idle' })
   const [receipts, setReceipts] = useState<Record<string, SendReceipt>>({})
   /**
@@ -1000,7 +972,13 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
   const returnToRef = useRef<string | null>(null)
   const contactsGeneration = useRef(0)
   const threadGeneration = useRef(0)
-  const retryRef = useRef<number | null>(null)
+  const threadInFlight = useRef(new Map<string, Promise<void>>())
+  const sending = useRef(new Set<string>())
+  const currentOpen = useRef<string | null>(null)
+  currentOpen.current = active ? openId : null
+  const [copyState, setCopyState] = useState<'idle' | 'pending' | 'copied' | 'failed'>('pending')
+  const [publicNpub, setPublicNpub] = useState<string | null>(null)
+  const [threadFailure, setThreadFailure] = useState<ContactsFailure | null>(null)
 
   const openConversation = entries.find(conversation => conversation.id === openId)
   const openContact = openConversation?.contact
@@ -1033,11 +1011,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
   const handleOf = (entry: LaneEntry): string =>
     entry.contact === undefined ? t('new.handle') : entry.contact.npub
 
-  // A contact row shows what the host read and what the viewer typed here. Nothing else: there is
-  // no opening message invented for a row, because a row's own conversation is the host's to give.
-  const messagesOf = (entry: LaneEntry): LaneMessage[] =>
-    entry.sent.map(text => ({ from: 'me' as const, text }))
-
   /**
    * The row's one preview line: the newest thing this screen actually holds for that conversation.
    *
@@ -1051,7 +1024,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     // **"NO MESSAGES YET" CLAIMED MORE THAN THIS FUNCTION KNOWS.** `entry.sent` is what was sent from THIS screen, so
     // an empty list means nothing was sent from here — not that the conversation is empty, which is what the old
     // sentence told a person. The row now says what is true of the thing it actually read.
-    return said === undefined ? t('row.nothing-sent') : said
+    return said?.text ?? ''
   }
 
   /** Open one of the two layers. Opening a conversation closes whatever was over it. */
@@ -1075,22 +1048,77 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     })
   }, [])
 
-  const loadThread = useCallback((npub: string): void => {
-    threadGeneration.current += 1
+  const loadThread = useCallback((npub: string): Promise<void> => {
+    const pending = threadInFlight.current.get(npub)
+    if (pending !== undefined) return pending
     const mine = threadGeneration.current
-    setThread({ kind: 'loading' })
-    // No `since`: the route's own lookback is the only correct default for NIP-17, whose gift
-    // wraps are timestamped into the two days before now. A narrower window asks the relays a
-    // question whose empty answer would read as "nobody wrote to you".
-    void readThread(npub, null).then((read) => {
-      if (threadGeneration.current !== mine) return
+    const work = readThread(npub, null).then((read) => {
+      if (threadGeneration.current !== mine || currentOpen.current !== npub) return
       if (read.kind === 'failed') {
-        setThread({ kind: 'failed', failure: read.failure })
+        setThreadFailure(read.failure)
+        setThread(current => current.kind === 'ready' ? current : { kind: 'failed', failure: read.failure })
         return
       }
-      setThread({ kind: 'ready', thread: read.thread })
-    })
+      setThreadFailure(null)
+      setThread(current => {
+        const messages = new Map<string, LaneMessage>()
+        if (current.kind === 'ready' && current.thread.npub === npub) {
+          for (const message of current.thread.messages) messages.set(message.id, message)
+        }
+        for (const message of read.thread.messages) messages.set(message.id, message)
+        return { kind: 'ready', thread: { ...read.thread, messages: [...messages.values()]
+          .sort((a, b) => a.at - b.at || a.id.localeCompare(b.id)) } }
+      })
+    }).finally(() => { threadInFlight.current.delete(npub) })
+    threadInFlight.current.set(npub, work)
+    return work
   }, [])
+
+  // Each request finishes before the next poll starts. Switching or closing a thread invalidates
+  // its outstanding reply, while refreshing an open conversation keeps its bubbles on screen.
+  useEffect(() => {
+    if (!active || openId === null) return undefined
+    threadGeneration.current += 1
+    setThread({ kind: 'loading' })
+    setThreadFailure(null)
+    let cancelled = false
+    let timer: number | undefined
+    const poll = async (): Promise<void> => {
+      await loadThread(openId)
+      if (!cancelled) timer = window.setTimeout(() => { void poll() }, THREAD_POLL_MS)
+    }
+    void poll()
+    return () => {
+      cancelled = true
+      if (timer !== undefined) window.clearTimeout(timer)
+      threadGeneration.current += 1
+    }
+  }, [active, openId, loadThread])
+
+  const copyIdentity = (): void => {
+    if (publicNpub === null) return
+    setCopyState('pending')
+    // Start the clipboard operation during the gesture; WebKit loses permission after a fetch.
+    try {
+      void navigator.clipboard.writeText(publicNpub).then(
+        () => { setCopyState('copied') },
+        () => { setCopyState('failed') },
+      )
+    } catch { setCopyState('failed') }
+  }
+
+  useEffect(() => {
+    if (!active) return undefined
+    let cancelled = false
+    void readIdentity().then(read => {
+      if (cancelled) return
+      if (read.kind === 'ready') {
+        setPublicNpub(read.value.npub)
+        setCopyState('idle')
+      } else setCopyState('failed')
+    })
+    return () => { cancelled = true }
+  }, [active])
 
   // One read when the surface mounts, then a slow poll while the lane is open. A closed
   // lane does not poll: the surface is always mounted, so `active` is the only gate.
@@ -1104,10 +1132,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
       contactsGeneration.current += 1
     }
   }, [active, loadContacts])
-
-  useEffect(() => () => {
-    if (retryRef.current !== null) window.clearTimeout(retryRef.current)
-  }, [])
 
   useEffect(() => {
     if (!active) return
@@ -1147,7 +1171,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
 
   // Newest message stays in view: the column is a scrollport, so an appended
   // bubble would otherwise land below the fold.
-  const messageCount = openConversation === undefined ? 0 : messagesOf(openConversation).length
+  const messageCount = (openConversation?.sent.length ?? 0) + (thread.kind === 'ready' ? thread.thread.messages.length : 0)
   useEffect(() => {
     const column = messagesRef.current
     if (column === null) return
@@ -1169,14 +1193,12 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     returnToRef.current = entry.id
     setSheet(null)
     setOpenId(entry.id)
-    setDraft('')
     setReceipts(current => {
       const next = { ...current }
       delete next[entry.id]
       return next
     })
-    if (entry.contact !== undefined) loadThread(entry.contact.npub)
-    else setThread({ kind: 'idle' })
+    setThread({ kind: 'loading' })
   }
 
 
@@ -1188,27 +1210,20 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
    */
   const sendTo = (entry: LaneEntry): void => {
     const text = draft.trim()
-    if (text === '') return
     const contact = entry.contact
-    if (contact === undefined) {
-      mutate(entry.id, current => ({ ...current, sent: [...current.sent, text] }))
-      setDraft('')
-      return
-    }
-    setDraft('')
+    if (text === '' || contact === undefined || sending.current.has(entry.id)) return
+    const submittedDraft = draft
+    sending.current.add(entry.id)
     setReceipts(current => ({ ...current, [entry.id]: { kind: 'pending' } }))
     void sendMessage(contact.npub, text).then((read) => {
-      setReceipts((current) => {
-        if (read.kind === 'accepted') return { ...current, [entry.id]: read }
-        if (read.kind === 'not-accepted') return { ...current, [entry.id]: read }
-        return { ...current, [entry.id]: { kind: 'failed', failure: read.failure } }
-      })
+      setReceipts(current => ({ ...current, [entry.id]: read }))
       if (read.kind === 'accepted') {
-        mutate(entry.id, current => ({ ...current, sent: [...current.sent, text] }))
-        if (retryRef.current !== null) window.clearTimeout(retryRef.current)
-        retryRef.current = window.setTimeout(() => { loadThread(contact.npub) }, 1_500)
+        const message: LaneMessage = { id: read.id, at: read.at, from: 'me', text }
+        mutate(entry.id, current => ({ ...current, sent: [...current.sent.filter(item => item.id !== read.id), message] }))
+        setDrafts(current => current[entry.id] === submittedDraft ? { ...current, [entry.id]: '' } : current)
+        if (currentOpen.current === contact.npub) void loadThread(contact.npub)
       }
-    })
+    }).finally(() => { sending.current.delete(entry.id) })
   }
 
   const toggle = (entry: LaneEntry, key: 'pinned' | 'unread' | 'archived'): void => {
@@ -1221,21 +1236,12 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     && (!filters.unread || entry.unread)
     && (query === '' || nameOf(entry).toLowerCase().includes(query.toLowerCase())))
 
-  const openMessages = openConversation === undefined ? [] : messagesOf(openConversation)
-  const liveThread = thread.kind === 'ready' ? thread.thread : undefined
-  const openThreadMessages: LaneMessage[] = (liveThread?.messages ?? [])
-    .map(message => ({ from: message.from, text: message.text }))
-  // The host's thread is the whole conversation: a message sent from here and already read
-  // back must not appear twice, so only text the host does not hold is appended. The thread's
-  // own SAS wins over the listing's when it carries one — it is the more recent answer.
+  const liveThread = thread.kind === 'ready' && thread.thread.npub === openId ? thread.thread : undefined
   const openThreadSas: WireSas | null = liveThread?.sas ?? openContact?.sas ?? null
-  const readBack = new Set(openThreadMessages.filter(message => message.from === 'me').map(message => message.text))
-  const openLiveMessages: LaneMessage[] = openContact === undefined
-    ? openMessages
-    : [
-      ...openThreadMessages,
-      ...(openConversation?.sent ?? []).filter(text => !readBack.has(text)).map(text => ({ from: 'me' as const, text })),
-    ]
+  const mergedMessages = new Map<string, LaneMessage>()
+  for (const message of openConversation?.sent ?? []) mergedMessages.set(message.id, message)
+  for (const message of liveThread?.messages ?? []) mergedMessages.set(message.id, message)
+  const openLiveMessages = [...mergedMessages.values()].sort((a, b) => a.at - b.at || a.id.localeCompare(b.id))
   const openReceipt = openId === null ? undefined : receipts[openId]
 
   // WHAT THE RELAYS DID WITH EACH COPY, read from the send's own per-copy outcomes rather than
@@ -1247,11 +1253,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
     : undefined
   const openOutcome = openCopies === undefined || openCopies.length === 0 ? undefined : copyOutcomeOf(openCopies)
 
-  // THE BANNER IS FOR SOMETHING BEING WRONG. `bannerFor` returns null for a connected route, so the
-  // lane has no line at all when there is nothing to warn about; the same sentence a reader would
-  // have seen there is in the details sheet, under host status, which is where a fact nobody needs to
-  // act on belongs.
-  const banner = bannerFor(posture)
   const openState = openContact?.state
   // The sheet's subject, read from the state the sheet is about rather than from whatever is open
   // behind it: a sheet opened from a row keeps describing that row while the lane stays where it is.
@@ -1269,17 +1270,13 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
    * '@new') that could neither send nor receive and wrote nothing; step 4 deletes that path.
    */
   const openAddContact = (): void => { setSheet({ kind: 'add', entry: null }) }
-  // The newest message of yours in this conversation, which is the one a receipt is about: the
-  // receipt a conversation holds is the answer to its most recent send, so the mark goes on the
-  // message that send produced rather than on every message that came before it.
-  let lastMine = -1
-  openLiveMessages.forEach((message, index) => { if (message.from === 'me') lastMine = index })
-
   // EVERYTHING TRUE THAT A ROW MUST NOT CARRY, in one list, built where the facts are. The sheet is
   // rendered from this and not from a second reading of the state, so a row that moved here cannot
   // have moved to a place that says something slightly different.
   const detailsOf = (entry: LaneEntry | null): SheetRow[] => {
     const rows: SheetRow[] = []
+    if (contactsView.kind === 'failed') rows.push({ label: t('contacts.error.title'), value: failureText(contactsView.failure) })
+    if (entry?.id === openId && threadFailure !== null) rows.push({ label: t('details.host'), value: failureText(threadFailure) })
     const contact = entry?.contact
     if (entry !== null) {
       rows.push({ label: t('state.label'), value: contact === undefined ? t('new.handle') : t(CONTACT_STATE[contact.state].detail) })
@@ -1329,6 +1326,11 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
               <span className={css.brandMark}><ChatMarkIcon /></span>
               <h2 className={css.brandName} data-fit="name">{t('title')}</h2>
               <span className={clsx(css.actions, css.brandActions)}>
+                <button type="button" className={css.iconButton} data-copy-identity={copyState}
+                  aria-label={t(copyState === 'copied' ? 'identity.copied' : copyState === 'failed' ? 'identity.failed' : 'identity.copy')}
+                  disabled={copyState === 'pending' || publicNpub === null} onClick={copyIdentity}>
+                  {copyState === 'copied' ? <VerifiedStateIcon /> : copyState === 'failed' ? <ForeignStateIcon /> : <SasIcon />}
+                </button>
                 <button
                   type="button"
                   className={css.iconButton}
@@ -1386,44 +1388,10 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
                 </button>
               </span>
             </header>
-            {/* THE BANNER RENDERS ONLY WHEN SOMETHING IS WRONG, and it says exactly what is wrong:
-                no engine connected and nothing read yet, or a local route answering with no engine. A
-                connected route renders no line at all. */}
-            {banner !== null && (
-              <p className={css.posture} data-messaging-status={banner} data-posture={POSTURE_TONE[banner]}>
-                {t(BANNER_STATUS[banner])}
-              </p>
-            )}
-            {/* A refused read, an unreadable answer or a missing endpoint is a state of its own,
-                and it is a different fact from an empty listing: the headline says which state
-                this is, the sentence under it says what that means, and the code prints the
-                reason the host actually returned rather than a paraphrase of it. */}
             {contactsView.kind === 'failed' && (
-              <div className={css.notice} data-messages-error role="alert">
-                {/* NOT LINKED YET is a state to act on, not a failure: it gets its own headline and sentence. */}
-                {contactsView.failure.kind === 'refused' && contactsView.failure.reason === 'messages:aumlok-not-linked' ? (
-                  <>
-                    <span className={css.noticeTitle}>{t('contacts.unlinked.title')}</span>
-                    <span data-messages-error-hint>{t('contacts.unlinked.hint')}</span>
-                  </>
-                ) : (
-                  <>
-                    <span className={css.noticeTitle}>{t('contacts.error.title')}</span>
-                    <span data-messages-error-hint>{t('contacts.error.hint')}</span>
-                  </>
-                )}
-                <code className={css.noticeReason} data-messages-error-reason>
-                  {failureText(contactsView.failure)}
-                </code>
-              </div>
-            )}
-            {/* An empty listing is not an error and must not read like one: it says there is
-                nobody yet and what to do about it, in the place the rows would be. */}
-            {contactsView.kind === 'ready' && contactsView.contacts.length === 0 && (
-              <div className={css.listEmpty} data-messages-empty>
-                <p>{t('contacts.none')}</p>
-                <p>{t('contacts.none.hint')}</p>
-              </div>
+              <button type="button" className={css.iconButton} data-messages-error
+                aria-label={failureText(contactsView.failure)} title={failureText(contactsView.failure)}
+                onClick={() => { openSheet('details', null) }}><ForeignStateIcon /></button>
             )}
             <div className={css.searchRow}>
               {searchOpen && (
@@ -1464,7 +1432,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
               {/* "No conversations match" is about a filter hiding rows, so it is said only when
                   there are rows to hide: with none at all, the empty or failed state above is the
                   honest sentence and this one would contradict it. */}
-              {visible.length === 0 && entries.length > 0 && <p className={css.listEmpty}>{t('list.none')}</p>}
+              {visible.length === 0 && entries.length > 0 && <span className={css.listEmpty} aria-label={t('list.none')}><SearchIcon /></span>}
             </div>
           </div>
         )
@@ -1495,7 +1463,6 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
                     onClick={() => { openSheet('verify', openConversation) }}
                   >
                     <ShieldIcon size={12} verified={false} />
-                    <span className={css.chipWord} data-fit="line">{t('trust.unverified')}</span>
                   </button>
                 )}
                 <span className={css.actions}>
@@ -1534,43 +1501,27 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
               </span>
             </header>
             <div className={css.messages} ref={messagesRef}>
-              {/* The read-aloud digits used to sit here, above the conversation: a box of six digits in
-                  the middle of a thread is a thing people learn to scroll past, and the one string this
-                  face exists to make deliberate was the one it made ambient. It lives in the verify
-                  sheet the chip opens, and a verified binding says nothing here at all. */}
               {openContact !== undefined && thread.kind === 'loading' && (
-                <p className={css.threadNotice} data-thread-status="loading">{t('thread.loading')}</p>
+                <span className={css.threadNotice} data-thread-status="loading" aria-label={t('thread.loading')}><SendPendingIcon /></span>
               )}
-              {openContact !== undefined && thread.kind === 'failed' && (
-                <p className={css.threadNotice} data-thread-status="failed">
-                  {failureText(thread.failure)}
-                </p>
+              {threadFailure !== null && (
+                <button type="button" className={css.iconButton} data-thread-status="failed"
+                  aria-label={failureText(threadFailure)} title={failureText(threadFailure)}
+                  onClick={() => { openSheet('details', openConversation) }}><ForeignStateIcon /></button>
               )}
-              {/* A READ NOBODY ANSWERED IS A WARNING AND STAYS WHERE THE CONVERSATION IS: "nobody
-                  wrote to you" and "nobody answered" are the two facts this line exists to keep
-                  apart, and the second one changes what the empty thread below it means. The list of
-                  relays that DID answer is a fact about the read, so it is a row in the details. */}
-              {openContact !== undefined && liveThread !== undefined && liveThread.answered.length === 0 && (
-                <p className={css.threadNotice} data-thread-status="unanswered">{t('thread.unanswered')}</p>
-              )}
-              {openLiveMessages.map((message, index) => (
+              {openLiveMessages.map(message => (
                 <div
-                  key={index}
+                  key={message.id}
+                  data-message-id={message.id}
                   className={message.from === 'me' ? css.msgMe : css.msgThem}
                   data-message={message.from}
                 >
                   <span className={css.bubbleText}>{message.text}</span>
-                  {index === lastMine && openReceipt !== undefined && (
+                  {openReceipt?.kind === 'accepted' && message.id === openReceipt.id && (
                     <ReceiptMark receipt={openReceipt} outcome={openOutcome} t={t} />
                   )}
                 </div>
               ))}
-              {/* **A FAILED READ IS NOT AN EMPTY CONVERSATION.** The loading and failed lines are rendered above this
-                  one, so without the ready check a person whose thread could not be read saw both the failure AND
-                  "No messages in this conversation yet" — the same defect this sweep found in my own health panel. */}
-              {openContact !== undefined && thread.kind === 'ready' && openLiveMessages.length === 0 && (
-                <p className={css.threadNotice} data-thread-status="none">{t('thread.none')}</p>
-              )}
             </div>
             <div className={css.composerCard} data-messages-composer>
               {/* THE RECEIPT IS A MARK ON THE MESSAGE, NOT A PARAGRAPH OVER THE COMPOSER. Three
@@ -1596,10 +1547,10 @@ export function MessagesSurface({ activeSurface, closeSurface, t, messagingStatu
                   type="button"
                   className={css.sendCircle}
                   aria-label={t('composer.send')}
-                  disabled={draft.trim() === ''}
+                  disabled={draft.trim() === '' || openReceipt?.kind === 'pending'}
                   onClick={() => { sendTo(openConversation) }}
                 >
-                  <SendIcon />
+                  {openReceipt?.kind === 'pending' ? <SendPendingIcon /> : openReceipt?.kind === 'failed' || openReceipt?.kind === 'not-accepted' ? <SendRefusedIcon /> : <SendIcon />}
                 </button>
               </div>
             </div>

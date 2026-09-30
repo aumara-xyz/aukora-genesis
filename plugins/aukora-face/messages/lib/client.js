@@ -22,7 +22,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:Messages.module.css.mjs
-		const css = ".PKtVvq_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--dsw-alias-label-primary);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.PKtVvq_surface[hidden]{display:none}.PKtVvq_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.PKtVvq_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.PKtVvq_brandMark{color:var(--dsw-static-spatial-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.PKtVvq_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.PKtVvq_actions{align-items:center;gap:2px;display:inline-flex}.PKtVvq_iconButton{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:9px;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.PKtVvq_iconButton:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}.PKtVvq_iconButton:focus-visible{outline:2px solid var(--dsw-alias-label-primary);outline-offset:1px}.PKtVvq_iconButton[aria-pressed=true]{background:color-mix(in srgb, currentColor 13%, transparent)}.PKtVvq_pinAction[aria-pressed=true]{color:var(--dsw-static-spatial-violet)}.PKtVvq_unreadAction[aria-pressed=true]{color:var(--dsw-alias-state-success-primary)}.PKtVvq_archiveAction[aria-pressed=true]{color:var(--dsw-static-spatial-gold)}.PKtVvq_posture{color:var(--dsw-static-spatial-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.PKtVvq_posture:before{content:\"\";background:var(--dsw-static-spatial-gold);border-radius:999px;flex:none;width:6px;height:6px}.PKtVvq_posture[data-posture=connected]{color:var(--dsw-alias-state-success-primary)}.PKtVvq_posture[data-posture=connected]:before{background:var(--dsw-alias-state-success-primary)}.PKtVvq_notice{border:1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);color:var(--dsw-alias-label-primary);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.PKtVvq_noticeTitle{font-weight:600}.PKtVvq_noticeReason{color:var(--dsw-static-spatial-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.PKtVvq_contactRow{align-items:center;min-height:64px}.PKtVvq_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.PKtVvq_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.PKtVvq_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.PKtVvq_trustMark{color:var(--dsw-alias-label-tertiary);flex:none;align-items:center;display:inline-flex}.PKtVvq_trustMark[data-state=VERIFIED]{color:var(--dsw-alias-state-success-primary)}.PKtVvq_trustMark[data-state=TEST]{color:var(--dsw-static-spatial-gold)}.PKtVvq_trustMark[data-state=UNBOUND]{color:var(--dsw-static-spatial-blue)}.PKtVvq_trustMark[data-state=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f)}.PKtVvq_unreadDot{background:var(--dsw-alias-state-success-primary);border-radius:999px;flex:none;width:7px;height:7px}.PKtVvq_pinMark{color:var(--dsw-static-spatial-violet);flex:none;align-items:center;display:inline-flex}.PKtVvq_time{color:var(--dsw-alias-label-tertiary);flex:none;margin-left:auto;font-size:12px;line-height:20px}.PKtVvq_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);font-size:13px;line-height:18px;overflow:hidden}.PKtVvq_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.PKtVvq_badge[data-state=VERIFIED]{color:var(--dsw-alias-state-success-primary);background:color-mix(in srgb, var(--dsw-alias-state-success-primary) 16%, transparent);border-radius:9px}.PKtVvq_badge[data-state=TEST]{color:var(--dsw-static-spatial-gold);background:color-mix(in srgb, var(--dsw-static-spatial-gold) 12%, transparent);border-style:dashed;border-radius:4px}.PKtVvq_badge[data-state=UNBOUND]{color:var(--dsw-static-spatial-blue);background:color-mix(in srgb, var(--dsw-static-spatial-blue) 10%, transparent);border-style:dotted;border-radius:9px}.PKtVvq_badge[data-state=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--dsw-alias-state-error-primary,#d9534f) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.PKtVvq_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.PKtVvq_sas{border:1px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 40%, transparent);background:color-mix(in srgb, var(--dsw-static-spatial-violet) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.PKtVvq_sasAbsent{border:1px dashed var(--dsw-alias-border-l2);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.PKtVvq_sasGlyph{color:var(--dsw-static-spatial-violet);flex:none;margin-top:2px;display:inline-flex}.PKtVvq_sasAbsentGlyph{color:var(--dsw-alias-label-tertiary);flex:none;margin-top:2px;display:inline-flex}.PKtVvq_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.PKtVvq_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--dsw-static-spatial-violet);font-size:10px;line-height:14px}.PKtVvq_sasDigits{letter-spacing:.12em;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.PKtVvq_sasHint,.PKtVvq_sasAbsentText{color:var(--dsw-alias-label-secondary);font-size:11px;line-height:15px}.PKtVvq_receiptMark{color:var(--dsw-alias-label-tertiary);align-items:center;margin-top:2px;display:inline-flex}.PKtVvq_receiptMark[data-receipt=pending]{color:var(--dsw-alias-label-tertiary)}.PKtVvq_receiptMark[data-receipt=delivered]{color:var(--dsw-alias-state-success-primary)}.PKtVvq_receiptMark[data-receipt=partial]{color:var(--dsw-static-spatial-gold)}.PKtVvq_receiptMark[data-receipt=refused]{color:var(--dsw-alias-state-error-primary,#d9534f)}.PKtVvq_threadNotice{color:var(--dsw-alias-label-tertiary);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.PKtVvq_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.PKtVvq_searchInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);min-width:0;height:28px;color:var(--dsw-alias-label-primary);font:inherit;background:0 0;border-radius:9px;outline:none;flex:1;padding:0 10px;font-size:13px}.PKtVvq_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.PKtVvq_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--dsw-static-spatial-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--dsw-alias-label-primary);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);background:0 0;border-radius:14px;align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.PKtVvq_personRow:hover{transform:translate(3px)}.PKtVvq_personRow:focus-visible{border-color:color-mix(in srgb, var(--dsw-static-spatial-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--dsw-static-spatial-blue) 14%, transparent);outline:none}.PKtVvq_rowActions{flex:none;align-items:center;gap:2px;display:none}.PKtVvq_personRow:hover .PKtVvq_rowActions,.PKtVvq_personRow:focus-within .PKtVvq_rowActions{display:inline-flex}.PKtVvq_personRow:hover .PKtVvq_time,.PKtVvq_personRow:focus-within .PKtVvq_time{display:none}.PKtVvq_avatar{background:color-mix(in srgb, var(--dsw-static-spatial-blue) 24%, transparent);width:26px;height:26px;color:var(--dsw-alias-label-primary);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.PKtVvq_listEmpty{color:var(--dsw-alias-label-tertiary);margin:0;padding:8px;font-size:13px;line-height:19px}.PKtVvq_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.PKtVvq_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.PKtVvq_threadHeader{border:1px solid var(--dsw-alias-border-l2);box-sizing:border-box;background:0 0;border-radius:16px;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.PKtVvq_threadHeader{padding-inline:74px}}.PKtVvq_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.PKtVvq_chip{height:22px;color:var(--dsw-static-spatial-gold);font:inherit;cursor:pointer;white-space:nowrap;background:0 0;border:1px solid;border-radius:11px;flex:none;align-items:center;gap:4px;padding:0 9px;font-size:11px;font-weight:600;line-height:1;display:inline-flex}.PKtVvq_chip[data-trust-chip=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f);border-style:dashed}.PKtVvq_chip[data-trust-chip=UNBOUND]{color:var(--dsw-static-spatial-blue);border-style:dotted}.PKtVvq_chipWord{display:inline-block}.PKtVvq_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.PKtVvq_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.PKtVvq_msgThem{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);border-radius:22px;align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.PKtVvq_msgMe{background:var(--dsw-specific-bubble);border-radius:22px;align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.PKtVvq_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.PKtVvq_composerCard{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2-darkmode-thin);background:var(--dsw-specific-input-major);width:100%;box-shadow:var(--dsw-shadow-lv2);border-radius:22px;flex-direction:column;flex:none;gap:10px;padding:12px 12px 10px;display:flex}.PKtVvq_composerCard textarea{min-height:24px;max-height:120px;color:var(--dsw-alias-label-primary);font:inherit;resize:none;background:0 0;border:0;outline:none;padding:0 4px;font-size:16px;line-height:24px}.PKtVvq_composerRow{justify-content:flex-end;display:flex}.PKtVvq_sendCircle{background:var(--dsw-alias-button-info-fill);width:34px;height:34px;color:var(--dsw-alias-label-primary,#fff);cursor:pointer;border:none;border-radius:999px;flex:none;place-items:center;transition:background-color .1s;display:grid}.PKtVvq_sendCircle:hover:not(:disabled){background:var(--dsw-alias-button-info-hover)}.PKtVvq_sendCircle:disabled{opacity:.4;cursor:default}.PKtVvq_sheetBackdrop{z-index:2;box-sizing:border-box;background:color-mix(in srgb, var(--dsw-alias-label-primary) 34%, transparent);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.PKtVvq_sheet{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-specific-input-major);width:min(100%,520px);min-width:0;max-height:100%;box-shadow:var(--dsw-shadow-lv2);color:var(--dsw-alias-label-primary);border-radius:18px;flex-direction:column;padding:12px 14px 14px;display:flex}.PKtVvq_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.PKtVvq_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.PKtVvq_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.PKtVvq_sheetBadgeRow{align-items:center;gap:8px;display:flex}.PKtVvq_sheetSentence{color:var(--dsw-alias-label-secondary);margin:0;font-size:12px;line-height:17px}.PKtVvq_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.PKtVvq_sheetLabel{color:var(--dsw-alias-label-tertiary);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.PKtVvq_sheetValue{color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;font-size:13px;line-height:18px}.PKtVvq_npub{color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.PKtVvq_menuItem,.PKtVvq_menuItemActive{width:100%}.PKtVvq_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.PKtVvq_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.PKtVvq_menuCopy span{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.PKtVvq_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.PKtVvq_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.PKtVvq_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.PKtVvq_threadTitle{text-align:left}.PKtVvq_headerTail{flex:100%;justify-content:flex-end}}.PKtVvq_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.PKtVvq_verifyConfirmButton{font:inherit;text-align:start;cursor:pointer;border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-interactive-bg-hover,#24282e);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:10px 12px;font-weight:600}.PKtVvq_verifyConfirmNote{color:var(--dsw-alias-label-secondary,#b8bcc4);margin:0;line-height:17px}.PKtVvq_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--dsw-alias-label-secondary,#b8bcc4);line-height:18px}.PKtVvq_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.PKtVvq_addField{flex-direction:column;gap:4px;display:flex}.PKtVvq_addLabel{color:var(--dsw-alias-label-secondary,#b8bcc4)}.PKtVvq_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-bg-layer-1,#17181a);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:8px 10px}.PKtVvq_addSubmit{font:inherit;cursor:pointer;border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-interactive-bg-hover,#24282e);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:9px 12px;font-weight:600}.PKtVvq_addSubmit:disabled{cursor:default;color:var(--dsw-alias-label-tertiary,#8b9099)}.PKtVvq_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--dsw-alias-label-error,#f2555a);line-height:18px}.PKtVvq_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.PKtVvq_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--dsw-alias-label-secondary,#b8bcc4);line-height:18px}";
+		const css = ".j96aFa_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--dsw-alias-label-primary);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.j96aFa_surface[hidden]{display:none}.j96aFa_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.j96aFa_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.j96aFa_brandMark{color:var(--dsw-static-spatial-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.j96aFa_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.j96aFa_actions{align-items:center;gap:2px;display:inline-flex}.j96aFa_iconButton{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:9px;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.j96aFa_iconButton:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}.j96aFa_iconButton:focus-visible{outline:2px solid var(--dsw-alias-label-primary);outline-offset:1px}.j96aFa_iconButton[aria-pressed=true]{background:color-mix(in srgb, currentColor 13%, transparent)}.j96aFa_pinAction[aria-pressed=true]{color:var(--dsw-static-spatial-violet)}.j96aFa_unreadAction[aria-pressed=true]{color:var(--dsw-alias-state-success-primary)}.j96aFa_archiveAction[aria-pressed=true]{color:var(--dsw-static-spatial-gold)}.j96aFa_posture{color:var(--dsw-static-spatial-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.j96aFa_posture:before{content:\"\";background:var(--dsw-static-spatial-gold);border-radius:999px;flex:none;width:6px;height:6px}.j96aFa_posture[data-posture=connected]{color:var(--dsw-alias-state-success-primary)}.j96aFa_posture[data-posture=connected]:before{background:var(--dsw-alias-state-success-primary)}.j96aFa_notice{border:1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);color:var(--dsw-alias-label-primary);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.j96aFa_noticeTitle{font-weight:600}.j96aFa_noticeReason{color:var(--dsw-static-spatial-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.j96aFa_contactRow{align-items:center;min-height:64px}.j96aFa_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.j96aFa_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.j96aFa_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.j96aFa_trustMark{color:var(--dsw-alias-label-tertiary);flex:none;align-items:center;display:inline-flex}.j96aFa_trustMark[data-state=VERIFIED]{color:var(--dsw-alias-state-success-primary)}.j96aFa_trustMark[data-state=TEST]{color:var(--dsw-static-spatial-gold)}.j96aFa_trustMark[data-state=UNBOUND]{color:var(--dsw-static-spatial-blue)}.j96aFa_trustMark[data-state=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f)}.j96aFa_unreadDot{background:var(--dsw-alias-state-success-primary);border-radius:999px;flex:none;width:7px;height:7px}.j96aFa_pinMark{color:var(--dsw-static-spatial-violet);flex:none;align-items:center;display:inline-flex}.j96aFa_time{color:var(--dsw-alias-label-tertiary);flex:none;margin-left:auto;font-size:12px;line-height:20px}.j96aFa_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);font-size:13px;line-height:18px;overflow:hidden}.j96aFa_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.j96aFa_badge[data-state=VERIFIED]{color:var(--dsw-alias-state-success-primary);background:color-mix(in srgb, var(--dsw-alias-state-success-primary) 16%, transparent);border-radius:9px}.j96aFa_badge[data-state=TEST]{color:var(--dsw-static-spatial-gold);background:color-mix(in srgb, var(--dsw-static-spatial-gold) 12%, transparent);border-style:dashed;border-radius:4px}.j96aFa_badge[data-state=UNBOUND]{color:var(--dsw-static-spatial-blue);background:color-mix(in srgb, var(--dsw-static-spatial-blue) 10%, transparent);border-style:dotted;border-radius:9px}.j96aFa_badge[data-state=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--dsw-alias-state-error-primary,#d9534f) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.j96aFa_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.j96aFa_sas{border:1px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 40%, transparent);background:color-mix(in srgb, var(--dsw-static-spatial-violet) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.j96aFa_sasAbsent{border:1px dashed var(--dsw-alias-border-l2);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.j96aFa_sasGlyph{color:var(--dsw-static-spatial-violet);flex:none;margin-top:2px;display:inline-flex}.j96aFa_sasAbsentGlyph{color:var(--dsw-alias-label-tertiary);flex:none;margin-top:2px;display:inline-flex}.j96aFa_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.j96aFa_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--dsw-static-spatial-violet);font-size:10px;line-height:14px}.j96aFa_sasDigits{letter-spacing:.12em;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.j96aFa_sasHint,.j96aFa_sasAbsentText{color:var(--dsw-alias-label-secondary);font-size:11px;line-height:15px}.j96aFa_receiptMark{color:var(--dsw-alias-label-tertiary);align-items:center;margin-top:2px;display:inline-flex}.j96aFa_receiptMark[data-receipt=pending]{color:var(--dsw-alias-label-tertiary)}.j96aFa_receiptMark[data-receipt=delivered]{color:var(--dsw-alias-state-success-primary)}.j96aFa_receiptMark[data-receipt=partial]{color:var(--dsw-static-spatial-gold)}.j96aFa_receiptMark[data-receipt=refused]{color:var(--dsw-alias-state-error-primary,#d9534f)}.j96aFa_threadNotice{color:var(--dsw-alias-label-tertiary);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.j96aFa_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.j96aFa_searchInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);min-width:0;height:28px;color:var(--dsw-alias-label-primary);font:inherit;background:0 0;border-radius:9px;outline:none;flex:1;padding:0 10px;font-size:13px}.j96aFa_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.j96aFa_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--dsw-static-spatial-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--dsw-alias-label-primary);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);background:0 0;border-radius:14px;align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.j96aFa_personRow:hover{transform:translate(3px)}.j96aFa_personRow:focus-visible{border-color:color-mix(in srgb, var(--dsw-static-spatial-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--dsw-static-spatial-blue) 14%, transparent);outline:none}.j96aFa_rowActions{flex:none;align-items:center;gap:2px;display:none}.j96aFa_personRow:hover .j96aFa_rowActions,.j96aFa_personRow:focus-within .j96aFa_rowActions{display:inline-flex}.j96aFa_personRow:hover .j96aFa_time,.j96aFa_personRow:focus-within .j96aFa_time{display:none}.j96aFa_avatar{background:color-mix(in srgb, var(--dsw-static-spatial-blue) 24%, transparent);width:26px;height:26px;color:var(--dsw-alias-label-primary);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.j96aFa_listEmpty{color:var(--dsw-alias-label-tertiary);margin:0;padding:8px;font-size:13px;line-height:19px}.j96aFa_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.j96aFa_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.j96aFa_threadHeader{border:1px solid var(--dsw-alias-border-l2);box-sizing:border-box;background:0 0;border-radius:16px;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.j96aFa_threadHeader{padding-inline:74px}}.j96aFa_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.j96aFa_chip{height:22px;color:var(--dsw-static-spatial-gold);font:inherit;cursor:pointer;white-space:nowrap;background:0 0;border:1px solid;border-radius:11px;flex:none;align-items:center;gap:4px;padding:0 9px;font-size:11px;font-weight:600;line-height:1;display:inline-flex}.j96aFa_chip[data-trust-chip=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f);border-style:dashed}.j96aFa_chip[data-trust-chip=UNBOUND]{color:var(--dsw-static-spatial-blue);border-style:dotted}.j96aFa_chipWord{display:inline-block}.j96aFa_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.j96aFa_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.j96aFa_msgThem{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);border-radius:22px;align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.j96aFa_msgMe{background:var(--dsw-specific-bubble);border-radius:22px;align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.j96aFa_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.j96aFa_composerCard{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2-darkmode-thin);background:var(--dsw-specific-input-major);width:100%;box-shadow:var(--dsw-shadow-lv2);border-radius:22px;flex-direction:column;flex:none;gap:10px;padding:12px 12px 10px;display:flex}.j96aFa_composerCard textarea{min-height:24px;max-height:120px;color:var(--dsw-alias-label-primary);font:inherit;resize:none;background:0 0;border:0;outline:none;padding:0 4px;font-size:16px;line-height:24px}.j96aFa_composerRow{justify-content:flex-end;display:flex}.j96aFa_sendCircle{background:var(--dsw-alias-button-info-fill);width:34px;height:34px;color:var(--dsw-alias-label-primary,#fff);cursor:pointer;border:none;border-radius:999px;flex:none;place-items:center;transition:background-color .1s;display:grid}.j96aFa_sendCircle:hover:not(:disabled){background:var(--dsw-alias-button-info-hover)}.j96aFa_sendCircle:disabled{opacity:.4;cursor:default}.j96aFa_sheetBackdrop{z-index:2;box-sizing:border-box;background:color-mix(in srgb, var(--dsw-alias-label-primary) 34%, transparent);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.j96aFa_sheet{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-specific-input-major);width:min(100%,520px);min-width:0;max-height:100%;box-shadow:var(--dsw-shadow-lv2);color:var(--dsw-alias-label-primary);border-radius:18px;flex-direction:column;padding:12px 14px 14px;display:flex}.j96aFa_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.j96aFa_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.j96aFa_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.j96aFa_sheetBadgeRow{align-items:center;gap:8px;display:flex}.j96aFa_sheetSentence{color:var(--dsw-alias-label-secondary);margin:0;font-size:12px;line-height:17px}.j96aFa_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.j96aFa_sheetLabel{color:var(--dsw-alias-label-tertiary);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.j96aFa_sheetValue{color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;font-size:13px;line-height:18px}.j96aFa_npub{color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.j96aFa_menuItem,.j96aFa_menuItemActive{width:100%}.j96aFa_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.j96aFa_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.j96aFa_menuCopy span{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.j96aFa_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.j96aFa_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.j96aFa_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.j96aFa_threadTitle{text-align:left}.j96aFa_headerTail{flex:100%;justify-content:flex-end}}.j96aFa_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.j96aFa_verifyConfirmButton{font:inherit;text-align:start;cursor:pointer;border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-interactive-bg-hover,#24282e);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:10px 12px;font-weight:600}.j96aFa_verifyConfirmNote{color:var(--dsw-alias-label-secondary,#b8bcc4);margin:0;line-height:17px}.j96aFa_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--dsw-alias-label-secondary,#b8bcc4);line-height:18px}.j96aFa_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.j96aFa_addField{flex-direction:column;gap:4px;display:flex}.j96aFa_addLabel{color:var(--dsw-alias-label-secondary,#b8bcc4)}.j96aFa_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-bg-layer-1,#17181a);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:8px 10px}.j96aFa_addSubmit{font:inherit;cursor:pointer;border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-interactive-bg-hover,#24282e);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:9px 12px;font-weight:600}.j96aFa_addSubmit:disabled{cursor:default;color:var(--dsw-alias-label-tertiary,#8b9099)}.j96aFa_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--dsw-alias-label-error,#f2555a);line-height:18px}.j96aFa_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.j96aFa_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--dsw-alias-label-secondary,#b8bcc4);line-height:18px}";
 		const tagId = "@aukora/face-messages/Messages.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -32,90 +32,90 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Messages_module_css_default = {
-			"actions": "PKtVvq_actions",
-			"addAdded": "PKtVvq_addAdded",
-			"addField": "PKtVvq_addField",
-			"addForm": "PKtVvq_addForm",
-			"addHint": "PKtVvq_addHint",
-			"addInput": "PKtVvq_addInput",
-			"addLabel": "PKtVvq_addLabel",
-			"addReason": "PKtVvq_addReason",
-			"addRefusal": "PKtVvq_addRefusal",
-			"addSubmit": "PKtVvq_addSubmit",
-			"archiveAction": "PKtVvq_archiveAction",
-			"avatar": "PKtVvq_avatar",
-			"badge": "PKtVvq_badge",
-			"badgeWord": "PKtVvq_badgeWord",
-			"brandActions": "PKtVvq_brandActions",
-			"brandMark": "PKtVvq_brandMark",
-			"brandName": "PKtVvq_brandName",
-			"brandRow": "PKtVvq_brandRow",
-			"bubbleText": "PKtVvq_bubbleText",
-			"chip": "PKtVvq_chip",
-			"chipWord": "PKtVvq_chipWord",
-			"composerCard": "PKtVvq_composerCard",
-			"composerRow": "PKtVvq_composerRow",
-			"contactRow": "PKtVvq_contactRow",
-			"headerTail": "PKtVvq_headerTail",
-			"iconButton": "PKtVvq_iconButton",
-			"lane": "PKtVvq_lane",
-			"listEmpty": "PKtVvq_listEmpty",
-			"menuCopy": "PKtVvq_menuCopy",
-			"menuItem": "PKtVvq_menuItem",
-			"menuItemActive": "PKtVvq_menuItemActive",
-			"messages": "PKtVvq_messages",
-			"msgMe": "PKtVvq_msgMe",
-			"msgThem": "PKtVvq_msgThem",
-			"notice": "PKtVvq_notice",
-			"noticeReason": "PKtVvq_noticeReason",
-			"noticeTitle": "PKtVvq_noticeTitle",
-			"npub": "PKtVvq_npub",
-			"personRow": "PKtVvq_personRow",
-			"pinAction": "PKtVvq_pinAction",
-			"pinMark": "PKtVvq_pinMark",
-			"posture": "PKtVvq_posture",
-			"receiptMark": "PKtVvq_receiptMark",
-			"rowActions": "PKtVvq_rowActions",
-			"rowMain": "PKtVvq_rowMain",
-			"rowPreview": "PKtVvq_rowPreview",
-			"rowTitleInMain": "PKtVvq_rowTitleInMain",
-			"rowTop": "PKtVvq_rowTop",
-			"rows": "PKtVvq_rows",
-			"sas": "PKtVvq_sas",
-			"sasAbsent": "PKtVvq_sasAbsent",
-			"sasAbsentGlyph": "PKtVvq_sasAbsentGlyph",
-			"sasAbsentText": "PKtVvq_sasAbsentText",
-			"sasBody": "PKtVvq_sasBody",
-			"sasDigits": "PKtVvq_sasDigits",
-			"sasGlyph": "PKtVvq_sasGlyph",
-			"sasHint": "PKtVvq_sasHint",
-			"sasLabel": "PKtVvq_sasLabel",
-			"searchInput": "PKtVvq_searchInput",
-			"searchRow": "PKtVvq_searchRow",
-			"sendCircle": "PKtVvq_sendCircle",
-			"sheet": "PKtVvq_sheet",
-			"sheetBackdrop": "PKtVvq_sheetBackdrop",
-			"sheetBadgeRow": "PKtVvq_sheetBadgeRow",
-			"sheetBody": "PKtVvq_sheetBody",
-			"sheetHeader": "PKtVvq_sheetHeader",
-			"sheetLabel": "PKtVvq_sheetLabel",
-			"sheetRow": "PKtVvq_sheetRow",
-			"sheetSentence": "PKtVvq_sheetSentence",
-			"sheetTitle": "PKtVvq_sheetTitle",
-			"sheetValue": "PKtVvq_sheetValue",
-			"surface": "PKtVvq_surface",
-			"thread": "PKtVvq_thread",
-			"threadHeader": "PKtVvq_threadHeader",
-			"threadNotice": "PKtVvq_threadNotice",
-			"threadTitle": "PKtVvq_threadTitle",
-			"time": "PKtVvq_time",
-			"trustMark": "PKtVvq_trustMark",
-			"unreadAction": "PKtVvq_unreadAction",
-			"unreadDot": "PKtVvq_unreadDot",
-			"verifyConfirm": "PKtVvq_verifyConfirm",
-			"verifyConfirmButton": "PKtVvq_verifyConfirmButton",
-			"verifyConfirmNote": "PKtVvq_verifyConfirmNote",
-			"visuallyHidden": "PKtVvq_visuallyHidden"
+			"actions": "j96aFa_actions",
+			"addAdded": "j96aFa_addAdded",
+			"addField": "j96aFa_addField",
+			"addForm": "j96aFa_addForm",
+			"addHint": "j96aFa_addHint",
+			"addInput": "j96aFa_addInput",
+			"addLabel": "j96aFa_addLabel",
+			"addReason": "j96aFa_addReason",
+			"addRefusal": "j96aFa_addRefusal",
+			"addSubmit": "j96aFa_addSubmit",
+			"archiveAction": "j96aFa_archiveAction",
+			"avatar": "j96aFa_avatar",
+			"badge": "j96aFa_badge",
+			"badgeWord": "j96aFa_badgeWord",
+			"brandActions": "j96aFa_brandActions",
+			"brandMark": "j96aFa_brandMark",
+			"brandName": "j96aFa_brandName",
+			"brandRow": "j96aFa_brandRow",
+			"bubbleText": "j96aFa_bubbleText",
+			"chip": "j96aFa_chip",
+			"chipWord": "j96aFa_chipWord",
+			"composerCard": "j96aFa_composerCard",
+			"composerRow": "j96aFa_composerRow",
+			"contactRow": "j96aFa_contactRow",
+			"headerTail": "j96aFa_headerTail",
+			"iconButton": "j96aFa_iconButton",
+			"lane": "j96aFa_lane",
+			"listEmpty": "j96aFa_listEmpty",
+			"menuCopy": "j96aFa_menuCopy",
+			"menuItem": "j96aFa_menuItem",
+			"menuItemActive": "j96aFa_menuItemActive",
+			"messages": "j96aFa_messages",
+			"msgMe": "j96aFa_msgMe",
+			"msgThem": "j96aFa_msgThem",
+			"notice": "j96aFa_notice",
+			"noticeReason": "j96aFa_noticeReason",
+			"noticeTitle": "j96aFa_noticeTitle",
+			"npub": "j96aFa_npub",
+			"personRow": "j96aFa_personRow",
+			"pinAction": "j96aFa_pinAction",
+			"pinMark": "j96aFa_pinMark",
+			"posture": "j96aFa_posture",
+			"receiptMark": "j96aFa_receiptMark",
+			"rowActions": "j96aFa_rowActions",
+			"rowMain": "j96aFa_rowMain",
+			"rowPreview": "j96aFa_rowPreview",
+			"rowTitleInMain": "j96aFa_rowTitleInMain",
+			"rowTop": "j96aFa_rowTop",
+			"rows": "j96aFa_rows",
+			"sas": "j96aFa_sas",
+			"sasAbsent": "j96aFa_sasAbsent",
+			"sasAbsentGlyph": "j96aFa_sasAbsentGlyph",
+			"sasAbsentText": "j96aFa_sasAbsentText",
+			"sasBody": "j96aFa_sasBody",
+			"sasDigits": "j96aFa_sasDigits",
+			"sasGlyph": "j96aFa_sasGlyph",
+			"sasHint": "j96aFa_sasHint",
+			"sasLabel": "j96aFa_sasLabel",
+			"searchInput": "j96aFa_searchInput",
+			"searchRow": "j96aFa_searchRow",
+			"sendCircle": "j96aFa_sendCircle",
+			"sheet": "j96aFa_sheet",
+			"sheetBackdrop": "j96aFa_sheetBackdrop",
+			"sheetBadgeRow": "j96aFa_sheetBadgeRow",
+			"sheetBody": "j96aFa_sheetBody",
+			"sheetHeader": "j96aFa_sheetHeader",
+			"sheetLabel": "j96aFa_sheetLabel",
+			"sheetRow": "j96aFa_sheetRow",
+			"sheetSentence": "j96aFa_sheetSentence",
+			"sheetTitle": "j96aFa_sheetTitle",
+			"sheetValue": "j96aFa_sheetValue",
+			"surface": "j96aFa_surface",
+			"thread": "j96aFa_thread",
+			"threadHeader": "j96aFa_threadHeader",
+			"threadNotice": "j96aFa_threadNotice",
+			"threadTitle": "j96aFa_threadTitle",
+			"time": "j96aFa_time",
+			"trustMark": "j96aFa_trustMark",
+			"unreadAction": "j96aFa_unreadAction",
+			"unreadDot": "j96aFa_unreadDot",
+			"verifyConfirm": "j96aFa_verifyConfirm",
+			"verifyConfirmButton": "j96aFa_verifyConfirmButton",
+			"verifyConfirmNote": "j96aFa_verifyConfirmNote",
+			"visuallyHidden": "j96aFa_visuallyHidden"
 		};
 		//#endregion
 		//#region src/client/MessagesMenu.tsx
@@ -327,7 +327,10 @@ window.__ModuleLoader__.load({
 			if (name.ok !== true) return name;
 			const npub = checkNpub(draft?.npub);
 			if (npub.ok !== true) return npub;
-			const controller = checkController(draft?.controller);
+			const controller = draft?.controller === void 0 || typeof draft.controller === "string" && draft.controller.trim() === "" ? {
+				ok: true,
+				controller: ""
+			} : checkController(draft.controller);
 			if (controller.ok !== true) return controller;
 			return {
 				ok: true,
@@ -624,7 +627,8 @@ window.__ModuleLoader__.load({
 			])) return void 0;
 			if (!isText(value.npub) || !isText(value.name)) return void 0;
 			if (!isMessagesContactState(value.state)) return void 0;
-			if (typeof value.peerControllerKey !== "string" || !/^[0-9a-f]{64}$/iu.test(value.peerControllerKey)) return void 0;
+			if (typeof value.peerControllerKey !== "string") return void 0;
+			if (!/^[0-9a-f]{64}$/iu.test(value.peerControllerKey) && !(value.peerControllerKey === "" && value.state === "UNBOUND" && value.binding === "absent")) return void 0;
 			if (typeof value.reason !== "string") return void 0;
 			if (value.subject !== null && !isText(value.subject)) return void 0;
 			const binding = value.binding;
@@ -1293,14 +1297,18 @@ window.__ModuleLoader__.load({
 					detail: `${MESSAGES_SEND_ENDPOINT} named neither a send nor a refusal`
 				}
 			};
-			if (!answer.ok || answer.accepted.length === 0) return {
+			if (!answer.ok || !answer.copies.some((copy) => copy.copy === "recipient" && copy.accepted)) return {
 				kind: "not-accepted",
+				id: answer.id,
+				at: answer.at,
 				accepted: answer.accepted,
 				verdict: answer.verdict ?? "",
 				copies: answer.copies
 			};
 			return {
 				kind: "accepted",
+				id: answer.id,
+				at: answer.at,
 				accepted: answer.accepted,
 				verdict: answer.verdict ?? "",
 				copies: answer.copies
@@ -1353,6 +1361,32 @@ window.__ModuleLoader__.load({
 			} : {
 				kind: "failed",
 				failure: refusalOf(status, value)
+			};
+		}
+		/** Read only the shareable public identity; the host never returns the secret key. */
+		async function readIdentity(fetchImpl = sameOriginFetch) {
+			const read = await readJson("/aukora-messages/identity", { method: "GET" }, fetchImpl);
+			if (read.kind === "failed") return read;
+			const { status, value } = read.value;
+			if (status !== 200) return {
+				kind: "failed",
+				failure: refusalOf(status, value)
+			};
+			const body = value;
+			const npub = checkNpub(body?.npub);
+			if (body?.status !== "ok" || !npub.ok || body.subject !== null && typeof body.subject !== "string") return {
+				kind: "failed",
+				failure: {
+					kind: "malformed",
+					detail: "The host did not return a public identity"
+				}
+			};
+			return {
+				kind: "ready",
+				value: {
+					npub: npub.npub,
+					subject: body.subject
+				}
 			};
 		}
 		//#endregion
@@ -1929,28 +1963,6 @@ window.__ModuleLoader__.load({
 			"contacts-failed": { source: "source.contacts.failed" }
 		};
 		/**
-		* The posture an engine state paints with. `contacts-only` is NOT green: the messaging engine is
-		* absent in that state too — the local route answers and nothing is received — so painting it as a
-		* connected route would be the one thing this line must never do, which is say something untrue.
-		*/
-		const POSTURE_TONE = {
-			"not-connected": "disconnected",
-			"contacts-only": "disconnected",
-			"connected": "connected"
-		};
-		const BANNER_STATUS = {
-			"not-connected": "runtime.status",
-			"contacts-only": "runtime.status.contacts-only"
-		};
-		/**
-		* The banner a status earns, or null when nothing is wrong and there is nothing to say.
-		* @param status - the posture on screen.
-		* @returns the status the banner is shown for, or null.
-		*/
-		function bannerFor(status) {
-			return status === "connected" ? null : status;
-		}
-		/**
 		* The one thing known about each contact, as copy. The four states are the wire's own
 		* vocabulary (`messages-route.ts`), and every state carries a badge word, a sentence for
 		* the badge's `title` and its visually-hidden label, and the honest alternative to a SAS.
@@ -2297,10 +2309,9 @@ window.__ModuleLoader__.load({
 				controller: ""
 			});
 			const [refusal, setRefusal] = (0, react.useState)(null);
-			const [added, setAdded] = (0, react.useState)(null);
 			const [sending, setSending] = (0, react.useState)(false);
 			const noRetry = refusal?.reason === "messages:add-already-present";
-			const ready = draft.name.trim() !== "" && draft.npub.trim() !== "" && draft.controller.trim() !== "";
+			const ready = draft.name.trim() !== "" && draft.npub.trim() !== "";
 			const submit = () => {
 				const checked = checkAddContact(draft);
 				if (checked.ok !== true) {
@@ -2314,9 +2325,9 @@ window.__ModuleLoader__.load({
 				postContact(checked.body).then((read) => {
 					setSending(false);
 					if (read.kind === "added") {
-						setAdded(read.contact);
 						setRefusal(null);
 						onAdded();
+						onClose();
 						return;
 					}
 					setRefusal(read.kind === "refused" ? {
@@ -2333,97 +2344,78 @@ window.__ModuleLoader__.load({
 				closeLabel: t("sheet.close"),
 				hook: "add",
 				onClose,
-				children: [
-					/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						className: Messages_module_css_default.addHint,
-						children: t("add.hint")
-					}),
-					/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-						className: Messages_module_css_default.addForm,
-						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
-								className: Messages_module_css_default.addField,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: Messages_module_css_default.addLabel,
-									children: t("add.name")
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: Messages_module_css_default.addInput,
-									value: draft.name,
-									"data-add-field": "name",
-									onChange: (event) => {
-										setDraft({
-											...draft,
-											name: event.target.value
-										});
-									}
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
-								className: Messages_module_css_default.addField,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: Messages_module_css_default.addLabel,
-									children: t("add.npub")
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: Messages_module_css_default.addInput,
-									value: draft.npub,
-									"data-add-field": "npub",
-									spellCheck: false,
-									autoComplete: "off",
-									onChange: (event) => {
-										setDraft({
-											...draft,
-											npub: event.target.value
-										});
-									}
-								})]
-							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
-								className: Messages_module_css_default.addField,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: Messages_module_css_default.addLabel,
-									children: t("add.controller")
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-									className: Messages_module_css_default.addInput,
-									value: draft.controller,
-									"data-add-field": "controller",
-									spellCheck: false,
-									autoComplete: "off",
-									onChange: (event) => {
-										setDraft({
-											...draft,
-											controller: event.target.value
-										});
-									}
-								})]
-							}),
-							noRetry !== true && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-								type: "button",
-								className: Messages_module_css_default.addSubmit,
-								"data-add-submit": "ready",
-								disabled: sending || ready !== true,
-								onClick: submit,
-								children: t("add.submit")
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: Messages_module_css_default.addForm,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+							className: Messages_module_css_default.addField,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: Messages_module_css_default.addInput,
+								value: draft.name,
+								"aria-label": t("add.name"),
+								placeholder: t("add.name"),
+								"data-add-field": "name",
+								onChange: (event) => {
+									setDraft({
+										...draft,
+										name: event.target.value
+									});
+								}
 							})
-						]
-					}),
-					refusal !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("p", {
-						className: Messages_module_css_default.addRefusal,
-						"data-add-refusal": refusal.reason,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: Messages_module_css_default.addReason,
-							children: refusal.reason
-						}), ` — ${refusal.detail}`]
-					}),
-					added !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-						className: Messages_module_css_default.addAdded,
-						"data-add-added": added.state,
-						children: t("add.added", {
-							name: added.name,
-							npub: added.npub,
-							state: added.state
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+							className: Messages_module_css_default.addField,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: Messages_module_css_default.addInput,
+								value: draft.npub,
+								"aria-label": t("add.npub"),
+								placeholder: t("add.npub"),
+								"data-add-field": "npub",
+								spellCheck: false,
+								autoComplete: "off",
+								onChange: (event) => {
+									setDraft({
+										...draft,
+										npub: event.target.value
+									});
+								}
+							})
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+							className: Messages_module_css_default.addField,
+							children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								className: Messages_module_css_default.addInput,
+								value: draft.controller,
+								"aria-label": t("add.controller"),
+								placeholder: t("add.controller"),
+								"data-add-field": "controller",
+								spellCheck: false,
+								autoComplete: "off",
+								onChange: (event) => {
+									setDraft({
+										...draft,
+										controller: event.target.value
+									});
+								}
+							})
+						}),
+						noRetry !== true && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							type: "button",
+							className: Messages_module_css_default.addSubmit,
+							"data-add-submit": "ready",
+							disabled: sending || ready !== true,
+							onClick: submit,
+							children: t("add.submit")
 						})
-					})
-				]
+					]
+				}), refusal !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					className: Messages_module_css_default.addRefusal,
+					"data-add-refusal": refusal.reason,
+					role: "alert",
+					"aria-label": refusal.detail,
+					title: refusal.detail,
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ForeignStateIcon, {})
+				})]
 			});
 		}
 		/** The glyph for each mark state, so the four are four shapes and never four colours alone. */
@@ -2695,6 +2687,7 @@ window.__ModuleLoader__.load({
 		}
 		/** How often the listing is re-read while the lane is open. Slow on purpose. */
 		const CONTACTS_POLL_MS = 6e4;
+		const THREAD_POLL_MS = 3e3;
 		/**
 		* Fold a contacts listing into the local rows, keeping every flag the viewer set.
 		* @param current - the rows held now.
@@ -2747,7 +2740,14 @@ window.__ModuleLoader__.load({
 			const [searchOpen, setSearchOpen] = (0, react.useState)(false);
 			const [query, setQuery] = (0, react.useState)("");
 			const [openId, setOpenId] = (0, react.useState)(null);
-			const [draft, setDraft] = (0, react.useState)("");
+			const [drafts, setDrafts] = (0, react.useState)({});
+			const draft = openId === null ? "" : drafts[openId] ?? "";
+			const setDraft = (text) => {
+				if (openId !== null) setDrafts((current) => ({
+					...current,
+					[openId]: text
+				}));
+			};
 			const [thread, setThread] = (0, react.useState)({ kind: "idle" });
 			const [receipts, setReceipts] = (0, react.useState)({});
 			/**
@@ -2763,7 +2763,13 @@ window.__ModuleLoader__.load({
 			const returnToRef = (0, react.useRef)(null);
 			const contactsGeneration = (0, react.useRef)(0);
 			const threadGeneration = (0, react.useRef)(0);
-			const retryRef = (0, react.useRef)(null);
+			const threadInFlight = (0, react.useRef)(/* @__PURE__ */ new Map());
+			const sending = (0, react.useRef)(/* @__PURE__ */ new Set());
+			const currentOpen = (0, react.useRef)(null);
+			currentOpen.current = active ? openId : null;
+			const [copyState, setCopyState] = (0, react.useState)("pending");
+			const [publicNpub, setPublicNpub] = (0, react.useState)(null);
+			const [threadFailure, setThreadFailure] = (0, react.useState)(null);
 			const openConversation = entries.find((conversation) => conversation.id === openId);
 			const openContact = openConversation?.contact;
 			const showingContacts = contactsView.kind === "ready";
@@ -2777,10 +2783,6 @@ window.__ModuleLoader__.load({
 			* and a row that displayed a slice of it was his "truncated contact name while an npub is shown".
 			*/
 			const handleOf = (entry) => entry.contact === void 0 ? t("new.handle") : entry.contact.npub;
-			const messagesOf = (entry) => entry.sent.map((text) => ({
-				from: "me",
-				text
-			}));
 			/**
 			* The row's one preview line: the newest thing this screen actually holds for that conversation.
 			*
@@ -2790,8 +2792,7 @@ window.__ModuleLoader__.load({
 			* screen invented. Text sent from this screen is held, so it is what a row shows once there is any.
 			*/
 			const previewOf = (entry) => {
-				const said = entry.sent[entry.sent.length - 1];
-				return said === void 0 ? t("row.nothing-sent") : said;
+				return entry.sent[entry.sent.length - 1]?.text ?? "";
 			};
 			/** Open one of the two layers. Opening a conversation closes whatever was over it. */
 			const openSheet = (kind, entry) => {
@@ -2818,24 +2819,89 @@ window.__ModuleLoader__.load({
 				});
 			}, []);
 			const loadThread = (0, react.useCallback)((npub) => {
-				threadGeneration.current += 1;
+				const pending = threadInFlight.current.get(npub);
+				if (pending !== void 0) return pending;
 				const mine = threadGeneration.current;
-				setThread({ kind: "loading" });
-				readThread(npub, null).then((read) => {
-					if (threadGeneration.current !== mine) return;
+				const work = readThread(npub, null).then((read) => {
+					if (threadGeneration.current !== mine || currentOpen.current !== npub) return;
 					if (read.kind === "failed") {
-						setThread({
+						setThreadFailure(read.failure);
+						setThread((current) => current.kind === "ready" ? current : {
 							kind: "failed",
 							failure: read.failure
 						});
 						return;
 					}
-					setThread({
-						kind: "ready",
-						thread: read.thread
+					setThreadFailure(null);
+					setThread((current) => {
+						const messages = /* @__PURE__ */ new Map();
+						if (current.kind === "ready" && current.thread.npub === npub) for (const message of current.thread.messages) messages.set(message.id, message);
+						for (const message of read.thread.messages) messages.set(message.id, message);
+						return {
+							kind: "ready",
+							thread: {
+								...read.thread,
+								messages: [...messages.values()].sort((a, b) => a.at - b.at || a.id.localeCompare(b.id))
+							}
+						};
 					});
+				}).finally(() => {
+					threadInFlight.current.delete(npub);
 				});
+				threadInFlight.current.set(npub, work);
+				return work;
 			}, []);
+			(0, react.useEffect)(() => {
+				if (!active || openId === null) return void 0;
+				threadGeneration.current += 1;
+				setThread({ kind: "loading" });
+				setThreadFailure(null);
+				let cancelled = false;
+				let timer;
+				const poll = async () => {
+					await loadThread(openId);
+					if (!cancelled) timer = window.setTimeout(() => {
+						poll();
+					}, THREAD_POLL_MS);
+				};
+				poll();
+				return () => {
+					cancelled = true;
+					if (timer !== void 0) window.clearTimeout(timer);
+					threadGeneration.current += 1;
+				};
+			}, [
+				active,
+				openId,
+				loadThread
+			]);
+			const copyIdentity = () => {
+				if (publicNpub === null) return;
+				setCopyState("pending");
+				try {
+					navigator.clipboard.writeText(publicNpub).then(() => {
+						setCopyState("copied");
+					}, () => {
+						setCopyState("failed");
+					});
+				} catch {
+					setCopyState("failed");
+				}
+			};
+			(0, react.useEffect)(() => {
+				if (!active) return void 0;
+				let cancelled = false;
+				readIdentity().then((read) => {
+					if (cancelled) return;
+					if (read.kind === "ready") {
+						setPublicNpub(read.value.npub);
+						setCopyState("idle");
+					} else setCopyState("failed");
+				});
+				return () => {
+					cancelled = true;
+				};
+			}, [active]);
 			(0, react.useEffect)(() => {
 				if (!active) return void 0;
 				loadContacts();
@@ -2847,9 +2913,6 @@ window.__ModuleLoader__.load({
 					contactsGeneration.current += 1;
 				};
 			}, [active, loadContacts]);
-			(0, react.useEffect)(() => () => {
-				if (retryRef.current !== null) window.clearTimeout(retryRef.current);
-			}, []);
 			(0, react.useEffect)(() => {
 				if (!active) return;
 				const onKeyDown = (event) => {
@@ -2886,7 +2949,7 @@ window.__ModuleLoader__.load({
 				const column = messagesRef.current;
 				if (column === null) return;
 				column.scrollTop = column.scrollHeight;
-			}, [openId, openConversation === void 0 ? 0 : messagesOf(openConversation).length]);
+			}, [openId, (openConversation?.sent.length ?? 0) + (thread.kind === "ready" ? thread.thread.messages.length : 0)]);
 			const mutate = (id, change) => {
 				setEntries((current) => current.map((conversation) => conversation.id === id ? change(conversation) : conversation));
 			};
@@ -2904,14 +2967,12 @@ window.__ModuleLoader__.load({
 				returnToRef.current = entry.id;
 				setSheet(null);
 				setOpenId(entry.id);
-				setDraft("");
 				setReceipts((current) => {
 					const next = { ...current };
 					delete next[entry.id];
 					return next;
 				});
-				if (entry.contact !== void 0) loadThread(entry.contact.npub);
-				else setThread({ kind: "idle" });
+				setThread({ kind: "loading" });
 			};
 			/**
 			* Send the draft. A contact row goes to the host and the receipt follows the response body; a
@@ -2921,49 +2982,38 @@ window.__ModuleLoader__.load({
 			*/
 			const sendTo = (entry) => {
 				const text = draft.trim();
-				if (text === "") return;
 				const contact = entry.contact;
-				if (contact === void 0) {
-					mutate(entry.id, (current) => ({
-						...current,
-						sent: [...current.sent, text]
-					}));
-					setDraft("");
-					return;
-				}
-				setDraft("");
+				if (text === "" || contact === void 0 || sending.current.has(entry.id)) return;
+				const submittedDraft = draft;
+				sending.current.add(entry.id);
 				setReceipts((current) => ({
 					...current,
 					[entry.id]: { kind: "pending" }
 				}));
 				sendMessage(contact.npub, text).then((read) => {
-					setReceipts((current) => {
-						if (read.kind === "accepted") return {
-							...current,
-							[entry.id]: read
-						};
-						if (read.kind === "not-accepted") return {
-							...current,
-							[entry.id]: read
-						};
-						return {
-							...current,
-							[entry.id]: {
-								kind: "failed",
-								failure: read.failure
-							}
-						};
-					});
+					setReceipts((current) => ({
+						...current,
+						[entry.id]: read
+					}));
 					if (read.kind === "accepted") {
+						const message = {
+							id: read.id,
+							at: read.at,
+							from: "me",
+							text
+						};
 						mutate(entry.id, (current) => ({
 							...current,
-							sent: [...current.sent, text]
+							sent: [...current.sent.filter((item) => item.id !== read.id), message]
 						}));
-						if (retryRef.current !== null) window.clearTimeout(retryRef.current);
-						retryRef.current = window.setTimeout(() => {
-							loadThread(contact.npub);
-						}, 1500);
+						setDrafts((current) => current[entry.id] === submittedDraft ? {
+							...current,
+							[entry.id]: ""
+						} : current);
+						if (currentOpen.current === contact.npub) loadThread(contact.npub);
 					}
+				}).finally(() => {
+					sending.current.delete(entry.id);
 				});
 			};
 			const toggle = (entry, key) => {
@@ -2973,22 +3023,15 @@ window.__ModuleLoader__.load({
 				}));
 			};
 			const visible = entries.filter((entry) => entry.archived === filters.archived && (!filters.pinned || entry.pinned) && (!filters.unread || entry.unread) && (query === "" || nameOf(entry).toLowerCase().includes(query.toLowerCase())));
-			const openMessages = openConversation === void 0 ? [] : messagesOf(openConversation);
-			const liveThread = thread.kind === "ready" ? thread.thread : void 0;
-			const openThreadMessages = (liveThread?.messages ?? []).map((message) => ({
-				from: message.from,
-				text: message.text
-			}));
+			const liveThread = thread.kind === "ready" && thread.thread.npub === openId ? thread.thread : void 0;
 			const openThreadSas = liveThread?.sas ?? openContact?.sas ?? null;
-			const readBack = new Set(openThreadMessages.filter((message) => message.from === "me").map((message) => message.text));
-			const openLiveMessages = openContact === void 0 ? openMessages : [...openThreadMessages, ...(openConversation?.sent ?? []).filter((text) => !readBack.has(text)).map((text) => ({
-				from: "me",
-				text
-			}))];
+			const mergedMessages = /* @__PURE__ */ new Map();
+			for (const message of openConversation?.sent ?? []) mergedMessages.set(message.id, message);
+			for (const message of liveThread?.messages ?? []) mergedMessages.set(message.id, message);
+			const openLiveMessages = [...mergedMessages.values()].sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
 			const openReceipt = openId === null ? void 0 : receipts[openId];
 			const openCopies = openReceipt !== void 0 && (openReceipt.kind === "accepted" || openReceipt.kind === "not-accepted") ? openReceipt.copies : void 0;
 			const openOutcome = openCopies === void 0 || openCopies.length === 0 ? void 0 : copyOutcomeOf(openCopies);
-			const banner = bannerFor(posture);
 			const openState = openContact?.state;
 			const sheetEntry = sheet?.entry ?? null;
 			const sheetState = sheetEntry?.contact?.state;
@@ -3006,12 +3049,16 @@ window.__ModuleLoader__.load({
 					entry: null
 				});
 			};
-			let lastMine = -1;
-			openLiveMessages.forEach((message, index) => {
-				if (message.from === "me") lastMine = index;
-			});
 			const detailsOf = (entry) => {
 				const rows = [];
+				if (contactsView.kind === "failed") rows.push({
+					label: t("contacts.error.title"),
+					value: failureText(contactsView.failure)
+				});
+				if (entry?.id === openId && threadFailure !== null) rows.push({
+					label: t("details.host"),
+					value: failureText(threadFailure)
+				});
 				const contact = entry?.contact;
 				if (entry !== null) {
 					rows.push({
@@ -3090,6 +3137,15 @@ window.__ModuleLoader__.load({
 											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 												type: "button",
 												className: Messages_module_css_default.iconButton,
+												"data-copy-identity": copyState,
+												"aria-label": t(copyState === "copied" ? "identity.copied" : copyState === "failed" ? "identity.failed" : "identity.copy"),
+												disabled: copyState === "pending" || publicNpub === null,
+												onClick: copyIdentity,
+												children: copyState === "copied" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(VerifiedStateIcon, {}) : copyState === "failed" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ForeignStateIcon, {}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SasIcon, {})
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												type: "button",
+												className: Messages_module_css_default.iconButton,
 												"aria-label": t("actions.new"),
 												onClick: openAddContact,
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {})
@@ -3145,38 +3201,16 @@ window.__ModuleLoader__.load({
 									})
 								]
 							}),
-							banner !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-								className: Messages_module_css_default.posture,
-								"data-messaging-status": banner,
-								"data-posture": POSTURE_TONE[banner],
-								children: t(BANNER_STATUS[banner])
-							}),
-							contactsView.kind === "failed" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: Messages_module_css_default.notice,
+							contactsView.kind === "failed" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								type: "button",
+								className: Messages_module_css_default.iconButton,
 								"data-messages-error": true,
-								role: "alert",
-								children: [contactsView.failure.kind === "refused" && contactsView.failure.reason === "messages:aumlok-not-linked" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: Messages_module_css_default.noticeTitle,
-									children: t("contacts.unlinked.title")
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									"data-messages-error-hint": true,
-									children: t("contacts.unlinked.hint")
-								})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									className: Messages_module_css_default.noticeTitle,
-									children: t("contacts.error.title")
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-									"data-messages-error-hint": true,
-									children: t("contacts.error.hint")
-								})] }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("code", {
-									className: Messages_module_css_default.noticeReason,
-									"data-messages-error-reason": true,
-									children: failureText(contactsView.failure)
-								})]
-							}),
-							contactsView.kind === "ready" && contactsView.contacts.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: Messages_module_css_default.listEmpty,
-								"data-messages-empty": true,
-								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: t("contacts.none") }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", { children: t("contacts.none.hint") })]
+								"aria-label": failureText(contactsView.failure),
+								title: failureText(contactsView.failure),
+								onClick: () => {
+									openSheet("details", null);
+								},
+								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ForeignStateIcon, {})
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 								className: Messages_module_css_default.searchRow,
@@ -3214,9 +3248,10 @@ window.__ModuleLoader__.load({
 									onDetails: (subject) => {
 										openSheet("details", subject);
 									}
-								}, entry.id)), visible.length === 0 && entries.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								}, entry.id)), visible.length === 0 && entries.length > 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 									className: Messages_module_css_default.listEmpty,
-									children: t("list.none")
+									"aria-label": t("list.none"),
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SearchIcon, {})
 								})]
 							})
 						]
@@ -3243,7 +3278,7 @@ window.__ModuleLoader__.load({
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: Messages_module_css_default.headerTail,
-										children: [openState !== void 0 && openState !== "VERIFIED" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+										children: [openState !== void 0 && openState !== "VERIFIED" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 											type: "button",
 											className: Messages_module_css_default.chip,
 											"data-trust-chip": openState,
@@ -3251,14 +3286,10 @@ window.__ModuleLoader__.load({
 											onClick: () => {
 												openSheet("verify", openConversation);
 											},
-											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(ShieldIcon, {
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ShieldIcon, {
 												size: 12,
 												verified: false
-											}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-												className: Messages_module_css_default.chipWord,
-												"data-fit": "line",
-												children: t("trust.unverified")
-											})]
+											})
 										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 											className: Messages_module_css_default.actions,
 											children: [
@@ -3301,38 +3332,36 @@ window.__ModuleLoader__.load({
 								className: Messages_module_css_default.messages,
 								ref: messagesRef,
 								children: [
-									openContact !== void 0 && thread.kind === "loading" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									openContact !== void 0 && thread.kind === "loading" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 										className: Messages_module_css_default.threadNotice,
 										"data-thread-status": "loading",
-										children: t("thread.loading")
+										"aria-label": t("thread.loading"),
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SendPendingIcon, {})
 									}),
-									openContact !== void 0 && thread.kind === "failed" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-										className: Messages_module_css_default.threadNotice,
+									threadFailure !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										type: "button",
+										className: Messages_module_css_default.iconButton,
 										"data-thread-status": "failed",
-										children: failureText(thread.failure)
+										"aria-label": failureText(threadFailure),
+										title: failureText(threadFailure),
+										onClick: () => {
+											openSheet("details", openConversation);
+										},
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ForeignStateIcon, {})
 									}),
-									openContact !== void 0 && liveThread !== void 0 && liveThread.answered.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-										className: Messages_module_css_default.threadNotice,
-										"data-thread-status": "unanswered",
-										children: t("thread.unanswered")
-									}),
-									openLiveMessages.map((message, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									openLiveMessages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										"data-message-id": message.id,
 										className: message.from === "me" ? Messages_module_css_default.msgMe : Messages_module_css_default.msgThem,
 										"data-message": message.from,
 										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
 											className: Messages_module_css_default.bubbleText,
 											children: message.text
-										}), index === lastMine && openReceipt !== void 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ReceiptMark, {
+										}), openReceipt?.kind === "accepted" && message.id === openReceipt.id && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ReceiptMark, {
 											receipt: openReceipt,
 											outcome: openOutcome,
 											t
 										})]
-									}, index)),
-									openContact !== void 0 && thread.kind === "ready" && openLiveMessages.length === 0 && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-										className: Messages_module_css_default.threadNotice,
-										"data-thread-status": "none",
-										children: t("thread.none")
-									})
+									}, message.id))
 								]
 							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
@@ -3358,11 +3387,11 @@ window.__ModuleLoader__.load({
 										type: "button",
 										className: Messages_module_css_default.sendCircle,
 										"aria-label": t("composer.send"),
-										disabled: draft.trim() === "",
+										disabled: draft.trim() === "" || openReceipt?.kind === "pending",
 										onClick: () => {
 											sendTo(openConversation);
 										},
-										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SendIcon, {})
+										children: openReceipt?.kind === "pending" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SendPendingIcon, {}) : openReceipt?.kind === "failed" || openReceipt?.kind === "not-accepted" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SendRefusedIcon, {}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SendIcon, {})
 									})
 								})]
 							})
@@ -3395,6 +3424,9 @@ window.__ModuleLoader__.load({
 		/** Messages launcher and person-to-person lane dictionaries. */
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
+			"identity.copy": "复制我的 npub",
+			"identity.copied": "已复制",
+			"identity.failed": "无法复制 npub",
 			"row.nothing-sent": "这里还没发出过消息。",
 			"send.outcome.unread": "这条已经发出去了，但每一份去了哪里还没读回来。",
 			"menu.title": "消息",
@@ -3494,7 +3526,7 @@ window.__ModuleLoader__.load({
 			"add.title": "添加联系人",
 			"add.name": "名字",
 			"add.npub": "npub",
-			"add.controller": "对方的控制密钥（64 位小写十六进制）",
+			"add.controller": "控制密钥（可选）",
 			"add.submit": "添加",
 			"add.hint": "这三个字段由你核对。添加后为「已绑定」——密钥对得上，但还没有人当面确认过。",
 			"add.added": "已添加 {name}（{npub}），状态 {state}。",
@@ -3506,6 +3538,9 @@ window.__ModuleLoader__.load({
 		};
 		/** English dictionary, checked complete against the Chinese key set. */
 		const en = {
+			"identity.copy": "Copy my npub",
+			"identity.copied": "Copied",
+			"identity.failed": "Could not copy npub",
 			"row.nothing-sent": "Nothing has been sent from here yet.",
 			"send.outcome.unread": "This was accepted; what happened to each copy has not been read yet.",
 			"menu.title": "Messages",
@@ -3605,7 +3640,7 @@ window.__ModuleLoader__.load({
 			"add.title": "Add a contact",
 			"add.name": "Name",
 			"add.npub": "npub",
-			"add.controller": "Their controller key (64 lower-case hex)",
+			"add.controller": "Controller key (optional)",
 			"add.submit": "Add",
 			"add.hint": "You check these three yourself. The contact is added as Bound — the key checks out, and nobody has confirmed it in person.",
 			"add.added": "Added {name} ({npub}), shown as {state}.",
