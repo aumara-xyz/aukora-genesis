@@ -26,6 +26,7 @@
     "src/client/health-model.ts",
     "src/client/index.ts",
     "src/client/locales.ts",
+    "src/client/primitives.tsx",
     "src/client/service.ts",
     "src/client/stores.ts",
     "src/client/theme-presenter.ts",

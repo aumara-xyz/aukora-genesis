@@ -26,6 +26,9 @@
   },
   "dsh": {
     "client": {
+      "external": [
+        "@aukora/face-layout/client"
+      ],
       "inject": [
         "@deepseek-ai/dsh-client-connection",
         "@deepseek-ai/dsh-client-locale",

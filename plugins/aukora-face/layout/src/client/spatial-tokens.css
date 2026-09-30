@@ -26,6 +26,21 @@ body {
   --dsw-static-spatial-mint: rgb(129, 212, 180);
   --dsw-static-spatial-violet: rgb(196, 170, 255);
 
+  /* Shared face primitives. These are additive: approval/theme aliases stay intact. */
+  --aukora-blue: var(--dsw-static-spatial-blue);
+  --aukora-green: var(--dsw-static-spatial-mint);
+  --aukora-purple: var(--dsw-static-spatial-violet);
+  --aukora-gold: var(--dsw-static-spatial-gold);
+  --aukora-red-warning: rgb(242, 85, 90);
+  --aukora-background: rgb(11, 13, 24);
+  --aukora-surface: var(--aukora-background);
+  --aukora-border: rgba(255, 255, 255, 0.1);
+  --aukora-text: rgb(232, 234, 237);
+  --aukora-text-secondary: rgb(184, 188, 196);
+  --aukora-text-muted: rgb(139, 144, 153);
+  --aukora-backdrop: rgba(8, 9, 16, 0.56);
+  --aukora-radius: 14px;
+
   --dsw-static-spatial-night-800: rgb(17, 21, 32);
   --dsw-static-spatial-night-850: rgb(11, 13, 24);
   --dsw-static-spatial-night-900: rgb(9, 10, 18);

@@ -15,12 +15,9 @@
   position: relative;
   /* Lane width answers the hot-corner clearance query below. */
   container-type: inline-size;
-  /* No paint of its own. The lane already carries the surface wash, and the
-     centered surface stack is narrower than the lane at the single-lane
-     measure: an opaque fill here would cover only the middle of the lane and
-     draw its own edges down both sides. */
-  background: transparent;
-  color: var(--dsw-alias-label-primary);
+  /* The same surface as the surrounding lane, including at the single-lane measure. */
+  background: var(--aukora-background);
+  color: var(--aukora-text);
 }
 
 .surface[hidden] {
@@ -66,7 +63,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--dsw-static-spatial-blue);
+  color: var(--aukora-blue);
 }
 
 .brandName {
@@ -91,45 +88,18 @@
 }
 
 .iconButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   flex: none;
   width: 28px;
   height: 28px;
-  border: none;
-  border-radius: 9px;
+  min-height: 28px;
   padding: 0;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  cursor: pointer;
 }
 
-.iconButton:hover {
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-interactive-bg-hover);
-}
 
-.iconButton:focus-visible {
-  outline: 2px solid var(--dsw-alias-label-primary);
-  outline-offset: 1px;
-}
 
-.iconButton[aria-pressed='true'] {
-  background: color-mix(in srgb, currentColor 13%, transparent);
-}
 
-.pinAction[aria-pressed='true'] {
-  color: var(--dsw-static-spatial-violet);
-}
 
-.unreadAction[aria-pressed='true'] {
-  color: var(--dsw-alias-state-success-primary);
-}
 
-.archiveAction[aria-pressed='true'] {
-  color: var(--dsw-static-spatial-gold);
-}
 
 /* The whole honesty surface: one slim gold line under the brand row. The colour is a
    second signal, never the only one: each status keeps the line's own dot and its full
@@ -141,7 +111,7 @@
   flex: none;
   margin: 0 0 4px;
   padding: 0 4px;
-  color: var(--dsw-static-spatial-gold);
+  color: var(--aukora-gold);
   font-size: 12px;
   line-height: 17px;
 }
@@ -152,16 +122,16 @@
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: var(--dsw-static-spatial-gold);
+  background: var(--aukora-gold);
 }
 
 /* A connected route reads green; a route that has not answered keeps the gold. */
 .posture[data-posture='connected'] {
-  color: var(--dsw-alias-state-success-primary);
+  color: var(--aukora-green);
 }
 
 .posture[data-posture='connected']::before {
-  background: var(--dsw-alias-state-success-primary);
+  background: var(--aukora-green);
 }
 
 /* Which store the rows below actually came from used to be a line under the banner, with the path
@@ -178,9 +148,9 @@
   flex: none;
   margin: 0 0 8px;
   padding: 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);
+  border: 1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);
   border-radius: 12px;
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font-size: 12px;
   line-height: 17px;
 }
@@ -190,7 +160,7 @@
 }
 
 .noticeReason {
-  color: var(--dsw-static-spatial-gold);
+  color: var(--aukora-gold);
   overflow-wrap: anywhere;
   font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 11px;
@@ -240,23 +210,23 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
 }
 
 .trustMark[data-state='VERIFIED'] {
-  color: var(--dsw-alias-state-success-primary);
+  color: var(--aukora-green);
 }
 
 .trustMark[data-state='TEST'] {
-  color: var(--dsw-static-spatial-gold);
+  color: var(--aukora-gold);
 }
 
 .trustMark[data-state='UNBOUND'] {
-  color: var(--dsw-static-spatial-blue);
+  color: var(--aukora-blue);
 }
 
 .trustMark[data-state='FOREIGN'] {
-  color: var(--dsw-alias-state-error-primary, #d9534f);
+  color: var(--aukora-red-warning);
 }
 
 /* Unread is a dot, not a badge: the state is one bit and it costs the row no words. */
@@ -265,14 +235,14 @@
   width: 7px;
   height: 7px;
   border-radius: 999px;
-  background: var(--dsw-alias-state-success-primary);
+  background: var(--aukora-green);
 }
 
 .pinMark {
   flex: none;
   display: inline-flex;
   align-items: center;
-  color: var(--dsw-static-spatial-violet);
+  color: var(--aukora-purple);
 }
 
 /* The time is the last thing on the name's line and it stays there: pushed right by its own
@@ -282,7 +252,7 @@
   margin-left: auto;
   font-size: 12px;
   line-height: 20px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
 }
 
 /* The preview: one line, and it is the newest thing this screen actually holds. */
@@ -291,7 +261,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--aukora-text-secondary);
   font-size: 13px;
   line-height: 18px;
 }
@@ -323,31 +293,31 @@
 }
 
 .badge[data-state='VERIFIED'] {
-  color: var(--dsw-alias-state-success-primary);
+  color: var(--aukora-green);
   border-radius: 9px;
-  background: color-mix(in srgb, var(--dsw-alias-state-success-primary) 16%, transparent);
+  background: color-mix(in srgb, var(--aukora-green) 16%, transparent);
 }
 
 .badge[data-state='TEST'] {
-  color: var(--dsw-static-spatial-gold);
+  color: var(--aukora-gold);
   border-radius: 4px;
   border-style: dashed;
-  background: color-mix(in srgb, var(--dsw-static-spatial-gold) 12%, transparent);
+  background: color-mix(in srgb, var(--aukora-gold) 12%, transparent);
 }
 
 .badge[data-state='UNBOUND'] {
-  color: var(--dsw-static-spatial-blue);
+  color: var(--aukora-blue);
   border-radius: 9px;
   border-style: dotted;
-  background: color-mix(in srgb, var(--dsw-static-spatial-blue) 10%, transparent);
+  background: color-mix(in srgb, var(--aukora-blue) 10%, transparent);
 }
 
 .badge[data-state='FOREIGN'] {
-  color: var(--dsw-alias-state-error-primary, #d9534f);
+  color: var(--aukora-red-warning);
   border-radius: 2px;
   background: repeating-linear-gradient(
     135deg,
-    color-mix(in srgb, var(--dsw-alias-state-error-primary, #d9534f) 22%, transparent) 0 4px,
+    color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px,
     transparent 4px 8px
   );
 }
@@ -370,8 +340,8 @@
   margin-top: 4px;
   padding: 5px 8px;
   border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 40%, transparent);
-  background: color-mix(in srgb, var(--dsw-static-spatial-violet) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);
+  background: color-mix(in srgb, var(--aukora-purple) 10%, transparent);
   max-width: 100%;
 }
 
@@ -382,21 +352,21 @@
   margin-top: 4px;
   padding: 5px 8px;
   border-radius: 10px;
-  border: 1px dashed var(--dsw-alias-border-l2);
+  border: 1px dashed var(--aukora-border);
   max-width: 100%;
 }
 
 .sasGlyph {
   flex: none;
   display: inline-flex;
-  color: var(--dsw-static-spatial-violet);
+  color: var(--aukora-purple);
   margin-top: 2px;
 }
 
 .sasAbsentGlyph {
   flex: none;
   display: inline-flex;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
   margin-top: 2px;
 }
 
@@ -412,7 +382,7 @@
   line-height: 14px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--dsw-static-spatial-violet);
+  color: var(--aukora-purple);
 }
 
 /* The digits are the one large thing here: a person reads them out loud. */
@@ -421,14 +391,14 @@
   line-height: 22px;
   font-weight: 650;
   letter-spacing: 0.12em;
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font-variant-numeric: tabular-nums;
 }
 
 .sasHint {
   font-size: 11px;
   line-height: 15px;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--aukora-text-secondary);
 }
 
 /* The honest alternative: a sentence, never digits, never a dash that could be read as
@@ -436,7 +406,7 @@
 .sasAbsentText {
   font-size: 11px;
   line-height: 15px;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--aukora-text-secondary);
 }
 
 /* ---- The send receipt, as a mark ---------------------------------------------------
@@ -450,30 +420,30 @@
   display: inline-flex;
   align-items: center;
   margin-top: 2px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
 }
 
 .receiptMark[data-receipt='pending'] {
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
 }
 
 .receiptMark[data-receipt='delivered'] {
-  color: var(--dsw-alias-state-success-primary);
+  color: var(--aukora-green);
 }
 
 .receiptMark[data-receipt='partial'] {
-  color: var(--dsw-static-spatial-gold);
+  color: var(--aukora-gold);
 }
 
 .receiptMark[data-receipt='refused'] {
-  color: var(--dsw-alias-state-error-primary, #d9534f);
+  color: var(--aukora-red-warning);
 }
 
 /* The thread notice: what the conversation view says when the route offers no thread. */
 .threadNotice {
   margin: 0;
   padding: 6px 8px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
   font-size: 12px;
   line-height: 17px;
 }
@@ -494,13 +464,12 @@
   height: 28px;
   padding: 0 10px;
   box-sizing: border-box;
-  border: 1px solid var(--dsw-alias-border-l2);
+  border: 1px solid var(--aukora-border);
   border-radius: 9px;
   background: transparent;
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font: inherit;
   font-size: 13px;
-  outline: none;
 }
 
 /* The one scrolling region, with the lane's stable gutter so revealing the
@@ -527,10 +496,8 @@
   margin-inline: 2px;
   padding: 10px 16px;
   box-sizing: border-box;
-  border: 1px solid color-mix(in srgb, var(--dsw-static-spatial-blue) 32%, transparent);
-  border-radius: 14px;
-  background: transparent;
-  color: var(--dsw-alias-label-primary);
+  border: 1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);
+  color: var(--aukora-text);
   cursor: pointer;
   user-select: none;
   transition:
@@ -544,9 +511,8 @@
 }
 
 .personRow:focus-visible {
-  outline: none;
-  border-color: color-mix(in srgb, var(--dsw-static-spatial-blue) 58%, transparent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--dsw-static-spatial-blue) 14%, transparent);
+  border-color: color-mix(in srgb, var(--aukora-blue) 58%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent);
 }
 
 /* THE ROW'S VERBS ARE NOT IN THE RESTING ROW. They trade places with the time on hover and on focus,
@@ -579,8 +545,8 @@
   width: 26px;
   height: 26px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--dsw-static-spatial-blue) 24%, transparent);
-  color: var(--dsw-alias-label-primary);
+  background: color-mix(in srgb, var(--aukora-blue) 24%, transparent);
+  color: var(--aukora-text);
   font-size: 12px;
   font-weight: 600;
 }
@@ -589,7 +555,7 @@
 .listEmpty {
   margin: 0;
   padding: 8px;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
   font-size: 13px;
   line-height: 19px;
 }
@@ -620,16 +586,16 @@
 /* Title capsule copied from the open thread: l2 stroke, 16px radius,
    transparent, 50px seat. */
 .threadHeader {
+  border: 1px solid var(--aukora-border);
+  border-radius: var(--aukora-radius);
+  background: var(--aukora-surface);
   display: flex;
   align-items: center;
   gap: 8px;
   flex: none;
   min-height: 50px;
   padding: 8px 12px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 16px;
   box-sizing: border-box;
-  background: transparent;
 }
 
 /* The lane places a 74px hot corner at each shell edge, above every surface.
@@ -661,30 +627,21 @@
    slash and the word "Unverified", which opens the sheet that says exactly which state this is. */
 .chip {
   flex: none;
-  display: inline-flex;
-  align-items: center;
   gap: 4px;
-  height: 22px;
+  height: 28px;
+  min-height: 28px;
   padding: 0 9px;
-  border: 1px solid currentColor;
-  border-radius: 11px;
-  background: transparent;
-  color: var(--dsw-static-spatial-gold);
-  font: inherit;
   font-size: 11px;
   line-height: 1;
   font-weight: 600;
-  cursor: pointer;
   white-space: nowrap;
 }
 
 .chip[data-trust-chip='FOREIGN'] {
-  color: var(--dsw-alias-state-error-primary, #d9534f);
   border-style: dashed;
 }
 
 .chip[data-trust-chip='UNBOUND'] {
-  color: var(--dsw-static-spatial-blue);
   border-style: dotted;
 }
 
@@ -723,21 +680,17 @@
   margin: 0;
   max-width: min(525px, 82%);
   padding: 10px 16px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 22px;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);
   font-size: 16px;
   line-height: 24px;
 }
 
 /* Your side is the user bubble: r22 fill, 10x16 padding, right-aligned. */
 .msgMe {
+  border-color: color-mix(in srgb, var(--aukora-blue) 38%, transparent);
   align-self: flex-end;
   margin: 0;
   max-width: min(525px, 82%);
   padding: 10px 16px;
-  border-radius: 22px;
-  background: var(--dsw-specific-bubble);
   font-size: 16px;
   line-height: 24px;
 }
@@ -750,8 +703,7 @@
   overflow-wrap: anywhere;
 }
 
-/* The AI composer card's surface: 22px radius, input-major fill, thin
-   stroke, lv2 elevation. */
+/* Composer geometry; Panel owns the shared dark-glass paint. */
 .composerCard {
   display: flex;
   flex-direction: column;
@@ -760,10 +712,6 @@
   width: 100%;
   box-sizing: border-box;
   padding: 12px 12px 10px;
-  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
-  border-radius: 22px;
-  background: var(--dsw-specific-input-major);
-  box-shadow: var(--dsw-shadow-lv2);
 }
 
 .composerCard textarea {
@@ -772,12 +720,11 @@
   padding: 0 4px;
   border: 0;
   background: transparent;
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font: inherit;
   font-size: 16px;
   line-height: 24px;
   resize: none;
-  outline: none;
 }
 
 .composerRow {
@@ -785,30 +732,15 @@
   justify-content: flex-end;
 }
 
-/* The send circle: 34px, info-fill blue, white glyph; empty draft sits at
-   0.4 opacity exactly like the AI composer. */
+/* Compact shared outlined send action. */
 .sendCircle {
-  display: grid;
-  place-items: center;
   flex: none;
   width: 34px;
   height: 34px;
-  border: none;
-  border-radius: 999px;
-  background: var(--dsw-alias-button-info-fill);
-  color: var(--dsw-alias-label-primary, #fff);
-  cursor: pointer;
-  transition: background-color 100ms ease;
+  padding: 0;
 }
 
-.sendCircle:hover:not(:disabled) {
-  background: var(--dsw-alias-button-info-hover);
-}
 
-.sendCircle:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
 
 /* ---- The two one-tap sheets ---------------------------------------------------------
    What a row must not carry, one tap away. Positioned inside the surface, because the surface is
@@ -823,7 +755,7 @@
   justify-content: center;
   padding: 10px;
   box-sizing: border-box;
-  background: color-mix(in srgb, var(--dsw-alias-label-primary) 34%, transparent);
+  background: var(--aukora-backdrop);
 }
 
 .sheet {
@@ -834,11 +766,7 @@
   min-width: 0;
   box-sizing: border-box;
   padding: 12px 14px 14px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 18px;
-  background: var(--dsw-specific-input-major);
-  box-shadow: var(--dsw-shadow-lv2);
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
 }
 
 .sheetHeader {
@@ -878,7 +806,7 @@
 
 .sheetSentence {
   margin: 0;
-  color: var(--dsw-alias-label-secondary);
+  color: var(--aukora-text-secondary);
   font-size: 12px;
   line-height: 17px;
 }
@@ -891,7 +819,7 @@
 }
 
 .sheetLabel {
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
   font-size: 10px;
   line-height: 14px;
   letter-spacing: 0.05em;
@@ -899,7 +827,7 @@
 }
 
 .sheetValue {
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font-size: 13px;
   line-height: 18px;
   overflow-wrap: anywhere;
@@ -909,7 +837,7 @@
    character by character and an ellipsis in the middle of one is not a check. This is the only place
    the whole key is shown, and it is one tap from the row's own info button. */
 .npub {
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 11px;
   line-height: 16px;
@@ -945,7 +873,7 @@
 
 .menuCopy span {
   overflow: hidden;
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
   font-size: 12px;
   line-height: 17px;
   text-overflow: ellipsis;
@@ -1022,26 +950,21 @@
 }
 
 .verifyConfirmButton {
-  font: inherit;
+  justify-content: flex-start;
   font-weight: 600;
   text-align: start;
   padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid var(--dsw-alias-border-l2, #3a3a3c);
-  background: var(--dsw-alias-interactive-bg-hover, #24282e);
-  color: var(--dsw-alias-label-primary, #e8eaed);
 }
 
 .verifyConfirmNote {
   margin: 0;
-  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  color: var(--aukora-text-secondary);
   line-height: 17px;
 }
 
 .addHint {
   margin: 0 0 var(--dsh-spatial-gap, 8px);
-  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  color: var(--aukora-text-secondary);
   line-height: 18px;
 }
 
@@ -1058,7 +981,7 @@
 }
 
 .addLabel {
-  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  color: var(--aukora-text-secondary);
 }
 
 .addInput {
@@ -1066,30 +989,20 @@
   font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--dsw-alias-border-l2, #3a3a3c);
-  background: var(--dsw-alias-bg-layer-1, #17181a);
-  color: var(--dsw-alias-label-primary, #e8eaed);
+  border: 1px solid var(--aukora-border);
+  background: var(--aukora-surface);
+  color: var(--aukora-text);
 }
 
 .addSubmit {
-  font: inherit;
   font-weight: 600;
   padding: 9px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid var(--dsw-alias-border-l2, #3a3a3c);
-  background: var(--dsw-alias-interactive-bg-hover, #24282e);
-  color: var(--dsw-alias-label-primary, #e8eaed);
 }
 
-.addSubmit:disabled {
-  cursor: default;
-  color: var(--dsw-alias-label-tertiary, #8b9099);
-}
 
 .addRefusal {
   margin: var(--dsh-spatial-gap, 8px) 0 0;
-  color: var(--dsw-alias-label-error, #f2555a);
+  color: var(--aukora-red-warning);
   line-height: 18px;
 }
 
@@ -1099,7 +1012,7 @@
 
 .addAdded {
   margin: var(--dsh-spatial-gap, 8px) 0 0;
-  color: var(--dsw-alias-label-secondary, #b8bcc4);
+  color: var(--aukora-text-secondary);
   line-height: 18px;
 }
 
@@ -1119,4 +1032,9 @@
   max-height: 240px;
   object-fit: cover;
   border-radius: 8px;
+}
+
+.searchInput:focus-visible, .addInput:focus-visible, .composerCard textarea:focus-visible {
+  outline: 2px solid var(--aukora-blue);
+  outline-offset: 2px;
 }

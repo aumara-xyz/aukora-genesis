@@ -1,10 +1,13 @@
-.room {
+.menuLauncher { width: 100%; }
+
+.room.room {
+  background: var(--aukora-background);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   gap: 12px;
   padding: 16px;
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font-family: var(--dsw-font-family);
 }
 
@@ -20,18 +23,18 @@
 }
 
 .message {
-  --speaker-color: var(--dsw-alias-label-primary);
+  --speaker-color: var(--aukora-text);
   align-self: flex-start;
   max-width: min(525px, 82%);
   min-width: 0;
 }
 
-.message[data-speaker='PETER'] { --speaker-color: var(--dsw-static-spatial-blue); align-self: flex-end; }
-.message[data-speaker='AUMA'] { --speaker-color: var(--dsw-static-spatial-violet); }
-.message[data-speaker='CLAUDE'] { --speaker-color: var(--dsw-static-spatial-gold); }
-.message[data-speaker='CODEX-DESKTOP'] { --speaker-color: var(--dsw-static-spatial-mint); }
-.message[data-speaker='AUMA-CODEX'] { --speaker-color: var(--dsw-static-amber-400); }
-.message[data-speaker='GROK'] { --speaker-color: var(--dsw-static-red-400); }
+.message[data-speaker='PETER'] { --speaker-color: var(--aukora-blue); align-self: flex-end; }
+.message[data-speaker='AUMA'] { --speaker-color: var(--aukora-purple); }
+.message[data-speaker='CLAUDE'] { --speaker-color: var(--aukora-gold); }
+.message[data-speaker='CODEX-DESKTOP'] { --speaker-color: var(--aukora-green); }
+.message[data-speaker='AUMA-CODEX'] { --speaker-color: var(--aukora-gold); }
+.message[data-speaker='GROK'] { --speaker-color: var(--aukora-purple); }
 
 .meta {
   display: flex;
@@ -45,7 +48,7 @@
 }
 
 .meta time {
-  color: var(--dsw-alias-label-tertiary);
+  color: var(--aukora-text-muted);
   font-size: 11px;
 }
 
@@ -53,16 +56,13 @@
 
 .bubble {
   padding: 10px 16px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 22px;
-  background: color-mix(in srgb, var(--speaker-color) 8%, transparent);
+  border-color: color-mix(in srgb, var(--speaker-color) 30%, transparent);
   font-size: 16px;
   line-height: 24px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-.message[data-speaker='PETER'] .bubble { background: var(--dsw-specific-bubble); }
 
 .composer {
   display: flex;
@@ -71,10 +71,6 @@
   width: 100%;
   box-sizing: border-box;
   padding: 12px 12px 10px;
-  border: 1px solid var(--dsw-alias-border-l2-darkmode-thin);
-  border-radius: 22px;
-  background: var(--dsw-specific-input-major);
-  box-shadow: var(--dsw-shadow-lv2);
 }
 
 .composer textarea {
@@ -83,10 +79,12 @@
   padding: 0 4px;
   border: 0;
   background: transparent;
-  color: var(--dsw-alias-label-primary);
+  color: var(--aukora-text);
   font: inherit;
   font-size: 16px;
   line-height: 24px;
   resize: none;
-  outline: none;
 }
+
+.composer textarea:focus-visible { outline: 2px solid var(--aukora-blue); outline-offset: 4px; }
+.composer textarea[aria-invalid='true'] { outline: 2px solid var(--aukora-red-warning); outline-offset: 4px; }

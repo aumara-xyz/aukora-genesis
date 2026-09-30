@@ -1,5 +1,5 @@
 /**
- * Global theme DOM applier: projects the resolved ThemeSnapshot onto the
+ * Global theme DOM applier: projects the shared dark AUKORA palette onto the
  * document — `html { color-scheme }` for native UA chrome (scrollbars, form
  * controls), `body[data-ds-dark-theme]` for the token palette, the active
  * theme's alias-token overrides as inline CSS variables on body, and one
@@ -26,23 +26,22 @@ export class ThemePresenter {
   }
 
   /**
-   * Project a snapshot onto the document: set root `color-scheme` and the body
-   * palette attribute from `active.colorScheme` (never the id — `system` is
-   * resolved upstream), then replace the previously applied token variables
-   * with `active.tokens`. Browser theme-color metadata follows the computed
-   * body background after those writes, so the rendered palette remains the
-   * color authority.
+   * AUKORA has one dark surface, so native controls and the legacy token palette
+   * stay dark even when the saved preference or OS scheme is light. Light-mode
+   * overrides cannot be applied on that surface: use the registered dark base
+   * in that case. This presents the fixed palette without writing preferences.
    * @param snapshot - resolved theme snapshot from ctx.theme.
    */
   apply(snapshot: ThemeSnapshot): void {
-    const scheme = snapshot.active.colorScheme
-    document.documentElement.style.colorScheme = scheme
+    document.documentElement.style.colorScheme = 'dark'
     const body = document.body
-    if (scheme === 'dark') body.setAttribute(DARK_ATTRIBUTE, '')
-    else body.removeAttribute(DARK_ATTRIBUTE)
+    body.setAttribute(DARK_ATTRIBUTE, '')
     for (const name of this.appliedTokens) body.style.removeProperty(name)
     this.appliedTokens = []
-    for (const [name, value] of Object.entries(snapshot.active.tokens)) {
+    const tokens = snapshot.active.colorScheme === 'dark'
+      ? snapshot.active.tokens
+      : snapshot.themes.find(theme => theme.id === 'dark')?.tokens ?? {}
+    for (const [name, value] of Object.entries(tokens)) {
       body.style.setProperty(name, value)
       this.appliedTokens.push(name)
     }

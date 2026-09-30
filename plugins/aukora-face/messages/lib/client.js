@@ -27,6 +27,7 @@ window.__ModuleLoader__.load({
 			enumerable: true
 		}) : target, mod));
 		//#endregion
+		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		//#region ../../../node_modules/.pnpm/clsx@2.1.1/node_modules/clsx/dist/clsx.mjs
@@ -45,7 +46,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:Messages.module.css.mjs
-		const css = ".fX9SOG_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--dsw-alias-label-primary);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.fX9SOG_surface[hidden]{display:none}.fX9SOG_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.fX9SOG_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.fX9SOG_brandMark{color:var(--dsw-static-spatial-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.fX9SOG_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.fX9SOG_actions{align-items:center;gap:2px;display:inline-flex}.fX9SOG_iconButton{width:28px;height:28px;color:var(--dsw-alias-label-secondary);cursor:pointer;background:0 0;border:none;border-radius:9px;flex:none;justify-content:center;align-items:center;padding:0;display:inline-flex}.fX9SOG_iconButton:hover{color:var(--dsw-alias-label-primary);background:var(--dsw-alias-interactive-bg-hover)}.fX9SOG_iconButton:focus-visible{outline:2px solid var(--dsw-alias-label-primary);outline-offset:1px}.fX9SOG_iconButton[aria-pressed=true]{background:color-mix(in srgb, currentColor 13%, transparent)}.fX9SOG_pinAction[aria-pressed=true]{color:var(--dsw-static-spatial-violet)}.fX9SOG_unreadAction[aria-pressed=true]{color:var(--dsw-alias-state-success-primary)}.fX9SOG_archiveAction[aria-pressed=true]{color:var(--dsw-static-spatial-gold)}.fX9SOG_posture{color:var(--dsw-static-spatial-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.fX9SOG_posture:before{content:\"\";background:var(--dsw-static-spatial-gold);border-radius:999px;flex:none;width:6px;height:6px}.fX9SOG_posture[data-posture=connected]{color:var(--dsw-alias-state-success-primary)}.fX9SOG_posture[data-posture=connected]:before{background:var(--dsw-alias-state-success-primary)}.fX9SOG_notice{border:1px solid color-mix(in srgb, var(--dsw-static-spatial-gold) 42%, transparent);color:var(--dsw-alias-label-primary);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.fX9SOG_noticeTitle{font-weight:600}.fX9SOG_noticeReason{color:var(--dsw-static-spatial-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.fX9SOG_contactRow{align-items:center;min-height:64px}.fX9SOG_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.fX9SOG_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.fX9SOG_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.fX9SOG_trustMark{color:var(--dsw-alias-label-tertiary);flex:none;align-items:center;display:inline-flex}.fX9SOG_trustMark[data-state=VERIFIED]{color:var(--dsw-alias-state-success-primary)}.fX9SOG_trustMark[data-state=TEST]{color:var(--dsw-static-spatial-gold)}.fX9SOG_trustMark[data-state=UNBOUND]{color:var(--dsw-static-spatial-blue)}.fX9SOG_trustMark[data-state=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f)}.fX9SOG_unreadDot{background:var(--dsw-alias-state-success-primary);border-radius:999px;flex:none;width:7px;height:7px}.fX9SOG_pinMark{color:var(--dsw-static-spatial-violet);flex:none;align-items:center;display:inline-flex}.fX9SOG_time{color:var(--dsw-alias-label-tertiary);flex:none;margin-left:auto;font-size:12px;line-height:20px}.fX9SOG_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--dsw-alias-label-secondary);font-size:13px;line-height:18px;overflow:hidden}.fX9SOG_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.fX9SOG_badge[data-state=VERIFIED]{color:var(--dsw-alias-state-success-primary);background:color-mix(in srgb, var(--dsw-alias-state-success-primary) 16%, transparent);border-radius:9px}.fX9SOG_badge[data-state=TEST]{color:var(--dsw-static-spatial-gold);background:color-mix(in srgb, var(--dsw-static-spatial-gold) 12%, transparent);border-style:dashed;border-radius:4px}.fX9SOG_badge[data-state=UNBOUND]{color:var(--dsw-static-spatial-blue);background:color-mix(in srgb, var(--dsw-static-spatial-blue) 10%, transparent);border-style:dotted;border-radius:9px}.fX9SOG_badge[data-state=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--dsw-alias-state-error-primary,#d9534f) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.fX9SOG_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.fX9SOG_sas{border:1px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 40%, transparent);background:color-mix(in srgb, var(--dsw-static-spatial-violet) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.fX9SOG_sasAbsent{border:1px dashed var(--dsw-alias-border-l2);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.fX9SOG_sasGlyph{color:var(--dsw-static-spatial-violet);flex:none;margin-top:2px;display:inline-flex}.fX9SOG_sasAbsentGlyph{color:var(--dsw-alias-label-tertiary);flex:none;margin-top:2px;display:inline-flex}.fX9SOG_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.fX9SOG_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--dsw-static-spatial-violet);font-size:10px;line-height:14px}.fX9SOG_sasDigits{letter-spacing:.12em;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.fX9SOG_sasHint,.fX9SOG_sasAbsentText{color:var(--dsw-alias-label-secondary);font-size:11px;line-height:15px}.fX9SOG_receiptMark{color:var(--dsw-alias-label-tertiary);align-items:center;margin-top:2px;display:inline-flex}.fX9SOG_receiptMark[data-receipt=pending]{color:var(--dsw-alias-label-tertiary)}.fX9SOG_receiptMark[data-receipt=delivered]{color:var(--dsw-alias-state-success-primary)}.fX9SOG_receiptMark[data-receipt=partial]{color:var(--dsw-static-spatial-gold)}.fX9SOG_receiptMark[data-receipt=refused]{color:var(--dsw-alias-state-error-primary,#d9534f)}.fX9SOG_threadNotice{color:var(--dsw-alias-label-tertiary);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.fX9SOG_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.fX9SOG_searchInput{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);min-width:0;height:28px;color:var(--dsw-alias-label-primary);font:inherit;background:0 0;border-radius:9px;outline:none;flex:1;padding:0 10px;font-size:13px}.fX9SOG_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.fX9SOG_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--dsw-static-spatial-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--dsw-alias-label-primary);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);background:0 0;border-radius:14px;align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.fX9SOG_personRow:hover{transform:translate(3px)}.fX9SOG_personRow:focus-visible{border-color:color-mix(in srgb, var(--dsw-static-spatial-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--dsw-static-spatial-blue) 14%, transparent);outline:none}.fX9SOG_rowActions{flex:none;align-items:center;gap:2px;display:none}.fX9SOG_personRow:hover .fX9SOG_rowActions,.fX9SOG_personRow:focus-within .fX9SOG_rowActions{display:inline-flex}.fX9SOG_personRow:hover .fX9SOG_time,.fX9SOG_personRow:focus-within .fX9SOG_time{display:none}.fX9SOG_avatar{background:color-mix(in srgb, var(--dsw-static-spatial-blue) 24%, transparent);width:26px;height:26px;color:var(--dsw-alias-label-primary);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.fX9SOG_listEmpty{color:var(--dsw-alias-label-tertiary);margin:0;padding:8px;font-size:13px;line-height:19px}.fX9SOG_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.fX9SOG_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.fX9SOG_threadHeader{border:1px solid var(--dsw-alias-border-l2);box-sizing:border-box;background:0 0;border-radius:16px;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.fX9SOG_threadHeader{padding-inline:74px}}.fX9SOG_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.fX9SOG_chip{height:22px;color:var(--dsw-static-spatial-gold);font:inherit;cursor:pointer;white-space:nowrap;background:0 0;border:1px solid;border-radius:11px;flex:none;align-items:center;gap:4px;padding:0 9px;font-size:11px;font-weight:600;line-height:1;display:inline-flex}.fX9SOG_chip[data-trust-chip=FOREIGN]{color:var(--dsw-alias-state-error-primary,#d9534f);border-style:dashed}.fX9SOG_chip[data-trust-chip=UNBOUND]{color:var(--dsw-static-spatial-blue);border-style:dotted}.fX9SOG_chipWord{display:inline-block}.fX9SOG_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.fX9SOG_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.fX9SOG_msgThem{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--dsw-alias-label-primary) 8%, transparent);border-radius:22px;align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.fX9SOG_msgMe{background:var(--dsw-specific-bubble);border-radius:22px;align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.fX9SOG_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.fX9SOG_composerCard{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2-darkmode-thin);background:var(--dsw-specific-input-major);width:100%;box-shadow:var(--dsw-shadow-lv2);border-radius:22px;flex-direction:column;flex:none;gap:10px;padding:12px 12px 10px;display:flex}.fX9SOG_composerCard textarea{min-height:24px;max-height:120px;color:var(--dsw-alias-label-primary);font:inherit;resize:none;background:0 0;border:0;outline:none;padding:0 4px;font-size:16px;line-height:24px}.fX9SOG_composerRow{justify-content:flex-end;display:flex}.fX9SOG_sendCircle{background:var(--dsw-alias-button-info-fill);width:34px;height:34px;color:var(--dsw-alias-label-primary,#fff);cursor:pointer;border:none;border-radius:999px;flex:none;place-items:center;transition:background-color .1s;display:grid}.fX9SOG_sendCircle:hover:not(:disabled){background:var(--dsw-alias-button-info-hover)}.fX9SOG_sendCircle:disabled{opacity:.4;cursor:default}.fX9SOG_sheetBackdrop{z-index:2;box-sizing:border-box;background:color-mix(in srgb, var(--dsw-alias-label-primary) 34%, transparent);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.fX9SOG_sheet{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2);background:var(--dsw-specific-input-major);width:min(100%,520px);min-width:0;max-height:100%;box-shadow:var(--dsw-shadow-lv2);color:var(--dsw-alias-label-primary);border-radius:18px;flex-direction:column;padding:12px 14px 14px;display:flex}.fX9SOG_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.fX9SOG_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.fX9SOG_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.fX9SOG_sheetBadgeRow{align-items:center;gap:8px;display:flex}.fX9SOG_sheetSentence{color:var(--dsw-alias-label-secondary);margin:0;font-size:12px;line-height:17px}.fX9SOG_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.fX9SOG_sheetLabel{color:var(--dsw-alias-label-tertiary);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.fX9SOG_sheetValue{color:var(--dsw-alias-label-primary);overflow-wrap:anywhere;font-size:13px;line-height:18px}.fX9SOG_npub{color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.fX9SOG_menuItem,.fX9SOG_menuItemActive{width:100%}.fX9SOG_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.fX9SOG_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.fX9SOG_menuCopy span{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.fX9SOG_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.fX9SOG_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.fX9SOG_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.fX9SOG_threadTitle{text-align:left}.fX9SOG_headerTail{flex:100%;justify-content:flex-end}}.fX9SOG_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.fX9SOG_verifyConfirmButton{font:inherit;text-align:start;cursor:pointer;border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-interactive-bg-hover,#24282e);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:10px 12px;font-weight:600}.fX9SOG_verifyConfirmNote{color:var(--dsw-alias-label-secondary,#b8bcc4);margin:0;line-height:17px}.fX9SOG_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--dsw-alias-label-secondary,#b8bcc4);line-height:18px}.fX9SOG_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.fX9SOG_addField{flex-direction:column;gap:4px;display:flex}.fX9SOG_addLabel{color:var(--dsw-alias-label-secondary,#b8bcc4)}.fX9SOG_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-bg-layer-1,#17181a);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:8px 10px}.fX9SOG_addSubmit{font:inherit;cursor:pointer;border:1px solid var(--dsw-alias-border-l2,#3a3a3c);background:var(--dsw-alias-interactive-bg-hover,#24282e);color:var(--dsw-alias-label-primary,#e8eaed);border-radius:8px;padding:9px 12px;font-weight:600}.fX9SOG_addSubmit:disabled{cursor:default;color:var(--dsw-alias-label-tertiary,#8b9099)}.fX9SOG_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--dsw-alias-label-error,#f2555a);line-height:18px}.fX9SOG_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.fX9SOG_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--dsw-alias-label-secondary,#b8bcc4);line-height:18px}.fX9SOG_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.fX9SOG_addTools .fX9SOG_addRefusal{margin:0 0 0 auto}.fX9SOG_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}";
+		const css = ".HixLKG_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;background:var(--aukora-background);color:var(--aukora-text);flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.HixLKG_surface[hidden]{display:none}.HixLKG_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.HixLKG_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.HixLKG_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.HixLKG_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.HixLKG_actions{align-items:center;gap:2px;display:inline-flex}.HixLKG_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.HixLKG_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.HixLKG_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.HixLKG_posture[data-posture=connected]{color:var(--aukora-green)}.HixLKG_posture[data-posture=connected]:before{background:var(--aukora-green)}.HixLKG_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.HixLKG_noticeTitle{font-weight:600}.HixLKG_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.HixLKG_contactRow{align-items:center;min-height:64px}.HixLKG_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.HixLKG_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.HixLKG_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.HixLKG_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.HixLKG_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.HixLKG_trustMark[data-state=TEST]{color:var(--aukora-gold)}.HixLKG_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.HixLKG_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.HixLKG_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.HixLKG_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.HixLKG_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.HixLKG_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.HixLKG_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.HixLKG_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.HixLKG_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.HixLKG_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.HixLKG_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.HixLKG_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.HixLKG_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.HixLKG_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.HixLKG_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.HixLKG_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.HixLKG_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.HixLKG_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.HixLKG_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.HixLKG_sasHint,.HixLKG_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.HixLKG_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.HixLKG_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.HixLKG_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.HixLKG_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.HixLKG_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.HixLKG_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.HixLKG_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.HixLKG_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.HixLKG_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.HixLKG_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.HixLKG_personRow:hover{transform:translate(3px)}.HixLKG_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.HixLKG_rowActions{flex:none;align-items:center;gap:2px;display:none}.HixLKG_personRow:hover .HixLKG_rowActions,.HixLKG_personRow:focus-within .HixLKG_rowActions{display:inline-flex}.HixLKG_personRow:hover .HixLKG_time,.HixLKG_personRow:focus-within .HixLKG_time{display:none}.HixLKG_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.HixLKG_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.HixLKG_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.HixLKG_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.HixLKG_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.HixLKG_threadHeader{padding-inline:74px}}.HixLKG_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.HixLKG_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.HixLKG_chip[data-trust-chip=FOREIGN]{border-style:dashed}.HixLKG_chip[data-trust-chip=UNBOUND]{border-style:dotted}.HixLKG_chipWord{display:inline-block}.HixLKG_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.HixLKG_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.HixLKG_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.HixLKG_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.HixLKG_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.HixLKG_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.HixLKG_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.HixLKG_composerRow{justify-content:flex-end;display:flex}.HixLKG_sendCircle{flex:none;width:34px;height:34px;padding:0}.HixLKG_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.HixLKG_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.HixLKG_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.HixLKG_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.HixLKG_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.HixLKG_sheetBadgeRow{align-items:center;gap:8px;display:flex}.HixLKG_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.HixLKG_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.HixLKG_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.HixLKG_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.HixLKG_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.HixLKG_menuItem,.HixLKG_menuItemActive{width:100%}.HixLKG_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.HixLKG_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.HixLKG_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.HixLKG_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.HixLKG_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.HixLKG_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.HixLKG_threadTitle{text-align:left}.HixLKG_headerTail{flex:100%;justify-content:flex-end}}.HixLKG_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.HixLKG_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.HixLKG_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.HixLKG_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.HixLKG_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.HixLKG_addField{flex-direction:column;gap:4px;display:flex}.HixLKG_addLabel{color:var(--aukora-text-secondary)}.HixLKG_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.HixLKG_addSubmit{padding:9px 12px;font-weight:600}.HixLKG_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.HixLKG_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.HixLKG_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.HixLKG_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.HixLKG_addTools .HixLKG_addRefusal{margin:0 0 0 auto}.HixLKG_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.HixLKG_searchInput:focus-visible,.HixLKG_addInput:focus-visible,.HixLKG_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
 		const tagId = "@aukora/face-messages/Messages.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -55,92 +56,89 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Messages_module_css_default = {
-			"actions": "fX9SOG_actions",
-			"addAdded": "fX9SOG_addAdded",
-			"addField": "fX9SOG_addField",
-			"addForm": "fX9SOG_addForm",
-			"addHint": "fX9SOG_addHint",
-			"addInput": "fX9SOG_addInput",
-			"addLabel": "fX9SOG_addLabel",
-			"addReason": "fX9SOG_addReason",
-			"addRefusal": "fX9SOG_addRefusal",
-			"addSubmit": "fX9SOG_addSubmit",
-			"addTools": "fX9SOG_addTools",
-			"addVideo": "fX9SOG_addVideo",
-			"archiveAction": "fX9SOG_archiveAction",
-			"avatar": "fX9SOG_avatar",
-			"badge": "fX9SOG_badge",
-			"badgeWord": "fX9SOG_badgeWord",
-			"brandActions": "fX9SOG_brandActions",
-			"brandMark": "fX9SOG_brandMark",
-			"brandName": "fX9SOG_brandName",
-			"brandRow": "fX9SOG_brandRow",
-			"bubbleText": "fX9SOG_bubbleText",
-			"chip": "fX9SOG_chip",
-			"chipWord": "fX9SOG_chipWord",
-			"composerCard": "fX9SOG_composerCard",
-			"composerRow": "fX9SOG_composerRow",
-			"contactRow": "fX9SOG_contactRow",
-			"headerTail": "fX9SOG_headerTail",
-			"iconButton": "fX9SOG_iconButton",
-			"lane": "fX9SOG_lane",
-			"listEmpty": "fX9SOG_listEmpty",
-			"menuCopy": "fX9SOG_menuCopy",
-			"menuItem": "fX9SOG_menuItem",
-			"menuItemActive": "fX9SOG_menuItemActive",
-			"messages": "fX9SOG_messages",
-			"msgMe": "fX9SOG_msgMe",
-			"msgThem": "fX9SOG_msgThem",
-			"notice": "fX9SOG_notice",
-			"noticeReason": "fX9SOG_noticeReason",
-			"noticeTitle": "fX9SOG_noticeTitle",
-			"npub": "fX9SOG_npub",
-			"personRow": "fX9SOG_personRow",
-			"pinAction": "fX9SOG_pinAction",
-			"pinMark": "fX9SOG_pinMark",
-			"posture": "fX9SOG_posture",
-			"receiptMark": "fX9SOG_receiptMark",
-			"rowActions": "fX9SOG_rowActions",
-			"rowMain": "fX9SOG_rowMain",
-			"rowPreview": "fX9SOG_rowPreview",
-			"rowTitleInMain": "fX9SOG_rowTitleInMain",
-			"rowTop": "fX9SOG_rowTop",
-			"rows": "fX9SOG_rows",
-			"sas": "fX9SOG_sas",
-			"sasAbsent": "fX9SOG_sasAbsent",
-			"sasAbsentGlyph": "fX9SOG_sasAbsentGlyph",
-			"sasAbsentText": "fX9SOG_sasAbsentText",
-			"sasBody": "fX9SOG_sasBody",
-			"sasDigits": "fX9SOG_sasDigits",
-			"sasGlyph": "fX9SOG_sasGlyph",
-			"sasHint": "fX9SOG_sasHint",
-			"sasLabel": "fX9SOG_sasLabel",
-			"searchInput": "fX9SOG_searchInput",
-			"searchRow": "fX9SOG_searchRow",
-			"sendCircle": "fX9SOG_sendCircle",
-			"sheet": "fX9SOG_sheet",
-			"sheetBackdrop": "fX9SOG_sheetBackdrop",
-			"sheetBadgeRow": "fX9SOG_sheetBadgeRow",
-			"sheetBody": "fX9SOG_sheetBody",
-			"sheetHeader": "fX9SOG_sheetHeader",
-			"sheetLabel": "fX9SOG_sheetLabel",
-			"sheetRow": "fX9SOG_sheetRow",
-			"sheetSentence": "fX9SOG_sheetSentence",
-			"sheetTitle": "fX9SOG_sheetTitle",
-			"sheetValue": "fX9SOG_sheetValue",
-			"surface": "fX9SOG_surface",
-			"thread": "fX9SOG_thread",
-			"threadHeader": "fX9SOG_threadHeader",
-			"threadNotice": "fX9SOG_threadNotice",
-			"threadTitle": "fX9SOG_threadTitle",
-			"time": "fX9SOG_time",
-			"trustMark": "fX9SOG_trustMark",
-			"unreadAction": "fX9SOG_unreadAction",
-			"unreadDot": "fX9SOG_unreadDot",
-			"verifyConfirm": "fX9SOG_verifyConfirm",
-			"verifyConfirmButton": "fX9SOG_verifyConfirmButton",
-			"verifyConfirmNote": "fX9SOG_verifyConfirmNote",
-			"visuallyHidden": "fX9SOG_visuallyHidden"
+			"actions": "HixLKG_actions",
+			"addAdded": "HixLKG_addAdded",
+			"addField": "HixLKG_addField",
+			"addForm": "HixLKG_addForm",
+			"addHint": "HixLKG_addHint",
+			"addInput": "HixLKG_addInput",
+			"addLabel": "HixLKG_addLabel",
+			"addReason": "HixLKG_addReason",
+			"addRefusal": "HixLKG_addRefusal",
+			"addSubmit": "HixLKG_addSubmit",
+			"addTools": "HixLKG_addTools",
+			"addVideo": "HixLKG_addVideo",
+			"avatar": "HixLKG_avatar",
+			"badge": "HixLKG_badge",
+			"badgeWord": "HixLKG_badgeWord",
+			"brandActions": "HixLKG_brandActions",
+			"brandMark": "HixLKG_brandMark",
+			"brandName": "HixLKG_brandName",
+			"brandRow": "HixLKG_brandRow",
+			"bubbleText": "HixLKG_bubbleText",
+			"chip": "HixLKG_chip",
+			"chipWord": "HixLKG_chipWord",
+			"composerCard": "HixLKG_composerCard",
+			"composerRow": "HixLKG_composerRow",
+			"contactRow": "HixLKG_contactRow",
+			"headerTail": "HixLKG_headerTail",
+			"iconButton": "HixLKG_iconButton",
+			"lane": "HixLKG_lane",
+			"listEmpty": "HixLKG_listEmpty",
+			"menuCopy": "HixLKG_menuCopy",
+			"menuItem": "HixLKG_menuItem",
+			"menuItemActive": "HixLKG_menuItemActive",
+			"messages": "HixLKG_messages",
+			"msgMe": "HixLKG_msgMe",
+			"msgThem": "HixLKG_msgThem",
+			"notice": "HixLKG_notice",
+			"noticeReason": "HixLKG_noticeReason",
+			"noticeTitle": "HixLKG_noticeTitle",
+			"npub": "HixLKG_npub",
+			"personRow": "HixLKG_personRow",
+			"pinMark": "HixLKG_pinMark",
+			"posture": "HixLKG_posture",
+			"receiptMark": "HixLKG_receiptMark",
+			"rowActions": "HixLKG_rowActions",
+			"rowMain": "HixLKG_rowMain",
+			"rowPreview": "HixLKG_rowPreview",
+			"rowTitleInMain": "HixLKG_rowTitleInMain",
+			"rowTop": "HixLKG_rowTop",
+			"rows": "HixLKG_rows",
+			"sas": "HixLKG_sas",
+			"sasAbsent": "HixLKG_sasAbsent",
+			"sasAbsentGlyph": "HixLKG_sasAbsentGlyph",
+			"sasAbsentText": "HixLKG_sasAbsentText",
+			"sasBody": "HixLKG_sasBody",
+			"sasDigits": "HixLKG_sasDigits",
+			"sasGlyph": "HixLKG_sasGlyph",
+			"sasHint": "HixLKG_sasHint",
+			"sasLabel": "HixLKG_sasLabel",
+			"searchInput": "HixLKG_searchInput",
+			"searchRow": "HixLKG_searchRow",
+			"sendCircle": "HixLKG_sendCircle",
+			"sheet": "HixLKG_sheet",
+			"sheetBackdrop": "HixLKG_sheetBackdrop",
+			"sheetBadgeRow": "HixLKG_sheetBadgeRow",
+			"sheetBody": "HixLKG_sheetBody",
+			"sheetHeader": "HixLKG_sheetHeader",
+			"sheetLabel": "HixLKG_sheetLabel",
+			"sheetRow": "HixLKG_sheetRow",
+			"sheetSentence": "HixLKG_sheetSentence",
+			"sheetTitle": "HixLKG_sheetTitle",
+			"sheetValue": "HixLKG_sheetValue",
+			"surface": "HixLKG_surface",
+			"thread": "HixLKG_thread",
+			"threadHeader": "HixLKG_threadHeader",
+			"threadNotice": "HixLKG_threadNotice",
+			"threadTitle": "HixLKG_threadTitle",
+			"time": "HixLKG_time",
+			"trustMark": "HixLKG_trustMark",
+			"unreadDot": "HixLKG_unreadDot",
+			"verifyConfirm": "HixLKG_verifyConfirm",
+			"verifyConfirmButton": "HixLKG_verifyConfirmButton",
+			"verifyConfirmNote": "HixLKG_verifyConfirmNote",
+			"visuallyHidden": "HixLKG_visuallyHidden"
 		};
 		//#endregion
 		//#region src/client/MessagesMenu.tsx
@@ -152,7 +150,7 @@ window.__ModuleLoader__.load({
 		*/
 		function MessagesMenu({ activeSurface, openSurface, t }) {
 			const active = activeSurface === "messages";
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 				type: "button",
 				"data-messages-launcher": true,
 				className: clsx(Messages_module_css_default.menuItem, active && Messages_module_css_default.menuItemActive),
@@ -12987,7 +12985,7 @@ window.__ModuleLoader__.load({
 				className: Messages_module_css_default.sheetBackdrop,
 				"data-messages-sheet": hook,
 				onClick: onClose,
-				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
 					className: Messages_module_css_default.sheet,
 					ref: dialogRef,
 					tabIndex: -1,
@@ -12997,7 +12995,7 @@ window.__ModuleLoader__.load({
 					onClick: (event) => {
 						event.stopPropagation();
 					},
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
 						className: Messages_module_css_default.sheetHeader,
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h3", {
 							className: Messages_module_css_default.sheetTitle,
@@ -13006,7 +13004,7 @@ window.__ModuleLoader__.load({
 								className: Messages_module_css_default.visuallyHidden,
 								children: title
 							}) : title
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 							type: "button",
 							className: Messages_module_css_default.iconButton,
 							"aria-label": closeLabel,
@@ -13073,8 +13071,9 @@ window.__ModuleLoader__.load({
 					}),
 					sas !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: Messages_module_css_default.verifyConfirm,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 							type: "button",
+							variant: "green",
 							className: Messages_module_css_default.verifyConfirmButton,
 							"data-verify-confirm": "available",
 							disabled: asking,
@@ -13359,7 +13358,7 @@ window.__ModuleLoader__.load({
 						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 							className: Messages_module_css_default.addTools,
 							children: [
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 									type: "button",
 									className: Messages_module_css_default.iconButton,
 									disabled: sending,
@@ -13373,7 +13372,7 @@ window.__ModuleLoader__.load({
 									},
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(CameraIcon, {})
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 									type: "button",
 									className: Messages_module_css_default.iconButton,
 									disabled: sending,
@@ -13383,7 +13382,7 @@ window.__ModuleLoader__.load({
 									},
 									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ImageIcon, {})
 								}),
-								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 									type: "button",
 									className: Messages_module_css_default.iconButton,
 									disabled: sending,
@@ -13406,8 +13405,9 @@ window.__ModuleLoader__.load({
 										if (file !== void 0) pickImage(file);
 									}
 								}),
-								refusal !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								refusal !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 									type: "button",
+									variant: "red-warning",
 									className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.addRefusal),
 									"data-add-refusal": refusal,
 									"aria-label": t(contactWarningKey(refusal)),
@@ -13450,7 +13450,7 @@ window.__ModuleLoader__.load({
 								}
 							})
 						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 							type: "button",
 							className: Messages_module_css_default.addSubmit,
 							"data-add-submit": "ready",
@@ -13547,7 +13547,7 @@ window.__ModuleLoader__.load({
 		* @returns the row.
 		*/
 		function ContactRow({ entry, t, name, preview, onOpen, onToggle, onDetails }) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Card, {
 				role: "listitem",
 				tabIndex: 0,
 				className: clsx(Messages_module_css_default.personRow, entry.contact !== void 0 && Messages_module_css_default.contactRow),
@@ -13617,7 +13617,7 @@ window.__ModuleLoader__.load({
 							event.stopPropagation();
 						},
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 								type: "button",
 								className: Messages_module_css_default.iconButton,
 								"aria-label": t("details.open"),
@@ -13626,9 +13626,10 @@ window.__ModuleLoader__.load({
 								},
 								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(InfoIcon, {})
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 								type: "button",
-								className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.pinAction),
+								variant: "purple",
+								className: Messages_module_css_default.iconButton,
 								"aria-label": entry.pinned ? t("row.unpin") : t("row.pin"),
 								"aria-pressed": entry.pinned,
 								onClick: () => {
@@ -13636,9 +13637,10 @@ window.__ModuleLoader__.load({
 								},
 								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PinIcon, {})
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 								type: "button",
-								className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.unreadAction),
+								variant: "green",
+								className: Messages_module_css_default.iconButton,
 								"aria-label": entry.unread ? t("row.markRead") : t("row.markUnread"),
 								"aria-pressed": entry.unread,
 								onClick: () => {
@@ -13646,9 +13648,10 @@ window.__ModuleLoader__.load({
 								},
 								children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(UnreadIcon, {})
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 								type: "button",
-								className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.archiveAction),
+								variant: "gold",
+								className: Messages_module_css_default.iconButton,
 								"aria-label": entry.archived ? t("row.unarchive") : t("row.archive"),
 								"aria-pressed": entry.archived,
 								onClick: () => {
@@ -14238,7 +14241,7 @@ window.__ModuleLoader__.load({
 						"data-messages-list": true,
 						"data-messages-source": scene,
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
 								className: Messages_module_css_default.brandRow,
 								children: [
 									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
@@ -14253,7 +14256,7 @@ window.__ModuleLoader__.load({
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: clsx(Messages_module_css_default.actions, Messages_module_css_default.brandActions),
 										children: [
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
 												className: Messages_module_css_default.iconButton,
 												"data-copy-identity": copyState,
@@ -14262,23 +14265,24 @@ window.__ModuleLoader__.load({
 												onClick: copyIdentity,
 												children: copyState === "copied" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(VerifiedStateIcon, {}) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SasIcon, {})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
 												className: Messages_module_css_default.iconButton,
 												"aria-label": t("actions.new"),
 												onClick: openAddContact,
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PlusIcon, {})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
 												className: Messages_module_css_default.iconButton,
 												"aria-label": t("contacts.refresh"),
 												onClick: refresh,
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(RefreshIcon, {})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
-												className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.pinAction),
+												variant: "purple",
+												className: Messages_module_css_default.iconButton,
 												"aria-label": t("filters.pinned"),
 												"aria-pressed": filters.pinned,
 												onClick: () => {
@@ -14286,9 +14290,10 @@ window.__ModuleLoader__.load({
 												},
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PinIcon, {})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
-												className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.unreadAction),
+												variant: "green",
+												className: Messages_module_css_default.iconButton,
 												"aria-label": t("filters.unread"),
 												"aria-pressed": filters.unread,
 												onClick: () => {
@@ -14296,9 +14301,10 @@ window.__ModuleLoader__.load({
 												},
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(UnreadIcon, {})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
-												className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.archiveAction),
+												variant: "gold",
+												className: Messages_module_css_default.iconButton,
 												"aria-label": t("filters.archived"),
 												"aria-pressed": filters.archived,
 												onClick: () => {
@@ -14306,7 +14312,7 @@ window.__ModuleLoader__.load({
 												},
 												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ArchiveIcon, {})
 											}),
-											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
 												className: Messages_module_css_default.iconButton,
 												"aria-label": t("details.open"),
@@ -14320,8 +14326,9 @@ window.__ModuleLoader__.load({
 									})
 								]
 							}),
-							warningKey !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+							warningKey !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 								type: "button",
+								variant: "red-warning",
 								className: Messages_module_css_default.iconButton,
 								"data-messages-error": true,
 								"aria-label": t(warningKey),
@@ -14341,7 +14348,7 @@ window.__ModuleLoader__.load({
 									onChange: (event) => {
 										setQuery(event.target.value);
 									}
-								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 									type: "button",
 									className: Messages_module_css_default.iconButton,
 									"aria-label": t("actions.search"),
@@ -14378,10 +14385,10 @@ window.__ModuleLoader__.load({
 						className: Messages_module_css_default.thread,
 						"data-messages-thread": true,
 						children: [
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
 								className: Messages_module_css_default.threadHeader,
 								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 										type: "button",
 										className: Messages_module_css_default.iconButton,
 										"aria-label": t("back"),
@@ -14397,8 +14404,9 @@ window.__ModuleLoader__.load({
 									}),
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: Messages_module_css_default.headerTail,
-										children: [openState !== void 0 && openState !== "VERIFIED" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+										children: [openState !== void 0 && openState !== "VERIFIED" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 											type: "button",
+											variant: openState === "FOREIGN" ? "red-warning" : openState === "UNBOUND" ? "blue" : "gold",
 											className: Messages_module_css_default.chip,
 											"data-trust-chip": openState,
 											"aria-label": t("verify.open"),
@@ -14412,7 +14420,7 @@ window.__ModuleLoader__.load({
 										}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 											className: Messages_module_css_default.actions,
 											children: [
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 													type: "button",
 													className: Messages_module_css_default.iconButton,
 													"aria-label": t("details.open"),
@@ -14422,9 +14430,10 @@ window.__ModuleLoader__.load({
 													},
 													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(InfoIcon, {})
 												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 													type: "button",
-													className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.pinAction),
+													variant: "purple",
+													className: Messages_module_css_default.iconButton,
 													"aria-label": t("thread.pin"),
 													"aria-pressed": openConversation.pinned,
 													onClick: () => {
@@ -14432,9 +14441,10 @@ window.__ModuleLoader__.load({
 													},
 													children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PinIcon, {})
 												}),
-												/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+												/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 													type: "button",
-													className: clsx(Messages_module_css_default.iconButton, Messages_module_css_default.archiveAction),
+													variant: "gold",
+													className: Messages_module_css_default.iconButton,
 													"aria-label": t("thread.archive"),
 													onClick: () => {
 														toggle(openConversation, "archived");
@@ -14457,8 +14467,9 @@ window.__ModuleLoader__.load({
 										"aria-label": t("thread.loading"),
 										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SendPendingIcon, {})
 									}),
-									warningKey !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									warningKey !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 										type: "button",
+										variant: "red-warning",
 										className: Messages_module_css_default.iconButton,
 										"data-thread-status": "failed",
 										"aria-label": t(warningKey),
@@ -14468,7 +14479,7 @@ window.__ModuleLoader__.load({
 										},
 										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(ForeignStateIcon, {})
 									}),
-									openLiveMessages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									openLiveMessages.map((message) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Card, {
 										"data-message-id": message.id,
 										className: message.from === "me" ? Messages_module_css_default.msgMe : Messages_module_css_default.msgThem,
 										"data-message": message.from,
@@ -14483,7 +14494,7 @@ window.__ModuleLoader__.load({
 									}, message.id))
 								]
 							}),
-							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
 								className: Messages_module_css_default.composerCard,
 								"data-messages-composer": true,
 								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
@@ -14502,8 +14513,9 @@ window.__ModuleLoader__.load({
 									}
 								}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 									className: Messages_module_css_default.composerRow,
-									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 										type: "button",
+										variant: openReceipt?.kind === "failed" || openReceipt?.kind === "not-accepted" ? "red-warning" : "blue",
 										className: Messages_module_css_default.sendCircle,
 										"aria-label": t("composer.send"),
 										disabled: draft.trim() === "" || openReceipt?.kind === "pending",

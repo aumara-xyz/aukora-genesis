@@ -1,5 +1,6 @@
 /** The Memory entry in the shell's right-side menu. */
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
+import { ActionButton } from '@aukora/face-layout/client'
 import css from './Memory.module.css'
 
 /** Full props for the Memory launcher. */
@@ -19,15 +20,15 @@ export type MemoryMenuProps =
 export function MemoryMenu({ activeSurface, openSurface, t }: MemoryMenuProps) {
   const active = activeSurface === 'memory'
   return (
-    <button
+    <ActionButton variant="green"
       type="button"
       data-memory-launcher
-      className={active ? [css.memoryMenuItem, css.memoryMenuItemActive].join(' ') : css.memoryMenuItem}
+      className={css.memoryMenuItem}
       aria-current={active ? 'page' : undefined}
       title={t('menu.memory.tip')}
       onClick={() => { openSurface('memory', undefined, 'contained') }}
     >
       {t('menu.memory')}
-    </button>
+    </ActionButton>
   )
 }

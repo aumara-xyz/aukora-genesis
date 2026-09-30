@@ -11,6 +11,54 @@ for tool in perl python3 node; do
     }
 done
 
+# Inline so the TODO list is visible, not swallowed by the parallel runner's last-line summary.
+python3 - <<'PY_FACE_COLOURS'
+from pathlib import Path
+import re
+root = Path("plugins/aukora-face")
+tokens = "layout/src/client/spatial-tokens.css"
+legacy = {
+    "aumlok/src/client/Aumlok.module.css",
+    "apps/src/client/StockApps.module.css",
+    "documents/src/client/Documents.module.css",
+    "layout/src/client/Approvals.module.css",
+    "layout/src/client/FirstRun.module.css",
+    "layout/src/client/Health.module.css",
+    "layout/src/client/Why.module.css",
+    "settings/src/client/AuraCoherenceSurface.module.css",
+    "settings/src/client/GeneralSection.module.css",
+    "settings/src/client/SettingsDocumentAction.module.css",
+    "settings/src/client/SettingsRoot.module.css",
+    "sidebar/src/client/SidebarRoot.module.css",
+    "threads/src/client/ThreadHeaderActions.module.css",
+    "threads/src/client/ThreadListHeaderActions.module.css",
+    "threads/src/client/WorkspaceBrowser.module.css",
+    "threads/src/client/WorkspacePicker.module.css",
+    "threads/src/client/rows/Rows.module.css",
+}
+print("TODO face colour migration (paths under plugins/aukora-face): " + ", ".join(sorted(legacy)))
+raw = re.compile(r"(?:#[0-9a-f]{8}|#[0-9a-f]{6}|#[0-9a-f]{4}|#[0-9a-f]{3})(?![\w-])|\brgba?\s*\(", re.I)
+failures = []
+for path in sorted(root.glob("*/src/**/*")):
+    if path.suffix.lower() not in {".css", ".scss", ".sass", ".less"} or "vendor" in path.parts:
+        continue
+    name = path.relative_to(root).as_posix()
+    if name in legacy:
+        continue
+    source = re.sub(r"/\*.*?\*/", "", path.read_text(encoding="utf-8"), flags=re.S)
+    source = re.sub(r'''url\([^)]*\)|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*' ''', "", source, flags=re.I | re.X)
+    for declaration in re.finditer(r"(?:^|[;{])\s*([\w-]+)\s*:\s*([^;{}]+)", source):
+        property_name, value = declaration.groups()
+        if name == tokens and property_name.startswith("--"):
+            continue
+        if raw.search(value):
+            failures.append(str(path))
+            break
+if failures:
+    raise SystemExit("FAIL face raw colours: " + ", ".join(failures))
+print("PASS face stylesheet colours")
+PY_FACE_COLOURS
+
 started=$(perl -MTime::HiRes=time -e 'print time')
 work=$(mktemp -d /tmp/ac.XXXXXX)
 mkdir "$work/tmp"

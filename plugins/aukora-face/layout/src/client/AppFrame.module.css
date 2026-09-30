@@ -16,8 +16,8 @@
   padding: 10px;
   box-sizing: border-box;
   overflow: hidden;
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-specific-spatial-canvas);
+  color: var(--aukora-text);
+  background: var(--aukora-background);
   transition:
     grid-template-columns var(--ds-transition-duration-slow) var(--ds-ease-in-out),
     gap var(--ds-transition-duration-slow) var(--ds-ease-in-out),
@@ -141,17 +141,17 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  border: 1px solid var(--dsw-specific-spatial-border);
+  border: 1px solid var(--aukora-border);
   border-radius: 22px;
   box-sizing: border-box;
-  background: var(--dsw-specific-spatial-lane);
+  background: var(--aukora-surface);
   transition:
     width var(--ds-transition-duration-slow) var(--ds-ease-in-out),
     border-radius var(--ds-transition-duration-slow) var(--ds-ease-in-out);
 }
 
 .laneCenter .laneShell {
-  background: var(--dsw-specific-spatial-lane-bright);
+  background: var(--aukora-surface);
 }
 
 .frame[data-pane-preset='left-wide'] .laneLeft .laneShell,
@@ -465,7 +465,16 @@
   text-align: center;
 }
 
-.menuPanel > :global([data-slot^='shell.menu.']) > button {
+.menuPanel > :global([data-slot^='shell.menu.']) > [data-aukora-action] {
+  width: calc(100% - 4px);
+  min-height: 53px;
+  margin: 8px 2px;
+  padding: 10px 16px;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.menuPanel > :global([data-slot^='shell.menu.']) > button:not([data-aukora-action]) {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -489,17 +498,17 @@
     background 250ms var(--ds-ease-in-out);
 }
 
-.menuPanel > :global([data-slot^='shell.menu.']) > button:hover {
+.menuPanel > :global([data-slot^='shell.menu.']) > button:not([data-aukora-action]):hover {
   transform: translateX(-3px);
   background: color-mix(in srgb, var(--dsw-alias-label-primary) 6%, transparent);
 }
 
-.menuPanel > :global([data-slot^='shell.menu.']) > button[aria-current='page'] {
+.menuPanel > :global([data-slot^='shell.menu.']) > button:not([data-aukora-action])[aria-current='page'] {
   border-color: color-mix(in srgb, var(--dsw-static-spatial-violet) 90%, transparent);
   box-shadow: 0 0 16px color-mix(in srgb, var(--dsw-static-spatial-violet) 22%, transparent);
 }
 
-.menuPanel > :global([data-slot^='shell.menu.']) > button:focus-visible {
+.menuPanel > :global([data-slot^='shell.menu.']) > button:not([data-aukora-action]):focus-visible {
   outline: 2px solid color-mix(in srgb, var(--dsw-static-spatial-violet) 90%, transparent);
   outline-offset: 2px;
 }

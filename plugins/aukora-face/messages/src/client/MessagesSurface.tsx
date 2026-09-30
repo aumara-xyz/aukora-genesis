@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import clsx from 'clsx'
+import { ActionButton, Card, Panel, SectionHeader } from '@aukora/face-layout/client'
 import { applyContactInput, checkAddContact, parseContactInput, type ContactDraft } from './add-contact.ts'
 import { decodeQrFrame, decodeQrImage } from './qr-scanner.ts'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
@@ -251,7 +252,7 @@ function Sheet({ title, hideTitle = false, closeLabel, hook, onClose, children }
   }, [onClose])
   return (
     <div className={css.sheetBackdrop} data-messages-sheet={hook} onClick={onClose}>
-      <div
+      <Panel
         className={css.sheet}
         ref={dialogRef}
         tabIndex={-1}
@@ -260,14 +261,14 @@ function Sheet({ title, hideTitle = false, closeLabel, hook, onClose, children }
         aria-label={title}
         onClick={(event) => { event.stopPropagation() }}
       >
-        <header className={css.sheetHeader}>
+        <SectionHeader className={css.sheetHeader}>
           <h3 className={css.sheetTitle} data-fit="name">{hideTitle ? <span className={css.visuallyHidden}>{title}</span> : title}</h3>
-          <button type="button" className={css.iconButton} aria-label={closeLabel} onClick={onClose}>
+          <ActionButton type="button" className={css.iconButton} aria-label={closeLabel} onClick={onClose}>
             <CloseIcon />
-          </button>
-        </header>
+          </ActionButton>
+        </SectionHeader>
         <div className={css.sheetBody}>{children}</div>
-      </div>
+      </Panel>
     </div>
   )
 }
@@ -332,15 +333,15 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
       <SasSeat state={state} sas={sas} t={t} />
       {sas !== null && (
         <div className={css.verifyConfirm}>
-          <button
+          <ActionButton
             type="button"
-            className={css.verifyConfirmButton}
+            variant="green" className={css.verifyConfirmButton}
             data-verify-confirm="available"
             disabled={asking}
             onClick={() => { void ask() }}
           >
             {t('verify.confirm.button', { contact })}
-          </button>
+          </ActionButton>
           <p className={css.verifyConfirmNote} data-verify-confirm-note={refusal === null ? (asking ? 'asking' : 'ready') : 'refused'}>
             {refusal ?? t('verify.confirm.ready')}
           </p>
@@ -569,19 +570,19 @@ function AddContactSheet({ t, onClose, onAdded }: {
             }} />
         </label>
         <div className={css.addTools}>
-          <button type="button" className={css.iconButton} disabled={sending}
+          <ActionButton type="button" className={css.iconButton} disabled={sending}
             aria-label={t(camera ? 'add.camera.stop' : 'add.camera')} aria-pressed={camera}
             onClick={() => {
               fileGeneration.current += 1
               clearRefusal()
               if (camera) stopCamera()
               else setCamera(true)
-            }}><CameraIcon /></button>
-          <button type="button" className={css.iconButton} disabled={sending}
-            aria-label={t('add.image')} onClick={() => { fileRef.current?.click() }}><ImageIcon /></button>
-          <button type="button" className={css.iconButton} disabled={sending}
+            }}><CameraIcon /></ActionButton>
+          <ActionButton type="button" className={css.iconButton} disabled={sending}
+            aria-label={t('add.image')} onClick={() => { fileRef.current?.click() }}><ImageIcon /></ActionButton>
+          <ActionButton type="button" className={css.iconButton} disabled={sending}
             aria-label={t('add.controller')} aria-pressed={controllerOpen}
-            onClick={() => { setControllerOpen(open => !open) }}><KeyIcon /></button>
+            onClick={() => { setControllerOpen(open => !open) }}><KeyIcon /></ActionButton>
           <input ref={fileRef} type="file" accept="image/*" hidden disabled={sending}
             onChange={(event) => {
               const file = event.target.files?.[0]
@@ -589,9 +590,9 @@ function AddContactSheet({ t, onClose, onAdded }: {
               if (file !== undefined) void pickImage(file)
             }} />
           {refusal !== null && (
-            <button type="button" className={clsx(css.iconButton, css.addRefusal)} data-add-refusal={refusal}
+            <ActionButton type="button" variant="red-warning" className={clsx(css.iconButton, css.addRefusal)} data-add-refusal={refusal}
               aria-label={t(contactWarningKey(refusal))} title={t(contactWarningKey(refusal))}
-              onClick={() => { stopCamera(); setWarningOpen(true) }}><ForeignStateIcon /></button>
+              onClick={() => { stopCamera(); setWarningOpen(true) }}><ForeignStateIcon /></ActionButton>
           )}
         </div>
         {camera && <video ref={videoRef} className={css.addVideo} muted playsInline aria-label={t('add.camera')} />}
@@ -609,8 +610,8 @@ function AddContactSheet({ t, onClose, onAdded }: {
               }} />
           </label>
         )}
-        <button type="button" className={css.addSubmit} data-add-submit="ready"
-          disabled={sending || !draft.name.trim() || !draft.npub.trim()} onClick={submit}>{t('add.submit')}</button>
+        <ActionButton type="button" className={css.addSubmit} data-add-submit="ready"
+          disabled={sending || !draft.name.trim() || !draft.npub.trim()} onClick={submit}>{t('add.submit')}</ActionButton>
       </div>
     </Sheet>
   )
@@ -757,7 +758,7 @@ interface ContactRowProps {
  */
 function ContactRow({ entry, t, name, preview, onOpen, onToggle, onDetails }: ContactRowProps) {
   return (
-    <div
+    <Card
       role="listitem"
       tabIndex={0}
       className={clsx(css.personRow, entry.contact !== undefined && css.contactRow)}
@@ -794,43 +795,43 @@ function ContactRow({ entry, t, name, preview, onOpen, onToggle, onDetails }: Co
         onClick={(event) => { event.stopPropagation() }}
         onKeyDown={(event) => { event.stopPropagation() }}
       >
-        <button
+        <ActionButton
           type="button"
           className={css.iconButton}
           aria-label={t('details.open')}
           onClick={() => { onDetails(entry) }}
         >
           <InfoIcon />
-        </button>
-        <button
+        </ActionButton>
+        <ActionButton
           type="button"
-          className={clsx(css.iconButton, css.pinAction)}
+          variant="purple" className={css.iconButton}
           aria-label={entry.pinned ? t('row.unpin') : t('row.pin')}
           aria-pressed={entry.pinned}
           onClick={() => { onToggle(entry, 'pinned') }}
         >
           <PinIcon />
-        </button>
-        <button
+        </ActionButton>
+        <ActionButton
           type="button"
-          className={clsx(css.iconButton, css.unreadAction)}
+          variant="green" className={css.iconButton}
           aria-label={entry.unread ? t('row.markRead') : t('row.markUnread')}
           aria-pressed={entry.unread}
           onClick={() => { onToggle(entry, 'unread') }}
         >
           <UnreadIcon />
-        </button>
-        <button
+        </ActionButton>
+        <ActionButton
           type="button"
-          className={clsx(css.iconButton, css.archiveAction)}
+          variant="gold" className={css.iconButton}
           aria-label={entry.archived ? t('row.unarchive') : t('row.archive')}
           aria-pressed={entry.archived}
           onClick={() => { onToggle(entry, 'archived') }}
         >
           <ArchiveIcon />
-        </button>
+        </ActionButton>
       </span>
-    </div>
+    </Card>
   )
 }
 
@@ -1472,59 +1473,59 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
       {openConversation === undefined
         ? (
           <div className={css.lane} data-messages-list data-messages-source={scene}>
-            <header className={css.brandRow}>
+            <SectionHeader className={css.brandRow}>
               <span className={css.brandMark}><ChatMarkIcon /></span>
               <h2 className={css.brandName} data-fit="name">{t('title')}</h2>
               <span className={clsx(css.actions, css.brandActions)}>
-                <button type="button" className={css.iconButton} data-copy-identity={copyState}
+                <ActionButton type="button" className={css.iconButton} data-copy-identity={copyState}
                   aria-label={t(copyState === 'copied' ? 'identity.copied' : 'identity.copy')}
                   disabled={copyState === 'pending'} onClick={copyIdentity}>
                   {copyState === 'copied' ? <VerifiedStateIcon /> : <SasIcon />}
-                </button>
-                <button
+                </ActionButton>
+                <ActionButton
                   type="button"
                   className={css.iconButton}
                   aria-label={t('actions.new')}
                   onClick={openAddContact}
                 >
                   <PlusIcon />
-                </button>
-                <button
+                </ActionButton>
+                <ActionButton
                   type="button"
                   className={css.iconButton}
                   aria-label={t('contacts.refresh')}
                   onClick={refresh}
                 >
                   <RefreshIcon />
-                </button>
-                <button
+                </ActionButton>
+                <ActionButton
                   type="button"
-                  className={clsx(css.iconButton, css.pinAction)}
+                  variant="purple" className={css.iconButton}
                   aria-label={t('filters.pinned')}
                   aria-pressed={filters.pinned}
                   onClick={() => { toggleFilter('pinned') }}
                 >
                   <PinIcon />
-                </button>
-                <button
+                </ActionButton>
+                <ActionButton
                   type="button"
-                  className={clsx(css.iconButton, css.unreadAction)}
+                  variant="green" className={css.iconButton}
                   aria-label={t('filters.unread')}
                   aria-pressed={filters.unread}
                   onClick={() => { toggleFilter('unread') }}
                 >
                   <UnreadIcon />
-                </button>
-                <button
+                </ActionButton>
+                <ActionButton
                   type="button"
-                  className={clsx(css.iconButton, css.archiveAction)}
+                  variant="gold" className={css.iconButton}
                   aria-label={t('filters.archived')}
                   aria-pressed={filters.archived}
                   onClick={() => { toggleFilter('archived') }}
                 >
                   <ArchiveIcon />
-                </button>
-                <button
+                </ActionButton>
+                <ActionButton
                   type="button"
                   className={css.iconButton}
                   aria-label={t('details.open')}
@@ -1532,13 +1533,13 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                   onClick={() => { openSheet('details', null) }}
                 >
                   <InfoIcon />
-                </button>
+                </ActionButton>
               </span>
-            </header>
+            </SectionHeader>
             {warningKey !== null && (
-              <button type="button" className={css.iconButton} data-messages-error
+              <ActionButton type="button" variant="red-warning" className={css.iconButton} data-messages-error
                 aria-label={t(warningKey)} title={t(warningKey)}
-                onClick={() => { openSheet('warning', null) }}><ForeignStateIcon /></button>
+                onClick={() => { openSheet('warning', null) }}><ForeignStateIcon /></ActionButton>
             )}
             <div className={css.searchRow}>
               {searchOpen && (
@@ -1550,7 +1551,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                   onChange={(event) => { setQuery(event.target.value) }}
                 />
               )}
-              <button
+              <ActionButton
                 type="button"
                 className={css.iconButton}
                 aria-label={t('actions.search')}
@@ -1561,7 +1562,7 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                 }}
               >
                 <SearchIcon />
-              </button>
+              </ActionButton>
             </div>
             <div className={css.rows} role="list" ref={listRef}>
               {visible.map(entry => (
@@ -1585,15 +1586,15 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
         )
         : (
           <div className={css.thread} data-messages-thread>
-            <header className={css.threadHeader}>
-              <button
+            <SectionHeader className={css.threadHeader}>
+              <ActionButton
                 type="button"
                 className={css.iconButton}
                 aria-label={t('back')}
                 onClick={() => { setOpenId(null) }}
               >
                 <BackIcon />
-              </button>
+              </ActionButton>
               <span className={css.threadTitle} data-fit="name">{nameOf(openConversation)}</span>
               {/* THE CHIP IS THE WHOLE IDENTITY CLAIM THE CONVERSATION MAKES OUT LOUD, and it is one
                   word: a conversation with a binding that verified says nothing, because there is
@@ -1602,18 +1603,18 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                   the chip never has to spell TEST, UNBOUND and FOREIGN into a header. */}
               <span className={css.headerTail}>
                 {openState !== undefined && openState !== 'VERIFIED' && (
-                  <button
+                  <ActionButton
                     type="button"
-                    className={css.chip}
+                    variant={openState === 'FOREIGN' ? 'red-warning' : openState === 'UNBOUND' ? 'blue' : 'gold'} className={css.chip}
                     data-trust-chip={openState}
                     aria-label={t('verify.open')}
                     onClick={() => { openSheet('verify', openConversation) }}
                   >
                     <ShieldIcon size={12} verified={false} />
-                  </button>
+                  </ActionButton>
                 )}
                 <span className={css.actions}>
-                  <button
+                  <ActionButton
                     type="button"
                     className={css.iconButton}
                     aria-label={t('details.open')}
@@ -1621,19 +1622,19 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                     onClick={() => { openSheet('details', openConversation) }}
                   >
                     <InfoIcon />
-                  </button>
-                  <button
+                  </ActionButton>
+                  <ActionButton
                     type="button"
-                    className={clsx(css.iconButton, css.pinAction)}
+                    variant="purple" className={css.iconButton}
                     aria-label={t('thread.pin')}
                     aria-pressed={openConversation.pinned}
                     onClick={() => { toggle(openConversation, 'pinned') }}
                   >
                     <PinIcon />
-                  </button>
-                  <button
+                  </ActionButton>
+                  <ActionButton
                     type="button"
-                    className={clsx(css.iconButton, css.archiveAction)}
+                    variant="gold" className={css.iconButton}
                     aria-label={t('thread.archive')}
                     onClick={() => {
                       // Archiving files the conversation away, so the view
@@ -1643,21 +1644,21 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                     }}
                   >
                     <ArchiveIcon />
-                  </button>
+                  </ActionButton>
                 </span>
               </span>
-            </header>
+            </SectionHeader>
             <div className={css.messages} ref={messagesRef}>
               {openContact !== undefined && thread.kind === 'loading' && (
                 <span className={css.threadNotice} data-thread-status="loading" aria-label={t('thread.loading')}><SendPendingIcon /></span>
               )}
               {warningKey !== null && (
-                <button type="button" className={css.iconButton} data-thread-status="failed"
+                <ActionButton type="button" variant="red-warning" className={css.iconButton} data-thread-status="failed"
                   aria-label={t(warningKey)} title={t(warningKey)}
-                  onClick={() => { openSheet('warning', openConversation) }}><ForeignStateIcon /></button>
+                  onClick={() => { openSheet('warning', openConversation) }}><ForeignStateIcon /></ActionButton>
               )}
               {openLiveMessages.map(message => (
-                <div
+                <Card
                   key={message.id}
                   data-message-id={message.id}
                   className={message.from === 'me' ? css.msgMe : css.msgThem}
@@ -1667,10 +1668,10 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                   {openReceipt?.kind === 'accepted' && message.id === openReceipt.id && (
                     <ReceiptMark receipt={openReceipt} outcome={openOutcome} t={t} />
                   )}
-                </div>
+                </Card>
               ))}
             </div>
-            <div className={css.composerCard} data-messages-composer>
+            <Panel className={css.composerCard} data-messages-composer>
               {/* THE RECEIPT IS A MARK ON THE MESSAGE, NOT A PARAGRAPH OVER THE COMPOSER. Three
                   sentences about relays used to sit here permanently, one per send, in the place a
                   person looks when they are about to type — and the sentence they replaced said
@@ -1690,17 +1691,17 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
                 }}
               />
               <div className={css.composerRow}>
-                <button
+                <ActionButton
                   type="button"
-                  className={css.sendCircle}
+                  variant={openReceipt?.kind === 'failed' || openReceipt?.kind === 'not-accepted' ? 'red-warning' : 'blue'} className={css.sendCircle}
                   aria-label={t('composer.send')}
                   disabled={draft.trim() === '' || openReceipt?.kind === 'pending'}
                   onClick={() => { sendTo(openConversation) }}
                 >
                   {openReceipt?.kind === 'pending' ? <SendPendingIcon /> : openReceipt?.kind === 'failed' || openReceipt?.kind === 'not-accepted' ? <SendRefusedIcon /> : <SendIcon />}
-                </button>
+                </ActionButton>
               </div>
-            </div>
+            </Panel>
           </div>
         )}
       {sheet !== null && sheet.kind === 'verify' && sheetEntry !== null && sheetState !== undefined && (

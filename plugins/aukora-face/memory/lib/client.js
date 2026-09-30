@@ -4,10 +4,11 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let react = require("react");
 		//#region \0dsh-css:Memory.module.css.mjs
-		const css = ".svAxTG_memoryView[hidden]{display:none!important}.svAxTG_memoryView{z-index:1;box-sizing:border-box;overscroll-behavior:contain;scrollbar-gutter:stable;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;max-width:46rem;height:100%;min-height:0;color:var(--dsw-alias-label-primary);flex-direction:column;gap:18px;margin:0 auto;padding:22px 20px 48px;display:flex;position:relative;overflow:hidden auto}.svAxTG_memoryHead{flex-direction:column;gap:4px;padding:0 4px;display:flex}.svAxTG_memoryTitle{margin:0;font-size:20px;font-weight:600;line-height:28px}.svAxTG_memorySubtitle{color:var(--dsw-alias-label-tertiary);margin:0;font-size:13px;line-height:20px}.svAxTG_memoryNotice{color:var(--dsw-alias-label-tertiary);margin:6px 0 0;font-size:12px}.svAxTG_portals{flex-direction:column;flex:none;gap:10px;min-width:0;display:flex}.svAxTG_portal{--tone:var(--dsw-static-spatial-mint);border:1px solid color-mix(in srgb, var(--tone) 30%, transparent);transition:border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out), background .25s var(--ds-ease-in-out);background:0 0;border-radius:14px}.svAxTG_portal[data-tone=gold]{--tone:var(--dsw-static-spatial-gold)}.svAxTG_portal[data-tone=violet]{--tone:var(--dsw-static-spatial-violet)}.svAxTG_portal[data-tone=blue]{--tone:var(--dsw-static-spatial-blue,#78aaff)}.svAxTG_portal[data-open=yes]{border-color:color-mix(in srgb, var(--tone) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--tone) 14%, transparent);background:color-mix(in srgb, var(--tone) 4%, transparent)}.svAxTG_portalHead{width:100%;min-height:64px;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:transform .2s var(--ds-ease-in-out);background:0 0;border:0;align-items:center;gap:14px;padding:10px 18px;display:flex}.svAxTG_portal[data-open=no] .svAxTG_portalHead:hover{transform:translate(3px)}.svAxTG_portalDot{background:var(--tone);width:9px;height:9px;box-shadow:0 0 10px color-mix(in srgb, var(--tone) 55%, transparent);border-radius:50%;flex:none}.svAxTG_portalCopy{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.svAxTG_portalCopy strong{font-size:14px;font-weight:570;line-height:20px}.svAxTG_portalCopy span{color:var(--dsw-alias-label-tertiary);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:18px;overflow:hidden}.svAxTG_portalChevron{color:color-mix(in srgb, var(--tone) 80%, transparent);flex:none;font-size:18px;line-height:1}.svAxTG_portalBody{transform-origin:top;animation:svAxTG_telescope .26s var(--ds-ease-in-out);flex-direction:column;gap:8px;padding:2px 14px 16px;display:flex}@keyframes svAxTG_telescope{0%{opacity:0;transform:scaleY(.94)}to{opacity:1;transform:scaleY(1)}}.svAxTG_portalSearch{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--tone) 30%, transparent);background:color-mix(in srgb, var(--tone) 3%, transparent);width:100%;max-width:420px;height:38px;color:var(--dsw-alias-label-primary);font:inherit;text-align:center;transition:border-color .2s var(--ds-ease-in-out), box-shadow .2s var(--ds-ease-in-out);border-radius:12px;outline:none;margin:2px auto 8px;padding:0 16px;font-size:13px;display:block}.svAxTG_portalSearch::placeholder{color:var(--dsw-alias-label-tertiary)}.svAxTG_portalSearch:focus{border-color:color-mix(in srgb, var(--tone) 58%, transparent);box-shadow:0 0 12px color-mix(in srgb, var(--tone) 14%, transparent)}.svAxTG_portalQuiet{color:var(--dsw-alias-label-tertiary);text-align:center;margin:4px 0;font-size:12px}.svAxTG_memoryList{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.svAxTG_memoryItem{border:1px solid color-mix(in srgb, var(--tone) 22%, transparent);transition:border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);border-radius:12px}.svAxTG_memoryItem[data-open=yes]{border-color:color-mix(in srgb, var(--tone) 50%, transparent);box-shadow:0 0 12px color-mix(in srgb, var(--tone) 12%, transparent)}.svAxTG_memoryPortal{width:100%;min-height:48px;color:inherit;font:inherit;text-align:left;cursor:pointer;transition:transform .2s var(--ds-ease-in-out);background:0 0;border:0;align-items:center;gap:12px;padding:10px 14px;display:flex}.svAxTG_memoryItem[data-open=no] .svAxTG_memoryPortal:hover{transform:translate(3px)}.svAxTG_memoryWords{overflow-wrap:anywhere;white-space:pre-wrap;flex:1;min-width:0;font-size:14px;line-height:20px}.svAxTG_memoryItem[data-open=no] .svAxTG_memoryWords{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.svAxTG_memoryWhen{color:var(--dsw-alias-label-tertiary);flex-direction:column;flex:none;align-items:flex-end;gap:3px;font-size:12px;display:flex}.svAxTG_memoryDetail{flex-direction:column;gap:6px;padding:0 14px 12px;display:flex}.svAxTG_memoryMeta{color:var(--dsw-alias-label-tertiary);margin:0;font-size:12px;line-height:18px}.svAxTG_memoryActions{flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;display:flex}.svAxTG_memoryAsk{color:var(--dsw-alias-label-secondary);font-size:12px}.svAxTG_pill{border:1px solid color-mix(in srgb, var(--tone) 34%, transparent);color:var(--dsw-alias-label-primary);font:inherit;cursor:pointer;transition:border-color .2s var(--ds-ease-in-out), background .2s var(--ds-ease-in-out);background:0 0;border-radius:999px;padding:4px 12px;font-size:12px}.svAxTG_pill:hover{border-color:color-mix(in srgb, var(--tone) 60%, transparent);background:color-mix(in srgb, var(--tone) 8%, transparent)}.svAxTG_memoryHead{flex:none}.svAxTG_portalBody,.svAxTG_memoryList,.svAxTG_memoryItem,.svAxTG_memoryDetail{min-width:0}.svAxTG_memoryProblem{color:var(--dsw-static-spatial-gold);font:inherit;cursor:pointer;background:0 0;border:0;align-self:center}.svAxTG_more{color:var(--tone);cursor:pointer;background:0 0;border:0;align-self:center;padding:8px 20px}.svAxTG_pill:disabled,.svAxTG_more:disabled{opacity:.5;cursor:wait}.svAxTG_memoryView{container-type:inline-size}@container (width<=340px){.svAxTG_memoryPortal{flex-direction:column;align-items:flex-start;gap:6px}.svAxTG_memoryWhen{flex-flow:wrap;gap:8px;font-size:11px}.svAxTG_portalHead{gap:10px;padding:10px 12px}.svAxTG_portalBody{padding:2px 8px 12px}}";
+		const css = ".F0hRUq_memoryView[hidden]{display:none!important}.F0hRUq_memoryView{z-index:1;box-sizing:border-box;overscroll-behavior:contain;scrollbar-gutter:stable;background:var(--aukora-background);width:100%;min-width:0;max-width:46rem;height:100%;min-height:0;color:var(--aukora-text);flex-direction:column;gap:18px;margin:0 auto;padding:22px 20px 48px;display:flex;position:relative;overflow:hidden auto;container-type:inline-size}.F0hRUq_memoryHead{flex-direction:column;flex:none;align-items:flex-start;gap:4px;padding:0 4px}.F0hRUq_memoryTitle{margin:0;font-size:20px;font-weight:600;line-height:28px}.F0hRUq_portals{flex-direction:column;flex:none;gap:10px;min-width:0;display:flex}.F0hRUq_portalDot{background:currentColor;border-radius:50%;width:9px;height:9px}.F0hRUq_portalBody{flex-direction:column;gap:8px;display:flex}.F0hRUq_portalSearch{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-accent) 30%, transparent);border-radius:var(--aukora-radius);background:var(--aukora-surface);width:100%;max-width:420px;height:38px;color:var(--aukora-text);font:inherit;text-align:center;margin:2px auto 8px;padding:0 16px;font-size:13px;display:block}.F0hRUq_portalSearch::placeholder{color:var(--aukora-text-muted)}.F0hRUq_portalSearch:focus-visible{outline:2px solid var(--aukora-accent);outline-offset:2px}.F0hRUq_portalQuiet{color:var(--aukora-text-muted);text-align:center;margin:4px 0;font-size:12px}.F0hRUq_memoryList{flex-direction:column;gap:8px;margin:0;padding:0;list-style:none;display:flex}.F0hRUq_memoryPortal{gap:12px;min-height:48px;padding:10px 14px}.F0hRUq_memoryWords{overflow-wrap:anywhere;white-space:pre-wrap;min-width:0;font-size:14px;font-weight:400;line-height:20px;display:block}.F0hRUq_memoryItem[data-open=no] .F0hRUq_memoryWords{text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.F0hRUq_memoryWhen{color:var(--aukora-text-muted);flex-direction:column;flex:none;align-items:flex-end;gap:3px;font-size:12px;display:flex}.F0hRUq_memoryDetail{padding:0 14px 12px}.F0hRUq_memoryActions{flex-wrap:wrap;align-items:center;gap:8px;margin-top:4px;display:flex}.F0hRUq_pill{padding:4px 12px;font-size:12px}.F0hRUq_memoryProblem{color:var(--aukora-red-warning);align-self:center}.F0hRUq_retry,.F0hRUq_more{align-self:center}.F0hRUq_more{padding:8px 20px}.F0hRUq_portalBody,.F0hRUq_memoryList,.F0hRUq_memoryItem,.F0hRUq_memoryDetail{min-width:0}.F0hRUq_memoryMenuItem{width:100%}@container (width<=340px){.F0hRUq_memoryPortal{flex-direction:column;align-items:flex-start;gap:6px}.F0hRUq_memoryWhen{flex-flow:wrap;gap:8px;font-size:11px}.F0hRUq_portalHead{gap:10px;padding:10px 12px}.F0hRUq_portalBody{padding:2px 8px 12px}}";
 		const tagId = "@aukora/face-memory/Memory.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,33 +18,27 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Memory_module_css_default = {
-			"memoryActions": "svAxTG_memoryActions",
-			"memoryAsk": "svAxTG_memoryAsk",
-			"memoryDetail": "svAxTG_memoryDetail",
-			"memoryHead": "svAxTG_memoryHead",
-			"memoryItem": "svAxTG_memoryItem",
-			"memoryList": "svAxTG_memoryList",
-			"memoryMeta": "svAxTG_memoryMeta",
-			"memoryNotice": "svAxTG_memoryNotice",
-			"memoryPortal": "svAxTG_memoryPortal",
-			"memoryProblem": "svAxTG_memoryProblem",
-			"memorySubtitle": "svAxTG_memorySubtitle",
-			"memoryTitle": "svAxTG_memoryTitle",
-			"memoryView": "svAxTG_memoryView",
-			"memoryWhen": "svAxTG_memoryWhen",
-			"memoryWords": "svAxTG_memoryWords",
-			"more": "svAxTG_more",
-			"pill": "svAxTG_pill",
-			"portal": "svAxTG_portal",
-			"portalBody": "svAxTG_portalBody",
-			"portalChevron": "svAxTG_portalChevron",
-			"portalCopy": "svAxTG_portalCopy",
-			"portalDot": "svAxTG_portalDot",
-			"portalHead": "svAxTG_portalHead",
-			"portalQuiet": "svAxTG_portalQuiet",
-			"portalSearch": "svAxTG_portalSearch",
-			"portals": "svAxTG_portals",
-			"telescope": "svAxTG_telescope"
+			"memoryActions": "F0hRUq_memoryActions",
+			"memoryDetail": "F0hRUq_memoryDetail",
+			"memoryHead": "F0hRUq_memoryHead",
+			"memoryItem": "F0hRUq_memoryItem",
+			"memoryList": "F0hRUq_memoryList",
+			"memoryMenuItem": "F0hRUq_memoryMenuItem",
+			"memoryPortal": "F0hRUq_memoryPortal",
+			"memoryProblem": "F0hRUq_memoryProblem",
+			"memoryTitle": "F0hRUq_memoryTitle",
+			"memoryView": "F0hRUq_memoryView",
+			"memoryWhen": "F0hRUq_memoryWhen",
+			"memoryWords": "F0hRUq_memoryWords",
+			"more": "F0hRUq_more",
+			"pill": "F0hRUq_pill",
+			"portalBody": "F0hRUq_portalBody",
+			"portalDot": "F0hRUq_portalDot",
+			"portalHead": "F0hRUq_portalHead",
+			"portalQuiet": "F0hRUq_portalQuiet",
+			"portalSearch": "F0hRUq_portalSearch",
+			"portals": "F0hRUq_portals",
+			"retry": "F0hRUq_retry"
 		};
 		//#endregion
 		//#region src/client/MemoryMenu.tsx
@@ -58,10 +53,11 @@ window.__ModuleLoader__.load({
 		*/
 		function MemoryMenu({ activeSurface, openSurface, t }) {
 			const active = activeSurface === "memory";
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+				variant: "green",
 				type: "button",
 				"data-memory-launcher": true,
-				className: active ? [Memory_module_css_default.memoryMenuItem, Memory_module_css_default.memoryMenuItemActive].join(" ") : Memory_module_css_default.memoryMenuItem,
+				className: Memory_module_css_default.memoryMenuItem,
 				"aria-current": active ? "page" : void 0,
 				title: t("menu.memory.tip"),
 				onClick: () => {
@@ -507,9 +503,9 @@ window.__ModuleLoader__.load({
 		/** A paged memory view inside the existing centre lane. */
 		const SOURCE = httpMemorySource();
 		const TONE = {
-			remembered: "mint",
+			remembered: "green",
 			signed: "gold",
-			proposal: "violet",
+			proposal: "purple",
 			forgotten: "blue"
 		};
 		const dateText = (at) => at === null ? "—" : new Date(at).toLocaleDateString();
@@ -697,7 +693,7 @@ window.__ModuleLoader__.load({
 				"aria-label": t("view.title"),
 				hidden: !active,
 				"aria-hidden": !active,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("header", {
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
 					className: Memory_module_css_default.memoryHead,
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
 						className: Memory_module_css_default.memoryTitle,
@@ -713,238 +709,229 @@ window.__ModuleLoader__.load({
 					className: Memory_module_css_default.portals,
 					children: TIER_TABS.map((each) => {
 						const open = openTier === each.tier;
-						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-							className: Memory_module_css_default.portal,
-							"data-tone": TONE[each.tier],
-							"data-open": open ? "yes" : "no",
-							"data-memory-tab": each.tier,
-							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-								type: "button",
-								className: Memory_module_css_default.portalHead,
-								"aria-expanded": open,
-								onClick: () => {
-									setOpenItem(null);
-									setActionError(null);
-									setOpenTier(open ? null : each.tier);
-									if (!open) setView((current) => ({
-										...current,
-										tier: each.tier,
-										query: "",
-										confirmingForget: null
-									}));
-								},
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: Memory_module_css_default.portalDot,
-										"aria-hidden": "true"
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-										className: Memory_module_css_default.portalCopy,
-										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`tab.${each.tier}`) }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`tab.${each.tier}.blurb`) })]
-									}),
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: Memory_module_css_default.portalChevron,
-										"aria-hidden": "true",
-										children: open ? "−" : "+"
-									})
-								]
-							}), open ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-								className: Memory_module_css_default.portalBody,
-								"aria-busy": state === "loading" || paging,
-								children: [
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-										type: "search",
-										className: Memory_module_css_default.portalSearch,
-										"data-memory-search": true,
-										placeholder: t("search.placeholder"),
-										"aria-label": t("search.placeholder"),
-										value: view.query,
-										onChange: (event) => {
-											setOpenItem(null);
-											setView((current) => ({
-												...current,
-												query: event.target.value,
-												confirmingForget: null
-											}));
-										}
-									}),
-									state === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-										className: Memory_module_css_default.portalQuiet,
-										role: "img",
-										"aria-label": t("surface.loading"),
-										children: "⋯"
-									}) : null,
-									issues.length ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: Memory_module_css_default.memoryProblem,
-										"data-memory-failed": state === "failed" ? "failed" : "partial",
-										"data-memory-error": issues.join(","),
-										title: issues.join("\n"),
-										"aria-label": t("surface.failed"),
-										onClick: () => {
-											setRevision((value) => value + 1);
-										},
-										children: "↻"
-									}) : null,
-									state === "ready" && !issues.length && !next && items.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-										className: Memory_module_css_default.portalQuiet,
-										"data-memory-empty": view.tier,
-										children: t("surface.empty")
-									}) : null,
-									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
-										className: Memory_module_css_default.memoryList,
-										children: items.map((item) => {
-											const expanded = openItem === item.id;
-											const confirming = view.confirmingForget === item.id;
-											const mutable = !item.erased && item.tier !== "signed";
-											return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("li", {
-												className: Memory_module_css_default.memoryItem,
-												"data-memory-row": item.id,
-												"data-memory-backend": item.backend,
-												"data-memory-author": item.author ?? "unknown",
-												"data-open": expanded ? "yes" : "no",
-												children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
-													type: "button",
-													className: Memory_module_css_default.memoryPortal,
-													"aria-expanded": expanded,
-													onClick: () => {
-														setOpenItem(expanded ? null : item.id);
-													},
-													children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-														className: Memory_module_css_default.memoryWords,
-														children: item.text
-													}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-														className: Memory_module_css_default.memoryWhen,
-														children: [item.author === "Peter" || item.author === "agent" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
-															width: "14",
+						return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.PortalButton, {
+							variant: TONE[each.tier],
+							expanded: open,
+							containerProps: { "data-memory-tab": each.tier },
+							title: t(`tab.${each.tier}`),
+							subtitle: t(`tab.${each.tier}.blurb`),
+							icon: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: Memory_module_css_default.portalDot,
+								"aria-hidden": "true"
+							}),
+							buttonClassName: Memory_module_css_default.portalHead,
+							contentClassName: Memory_module_css_default.portalBody,
+							contentProps: { "aria-busy": state === "loading" || paging },
+							onExpandedChange: (nextOpen) => {
+								setOpenItem(null);
+								setActionError(null);
+								setOpenTier(nextOpen ? each.tier : null);
+								if (nextOpen) setView((current) => ({
+									...current,
+									tier: each.tier,
+									query: "",
+									confirmingForget: null
+								}));
+							},
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+									type: "search",
+									className: Memory_module_css_default.portalSearch,
+									"data-memory-search": true,
+									placeholder: t("search.placeholder"),
+									"aria-label": t("search.placeholder"),
+									value: view.query,
+									onChange: (event) => {
+										setOpenItem(null);
+										setView((current) => ({
+											...current,
+											query: event.target.value,
+											confirmingForget: null
+										}));
+									}
+								}),
+								state === "loading" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: Memory_module_css_default.portalQuiet,
+									role: "img",
+									"aria-label": t("surface.loading"),
+									children: "⋯"
+								}) : null,
+								issues.length ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+									type: "button",
+									variant: "red-warning",
+									className: Memory_module_css_default.retry,
+									"data-memory-failed": state === "failed" ? "failed" : "partial",
+									"data-memory-error": issues.join(","),
+									title: issues.join("\n"),
+									"aria-label": t("surface.failed"),
+									onClick: () => {
+										setRevision((value) => value + 1);
+									},
+									children: "↻"
+								}) : null,
+								state === "ready" && !issues.length && !next && items.length === 0 ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									className: Memory_module_css_default.portalQuiet,
+									"data-memory-empty": view.tier,
+									children: t("surface.empty")
+								}) : null,
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("ul", {
+									className: Memory_module_css_default.memoryList,
+									children: items.map((item) => {
+										const expanded = openItem === item.id;
+										const confirming = view.confirmingForget === item.id;
+										const mutable = !item.erased && item.tier !== "signed";
+										return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("li", {
+											className: Memory_module_css_default.memoryItem,
+											"data-memory-row": item.id,
+											"data-memory-backend": item.backend,
+											"data-memory-author": item.author ?? "unknown",
+											"data-open": expanded ? "yes" : "no",
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.PortalButton, {
+												variant: TONE[each.tier],
+												expanded,
+												showIndicator: false,
+												buttonClassName: Memory_module_css_default.memoryPortal,
+												contentClassName: Memory_module_css_default.memoryDetail,
+												title: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+													className: Memory_module_css_default.memoryWords,
+													children: item.text
+												}),
+												onExpandedChange: (nextOpen) => {
+													setOpenItem(nextOpen ? item.id : null);
+												},
+												trailing: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+													className: Memory_module_css_default.memoryWhen,
+													children: [item.author === "Peter" || item.author === "agent" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("svg", {
+														width: "14",
+														height: "14",
+														viewBox: "0 0 24 24",
+														fill: "none",
+														stroke: "currentColor",
+														strokeWidth: "1.5",
+														strokeLinecap: "round",
+														strokeLinejoin: "round",
+														role: "img",
+														"aria-label": item.author,
+														children: item.author === "Peter" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+															cx: "12",
+															cy: "7",
+															r: "4"
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M4 21v-2a8 8 0 0 1 16 0v2" })] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+															x: "4",
+															y: "7",
+															width: "16",
 															height: "14",
-															viewBox: "0 0 24 24",
-															fill: "none",
-															stroke: "currentColor",
-															strokeWidth: "1.5",
-															strokeLinecap: "round",
-															strokeLinejoin: "round",
-															role: "img",
-															"aria-label": item.author,
-															children: item.author === "Peter" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
-																cx: "12",
-																cy: "7",
-																r: "4"
-															}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M4 21v-2a8 8 0 0 1 16 0v2" })] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
-																x: "4",
-																y: "7",
-																width: "16",
-																height: "14",
-																rx: "3"
-															}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 3v4M8 12v2m8-2v2M9 17h6" })] })
-														}) : null, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("time", {
-															dateTime: item.createdAt === null ? void 0 : new Date(item.createdAt).toISOString(),
-															children: dateText(item.createdAt)
-														})]
+															rx: "3"
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M12 3v4M8 12v2m8-2v2M9 17h6" })] })
+													}) : null, /* @__PURE__ */ (0, react_jsx_runtime.jsx)("time", {
+														dateTime: item.createdAt === null ? void 0 : new Date(item.createdAt).toISOString(),
+														children: dateText(item.createdAt)
 													})]
-												}), expanded ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
-													className: Memory_module_css_default.memoryDetail,
-													children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
-														className: Memory_module_css_default.memoryActions,
-														children: [
-															item.source.sessionId && openSource ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-																type: "button",
-																className: Memory_module_css_default.pill,
-																onClick: () => {
-																	openSource(item.source.sessionId);
-																},
-																children: t("action.openSource")
-															}) : null,
-															mutable && item.backend === "kira" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-																type: "button",
-																className: Memory_module_css_default.pill,
-																"data-memory-verify": item.id,
-																disabled: busy !== null,
-																title: item.receipt.label,
-																onClick: () => {
-																	setBusy(item.id);
-																	SOURCE.verify(item.id).then((answer) => {
-																		setView((current) => ({
-																			...current,
-																			receipts: {
-																				...current.receipts,
-																				[item.id]: receiptBadgeOf(answer)
-																			}
-																		}));
-																		setActionError(null);
-																	}).catch((error) => {
-																		setActionError({
-																			id: item.id,
-																			code: errorCode(error)
-																		});
-																	}).finally(() => {
-																		setBusy(null);
+												}),
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+													className: Memory_module_css_default.memoryActions,
+													children: [
+														item.source.sessionId && openSource ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+															type: "button",
+															className: Memory_module_css_default.pill,
+															onClick: () => {
+																openSource(item.source.sessionId);
+															},
+															children: t("action.openSource")
+														}) : null,
+														mutable && item.backend === "kira" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+															type: "button",
+															className: Memory_module_css_default.pill,
+															variant: "green",
+															"data-memory-verify": item.id,
+															disabled: busy !== null,
+															title: item.receipt.label,
+															onClick: () => {
+																setBusy(item.id);
+																SOURCE.verify(item.id).then((answer) => {
+																	setView((current) => ({
+																		...current,
+																		receipts: {
+																			...current.receipts,
+																			[item.id]: receiptBadgeOf(answer)
+																		}
+																	}));
+																	setActionError(null);
+																}).catch((error) => {
+																	setActionError({
+																		id: item.id,
+																		code: errorCode(error)
 																	});
-																},
-																children: view.receipts[item.id] ? item.receipt.glyph : t("action.verify")
-															}) : null,
-															mutable ? confirming ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-																type: "button",
-																className: Memory_module_css_default.pill,
-																"data-memory-forget-confirm": item.id,
-																disabled: busy !== null,
-																onClick: () => {
-																	forget(item.id);
-																},
-																children: t("action.confirm")
-															}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-																type: "button",
-																className: Memory_module_css_default.pill,
-																"data-memory-keep": item.id,
-																disabled: busy !== null,
-																onClick: () => {
-																	setView((current) => ({
-																		...current,
-																		confirmingForget: null
-																	}));
-																	setActionError(null);
-																},
-																children: t("action.cancel")
-															})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-																type: "button",
-																className: Memory_module_css_default.pill,
-																"data-memory-forget": item.id,
-																disabled: busy !== null,
-																onClick: () => {
-																	setActionError(null);
-																	setView((current) => ({
-																		...current,
-																		confirmingForget: item.id
-																	}));
-																},
-																children: t("action.forget")
-															}) : null,
-															actionError?.id === item.id ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-																className: Memory_module_css_default.memoryProblem,
-																"data-memory-action-failed": actionError.code,
-																role: "img",
-																"aria-label": t("surface.actionFailed"),
-																title: actionError.code,
-																children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(WarningIcon, {})
-															}) : null
-														]
-													})
-												}) : null]
-											}, item.id);
-										})
-									}),
-									next ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
-										ref: more,
-										type: "button",
-										className: Memory_module_css_default.more,
-										"data-memory-more": true,
-										disabled: paging,
-										"aria-label": t("action.more"),
-										onClick: loadMore,
-										children: paging ? "⋯" : "↓"
-									}) : null
-								]
-							}) : null]
+																}).finally(() => {
+																	setBusy(null);
+																});
+															},
+															children: view.receipts[item.id] ? item.receipt.glyph : t("action.verify")
+														}) : null,
+														mutable ? confirming ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+															type: "button",
+															className: Memory_module_css_default.pill,
+															variant: "red-warning",
+															"data-memory-forget-confirm": item.id,
+															disabled: busy !== null,
+															onClick: () => {
+																forget(item.id);
+															},
+															children: t("action.confirm")
+														}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+															type: "button",
+															className: Memory_module_css_default.pill,
+															"data-memory-keep": item.id,
+															disabled: busy !== null,
+															onClick: () => {
+																setView((current) => ({
+																	...current,
+																	confirmingForget: null
+																}));
+																setActionError(null);
+															},
+															children: t("action.cancel")
+														})] }) : /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+															type: "button",
+															className: Memory_module_css_default.pill,
+															variant: "red-warning",
+															"data-memory-forget": item.id,
+															disabled: busy !== null,
+															onClick: () => {
+																setActionError(null);
+																setView((current) => ({
+																	...current,
+																	confirmingForget: item.id
+																}));
+															},
+															children: t("action.forget")
+														}) : null,
+														actionError?.id === item.id ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+															className: Memory_module_css_default.memoryProblem,
+															"data-memory-action-failed": actionError.code,
+															role: "img",
+															"aria-label": t("surface.actionFailed"),
+															title: actionError.code,
+															children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(WarningIcon, {})
+														}) : null
+													]
+												})
+											})
+										}, item.id);
+									})
+								}),
+								next ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+									ref: more,
+									type: "button",
+									className: Memory_module_css_default.more,
+									variant: TONE[each.tier],
+									"data-memory-more": true,
+									disabled: paging,
+									"aria-label": t("action.more"),
+									onClick: loadMore,
+									children: paging ? "⋯" : "↓"
+								}) : null
+							]
 						}, each.tier);
 					})
 				})]

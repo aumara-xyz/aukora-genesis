@@ -19,6 +19,10 @@ import { en, NS, zh, type LayoutKey } from './locales.ts'
 import { LayoutController } from './service.ts'
 import { createLayoutStore } from './stores.ts'
 import { ThemePresenter } from './theme-presenter.ts'
+import './spatial-tokens.css'
+
+export { ActionButton, Card, Panel, PortalButton, SectionHeader } from './primitives.tsx'
+export type { Accent, PortalButtonProps } from './primitives.tsx'
 
 export { LayoutController } from './service.ts'
 export type { ILayout, MainPanelId, PanelInfo } from './service.ts'

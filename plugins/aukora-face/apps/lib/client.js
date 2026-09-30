@@ -6,8 +6,9 @@ window.__ModuleLoader__.load({
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react = require("react");
 		let react_jsx_runtime = require("react/jsx-runtime");
+		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		//#region \0dsh-css:StockApps.module.css.mjs
-		const css$1 = ".vQN9ya_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.vQN9ya_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.vQN9ya_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.vQN9ya_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.vQN9ya_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.vQN9ya_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
+		const css$1 = ".nOGwAW_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.nOGwAW_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.nOGwAW_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.nOGwAW_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.nOGwAW_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.nOGwAW_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
 		const tagId$1 = "@aukora/face-apps/StockApps.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
@@ -17,9 +18,9 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var StockApps_module_css_default = {
-			"embeddedFrame": "vQN9ya_embeddedFrame",
-			"menuCopy": "vQN9ya_menuCopy",
-			"surfaceSeat": "vQN9ya_surfaceSeat"
+			"embeddedFrame": "nOGwAW_embeddedFrame",
+			"menuCopy": "nOGwAW_menuCopy",
+			"surfaceSeat": "nOGwAW_surfaceSeat"
 		};
 		//#endregion
 		//#region src/client/EmbeddedAppSurface.tsx
@@ -289,7 +290,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:RoomSurface.module.css.mjs
-		const css = ".z6LR1q_room{box-sizing:border-box;color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.z6LR1q_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.z6LR1q_message{--speaker-color:var(--dsw-alias-label-primary);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.z6LR1q_message[data-speaker=PETER]{--speaker-color:var(--dsw-static-spatial-blue);align-self:flex-end}.z6LR1q_message[data-speaker=AUMA]{--speaker-color:var(--dsw-static-spatial-violet)}.z6LR1q_message[data-speaker=CLAUDE]{--speaker-color:var(--dsw-static-spatial-gold)}.z6LR1q_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--dsw-static-spatial-mint)}.z6LR1q_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--dsw-static-amber-400)}.z6LR1q_message[data-speaker=GROK]{--speaker-color:var(--dsw-static-red-400)}.z6LR1q_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.z6LR1q_meta time{color:var(--dsw-alias-label-tertiary);font-size:11px}.z6LR1q_message[data-speaker=PETER] .z6LR1q_meta{justify-content:flex-end}.z6LR1q_bubble{border:1px solid var(--dsw-alias-border-l2);background:color-mix(in srgb, var(--speaker-color) 8%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;border-radius:22px;padding:10px 16px;font-size:16px;line-height:24px}.z6LR1q_message[data-speaker=PETER] .z6LR1q_bubble{background:var(--dsw-specific-bubble)}.z6LR1q_composer{box-sizing:border-box;border:1px solid var(--dsw-alias-border-l2-darkmode-thin);background:var(--dsw-specific-input-major);width:100%;box-shadow:var(--dsw-shadow-lv2);border-radius:22px;flex-direction:column;flex:none;padding:12px 12px 10px;display:flex}.z6LR1q_composer textarea{min-height:24px;max-height:120px;color:var(--dsw-alias-label-primary);font:inherit;resize:none;background:0 0;border:0;outline:none;padding:0 4px;font-size:16px;line-height:24px}";
+		const css = ".o6H4uG_menuLauncher{width:100%}.o6H4uG_room.o6H4uG_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.o6H4uG_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.o6H4uG_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.o6H4uG_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.o6H4uG_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.o6H4uG_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.o6H4uG_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.o6H4uG_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.o6H4uG_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.o6H4uG_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.o6H4uG_meta time{color:var(--aukora-text-muted);font-size:11px}.o6H4uG_message[data-speaker=PETER] .o6H4uG_meta{justify-content:flex-end}.o6H4uG_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.o6H4uG_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.o6H4uG_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.o6H4uG_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.o6H4uG_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
 		const tagId = "@aukora/face-apps/RoomSurface.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -299,12 +300,13 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var RoomSurface_module_css_default = {
-			"bubble": "z6LR1q_bubble",
-			"composer": "z6LR1q_composer",
-			"message": "z6LR1q_message",
-			"messages": "z6LR1q_messages",
-			"meta": "z6LR1q_meta",
-			"room": "z6LR1q_room"
+			"bubble": "o6H4uG_bubble",
+			"composer": "o6H4uG_composer",
+			"menuLauncher": "o6H4uG_menuLauncher",
+			"message": "o6H4uG_message",
+			"messages": "o6H4uG_messages",
+			"meta": "o6H4uG_meta",
+			"room": "o6H4uG_room"
 		};
 		//#endregion
 		//#region src/client/RoomSurface.tsx
@@ -458,12 +460,12 @@ window.__ModuleLoader__.load({
 								dateTime: message.at,
 								children: timeOf(message.at)
 							})]
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.Card, {
 							className: RoomSurface_module_css_default.bubble,
 							children: message.msg
 						})]
 					}, `${message.index}:${message.id}`))
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+				}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.Panel, {
 					className: RoomSurface_module_css_default.composer,
 					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
 						rows: 2,
@@ -528,22 +530,20 @@ window.__ModuleLoader__.load({
 			copy: "harp",
 			presentation: "full-bleed"
 		};
-		const AUMA_CANVAS_APP = {
-			id: "auma-canvas",
-			copy: "canvas",
-			presentation: "full-bleed"
-		};
-		const ROOM_APP = {
-			id: "room",
-			copy: "room",
-			presentation: "contained"
-		};
 		const STOCK_APPS = [
 			AUMA_LANGUAGE_APP,
 			AUMA_LIVE_APP,
 			ZETA_HARP_APP,
-			AUMA_CANVAS_APP,
-			ROOM_APP
+			{
+				id: "auma-canvas",
+				copy: "canvas",
+				presentation: "full-bleed"
+			},
+			{
+				id: "room",
+				copy: "room",
+				presentation: "contained"
+			}
 		];
 		function StockAppMenu({ spec, activeSurface, openSurface, t }) {
 			const active = activeSurface === spec.id;
@@ -582,10 +582,19 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/** Render the Room launcher without a subtitle. */
-		function RoomMenu(props) {
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StockAppMenu, {
-				...props,
-				spec: ROOM_APP
+		function RoomMenu({ activeSurface, openSurface, t }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+				variant: "purple",
+				className: RoomSurface_module_css_default.menuLauncher,
+				"data-stock-app-launcher": "room",
+				"aria-current": activeSurface === "room" ? "page" : void 0,
+				onClick: () => {
+					openSurface("room", void 0, "contained");
+				},
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+					className: StockApps_module_css_default.menuCopy,
+					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t("room.name") })
+				})
 			});
 		}
 		//#endregion

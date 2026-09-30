@@ -1,5 +1,6 @@
 /** Text-only Messages entry in the shell's triangle Aukora Apps menu. */
 import clsx from 'clsx'
+import { ActionButton } from '@aukora/face-layout/client'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import css from './Messages.module.css'
 
@@ -16,7 +17,7 @@ export type MessagesMenuProps =
 export function MessagesMenu({ activeSurface, openSurface, t }: MessagesMenuProps) {
   const active = activeSurface === 'messages'
   return (
-    <button
+    <ActionButton
       type="button"
       data-messages-launcher
       className={clsx(css.menuItem, active && css.menuItemActive)}
@@ -27,6 +28,6 @@ export function MessagesMenu({ activeSurface, openSurface, t }: MessagesMenuProp
         <strong>{t('menu.title')}</strong>
         <span>{t('menu.description')}</span>
       </span>
-    </button>
+    </ActionButton>
   )
 }

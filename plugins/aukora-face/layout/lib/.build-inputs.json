@@ -1,6 +1,6 @@
 {
   "face": "layout",
-  "srcDigest": "992c41f55d53079115c31f2eaf9a16ae172f6f70626809d97e94d60e747c21b9",
+  "srcDigest": "c4a28cd616d88184896bb82b32f7a9617693f0a49390beafcca145b9ec53b5aa",
   "files": [
     "package.json",
     "src/approvals-log.ts",
@@ -14,6 +14,7 @@
     "src/client/Health.module.css",
     "src/client/HealthMenu.tsx",
     "src/client/HealthSurface.tsx",
+    "src/client/Primitives.module.css",
     "src/client/Why.module.css",
     "src/client/WhyMenu.tsx",
     "src/client/WhySurface.tsx",
@@ -28,6 +29,7 @@
     "src/client/health-model.ts",
     "src/client/index.ts",
     "src/client/locales.ts",
+    "src/client/primitives.tsx",
     "src/client/service.ts",
     "src/client/spatial-tokens.css",
     "src/client/stores.ts",
@@ -45,5 +47,5 @@
     "src/why-store.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-27T07:11:32Z"
+  "builtAt": "2026-09-30T06:05:58Z"
 }

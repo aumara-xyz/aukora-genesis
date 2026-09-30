@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Card, Panel } from '@aukora/face-layout/client'
 import type { RoomMessage, RoomPage } from '../room-types.ts'
 import type { StockAppSurfaceProps } from './contract.ts'
 import { isEditableTarget } from './EmbeddedAppSurface.tsx'
@@ -151,11 +152,11 @@ export function RoomSurface({ activeSurface, closeSurface, t }: StockAppSurfaceP
               <span>{message.from}</span>
               <time dateTime={message.at}>{timeOf(message.at)}</time>
             </div>
-            <div className={css.bubble}>{message.msg}</div>
+            <Card className={css.bubble}>{message.msg}</Card>
           </div>
         ))}
       </div>
-      <div className={css.composer}>
+      <Panel className={css.composer}>
         <textarea
           rows={2}
           aria-label={t(sendFailed ? 'room.sendFailed' : 'room.message')}
@@ -168,7 +169,7 @@ export function RoomSurface({ activeSurface, closeSurface, t }: StockAppSurfaceP
             void send()
           }}
         />
-      </div>
+      </Panel>
     </div>
   )
 }

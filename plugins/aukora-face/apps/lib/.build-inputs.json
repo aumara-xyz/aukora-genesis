@@ -1,6 +1,6 @@
 {
   "face": "apps",
-  "srcDigest": "e93828ce5b140de4c88bb7af7277047e9fdd1b81a34cbf2b7b240b2ecca63dd6",
+  "srcDigest": "0e8977db32c677bf382de4b26d191434a93ecd3be2cfdccfd9d6e93f656fe640",
   "files": [
     "package.json",
     "src/auma-canvas-tool.ts",
@@ -67,5 +67,5 @@
     "src/vendor/organism.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-29T16:51:24Z"
+  "builtAt": "2026-09-30T06:06:01Z"
 }

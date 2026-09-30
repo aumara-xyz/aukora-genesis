@@ -5,12 +5,13 @@ import { TIER_TABS, INITIAL_VIEW, citedIdsOf, itemsOf, receiptBadgeOf } from './
 import type { MemoryView } from './memory-model.ts'
 import { MemoryServiceError, httpMemorySource, WHY_MANIFEST_ROUTE } from './memory-api.ts'
 import type { MemoryRecord } from './memory-api.ts'
+import { ActionButton, PortalButton, SectionHeader, type Accent } from '@aukora/face-layout/client'
 import css from './Memory.module.css'
 
 export type MemorySurfaceProps = PropsRuntime<'shell.surface'> & PropsLocale<'memory'>
   & { readonly openSource?: (sessionId: string) => void; readonly surfaceTarget?: string }
 const SOURCE = httpMemorySource()
-const TONE: Record<string, string> = { remembered: 'mint', signed: 'gold', proposal: 'violet', forgotten: 'blue' }
+const TONE: Record<MemoryView['tier'], Accent> = { remembered: 'green', signed: 'gold', proposal: 'purple', forgotten: 'blue' }
 const dateText = (at: number | null): string => at === null ? '—' : new Date(at).toLocaleDateString()
 const errorCode = (error: unknown): string => error instanceof MemoryServiceError ? error.code : 'memory:request-failed'
 
@@ -134,38 +135,35 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
   return (
     <section ref={scroller} className={css.memoryView} data-memory-surface data-source="live"
       aria-label={t('view.title')} hidden={!active} aria-hidden={!active}>
-      <header className={css.memoryHead}>
+      <SectionHeader className={css.memoryHead}>
         <h2 className={css.memoryTitle}>{t('view.title')}</h2>
         {whyTrouble ? <span className={css.memoryProblem} role="img" aria-label={t('surface.whyTrouble')} title={t('surface.whyTrouble')}><WarningIcon /></span> : null}
-      </header>
+      </SectionHeader>
       <div className={css.portals}>
         {TIER_TABS.map(each => {
           const open = openTier === each.tier
           return (
-            <div key={each.tier} className={css.portal} data-tone={TONE[each.tier]} data-open={open ? 'yes' : 'no'} data-memory-tab={each.tier}>
-              <button type="button" className={css.portalHead} aria-expanded={open} onClick={() => {
+            <PortalButton key={each.tier} variant={TONE[each.tier]} expanded={open}
+              containerProps={{ 'data-memory-tab': each.tier }}
+              title={t(`tab.${each.tier}` as 'tab.remembered')}
+              subtitle={t(`tab.${each.tier}.blurb` as 'tab.remembered.blurb')}
+              icon={<span className={css.portalDot} aria-hidden="true" />}
+              buttonClassName={css.portalHead} contentClassName={css.portalBody}
+              contentProps={{ 'aria-busy': state === 'loading' || paging }} onExpandedChange={nextOpen => {
                 setOpenItem(null)
                 setActionError(null)
-                setOpenTier(open ? null : each.tier)
-                if (!open) setView(current => ({ ...current, tier: each.tier, query: '', confirmingForget: null }))
+                setOpenTier(nextOpen ? each.tier : null)
+                if (nextOpen) setView(current => ({ ...current, tier: each.tier, query: '', confirmingForget: null }))
               }}>
-                <span className={css.portalDot} aria-hidden="true" />
-                <span className={css.portalCopy}>
-                  <strong>{t(`tab.${each.tier}` as 'tab.remembered')}</strong>
-                  <span>{t(`tab.${each.tier}.blurb` as 'tab.remembered.blurb')}</span>
-                </span>
-                <span className={css.portalChevron} aria-hidden="true">{open ? '−' : '+'}</span>
-              </button>
-              {open ? <div className={css.portalBody} aria-busy={state === 'loading' || paging}>
                 <input type="search" className={css.portalSearch} data-memory-search placeholder={t('search.placeholder')}
                   aria-label={t('search.placeholder')} value={view.query} onChange={event => {
                     setOpenItem(null)
                     setView(current => ({ ...current, query: event.target.value, confirmingForget: null }))
                   }} />
                 {state === 'loading' ? <span className={css.portalQuiet} role="img" aria-label={t('surface.loading')}>⋯</span> : null}
-                {issues.length ? <button type="button" className={css.memoryProblem} data-memory-failed={state === 'failed' ? 'failed' : 'partial'}
+                {issues.length ? <ActionButton type="button" variant="red-warning" className={css.retry} data-memory-failed={state === 'failed' ? 'failed' : 'partial'}
                   data-memory-error={issues.join(',')} title={issues.join('\n')} aria-label={t('surface.failed')}
-                  onClick={() => { setRevision(value => value + 1) }}>↻</button> : null}
+                  onClick={() => { setRevision(value => value + 1) }}>↻</ActionButton> : null}
                 {state === 'ready' && !issues.length && !next && items.length === 0 ? <p className={css.portalQuiet} data-memory-empty={view.tier}>{t('surface.empty')}</p> : null}
                 <ul className={css.memoryList}>
                   {items.map(item => {
@@ -174,9 +172,11 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
                     const mutable = !item.erased && item.tier !== 'signed'
                     return <li key={item.id} className={css.memoryItem} data-memory-row={item.id}
                       data-memory-backend={item.backend} data-memory-author={item.author ?? 'unknown'} data-open={expanded ? 'yes' : 'no'}>
-                      <button type="button" className={css.memoryPortal} aria-expanded={expanded} onClick={() => { setOpenItem(expanded ? null : item.id) }}>
-                        <span className={css.memoryWords}>{item.text}</span>
-                        <span className={css.memoryWhen}>
+                      <PortalButton variant={TONE[each.tier]} expanded={expanded} showIndicator={false}
+                        buttonClassName={css.memoryPortal} contentClassName={css.memoryDetail}
+                        title={<span className={css.memoryWords}>{item.text}</span>}
+                        onExpandedChange={nextOpen => { setOpenItem(nextOpen ? item.id : null) }}
+                        trailing={<span className={css.memoryWhen}>
                           {item.author === 'Peter' || item.author === 'agent' ? <svg width="14" height="14" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label={item.author}>
                             {item.author === 'Peter' ? <><circle cx="12" cy="7" r="4" /><path d="M4 21v-2a8 8 0 0 1 16 0v2" /></>
@@ -185,13 +185,11 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
                           <time dateTime={item.createdAt === null ? undefined : new Date(item.createdAt).toISOString()}>
                             {dateText(item.createdAt)}
                           </time>
-                        </span>
-                      </button>
-                      {expanded ? <div className={css.memoryDetail}>
+                        </span>}>
                         <div className={css.memoryActions}>
-                          {item.source.sessionId && openSource ? <button type="button" className={css.pill}
-                            onClick={() => { openSource(item.source.sessionId!) }}>{t('action.openSource')}</button> : null}
-                          {mutable && item.backend === 'kira' ? <button type="button" className={css.pill} data-memory-verify={item.id}
+                          {item.source.sessionId && openSource ? <ActionButton type="button" className={css.pill}
+                            onClick={() => { openSource(item.source.sessionId!) }}>{t('action.openSource')}</ActionButton> : null}
+                          {mutable && item.backend === 'kira' ? <ActionButton type="button" className={css.pill} variant="green" data-memory-verify={item.id}
                             disabled={busy !== null} title={item.receipt.label} onClick={() => {
                               setBusy(item.id)
                               void SOURCE.verify(item.id).then(answer => {
@@ -199,25 +197,24 @@ export function MemorySurface({ activeSurface, t, openSource, surfaceTarget }: M
                                 setActionError(null)
                               }).catch((error: unknown) => { setActionError({ id: item.id, code: errorCode(error) }) })
                                 .finally(() => { setBusy(null) })
-                            }}>{view.receipts[item.id] ? item.receipt.glyph : t('action.verify')}</button> : null}
+                            }}>{view.receipts[item.id] ? item.receipt.glyph : t('action.verify')}</ActionButton> : null}
                           {mutable ? confirming ? <>
-                            <button type="button" className={css.pill} data-memory-forget-confirm={item.id} disabled={busy !== null}
-                              onClick={() => { forget(item.id) }}>{t('action.confirm')}</button>
-                            <button type="button" className={css.pill} data-memory-keep={item.id} disabled={busy !== null}
-                              onClick={() => { setView(current => ({ ...current, confirmingForget: null })); setActionError(null) }}>{t('action.cancel')}</button>
-                          </> : <button type="button" className={css.pill} data-memory-forget={item.id} disabled={busy !== null}
-                            onClick={() => { setActionError(null); setView(current => ({ ...current, confirmingForget: item.id })) }}>{t('action.forget')}</button> : null}
+                            <ActionButton type="button" className={css.pill} variant="red-warning" data-memory-forget-confirm={item.id} disabled={busy !== null}
+                              onClick={() => { forget(item.id) }}>{t('action.confirm')}</ActionButton>
+                            <ActionButton type="button" className={css.pill} data-memory-keep={item.id} disabled={busy !== null}
+                              onClick={() => { setView(current => ({ ...current, confirmingForget: null })); setActionError(null) }}>{t('action.cancel')}</ActionButton>
+                          </> : <ActionButton type="button" className={css.pill} variant="red-warning" data-memory-forget={item.id} disabled={busy !== null}
+                            onClick={() => { setActionError(null); setView(current => ({ ...current, confirmingForget: item.id })) }}>{t('action.forget')}</ActionButton> : null}
                           {actionError?.id === item.id ? <span className={css.memoryProblem} data-memory-action-failed={actionError.code}
                             role="img" aria-label={t('surface.actionFailed')} title={actionError.code}><WarningIcon /></span> : null}
                         </div>
-                      </div> : null}
+                      </PortalButton>
                     </li>
                   })}
                 </ul>
-                {next ? <button ref={more} type="button" className={css.more} data-memory-more disabled={paging}
-                  aria-label={t('action.more')} onClick={loadMore}>{paging ? '⋯' : '↓'}</button> : null}
-              </div> : null}
-            </div>
+                {next ? <ActionButton ref={more} type="button" className={css.more} variant={TONE[each.tier]} data-memory-more disabled={paging}
+                  aria-label={t('action.more')} onClick={loadMore}>{paging ? '⋯' : '↓'}</ActionButton> : null}
+            </PortalButton>
           )
         })}
       </div>

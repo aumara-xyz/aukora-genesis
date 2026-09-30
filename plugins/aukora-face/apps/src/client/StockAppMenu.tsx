@@ -1,5 +1,7 @@
 /** Triangle-menu launchers for the bundled Aukora applications. */
 import type { StockAppMenuProps } from './contract.ts'
+import { ActionButton } from '@aukora/face-layout/client'
+import roomCss from './RoomSurface.module.css'
 import css from './StockApps.module.css'
 
 export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room'
@@ -65,6 +67,10 @@ export function AumaCanvasMenu(props: StockAppMenuProps) {
 }
 
 /** Render the Room launcher without a subtitle. */
-export function RoomMenu(props: StockAppMenuProps) {
-  return <StockAppMenu {...props} spec={ROOM_APP} />
+export function RoomMenu({ activeSurface, openSurface, t }: StockAppMenuProps) {
+  return <ActionButton variant="purple" className={roomCss.menuLauncher}
+    data-stock-app-launcher="room" aria-current={activeSurface === 'room' ? 'page' : undefined}
+    onClick={() => { openSurface('room', undefined, 'contained') }}>
+    <span className={css.menuCopy}><strong>{t('room.name')}</strong></span>
+  </ActionButton>
 }

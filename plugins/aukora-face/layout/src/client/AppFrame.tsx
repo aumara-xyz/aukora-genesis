@@ -12,7 +12,6 @@ import type {
 import type { MenuItemOwnerProps, SurfaceOwnerProps } from './types.ts'
 import { NS } from './locales.ts'
 import { PANE_WEIGHTS, type PanePreset, type createLayoutStore } from './stores.ts'
-import './spatial-tokens.css'
 import css from './AppFrame.module.css'
 import { aumaThreadOf } from './auma-thread.ts'
 import { AUMA_LIVE_SURFACE, AUMA_MINDS_PATH, AUMA_STATUS_PATH, aumaStatusOf, lanesRunningOf } from './auma-status.ts'
