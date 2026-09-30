@@ -645,12 +645,11 @@ async function main() {
   // watchdog, a quit and reopen) would not start. So the lock is taken BEFORE the rows are touched (its wait is unbounded),
   // and the window is the live check alone.
   if (!(await heavily(52, 'the live check'))) await giveUp('stopped', `memory stayed below 52 for 10 minutes before the live check; everything was put back. Re-run: node scripts/aukora/become.mjs --commit ${sha9}`)
-  const next = { ...config, patch: (config.patch ?? []).map((p, i) => (i === 0 ? p : swapRelease(p, live, target))) }
+  const next = { ...config, patch: patchesForRelease(config.patch, live, target) }
   writeFileSync(configPath, `${JSON.stringify(next, null, 1)}\n`)
   for (const path of [...livePatchFiles, gateConfig].filter((p) => existsSync(p))) {
     const before = readFileSync(path, 'utf8')
-    const after = basename(path) === 'viking.patch.yml' && existsSync(join(target, 'viking.patch.yml'))
-      ? readFileSync(join(target, 'viking.patch.yml'), 'utf8') : swapRelease(before, live, target)
+    const after = swapRelease(before, live, target)
     if (after !== before) writeFileSync(path, after)
   }
   step('repoint', { note: `rows naming ${basename(live)} now name ${basename(target)}` })
@@ -785,6 +784,15 @@ export async function observe(release, settle = 0) {
 
 /** Every row naming the release `from` (as a directory prefix, or as a whole quoted value) names `to` instead. */
 export const swapRelease = (text, from, to) => text.split(`${from}/`).join(`${to}/`).split(`"${from}"`).join(`"${to}"`)
+
+/** Preserve deployment overlays and add the separate memory MCP client once, without mutating the input. */
+export function patchesForRelease(patches, from, to) {
+  // desktop-cutover owns the first (composition) slot. Repoint all other entries in their existing order.
+  const next = (patches ?? []).map((path, i) => i === 0 ? path : swapRelease(path, from, to))
+  const memoryPatch = join(to, 'tracked-memory.patch.yml')
+  if (!next.includes(memoryPatch)) next.push(memoryPatch)
+  return next
+}
 
 /**
  * The release names a materializer retention refusal lists as `unprotected` and free to move: a candidate followed by a

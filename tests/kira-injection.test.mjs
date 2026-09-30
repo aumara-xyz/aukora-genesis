@@ -690,7 +690,11 @@ const mountMemory = async (run, module = kira) => {
   const listener = ctx._subscribed.find(one => one.event === 'agent/pre-step')
   assert.ok(listener, 'the actual plugin must register its recall listener')
   return async () => {
-    const decision = await listener.handler({ agent: run.agent }, async () => ({ kind: 'enter', messages: [] }))
+    const previous = globalThis.fetch
+    globalThis.fetch = scratchFetch
+    let decision
+    try { decision = await listener.handler({ agent: run.agent }, async () => ({ kind: 'enter', messages: [] })) }
+    finally { globalThis.fetch = previous }
     assert.equal(decision.messages.length, 1)
     assert.equal(decision.messages[0].source.form, 'snapshot')
     const text = decision.messages[0].content[0].text

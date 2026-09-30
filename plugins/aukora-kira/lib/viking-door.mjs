@@ -77,7 +77,9 @@ export function createVikingDoor({ memory, stateDir, subject, config, fetch, por
       else {
         if (value.state === 'undetermined') throw new DoorError(503, 'Memory search unavailable.');
         res.setHeader('x-aukora-memory-dropped-tampered', String(value.dropped?.tampered?.length ?? 0));
-        send(200, value.notes.map(note => ({ ...note, source: note.uri })));
+        if (value.degraded === true) res.setHeader('x-aukora-memory-degraded', 'true');
+        send(200, value.notes.map(note => ({ ...note, source: note.uri,
+          ...(value.degraded === true ? { degraded: true, method: value.method, semantic: value.semantic } : {}) })));
       }
     } catch (error) {
       if (!res.headersSent && !res.destroyed) send(error instanceof DoorError ? error.status : 500,
@@ -90,13 +92,13 @@ export function createVikingDoor({ memory, stateDir, subject, config, fetch, por
     if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
   });
 
-  let retryTimer
+  let retryTimer, initialRetry
   const listen = async () => {
     await new Promise((resolve, reject) => { server.once('error', reject); server.listen(port, '127.0.0.1', resolve) })
-    void memory.retry().catch(() => {})
+    initialRetry = setImmediate(() => void memory.retry().catch(() => {})); initialRetry.unref()
     retryTimer = setInterval(() => void memory.retry().catch(() => {}), 30_000); retryTimer.unref()
     return server.address()
   }
-  const close = () => { clearInterval(retryTimer); return new Promise(resolve => server.close(resolve)) }
+  const close = () => { clearImmediate(initialRetry); clearInterval(retryTimer); return new Promise(resolve => server.close(resolve)) }
   return Object.freeze({ server, listen, close, remember, recall, memory })
 }

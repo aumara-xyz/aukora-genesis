@@ -1683,13 +1683,14 @@ def main() -> int:
     # The same, for the Seatbelt provider swap. Carrying the file mounts nothing; a deployment lists it to mount it.
     shutil.copy2(ROOT / 'overlays' / 'seatbelt.patch.yml', target / 'seatbelt.patch.yml')
     shutil.copy2(ROOT / 'overlays' / 'caged-worker.patch.yml', target / 'caged-worker.patch.yml')
-    # Viking's MCP write now enters the same tracked-memory writer as chat capture.
-    (target / 'viking.patch.yml').write_text(
+    # Add tracked memory beside the deployment's original Viking client and transport.
+    # The pinned loader keys entries by id; reusing mcp-client would replace the Viking row.
+    (target / 'tracked-memory.patch.yml').write_text(
         '- insert:\n'
-        '    - id: mcp-client\n'
+        '    - id: mcp-client-kira-memory\n'
         f'      name: {target / "packages/mcp/mcp-client/lib/index.js"}\n'
         '      config:\n'
-        '        serverName: viking\n'
+        '        serverName: kira-memory\n'
         '        transport: stdio\n'
         '        command: node\n'
         f'        args: [{json.dumps(str(target / "scripts/kira/viking-mcp.mjs"))}, "--installed"]\n'

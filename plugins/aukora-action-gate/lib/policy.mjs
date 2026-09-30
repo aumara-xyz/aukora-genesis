@@ -188,7 +188,7 @@ export const DEFAULT_ALLOW_TOOLS = Object.freeze([
   'present', 'read_image', 'str_replace_editor', 'glob', 'skill', 'todo_write', 'ask_user_question', 'workflow',
   'aura_association', 'send_message', 'interrupt_agent', 'list_agents', 'exit_plan_mode',
   'get_goal', 'create_goal', 'update_goal', 'read_mcp_resource',
-  'memory.put', 'kira_*', 'mcp__viking__*', 'cordis_inspect_*', 'subagent*', 'session_*', 'job_*', 'list_*',
+  'memory.put', 'kira_*', 'mcp__viking__*', 'mcp__kira-memory__*', 'cordis_inspect_*', 'subagent*', 'session_*', 'job_*', 'list_*',
   // The trusted host tool this plugin registers (self-change-tool.mjs): the one route a contained agent has to its own code.
   'aukora_self_change',
   'aukora_workspace_patch',

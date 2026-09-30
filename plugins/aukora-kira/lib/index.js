@@ -255,11 +255,13 @@ export async function apply(ctx, config) {
     return memory
   }
   const recallContext = agent => ({ sessionId: sessionIdOfAgent(agent), attachedProjects: [projectScopeOf(agent)].filter(Boolean) })
-  const semanticIndex = () => void memoryFor()?.retry().catch(() => ctx.logger?.warn?.('aukora-kira: memory indexing pending retry'))
-  semanticIndex()
+  const semanticIndex = () => void Promise.resolve().then(() => memoryFor()?.retry())
+    .catch(() => ctx.logger?.warn?.('aukora-kira: memory indexing pending retry'))
+  const initialRetry = normalized.memoryOwner ? setImmediate(semanticIndex) : null
+  initialRetry?.unref?.()
   const retryTimer = normalized.memoryOwner ? setInterval(semanticIndex, 30_000) : null
   retryTimer?.unref?.()
-  ctx.effect(() => () => { if (retryTimer) clearInterval(retryTimer) }, 'aukora-kira: memory index retry')
+  ctx.effect(() => () => { if (initialRetry) clearImmediate(initialRetry); if (retryTimer) clearInterval(retryTimer) }, 'aukora-kira: memory index retry')
   const withSemanticForget = deps => ({ ...deps, forgetNote: async args => {
     const answer = await deps.forgetNote(args)
     if (!answer.forgotten) return answer
@@ -594,7 +596,7 @@ export async function apply(ctx, config) {
       const remembered = await rememberedFor(rememberedNotes, request.text ?? '', exec?.agent, false, report)
       const answer = { availability: remembered.state === 'undetermined' ? 'undetermined' : remembered.state === 'found' ? 'found' : 'empty',
         status: remembered.state === 'found' ? 'match' : 'insufficient',
-        relations: [], interpretation: { kind: 'search' }, retrieval: { method: 'openviking-semantic' }, ceiling: remembered.ceiling ?? [], state: {},
+        relations: [], interpretation: { kind: 'search' }, retrieval: { method: remembered.method ?? 'openviking-semantic', degraded: remembered.degraded === true }, ceiling: remembered.ceiling ?? [], state: {},
         snippets: remembered.notes.map(note => ({ ...note, recordId: note.id, citation: { remembered: true, entryHash: note.rememberedChain?.entryHash } })),
         remembered, memory: report, grantsAuthority: false }
       partialFailureState.record(exec?.agent, { outer: answer.availability, remembered: remembered.state })

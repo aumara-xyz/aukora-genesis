@@ -10,8 +10,14 @@ import { CONTROLS, forgottenIds, noteStates, ownerControlIn } from './memory-for
 import { SECRET_PATTERNS, FORBIDDEN_WINDOW_DIGESTS, carriesForbiddenPhrase } from './compaction-export.mjs'
 import { readForbiddenDigests } from './forbidden-digests.mjs'
 import { appendJournalLine, durableWrite, ensureDirectory, listJsonFiles, readJsonStrict, readLinesIfPresent, withFileLock } from './strict-read.mjs'
-import { createOpenVikingRecall, semanticNotes, SEMANTIC_DEFAULTS } from './recall-openviking.mjs'
+import { createOpenVikingRecall, semanticNotes, SEMANTIC_DEFAULTS, contentUri } from './recall-openviking.mjs'
 import { filterMemoryRecords } from './recall-filter/filter.mjs'
+import { compileIndex, rankRecords, LEXICAL_METHOD, RETRIEVAL_CEILING } from './retrieval.mjs'
+import { randomUUID } from 'node:crypto'
+
+const RETRY_BATCH = 8
+const retryFlights = new Map()
+const batchSize = value => Number.isInteger(value) && value > 0 ? Math.min(value, RETRY_BATCH) : RETRY_BATCH
 
 const chainFile = stateDir => `${stateDir}/${STORE_PATHS.rememberedAura}`
 const journalFile = stateDir => `${stateDir}/${STORE_PATHS.journal}`
@@ -67,10 +73,11 @@ export function memoryChain(stateDir) {
 }
 
 /** Exact stored statement bytes, validated against the envelope AND the content commitment.
- * Old valid notes are accepted for migration; ensureTracked adds their explicit content commitment. */
+ * Old valid notes are accepted for bounded migration and local recall. */
 export function readTrackedMemory(stateDir) {
   const chain = memoryChain(stateDir)
   const membership = new Map(chain.filter(e => ['add', 'remember', 'index-content'].includes(e.op) && e.entryHash).map(e => [e.id, e]))
+  const commitments = new Map(chain.filter(e => e.op === 'index-content').map(e => [e.id, e]))
   const { journal, forgotten, states } = journalSnapshot(stateDir)
   const notes = [], withheld = [], orphans = [], seen = new Set()
   for (const name of listJsonFiles(`${stateDir}/${STORE_PATHS.remembered}`)) {
@@ -84,8 +91,11 @@ export function readTrackedMemory(stateDir) {
       const entry = membership.get(note.id)
       if (!entry || entry.entryHash !== note.aura?.entryHash || recomputeNoteId(note) !== note.id || objectFileName(note.id) !== name) throw new Error('unchained')
       const hash = contentHash(note.statement)
-      if ((entry.contentHash && entry.contentHash !== hash) || (note.contentHash && note.contentHash !== hash)) throw new Error('content-hash-mismatch')
-      notes.push({ ...note, ...note.origin?.metadata, tier: 'remembered', contentHash: hash, trackedContent: entry.contentHash === hash })
+      const commitment = commitments.get(note.id)
+      if ((entry.contentHash && entry.contentHash !== hash) || (note.contentHash && note.contentHash !== hash)
+        || (commitment && (commitment.contentHash !== hash || commitment.entryHash !== note.aura?.entryHash))) throw new Error('content-hash-mismatch')
+      notes.push({ ...note, ...note.origin?.metadata, tier: 'remembered', contentHash: hash,
+        trackedContent: entry.contentHash === hash || commitment?.contentHash === hash })
     } catch (error) {
       if (note && !membership.has(note.id)) orphans.push(note)
       withheld.push({ id: note?.id ?? `rem:${name.slice(0, -5)}`, recallRefusal: String(error?.message ?? 'unreadable') })
@@ -95,14 +105,16 @@ export function readTrackedMemory(stateDir) {
   return { notes, withheld, forgotten, states, complete: withheld.length === 0, chain, journal, orphans }
 }
 
-function repairJournal(stateDir, notes, journal) {
+function repairJournal(stateDir, notes, journal, budget = notes.length) {
   const journalled = new Set(journal.filter(e => e.op === 'add').map(e => e.id))
-  let previous = journal.at(-1) ?? null
+  let previous = journal.at(-1) ?? null, repaired = 0
   for (const note of notes) if (!journalled.has(note.id)) {
+    if (repaired >= budget) break
     previous = nextEntry({ previous, op: 'add', id: note.id, objectDigest: contentHash(note.statement), actor: 'kira.capture/v2', at: note.observedAt, reason: '' })
     appendJournalLine({ file: journalFile(stateDir), line: JSON.stringify(previous) })
-    journal.push(previous); journalled.add(note.id)
+    journal.push(previous); journalled.add(note.id); repaired++
   }
+  return repaired
 }
 
 function append(stateDir, notes, live) {
@@ -127,8 +139,8 @@ function append(stateDir, notes, live) {
   const entries = chainAuraEntries(stateDir, bodies, { file })
   for (const note of stored) durableWrite(`${stateDir}/${STORE_PATHS.remembered}/${objectFileName(note.id)}`, `${JSON.stringify(note)}\n`, { dir: `${stateDir}/${STORE_PATHS.remembered}` })
   for (const entry of entries) appendJournalLine({ file, line: JSON.stringify(entry) })
-  // Repair a journal append missed after the chain fsync, as well as writing new journal entries.
-  repairJournal(stateDir, [...live.notes, ...stored], live.journal)
+  // Persist this capture immediately. Older interrupted appends belong to bounded retry.
+  repairJournal(stateDir, stored, live.journal)
   live.chain.push(...entries)
   live.notes.push(...stored.map(note => ({ ...note, ...note.origin?.metadata, trackedContent: true })))
   live.withheld = live.withheld.filter(item => !stored.some(note => note.id === item.id))
@@ -152,41 +164,93 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
   const privateContent = (text, digests) => SECRET_PATTERNS.some(pattern => { pattern.lastIndex = 0; return pattern.test(text) })
     || (digests.length > 0 && carriesForbiddenPhrase(text, digests))
   // One verified snapshot per synchronous store operation. Network waits refresh it below.
-  const track = live => {
-    repairJournal(stateDir, live.notes, live.journal)
-    const bodies = live.notes.filter(note => !note.trackedContent).map(note => ({ op: 'index-content', id: note.id,
+  const track = (live, budget) => {
+    const journalRepaired = repairJournal(stateDir, live.notes, live.journal, budget)
+    const committed = new Set(live.chain.filter(entry => entry.op === 'index-content').map(entry => entry.id))
+    const pending = live.notes.filter(note => !note.trackedContent && !committed.has(note.id))
+    const bodies = pending.slice(0, budget).map(note => ({ op: 'index-content', id: note.id,
       at: canonicalInstant(now()), contentHash: note.contentHash, digest: note.contentHash, entryHash: note.aura.entryHash, by: 'kira.index-backfill/v1' }))
     const entries = chainAuraEntries(stateDir, bodies, { file: chainFile(stateDir) })
     for (const entry of entries) appendJournalLine({ file: chainFile(stateDir), line: JSON.stringify(entry) })
     live.chain.push(...entries)
-    live.notes = live.notes.map(note => ({ ...note, trackedContent: true }))
-    return bodies.length
+    const added = new Set(bodies.map(entry => entry.id))
+    live.notes = live.notes.map(note => added.has(note.id) ? { ...note, trackedContent: true } : note)
+    return { tracked: bodies.length, migrationPending: pending.length - bodies.length, journalRepaired }
   }
-  const trackedSnapshot = () => {
+  const trackedSnapshot = budget => {
     prepare()
     return withFileLock(chainFile(stateDir), () => {
-      const live = readTrackedMemory(stateDir), added = track(live)
-      return { live, added }
-    })
+      const live = readTrackedMemory(stateDir), migration = track(live, budget)
+      return { live, migration }
+    }, { waitMs: 0 })
   }
-  const ensureTracked = () => trackedSnapshot().added
+  const ensureTracked = (budget = RETRY_BATCH) => trackedSnapshot(batchSize(budget)).migration.tracked
   const ledger = (live = readTrackedMemory(stateDir)) => ({
-    entries: new Map(live.notes.filter(note => note.subject === subject && note.privacy === 'local' && note.trackedContent).map(note => [note.id, note])),
+    entries: new Map(live.notes.filter(note => note.subject === subject && note.privacy === 'local').map(note => [note.id, note])),
     complete: live.complete, forgotten: live.forgotten, states: live.states,
   })
-  const syncBatch = Number.isInteger(config.syncBatch) && config.syncBatch > 0 ? config.syncBatch : SEMANTIC_DEFAULTS.syncBatch
-  const indexSnapshot = async (live, priorityHashes = [], verifyAcknowledged = false) => {
+  const syncBatch = batchSize(config.syncBatch)
+  const indexSnapshot = async (live, priorityHashes = [], verifyAcknowledged = false, budget = syncBatch) => {
     const snapshot = ledger(live)
-    if (!bridge.configured) return { added: 0, pending: snapshot.entries.size, failed: ['openviking-not-configured'] }
-    try { return await bridge.sync(() => ledger(), { snapshot, budget: syncBatch, priorityHashes, verifyAcknowledged }) }
+    if (!bridge.configured) return { added: 0, requests: 0, pending: snapshot.entries.size, failed: ['openviking-not-configured'] }
+    try { return await bridge.sync(() => ledger(), { snapshot, budget, priorityHashes, verifyAcknowledged }) }
     catch { return { added: 0, pending: snapshot.entries.size, failed: ['index-unavailable'] } }
   }
-  const retry = async () => indexSnapshot(trackedSnapshot().live, [], true)
+  // The first store read is in a later event-loop turn, never in plugin/server initialization.
+  // The small durable lease also backs off a crash/restart, before any full-store scan.
+  const retryFile = `${stateDir}/remembered/index/retry.json`
+  const retryBaseMs = Math.max(1000, Math.min(900_000, Number(config.retryBaseMs) || 30_000))
+  const retryTimeoutMs = Number.isFinite(config.timeoutMs) ? Math.max(1, Math.min(30_000, config.timeoutMs)) : SEMANTIC_DEFAULTS.timeoutMs
+  const readRetry = () => {
+    try {
+      const value = readJsonStrict(retryFile)
+      if (!Number.isSafeInteger(value.failures) || value.failures < 0 || !Number.isFinite(value.nextRetryAt)
+        || !Number.isFinite(value.leaseUntil)) throw new Error('memory-retry-state-invalid')
+      return value
+    } catch (error) {
+      if (error?.code === 'ENOENT') return { failures: 0, nextRetryAt: 0, leaseUntil: 0 }
+      throw error
+    }
+  }
+  // Scratch/operator calls may lower batchSize or bypass backoff with force; an active lease is never bypassed.
+  const retry = (options = {}) => {
+    if (retryFlights.has(stateDir)) return retryFlights.get(stateDir)
+    const flight = new Promise(resolve => setImmediate(resolve)).then(async () => {
+      const budget = batchSize(options.batchSize ?? syncBatch), token = randomUUID()
+      ensureDirectory(`${stateDir}/remembered/index`)
+      const claim = withFileLock(retryFile, () => {
+        const prior = readRetry(), at = now()
+        if (prior.leaseUntil > at || (options.force !== true && prior.nextRetryAt > at)) return { skipped: true, prior }
+        const failures = Math.min(prior.failures + 1, 20)
+        const leaseUntil = at + budget * retryTimeoutMs + 30_000
+        const next = { failures, nextRetryAt: Math.max(leaseUntil, at + Math.min(900_000, retryBaseMs * 2 ** (failures - 1))), leaseUntil, token }
+        durableWrite(retryFile, `${JSON.stringify(next)}\n`)
+        return { prior, next }
+      }, { waitMs: 0 })
+      if (claim.skipped) return { skipped: true, reason: claim.prior.leaseUntil > now() ? 'retry-in-flight' : 'retry-backoff',
+        added: 0, tracked: 0, journalRepaired: 0, requests: 0, pending: null, migrationPending: null, batchSize: budget,
+        failures: claim.prior.failures, nextRetryAt: claim.prior.nextRetryAt }
+      let result
+      try {
+        const { live, migration } = trackedSnapshot(budget)
+        result = { ...await indexSnapshot(live, [], true, budget), ...migration, ledgerComplete: live.complete }
+        if (!live.complete) result.failed = [...(result.failed ?? []), 'memory-store-incomplete']
+      } catch { result = { added: 0, failed: ['memory-store-unavailable'] } }
+      const failed = result.failed?.length > 0
+      const next = { failures: failed ? claim.next.failures : 0, leaseUntil: 0,
+        nextRetryAt: failed ? now() + Math.min(900_000, retryBaseMs * 2 ** (claim.next.failures - 1)) : 0 }
+      withFileLock(retryFile, () => {
+        if (readRetry().token === token) durableWrite(retryFile, `${JSON.stringify(next)}\n`)
+      }, { waitMs: 0 })
+      return { ...result, skipped: false, batchSize: budget, failures: next.failures, nextRetryAt: next.nextRetryAt }
+    }).finally(() => { if (retryFlights.get(stateDir) === flight) retryFlights.delete(stateDir) })
+    retryFlights.set(stateDir, flight)
+    return flight
+  }
   const save = async notes => {
     prepare()
     const { written, live } = withFileLock(chainFile(stateDir), () => {
       const live = readTrackedMemory(stateDir)
-      track(live)
       return { written: append(stateDir, notes, live), live }
     })
     const index = await indexSnapshot(live, notes.map(note => contentHash(note.statement)))
@@ -211,7 +275,6 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
     prepare()
     const { results, live, candidates } = withFileLock(chainFile(stateDir), () => {
       const live = readTrackedMemory(stateDir)
-      track(live)
       const identities = new Map(), candidates = [], results = []
       const excluded = id => live.forgotten.has(id) || live.states.get(id) === 'hidden'
       const excludedDigests = new Set(live.chain.filter(entry => excluded(entry.id)).map(entry => entry.contentHash))
@@ -270,18 +333,39 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
     return { ...result, index }
   }
   const recall = async ({ question, limit, context = {} }) => {
-    const p = await policy()
+    let p = await policy()
     const report = { dropped: 0, reasons: {} }
-    if (p.offTheRecord || Object.entries(CONTROLS).some(([k, v]) => (v.stopsRecall || v.stopsRecallPersonal) && p.controls?.[k])) {
-      return { state: 'empty', notes: [], memory: report, grantsAuthority: false, reason: 'recall-paused' }
+    const paused = () => p.offTheRecord || Object.entries(CONTROLS).some(([k, v]) => (v.stopsRecall || v.stopsRecallPersonal) && p.controls?.[k])
+    const pauseReply = () => ({ state: 'empty', notes: [], memory: report, grantsAuthority: false, reason: 'recall-paused' })
+    if (paused()) return pauseReply()
+    const filter = (notes, live) => filterMemoryRecords(notes, { ...context, ...p, permittedPrivacy: [p.privacy],
+      nowMs: now(), forgotten: live.forgotten, states: live.states }, report)
+    try {
+      const answer = await bridge.recall({ question, live: () => ledger(), govern: filter, limit })
+      // Both unavailable and successful network paths can race forget, hide, capture or policy changes.
+      p = await policy()
+      if (paused()) return pauseReply()
+      const live = readTrackedMemory(stateDir)
+      const notes = filter([...ledger(live).entries.values(), ...live.withheld], live)
+      const byId = new Map(notes.map(note => [note.id, note]))
+      if (!answer.available) {
+        const records = notes.map(note => ({ recordId: note.id, text: note.statement }))
+        const count = Number.isInteger(limit) ? Math.max(1, Math.min(50, limit)) : SEMANTIC_DEFAULTS.limit
+        const hits = rankRecords(compileIndex(records), records, String(question ?? ''))
+          .filter(row => row.score >= LEXICAL_METHOD.minScore).slice(0, count)
+          .map(row => ({ id: row.recordId, score: row.score, note: byId.get(row.recordId), relevance: 'lexical-overlap',
+            uri: contentUri(config.user ?? SEMANTIC_DEFAULTS.user, byId.get(row.recordId).contentHash) }))
+        return { ...semanticNotes({ ...answer, hits, threshold: LEXICAL_METHOD.minScore }, 60_000),
+          ...(live.complete ? {} : { state: 'undetermined' }), method: LEXICAL_METHOD.name, ceiling: RETRIEVAL_CEILING,
+          degraded: true, semantic: { available: false, reason: answer.reason }, memory: report, dropped: answer.dropped }
+      }
+      const hits = answer.hits.flatMap(hit => byId.has(hit.id) ? [{ ...hit, note: byId.get(hit.id) }] : [])
+      return { ...semanticNotes({ ...answer, hits }, 60_000), ...(live.complete && answer.ledgerComplete ? {} : { state: 'undetermined' }),
+        semantic: { available: true }, memory: report, dropped: answer.dropped }
+    } catch {
+      // Store integrity/read failures cannot be laundered into a successful local fallback.
+      return { state: 'undetermined', notes: [], grantsAuthority: false, reason: 'memory-store-unavailable', memory: report }
     }
-    let snapshot = trackedSnapshot().live, latest = ledger(snapshot)
-    const filter = (notes, live = latest) => {
-      return filterMemoryRecords(notes, { ...p, permittedPrivacy: [p.privacy], nowMs: now(), ...context, forgotten: live.forgotten, states: live.states }, report)
-    }
-    const answer = await bridge.recall({ question, live: () => { const live = snapshot ?? readTrackedMemory(stateDir); snapshot = null; latest = ledger(live); return latest }, govern: filter, limit })
-    if (!answer.available) return { state: 'undetermined', notes: [], semantic: { available: false, reason: answer.reason }, memory: report, dropped: answer.dropped }
-    return { ...semanticNotes(answer, 60_000), ...(answer.ledgerComplete ? {} : { state: 'undetermined' }), semantic: { available: true }, memory: report, dropped: answer.dropped }
   }
   return Object.freeze({ captureTurn, remember, rememberBatch, retry, recall, ledger, read: () => { const live = readTrackedMemory(stateDir); return { ...live, notes: live.notes.filter(note => note.subject === subject && note.privacy === 'local') } }, ensureTracked, bridge })
 }

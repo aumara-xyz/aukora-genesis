@@ -88,10 +88,10 @@ try {
     for (let i = 0; i < 5; i++) await queued.remember({ text: `Queued old finding ${i}.` })
     down = false
     const current = await queued.captureTurn(turn('agent', 'The current final finding must be indexed first.', 91), { attributedTo: 'agent', scope: 'owner' })
-    assert.equal(current.index.added, 3); assert.equal(current.index.pending, 3)
+    assert.equal(current.index.added, 2); assert.equal(current.index.pending, 4)
     assert.ok(files.has(`viking://user/scratch/memories/kira/content/${current.notes[0].contentHash}.md`))
     const retry = await queued.retry()
-    assert.equal(retry.added, 2); assert.equal(retry.pending, 1)
+    assert.equal(retry.added, 2); assert.equal(retry.pending, 2)
     assert.equal((await queued.retry()).pending, 0)
     assert.equal(queued.read().notes.length, 6)
     for (const note of queued.read().notes) files.delete(`viking://user/scratch/memories/kira/content/${note.contentHash}.md`)

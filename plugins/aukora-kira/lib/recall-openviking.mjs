@@ -124,13 +124,20 @@ export function contentUri(user, hash) {
 
 export function createOpenVikingRecall(input) {
   const config = { ...SEMANTIC_DEFAULTS, ...input?.config }
+  config.timeoutMs = Number.isFinite(config.timeoutMs) ? Math.max(1, Math.min(30_000, config.timeoutMs)) : SEMANTIC_DEFAULTS.timeoutMs
+  const syncBudget = value => Number.isInteger(value) && value >= 0 ? Math.min(8, value) : 8
   const configured = config.configured === true
   const doFetch = input.fetch ?? globalThis.fetch
   const root = `viking://user/${config.user}/memories/kira`
   const acknowledgementFile = input.stateDir ? `${input.stateDir}/remembered/index/ack.json` : null
   let acknowledgements = {}
-  if (acknowledgementFile && stateExists(acknowledgementFile)) {
-    try { acknowledgements = readJsonStrict(acknowledgementFile) } catch { /* retry every chain entry */ }
+  // Loading a bridge during initialization must not read its growing index ledger.
+  const readAcknowledgements = () => {
+    if (acknowledgementFile) {
+      try { acknowledgements = readJsonStrict(acknowledgementFile) }
+      catch { acknowledgements = {} /* missing acknowledgement remains retryable */ }
+      if (!acknowledgements || Array.isArray(acknowledgements) || typeof acknowledgements !== 'object') acknowledgements = {}
+    }
   }
   let serial = Promise.resolve()
   const inTurn = task => { const next = serial.then(task); serial = next.catch(() => {}); return next }
@@ -168,11 +175,12 @@ export function createOpenVikingRecall(input) {
       withFileLock(acknowledgementFile, () => {
         let current = {}
         if (stateExists(acknowledgementFile)) { try { current = readJsonStrict(acknowledgementFile) } catch {} }
+        if (!current || Array.isArray(current) || typeof current !== 'object') current = {}
         if (ids === null) delete current[uri]
         else current[uri] = ids
         acknowledgements = current
         durableWrite(acknowledgementFile, `${JSON.stringify(current)}\n`, { dir: dirname(acknowledgementFile) })
-      })
+      }, { waitMs: 0 })
     } else if (ids === null) delete acknowledgements[uri]
   }
   const removeUri = async uri => {
@@ -180,22 +188,25 @@ export function createOpenVikingRecall(input) {
     catch (error) { if (error.code !== 'kira.semantic:not-found') throw error }
   }
   let auditOffset = 0
-  const auditAcknowledged = async grouped => {
+  const auditAcknowledged = async (grouped, budget = config.syncBatch) => {
     const uris = Object.keys(acknowledgements).filter(uri => grouped.has(uri))
-    const unreadable = [], tampered = []
-    const count = Math.min(uris.length, config.syncBatch)
+    const unreadable = [], tampered = [], failed = []
+    const count = Math.min(uris.length, syncBudget(budget))
+    let requests = 0
     for (let i = 0; i < count; i++) {
       const uri = uris[(auditOffset + i) % uris.length]
       try {
+        requests++
         const bytes = await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`)
         if (typeof bytes !== 'string') { ack(uri, null); unreadable.push(uri) }
         else if (grouped.get(uri).some(note => note.statement !== bytes || hashOf(note) !== sha256Hex(bytes))) tampered.push(uri)
       } catch (error) {
         if (error.code === 'kira.semantic:not-found') { ack(uri, null); unreadable.push(uri) }
+        else { failed.push('index-audit-failed'); break }
       }
     }
-    auditOffset = uris.length ? (auditOffset + count) % uris.length : 0
-    return { unreadable, tampered }
+    auditOffset = uris.length ? (auditOffset + requests) % uris.length : 0
+    return { unreadable, tampered, failed, requests }
   }
   const groupLedger = live => {
     const grouped = new Map()
@@ -208,41 +219,59 @@ export function createOpenVikingRecall(input) {
     return grouped
   }
   const sync = (source, options = {}) => inTurn(async () => {
-    if (!configured) return { added: 0, removed: 0, pending: 0, failed: ['openviking-not-configured'] }
+    if (!configured) return { added: 0, removed: 0, requests: 0, pending: 0, failed: ['openviking-not-configured'] }
+    readAcknowledgements()
     const live = await ledgerNow(options.snapshot ?? source), grouped = groupLedger(live)
-    let added = 0, removed = 0
+    const budget = syncBudget(options.budget ?? config.syncBatch)
+    let added = 0, removed = 0, requests = 0
     const failed = [], written = []
-    const audit = options.verifyAcknowledged ? await auditAcknowledged(grouped) : { unreadable: [], tampered: [] }
+    const remove = async uri => {
+      requests++
+      try { await removeUri(uri); ack(uri, null); removed++ }
+      catch { failed.push('remove-failed') }
+    }
     if (live.complete) for (const uri of Object.keys(acknowledgements)) if (uri.startsWith(`${root}/`) && !grouped.has(uri)) {
-      try { await removeUri(uri); ack(uri, null); removed++ } catch { failed.push('remove-failed') }
+      if (requests >= budget || failed.length) break
+      await remove(uri)
     }
     const missing = [...grouped].filter(([uri]) => !acknowledgements[uri])
     const priority = new Set(options.priorityHashes ?? [])
     const current = missing.filter(([, notes]) => priority.has(hashOf(notes[0])))
     const older = missing.filter(([, notes]) => !priority.has(hashOf(notes[0])))
     // New captures get the first bounded batch; a large old outbox cannot starve this turn.
-    const selected = [...current.slice(0, config.syncBatch), ...older.slice(0, options.budget ?? config.syncBatch)]
+    // One request budget covers deletes, writes, audits and forget-race cleanup together.
+    const selected = [...current, ...older].slice(0, Math.max(0, budget - requests))
     for (const [uri, notes] of selected) {
+      if (failed.length) break
       try {
+        requests++
         await call('POST', '/api/v1/content/write', { uri, content: notes[0].statement, mode: 'replace', wait: true,
           timeout: Math.max(1, Math.round(config.timeoutMs / 1000)), tags: [`content_sha256=${hashOf(notes[0])}`, 'source=kira-memory'] })
-        written.push(uri)
+        // Keep a durable deletion target even if a forget races this write and the budget is spent.
+        ack(uri, notes.map(note => note.id)); written.push(uri)
       } catch { failed.push('index-write-failed'); break }
     }
     // One latest snapshot after the entire async batch protects forget races without an N-by-N store scan.
-    const latest = await ledgerNow(source), latestGroups = groupLedger(latest)
+    let latest = requests ? await ledgerNow(source) : live, latestGroups = groupLedger(latest)
     for (const uri of written) {
       const alive = latestGroups.get(uri) ?? []
       if (!alive.length) {
-        if (latest.complete) { try { await removeUri(uri); ack(uri, null); removed++ } catch { failed.push('remove-failed') } }
+        if (latest.complete && requests < budget && !failed.length) await remove(uri)
         continue
       }
       ack(uri, alive.map(note => note.id)); added++
     }
+    const audit = options.verifyAcknowledged && !failed.length
+      ? await auditAcknowledged(latestGroups, budget - requests) : { unreadable: [], tampered: [], failed: [], requests: 0 }
+    requests += audit.requests; failed.push(...audit.failed)
+    if (audit.tampered.length) failed.push('index-content-mismatch')
+    if (audit.requests) { latest = await ledgerNow(source); latestGroups = groupLedger(latest) }
     return { added, removed, pending: [...latestGroups.keys()].filter(uri => !acknowledgements[uri]).length,
-      indexed: Object.keys(acknowledgements).length, failed, audit }
+      removalPending: latest.complete ? Object.keys(acknowledgements).filter(uri => uri.startsWith(`${root}/`) && !latestGroups.has(uri)).length : null,
+      indexed: Object.keys(acknowledgements).length, failed, audit, requests, budget }
   })
   const forget = id => inTurn(async () => {
+    readAcknowledgements()
     const uris = Object.entries(acknowledgements).filter(([, ids]) => Array.isArray(ids) && ids.includes(id)).map(([uri]) => uri)
     if (NOTE_ID.test(id) || GOVERNED_ID.test(id)) uris.push(uriFor(config.user, id))
     if (GOVERNED_ID.test(id)) uris.push(`${root}/governed/kira-${id.slice(5)}.md`)
@@ -260,12 +289,18 @@ export function createOpenVikingRecall(input) {
     const diagnostics = []
     let live = await ledgerNow(source)
     const up = await available()
-    if (!up.ok) return { available: false, reason: up.reason, hits: [], dropped, ledgerComplete: live.complete }
+    if (!up.ok) {
+      live = await ledgerNow(source)
+      return { available: false, reason: up.reason, hits: [], dropped, ledgerComplete: live.complete }
+    }
     let synced
     try { synced = await sync(source, { budget: config.syncBatch, snapshot: live }) } catch { synced = { failed: ['index-sync-failed'] } }
     let result
     try { result = await call('POST', '/api/v1/search/find', { query: `${config.queryInstruction}${String(question)}`, target_uri: root, limit: config.candidates }) }
-    catch { return { available: false, reason: 'semantic-recall-failed', hits: [], dropped, ledgerComplete: live.complete } }
+    catch {
+      live = await ledgerNow(source)
+      return { available: false, reason: 'semantic-recall-failed', hits: [], dropped, ledgerComplete: live.complete }
+    }
     const candidateNotes = typeof readCandidates === 'function' ? await readCandidates() : []
     // Read content concurrently, then govern everything with one latest ledger after network I/O.
     const byUri = new Map()
@@ -280,9 +315,11 @@ export function createOpenVikingRecall(input) {
       const ids = byUri.get(uri) ?? (named && live.entries.has(named) ? [named] : [])
       if (!uri.startsWith(`${root}/`) || !ids.length) return { uri, ids: [], unmapped: true }
       try { return { uri, ids, score: Number(hit.score), bytes: await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`) } }
-      catch { return { uri, ids, unreadable: true } }
+      catch (error) { return { uri, ids, unreadable: true, unavailable: error.code !== 'kira.semantic:not-found' } }
     }))
     live = await ledgerNow(source)
+    if (reads.some(read => read.unavailable)) return { available: false, reason: 'semantic-recall-failed', hits: [],
+      dropped: { ...dropped, unreadable: reads.filter(read => read.unreadable).map(read => read.uri) }, ledgerComplete: live.complete }
     const verified = [], raw = []
     for (const read of reads) {
       const { uri, score, bytes, ids } = read
@@ -304,6 +341,8 @@ export function createOpenVikingRecall(input) {
     if (reads.length === 0) {
       const audit = await inTurn(() => auditAcknowledged(groupLedger(live)))
       dropped.unreadable.push(...audit.unreadable); dropped.tampered.push(...audit.tampered)
+      live = await ledgerNow(source)
+      if (audit.failed.length) return { available: false, reason: 'semantic-recall-failed', hits: [], dropped, ledgerComplete: live.complete }
     }
     for (const hit of raw) {
       const note = filtered.get(hit.id)

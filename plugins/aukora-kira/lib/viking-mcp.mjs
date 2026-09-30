@@ -6,7 +6,7 @@ export function createVikingMcp(memory) {
   const tools = [
     { name: 'write', description: 'Remember exact content in tracked memory and index it. URI is assigned from its content hash.',
       inputSchema: { type: 'object', properties: { content: { type: 'string', minLength: 1, maxLength: 1000000 }, from: { type: 'string', pattern: '^[A-Za-z0-9_-]{1,64}$', description: 'Agent origin; owner-prefixed names are reserved for the host.' }, uri: { type: 'string', description: 'Source for append; destination is always content-addressed.' }, mode: { type: 'string', enum: ['replace', 'append'], default: 'replace' }, wait: { type: 'boolean', default: false }, timeout: { type: ['number', 'null'], exclusiveMinimum: 0 } }, required: ['content'], additionalProperties: false } },
-    { name: 'find', description: 'Semantic memory search. Only exact indexed bytes verified against the memory chain are returned.',
+    { name: 'find', description: 'Chain-verified semantic memory search with local lexical fallback. Only exact bytes verified against the memory chain are returned.',
       inputSchema: { type: 'object', properties: { query: { type: 'string' }, limit: { type: 'integer', minimum: 1, maximum: 10 } }, required: ['query'], additionalProperties: false } },
   ]
   return async request => {

@@ -35,6 +35,10 @@ try {
   const memory = createTrackedMemory({ stateDir, subject, config, fetch })
   const first = await backfillTrackedMemory({ memory, stateDir, subject, config, legacyDir: join(stateDir, 'legacy') })
   assert.equal(first.imported, 36); assert.equal(first.failed, 0)
+  for (let batch = 0; files.size < 36 && batch < 5; batch++) {
+    const retry = await memory.retry()
+    assert.ok(retry.requests <= 8)
+  }
   assert.equal(memory.read().notes.length, 36); assert.equal(files.size, 36)
   assert.ok(memory.read().notes.every(note => note.tier === 'remembered' && !note.grantsAuthority))
   assert.ok(memoryChain(stateDir).every(entry => entry.contentHash && entry.prev && entry.hash))

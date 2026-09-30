@@ -79,6 +79,7 @@
           - kira_*
           - memory.put
           - mcp__viking__*
+          - mcp__kira-memory__*
           - cordis_inspect_*
           - subagent*
           - session_*
