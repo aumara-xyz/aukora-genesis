@@ -97,7 +97,7 @@ export function consequentialPartialFailureDecision(tool, state) {
 // Compile these existing allow outcomes for the kernel. New classes/outcomes need explicit rules.
 export const KERNEL_ALLOWS = Object.freeze([
   ['read', 'observe', ['allow:ok']],
-  ['write', 'local-write', ['allow:ok', 'allow:approved', 'allow:approved-checked']],
+  ['write', 'local-write', ['allow:ok', 'allow:approved', 'allow:approved-checked', 'allow:workspace-proposal']],
   ['exec', 'external', ['allow:ok']],
   ['network', 'external', ['allow:ok', 'allow:non-network-uri', 'allow:search-provider']],
   // `allow:workspace-proposal` IS RETURNED BY THIS FILE AND WAS NOT COMPILED HERE. `judge` below returns it
@@ -107,6 +107,8 @@ export const KERNEL_ALLOWS = Object.freeze([
   // mounted, and named in the deployment's `allowTools`. Two halves of one gate disagreed on a label.
   // Measured 2026-09-30 on the live release: `aukora_workspace_patch` refused `kernel:policy_no_match`.
   // The rule stays narrow: it permits the workspace-proposal class and nothing else.
+  // The name lives on both the write and tool rows because `aukora_workspace_patch` classifies as a write.
+  // Putting it only on the tool row caused the refusal.
   ['tool', 'external', ['allow:approved', 'allow:approved-checked', 'allow:workspace-proposal']],
 ])
 
