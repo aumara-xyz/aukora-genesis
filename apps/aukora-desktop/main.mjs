@@ -5,7 +5,7 @@
 // already serve: it starts one harness process against a state root it owns,
 // reads that process's authenticated URL out of its own private log, and shows it.
 import { app, BrowserWindow, WebContentsView, shell, session, dialog, ipcMain, nativeTheme } from 'electron'
-import { join, dirname, resolve as resolvePath } from 'node:path'
+import { join, dirname, isAbsolute, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { writeFile } from 'node:fs/promises'
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -40,7 +40,11 @@ const BACKGROUND = '#0B0E14'
 const ABORT_GRACE_MS = 8_000
 
 // userData must be set BEFORE requestSingleInstanceLock: the lock is keyed to it.
-app.setPath('userData', process.env.AUKORA_DESKTOP_USERDATA ?? join(app.getPath('appData'), 'AUKORA'))
+const supportRoot = process.env.AUKORA_DESKTOP_USERDATA ?? process.env.AUKORA_SUPPORT_ROOT
+  ?? join(app.getPath('appData'), 'AUKORA')
+if (supportRoot.trim() === '') throw new Error('support-root-empty: refusing an empty support root')
+if (!isAbsolute(supportRoot)) throw new Error('support-root-relative: name an absolute support root')
+app.setPath('userData', resolvePath(supportRoot))
 if (process.platform === 'darwin' && !app.requestSingleInstanceLock()) app.exit(0)
 
 const env = process.env
@@ -419,6 +423,7 @@ app.whenReady().then(async () => {
   // further down (it is awaited), so the bridge is given a SOURCE rather than a session: a value read
   // now would be null for the lifetime of the window, which is the same defect as not passing one.
   let shellSigner = null
+  let signerStart = Promise.resolve()
   const aumlok = aumlokBridge = installApprovalBridge({
     BrowserWindow, WebContentsView, ipcMain, session, app, here,
     // LIGHT OR DARK FOR THE APPROVAL WINDOW COMES FROM THE SHELL, WHICH IS THE ONLY THING THAT KNOWS IT.
@@ -438,6 +443,7 @@ app.whenReady().then(async () => {
     // session captured here would be null for the lifetime of the window and every screen would be
     // told there is no signer.
     getSigningSession: signingSessionSource(() => shellSigner),
+    onBound: () => ensureShellSigner(),
     log: line => console.log(`aukora-desktop: ${line}`),
   })
   app.on('will-quit', () => {
@@ -452,34 +458,34 @@ app.whenReady().then(async () => {
   // THE PATH IS THE ONE `signerSocket` ABOVE ALREADY PUT IN THE BACKEND CHILD'S ENVIRONMENT: same
   // string, resolved once, so the two sides cannot disagree. A shell that cannot start this signer
   // still starts: the window stays up and the reason is printed by name.
-  void (async () => {
-    try {
-      // THE SAME RESOLUTION AS THE BRIDGE: a declared folder, else a fresh install's `<state root>/aumlok`.
-      const binding = resolveAumlokDirectory(composition.patchPaths)
-        ?? (composition.stateRoot === null ? null : { directory: defaultAumlokDirectory(composition.stateRoot) })
-      if (signerSocket === null) {
-        console.log('aukora-desktop: aumlok signer: there is no state root to put the approval socket '
-          + 'in, so none is served and the backend child was not told one either.')
-        return
+  function ensureShellSigner() {
+    // Serialize launch with first bind: they may overlap, but must never own two sockets.
+    signerStart = signerStart.then(async () => {
+      if (shellSigner?.serving === true) return shellSigner
+      try {
+        const binding = resolveAumlokDirectory(composition.patchPaths)
+          ?? (composition.stateRoot === null ? null : { directory: defaultAumlokDirectory(composition.stateRoot) })
+        if (signerSocket === null) {
+          console.log('aukora-desktop: aumlok signer: no state root for an approval socket')
+          return
+        }
+        const lib = composition.releaseDir === null ? null : await loadOrganLibrary(composition.releaseDir)
+        shellSigner = await startShellSigner({
+          library: lib,
+          directory: binding === null ? null : binding.directory,
+          socketPath: signerSocket.socketPath,
+          // Every operation still needs its own answer in the approval card.
+          ask: request => aumlok.ask(request),
+          log: line => console.log(`aukora-desktop: ${line}`),
+        })
+        return shellSigner
+      } catch (error) {
+        console.error(`aukora-desktop: aumlok signer failed to start: ${String(error?.message ?? error)}`)
       }
-      const lib = composition.releaseDir === null
-        ? null : await loadOrganLibrary(composition.releaseDir)
-      shellSigner = await startShellSigner({
-        library: lib,
-        directory: binding === null ? null : binding.directory,
-        socketPath: signerSocket.socketPath,
-        // AN APPROVAL IS PUT IN FRONT OF A PERSON THROUGH THE ONE-BIT APPROVAL WINDOW. Without this the
-        // signer refuses every approval it is asked for; with it, the answer is the person's and never a
-        // default — see `reviewFromAsk`.
-        ask: request => aumlok.ask(request),
-        log: line => console.log(`aukora-desktop: ${line}`),
-      })
-    } catch (error) {
-      // THE WINDOW STAYS UP. A signer this shell cannot start must not take the application with it,
-      // and the reason is printed by name rather than described.
-      console.error(`aukora-desktop: aumlok signer failed to start: ${String(error?.message ?? error)}`)
-    }
-  })()
+    })
+    return signerStart
+  }
+  void ensureShellSigner()
   app.on('will-quit', () => { if (shellSigner?.stop) void shellSigner.stop().catch(() => {}) })
   // The interface is not known until the page asks for its plugin bundle. When it does,
   // the title says which one arrived — the difference between "attached to the spatial

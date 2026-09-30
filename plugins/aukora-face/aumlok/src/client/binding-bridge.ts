@@ -34,6 +34,8 @@ export interface AumlokCeremonyResult {
   readonly ok: boolean
   /** The shell's own short machine-readable refusal. Shown verbatim, never replaced. */
   readonly reason?: string
+  /** Only a new draw can be submitted after the shell consumes these words. */
+  readonly drawSpent?: true
 }
 
 /** What one draw resolves to: the seven words, shown once, or the shell's own refusal. */
@@ -147,7 +149,8 @@ export function parseAumlokCeremonyResult(value: unknown): AumlokCeremonyResult 
   const record = value as Record<string, unknown>
   const ok = record['ok'] === true
   const reason = readReason(record['reason'])
-  return reason === undefined ? { ok } : { ok, reason }
+  const spent = record['drawSpent'] === true ? { drawSpent: true as const } : {}
+  return reason === undefined ? { ok, ...spent } : { ok, reason, ...spent }
 }
 
 /**

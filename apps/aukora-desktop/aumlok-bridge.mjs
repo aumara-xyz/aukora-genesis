@@ -191,7 +191,7 @@ export function installApprovalBridge(deps) {
         return
       }
       const result = writeInstallSettingsOnFirstLink({
-        supportRoot, stateRoot, directory: dir, state: readBindingState(lib, dir),
+        supportRoot, stateRoot, directory: dir, state: readState(lib, dir),
       })
       say(result.written
         ? `install settings written: ${result.path} (Kira mounts on the next start)`
@@ -535,7 +535,7 @@ export function installApprovalBridge(deps) {
     if (!fromApplication(event)) return { ok: false, reason: APPROVAL_REFUSE.FORBIDDEN_SENDER }
     try {
       const { library: lib, directory: dir } = await context()
-      return { ok: true, directory: dir, ...readBindingState(lib, dir), signing: readSigningState() }
+      return { ok: true, directory: dir, ...readState(lib, dir), signing: readSigningState() }
     } catch (error) {
       return { ok: false, reason: error?.code ?? String(error?.message ?? error) }
     }
@@ -664,7 +664,13 @@ export function installApprovalBridge(deps) {
         }
       }
       const verdict = await draw.submit(event.sender, intent, words, { library, directory, handle })
-      if (verdict?.ok === true) recordInstallSettings(library, directory)
+      if (verdict?.ok === true) {
+        recordInstallSettings(library, directory)
+        // Launch initially found no key. Serve it now, before the face refreshes its state.
+        // Startup failure cannot undo the completed binding or invite another bind.
+        try { await deps.onBound?.({ library, directory }) }
+        catch (error) { say(`bound, but signer startup failed: ${String(error?.message ?? error)}`) }
+      }
       // THE VERDICT CARRIES `drawSpent` FROM THE DRAW ITSELF (aumlok-draw.mjs), decided when the slot was consumed.
       return verdict
     } catch (error) {

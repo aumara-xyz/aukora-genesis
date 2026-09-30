@@ -35,6 +35,9 @@
  * @module @aukora/dsh-plugin-aumlok/bind-v3
  */
 import { randomBytes } from 'node:crypto'
+import { lstatSync } from 'node:fs'
+import { join } from 'node:path'
+import { LOCAL_AUMLOK_CONTROL_FILENAME } from './store.mjs'
 
 import { assertHandle, deriveRootFromPhrase, requireHandle } from './derive-v3.mjs'
 // THE SHAPE OF A WORD, FROM THE MODULE THAT OWNS IT.
@@ -45,6 +48,7 @@ import {
   buildRecordV3,
   keepMachineSeed,
   recordProjection,
+  removeIfCreated,
   writeRecordV3,
 } from './record-v3.mjs'
 
@@ -61,7 +65,31 @@ export const BIND_REFUSE = Object.freeze({
   WRITE_FAILED: 'aumlok:bind-write-failed',
   /** The binding landed but cannot be read back, which means it is not a binding. */
   RECORD_UNREADABLE: 'aumlok:bind-record-unreadable',
+  ALREADY_BOUND: 'aumlok:bind-already-bound',
 })
+
+function alreadyBound(directory) {
+  throw new BindV3Error(BIND_REFUSE.ALREADY_BOUND, `${directory} already holds an Aumlok record; nothing was replaced`)
+}
+
+/** Refuse an occupied record before deriving keys; the exclusive write also closes the race. */
+function refuseIfBound(directory) {
+  try {
+    const folder = lstatSync(directory)
+    if (!folder.isDirectory()) throw new BindV3Error(
+      `${BIND_REFUSE.WRITE_FAILED}:${folder.isSymbolicLink() ? 'ELOOP' : 'ENOTDIR'}`, 'not a plain key directory')
+  } catch (cause) {
+    if (cause instanceof BindV3Error) throw cause
+    if (cause?.code !== 'ENOENT') throw new BindV3Error(`${BIND_REFUSE.WRITE_FAILED}${errnoSuffix(cause)}`, 'cannot inspect key directory')
+  }
+  try {
+    lstatSync(join(directory, LOCAL_AUMLOK_CONTROL_FILENAME))
+  } catch (cause) {
+    if (cause?.code === 'ENOENT') return
+    throw new BindV3Error(`${BIND_REFUSE.WRITE_FAILED}${errnoSuffix(cause)}`, 'cannot inspect binding')
+  }
+  alreadyBound(directory)
+}
 
 /** A binding this module will not perform, or a binding that failed on the way to disk. */
 export class BindV3Error extends TypeError {
@@ -119,7 +147,7 @@ function errnoSuffix(cause) {
  * @param {readonly string[]} input.words - the seven typed words, in order, anchor first.
  * @param {string} input.directory - the controller directory the composition declares.
  * @param {string} input.boundAt - the moment of binding, ISO 8601, stored in the record.
- * @param {'file'|'keychain'} [input.custodian] - where the seeds are kept; the file by default.
+ * @param {'file'} [input.custodian] - file custody; other custodians are refused before writing.
  * @returns {Promise<Readonly<object>>} the record, the projection, and what was written and kept.
  */
 export async function bindV3({ handle, words, directory, boundAt, custodian } = /** @type {never} */ ({})) {
@@ -132,12 +160,17 @@ export async function bindV3({ handle, words, directory, boundAt, custodian } = 
   if (typeof boundAt !== 'string' || boundAt.length === 0) {
     throw new BindV3Error(BIND_REFUSE.PHRASE_MALFORMED, 'a binding names the moment it happened')
   }
+  if (custodian !== undefined && custodian !== 'file') {
+    throw new BindV3Error(BIND_REFUSE.WRITE_FAILED,
+      'first binding requires file custody; this app does not discover a keychain-backed signer')
+  }
   // THE HANDLE FIRST, AND BEFORE ANY KEY WORK, FOR THE SAME REASON THE WORDS ARE CHECKED HERE: a
   // malformed handle must cost no scrypt seconds, and the refusal must be reachable only by a shape a
   // face would actually send. THE REFUSAL IS THE CONTRACT'S OWN NAME (`aumlok:kdf-handle-absent` /
   // `aumlok:kdf-handle-malformed`), passed through unchanged, because the salt is the contract's and
   // two names for one fact is how a refusal stops being recognisable on a screen.
   const normalizedHandle = requireHandle(handle)
+  refuseIfBound(directory)
   // THE WORDS ARE CHECKED BEFORE ANY KEY WORK, so a malformed submit costs no scrypt seconds and the
   // refusal cannot be reached by a shape the face would never have sent.
   const offered = Array.isArray(words) ? words : null
@@ -185,37 +218,38 @@ export async function bindV3({ handle, words, directory, boundAt, custodian } = 
     machines: [{ index: machine.machineIndex, ed25519: machine.ed25519PublicKeyHex }],
   })
 
+  // Validate the public projection before writing: a rejected record must not occupy a first-bind slot.
+  let projection
+  try {
+    projection = recordProjection(record)
+  } catch (cause) {
+    throw new BindV3Error(BIND_REFUSE.RECORD_UNREADABLE,
+      `the record does not project: ${cause instanceof Error ? cause.message : String(cause)}`)
+  }
+
   let written
   let keptMachine
   try {
     // THE RECORD FIRST: this is the call that creates the directory, and the only one whose failure
     // must leave nothing at all behind.
-    written = writeRecordV3({ record, directory })
-    keptMachine = keepMachineSeed(machine, { directory })
+    written = writeRecordV3({ record, directory, exclusive: true })
+    keptMachine = keepMachineSeed(machine, { directory, custodian, exclusive: true })
     // THE ROOT IS KEPT NOWHERE (Y1, 2026-09-23). This line used to write `root-seed-v3.json` holding
     // the root's Ed25519 and ML-DSA-65 seeds, with the Ed25519 half swapped for the machine key's. The
     // swap narrowed the exposure without changing the fact: the root's POST-QUANTUM seed still landed
     // on the laptop, and the cold-root design says the root is re-derived from handle + words and
     // written by nobody. It was on Peter's disk after his 17:02 bind. A root-class act re-derives.
   } catch (cause) {
+    if (written === undefined && cause?.code === 'EEXIST' && cause?.syscall === 'open'
+      && cause?.path === join(directory, LOCAL_AUMLOK_CONTROL_FILENAME)) alreadyBound(directory)
+    // A failed seed write must not strand an unusable identity or remove somebody else's record.
+    const rollbackFailed = written?.created !== undefined && !removeIfCreated(written.path, written.created)
     const code = `${BIND_REFUSE.WRITE_FAILED}${errnoSuffix(cause)}`
     throw new BindV3Error(code,
       `the binding could not be written into ${directory}: `
-      + `${cause instanceof Error ? cause.message : String(cause)}. NOTHING BOUND: the screen must show `
-      + 'this name rather than returning to the unbound state, because a ceremony that reports a '
-      + 'success it did not achieve is the failure this refusal exists to make impossible.')
-  }
-
-  // THE BINDING IS NOT A BINDING UNTIL IT CAN BE READ BACK. The record was just written by the same
-  // module that reads it, so this is cheap; it is here because "the write returned" and "a reader
-  // accepts these bytes" are two different claims, and only the second one is the item.
-  let projection
-  try {
-    projection = recordProjection(record)
-  } catch (cause) {
-    throw new BindV3Error(BIND_REFUSE.RECORD_UNREADABLE,
-      `${written.path} was written but does not project: `
-      + `${cause instanceof Error ? cause.message : String(cause)}`)
+      + `${cause instanceof Error ? cause.message : String(cause)}. No usable binding confirmed. `
+      + (rollbackFailed ? 'Record cleanup failed; inspect the key directory before retrying.'
+        : 'Any pre-existing files were preserved; partial files may remain after an I/O failure.'))
   }
 
   return Object.freeze({

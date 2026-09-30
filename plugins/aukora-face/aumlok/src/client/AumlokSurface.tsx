@@ -328,9 +328,7 @@ export function AumlokSurface({
       setBeat('shown')
     })()
   }
-  // HAND THEM BACK, AND KEEP NOTHING. A refusal changes neither the status nor the binding: the typed
-  // words stay in the tiles so the person can correct them, the confirmation step is behind them and
-  // must be answered again, and nothing was written anywhere by this screen.
+  // A spent draw needs new words; only a refusal before consumption can keep the typed tiles.
   const submit = (intent: AumlokCeremonyIntent): void => {
     setBusy(true)
     setOutcome(undefined)
@@ -341,6 +339,12 @@ export function AumlokSurface({
       setAcknowledged(false)
       setOutcome(result)
       if (!result.ok) {
+        if (result.drawSpent === true) {
+          setTyped(emptyTyped())
+          setBeat('none')
+          if (intent === 'refresh') setRefreshing(false)
+          return
+        }
         setBeat('typed')
         return
       }

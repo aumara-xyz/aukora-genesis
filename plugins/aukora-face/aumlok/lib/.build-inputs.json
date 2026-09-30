@@ -1,6 +1,6 @@
 {
   "face": "aumlok",
-  "srcDigest": "9b51398a00e70c79c60cde006a6ec69aaac5db623d419c38395bd577c36ee75c",
+  "srcDigest": "6ea927aab2a8559c4cbc3f3ac98d079b522d32b05e309e53cdc3f7446898000e",
   "files": [
     "package.json",
     "src/client/Aumlok.module.css",
@@ -20,5 +20,5 @@
     "src/invariant.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-26T23:45:58Z"
+  "builtAt": "2026-09-30T00:06:38Z"
 }

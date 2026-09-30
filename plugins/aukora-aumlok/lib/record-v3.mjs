@@ -40,7 +40,8 @@
 // divergence goes red rather than being discovered as behaviour.
 import { readJsonStrictBytes } from './strict-read.mjs'
 import { execFileSync } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { chmodSync, closeSync, existsSync, fchmodSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync,
+  unlinkSync, writeFileSync, writeSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { assertHandle, deriveGenesisRef } from './derive-v3.mjs'
@@ -197,9 +198,10 @@ export function buildRecordV3({ root, boundAt, epoch = 0, receipt = null, genesi
  * @param {object} input - the record and where it goes.
  * @param {unknown} input.record - a record from {@link buildRecordV3}.
  * @param {string} input.directory - the controller directory the composition declares.
- * @returns {{path: string, bytes: number}} the path written and its length in bytes.
+ * @param {boolean} [input.exclusive] - first binding creates a record without replacing any existing entry.
+ * @returns {{path: string, bytes: number, created?: {dev: number, ino: number}}} the write and its rollback identity.
  */
-export function writeRecordV3({ record, directory } = /** @type {never} */ ({})) {
+export function writeRecordV3({ record, directory, exclusive = false } = /** @type {never} */ ({})) {
   if (typeof directory !== 'string' || directory.length === 0) {
     throw new RootCustodyError('writeRecordV3 needs a directory to write into')
   }
@@ -215,9 +217,45 @@ export function writeRecordV3({ record, directory } = /** @type {never} */ ({}))
   mkdirSync(directory, { recursive: true, mode: 0o700 })
   chmodSync(directory, 0o700)
   const path = join(directory, LOCAL_AUMLOK_CONTROL_FILENAME)
+  if (exclusive) {
+    return { path, bytes: bytes.length, created: writeExclusiveCustody(path, bytes) }
+  }
   writeFileSync(path, bytes, { mode: CUSTODY_FILE_MODE })
   chmodSync(path, CUSTODY_FILE_MODE)
   return { path, bytes: bytes.length }
+}
+
+/** First binding owns only files it creates, including the machine seed. */
+function writeExclusiveCustody(path, bytes) {
+  const descriptor = openSync(path, 'wx', CUSTODY_FILE_MODE)
+  let created
+  try {
+    created = fstatSync(descriptor)
+    fchmodSync(descriptor, CUSTODY_FILE_MODE)
+    for (let done = 0; done < bytes.length;) {
+      const count = writeSync(descriptor, bytes, done, bytes.length - done)
+      if (count === 0) throw new Error('custody write made no progress')
+      done += count
+    }
+  } catch (cause) {
+    if (created !== undefined) removeIfCreated(path, created)
+    throw cause
+  } finally {
+    closeSync(descriptor)
+  }
+  return { dev: created.dev, ino: created.ino }
+}
+
+/** Roll back only the regular file this exclusive write created. */
+export function removeIfCreated(path, created) {
+  try {
+    const now = lstatSync(path)
+    if (!now.isFile() || now.dev !== created?.dev || now.ino !== created?.ino) return false
+    unlinkSync(path)
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -237,7 +275,7 @@ export function writeRecordV3({ record, directory } = /** @type {never} */ ({}))
  * by index, so a machine that forgot its own index could not tell which entry is it.
  * @param {{machineIndex: number, ed25519SeedHex: string, ed25519PublicKeyHex: string}} machine - from
  *   `deriveMachineKeyV3`.
- * @param {{directory: string, custodian?: 'file'|'keychain'}} options - where to keep it.
+ * @param {{directory: string, custodian?: 'file'|'keychain', exclusive?: boolean}} options - where to keep it.
  * @returns {{custodian: string, path: string, phraseStored: false}} what was kept and where.
  */
 export function keepMachineSeed(machine, options = {}) {
@@ -260,16 +298,25 @@ export function keepMachineSeed(machine, options = {}) {
     if (!keychainAvailable()) {
       throw new RootCustodyError('the keychain custodian was asked for on a machine that has none')
     }
-    execFileSync('/usr/bin/security',
-      ['add-generic-password', '-U', '-a', keychainAccount(), '-s', MACHINE_KEYCHAIN_SERVICE, '-w', payload],
-      { stdio: 'ignore' })
+    try {
+      execFileSync('/usr/bin/security',
+        ['add-generic-password', ...(options.exclusive === true ? [] : ['-U']),
+          '-a', keychainAccount(), '-s', MACHINE_KEYCHAIN_SERVICE, '-w', payload],
+        { stdio: 'ignore' })
+    } catch {
+      // execFileSync's message includes argv, including the private seed in -w.
+      throw new RootCustodyError('machine keychain write failed')
+    }
     return { custodian, path: `keychain:${MACHINE_KEYCHAIN_SERVICE}`, phraseStored: false }
   }
   if (custodian !== 'file') throw new RootCustodyError(`unknown custodian ${String(custodian)}`)
   mkdirSync(directory, { recursive: true, mode: 0o700 })
   const path = join(directory, MACHINE_SEED_FILE)
-  writeFileSync(path, payload, { mode: CUSTODY_FILE_MODE })
-  chmodSync(path, CUSTODY_FILE_MODE)
+  if (options.exclusive === true) writeExclusiveCustody(path, Buffer.from(payload, 'utf8'))
+  else {
+    writeFileSync(path, payload, { mode: CUSTODY_FILE_MODE })
+    chmodSync(path, CUSTODY_FILE_MODE)
+  }
   return { custodian, path, phraseStored: false }
 }
 

@@ -16,17 +16,19 @@
 // owner's, which is promoted through `.next` files by those two commands) is never touched by the app.
 //
 // This module imports only node builtins, like the rest of the shell.
-import { closeSync, existsSync, mkdirSync, openSync, writeSync } from 'node:fs'
-import { join } from 'node:path'
+import { chmodSync, closeSync, existsSync, fchmodSync, lstatSync, mkdirSync, openSync, readFileSync, writeSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 
 /** The file's name in the support root; the owner's scripts read the same name. */
 export const INSTALL_SETTINGS_NAME = 'kira-deployment-overlay.patch.yml'
+export const AUMLOK_DIRECTORY_PATCH_NAME = 'aumlok-directory.patch.yml'
 
 /** Refusals this module produces by name. */
 export const INSTALL_SETTINGS_REFUSE = Object.freeze({
   EXISTS: 'aukora-install:settings-exist',
   NOT_BOUND: 'aukora-install:controller-not-bound',
   VALUE_MALFORMED: 'aukora-install:value-malformed',
+  PATH_REFUSED: 'aukora-install:path-refused',
 })
 
 /** The Aumlok key folder a fresh install uses when no patch names one: `<state root>/aumlok`. */
@@ -39,14 +41,65 @@ export function kiraStateDirectory(stateRoot) {
   return join(stateRoot, 'home', 'kira-memory')
 }
 
+/** Name the shell's key folder for the backend before the first binding exists. */
+export function aumlokDirectoryPatchText(directory) {
+  if (typeof directory !== 'string' || !directory.startsWith('/')
+    || /[\u0000-\u001f\u007f\u2028\u2029]/u.test(directory)) {
+    const error = new Error(`${INSTALL_SETTINGS_REFUSE.VALUE_MALFORMED}: the key folder is not a single-line absolute path`)
+    error.code = INSTALL_SETTINGS_REFUSE.VALUE_MALFORMED
+    throw error
+  }
+  return ['# AUKORA first-run key folder; contains no key or phrase.',
+    '- id: aukora-aumlok', '  config:', `    directory: ${scalar(directory)}`, ''].join('\n')
+}
+
+/** Create the fresh-install overlay. Explicit deployment patches are never passed here. */
+export function writeAumlokDirectoryPatch({ supportRoot, stateRoot }) {
+  const directory = defaultAumlokDirectory(resolve(stateRoot))
+  const path = join(supportRoot, AUMLOK_DIRECTORY_PATCH_NAME)
+  const refused = reason => ({ written: false, path, directory, reason })
+  const kind = at => {
+    try { return lstatSync(at) } catch (error) { if (error?.code === 'ENOENT') return null; throw error }
+  }
+  try {
+    const text = aumlokDirectoryPatchText(directory)
+    const folder = kind(directory)
+    if (folder === null) {
+      mkdirSync(directory, { recursive: true, mode: 0o700 })
+      chmodSync(directory, 0o700)
+    } else if (!folder.isDirectory()) {
+      return refused(`${INSTALL_SETTINGS_REFUSE.PATH_REFUSED}:key-folder`)
+    }
+    const existing = kind(path)
+    if (existing !== null) {
+      if (!existing.isFile() || existing.nlink !== 1) return refused(`${INSTALL_SETTINGS_REFUSE.PATH_REFUSED}:patch`)
+      if ((existing.mode & 0o777) === 0o600 && readFileSync(path, 'utf8') === text) return { written: true, path, directory }
+      return refused(`${INSTALL_SETTINGS_REFUSE.PATH_REFUSED}:patch-conflict`)
+    }
+    mkdirSync(supportRoot, { recursive: true, mode: 0o700 })
+    const descriptor = openSync(path, 'wx', 0o600)
+    try {
+      fchmodSync(descriptor, 0o600)
+      const bytes = Buffer.from(text)
+      for (let done = 0; done < bytes.length;) done += writeSync(descriptor, bytes, done, bytes.length - done)
+    } finally {
+      closeSync(descriptor)
+    }
+    return { written: true, path, directory }
+  } catch (error) {
+    return refused(error?.code === INSTALL_SETTINGS_REFUSE.VALUE_MALFORMED
+      ? error.code : `${INSTALL_SETTINGS_REFUSE.PATH_REFUSED}:${String(error?.code ?? 'error')}`)
+  }
+}
+
 /**
  * One YAML scalar. A plain absolute path stays plain, because the owner's scripts read these values with a
- * line regex and a quoted path would reach them with its quotes; anything a plain scalar cannot carry is
- * JSON-quoted, which YAML reads as a double-quoted scalar.
+ * line regex and a quoted path would reach them with its quotes. Other paths use YAML single quotes;
+ * the shell's reader decodes doubled apostrophes without interpreting backslash escapes.
  */
 function scalar(value) {
   const plain = /^[/A-Za-z0-9][^\n\r"'#]*$/u.test(value) && !value.includes(': ') && !/\s$/u.test(value)
-  return plain ? value : JSON.stringify(value)
+  return plain ? value : `'${value.replaceAll("'", "''")}'`
 }
 
 /**

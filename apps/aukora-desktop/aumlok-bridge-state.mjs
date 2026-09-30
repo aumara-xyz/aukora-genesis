@@ -74,7 +74,8 @@ function unquoteYamlScalar(raw) {
   const value = raw.trim()
   const first = value[0]
   if ((first === '"' || first === "'") && value.length > 1 && value[value.length - 1] === first) {
-    return value.slice(1, -1)
+    const inner = value.slice(1, -1)
+    return first === "'" ? inner.replaceAll("''", "'") : inner
   }
   return value
 }

@@ -23,7 +23,7 @@ import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
 import { loopbackOnly } from './url-policy.mjs'
-import { INSTALL_SETTINGS_NAME } from './install-settings.mjs'
+import { INSTALL_SETTINGS_NAME, writeAumlokDirectoryPatch } from './install-settings.mjs'
 
 const run = promisify(execFile)
 const RELEASE_PREFIX = 'aukora-release-'
@@ -346,6 +346,7 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
   // stock harness composition — no organs, and the stock frame instead of the spatial
   // one. So the release's own patch is the default, and config replaces it.
   let patch = config.patch ?? []
+  let needsDirectoryPatch = false
   if (patch.length === 0) {
     const generated = join(release, 'aukora-composition.patch.yml')
     try { await stat(generated); patch = [generated]; why.push('composition patch from the release') }
@@ -360,6 +361,7 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
       why.push(`per-install settings ${installSettings}`)
     } else if (patch.length > 0) {
       why.push('no per-install settings yet: Kira stays off until an Aumlok phrase is linked')
+      needsDirectoryPatch = true
     }
   }
 
@@ -379,6 +381,13 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
   why.push(stateRoot === null
     ? 'state root owned by this shell'
     : `state root ${stateRoot} (an owned backend is started against it, not attached)`)
+
+  if (needsDirectoryPatch) {
+    const fresh = writeAumlokDirectoryPatch({ supportRoot: userData, stateRoot: stateRoot ?? join(userData, 'state') })
+    if (!fresh.written) throw new Error(`${fresh.reason}: cannot configure the first-run Aumlok key folder`)
+    patch = [...patch, fresh.path]
+    why.push(`Aumlok key folder named for the backend: ${fresh.directory}`)
+  }
 
   // ── EXPLICIT RELEASE PERMISSIONS, BEFORE CHECKING THIS INSTALL'S APPROVAL ─────────────────────
   // `approvedRecordSha` is the set of release artifact records an operator approved, and the launcher
