@@ -74,7 +74,7 @@ import {
 } from './aumlok-bridge-state.mjs'
 import {
   Z_ORDER_INTERVAL_MS, approvalTokenCss, guardKeyboard, needsRaise, readFaceTokenValues, safeApprovalTokens,
-  surfaceColour, windowTheme,
+  surfaceColour,
 } from './aumlok-approval-view.mjs'
 export {
   readPatchPluginDirectories, APPROVAL_CHANNELS, APPROVAL_REFUSE, approvalCardFields, admitApprovalQuestion,
@@ -413,9 +413,8 @@ export function installApprovalBridge(deps) {
       approval.webContents.focus()
       return { ok: false, reason: `${APPROVAL_REFUSE.WINDOW_OPEN}: an approval window is already open` }
     }
-    // THE THEME IS THE SHELL'S. The window sets the same attribute the face switches on
-    // (`data-ds-dark-theme`) and nothing in it hardcodes `color-scheme`.
-    const theme = windowTheme(deps)
+    // The shell selects the requested dark face palette before injecting the checked tokens.
+    const theme = 'dark' // Peter's approval card shares the Messages/Memory dark glass palette.
     const background = surfaceColour(getReleaseDir(), theme)
     // AN IN-MEMORY SESSION, AND ITS OWN. `persist:` is absent on purpose: the approval needs no
     // cookie, no cache and nothing that outlives it, and reusing the application's partition would

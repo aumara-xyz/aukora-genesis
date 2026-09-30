@@ -1,6 +1,6 @@
 // The approval sheet's paint, place and guards, moved whole from aumlok-bridge.mjs (2026-09-27) so that no file of
-// the bridge passes the self-change loop's 64 KiB limit. No line was rewritten; three declarations gained `export`
-// (Z_ORDER_INTERVAL_MS, surfaceColour, windowTheme) because the bridge imports them. aumlok-bridge.mjs re-exports
+// the bridge passes the self-change loop's 64 KiB limit. Z_ORDER_INTERVAL_MS and surfaceColour are exported
+// for the bridge's use. aumlok-bridge.mjs re-exports
 // every name it exported before; where a comment below says "this file" or "this module", it means the bridge.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -76,7 +76,27 @@ function withoutDarkTheme(cssText) {
  */
 export function readFaceTokenValues(releaseDir, library, theme = 'dark') {
   const sources = styledSources(releaseDir, theme)
-  return sources.length === 0 ? Object.freeze({}) : library.ceremonyTokenValues(...sources)
+  if (sources.length === 0) return Object.freeze({})
+  const values = { ...library.ceremonyTokenValues(...sources) }
+  // The older ceremony reader resolves only its nine tokens. Read the spatial accents and type
+  // from the same sources as well, using its one-reference rule; the safety filter still runs next.
+  const declared = new Map()
+  for (const css of sources) {
+    for (const match of css.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;}]+)[;}]/gu)) declared.set(match[1], match[2].trim())
+  }
+  for (const name of [...Object.keys(SAFE_APPROVAL_TOKENS), '--dsw-static-spatial-night-850', '--dsw-static-spatial-night-800']) {
+    const raw = declared.get(name)
+    if (raw === undefined) continue
+    const reference = /^var\(\s*(--[a-z0-9-]+)\s*(?:,\s*([^)]+))?\)$/u.exec(raw)
+    const value = reference === null ? raw : declared.get(reference[1]) ?? reference[2]
+    if (value !== undefined && !value.includes('var(')) values[name] = name.includes('font-family')
+      ? value.trim().replace(/\\"/gu, '"') : value.trim()
+  }
+  // The approval uses the Messages/Memory night surfaces, not the foundation's neutral grey.
+  return Object.freeze({ ...values,
+    '--dsw-alias-bg-layer-1': values['--dsw-static-spatial-night-850'] ?? SAFE_APPROVAL_TOKENS['--dsw-alias-bg-layer-1'],
+    '--dsw-alias-bg-layer-2': values['--dsw-static-spatial-night-800'] ?? SAFE_APPROVAL_TOKENS['--dsw-alias-bg-layer-2'],
+  })
 }
 
 /**
@@ -169,8 +189,8 @@ export function needsRaise(children, view) {
  * grammar both agree on. They are deliberately drab: a fallback exists to be readable, not to look right.
  */
 export const SAFE_APPROVAL_TOKENS = Object.freeze({
-  '--dsw-alias-bg-layer-1': 'rgb(27, 27, 28)',
-  '--dsw-alias-bg-layer-2': 'rgb(35, 35, 36)',
+  '--dsw-alias-bg-layer-1': 'rgb(11, 13, 24)',
+  '--dsw-alias-bg-layer-2': 'rgb(17, 21, 32)',
   '--dsw-alias-border-l2': 'rgba(255, 255, 255, 0.12)',
   '--dsw-alias-label-primary': 'rgb(242, 242, 242)',
   '--dsw-alias-label-secondary': 'rgb(168, 168, 168)',
@@ -179,6 +199,10 @@ export const SAFE_APPROVAL_TOKENS = Object.freeze({
   // sheet cannot be left with a hole if the site's set arrives incomplete.
   '--dsw-font-family-mono': 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
   '--dsw-alias-label-error': 'rgb(242, 85, 90)',
+  '--dsw-static-spatial-blue': 'rgb(150, 180, 255)',
+  '--dsw-static-spatial-gold': 'rgb(224, 183, 106)',
+  '--dsw-static-spatial-mint': 'rgb(129, 212, 180)',
+  '--dsw-static-spatial-violet': 'rgb(196, 170, 255)',
   '--dsh-spatial-gap': '6px',
 })
 
@@ -189,7 +213,9 @@ const MIN_CONTRAST = 4.5
 const MAX_SIZE_PX = 64
 
 /** Tokens that paint TEXT, and tokens that paint what text sits on. */
-const TEXT_TOKENS = Object.freeze(['--dsw-alias-label-primary', '--dsw-alias-label-secondary'])
+const TEXT_TOKENS = Object.freeze(['--dsw-alias-label-primary', '--dsw-alias-label-secondary',
+  '--dsw-alias-label-error', '--dsw-static-spatial-blue', '--dsw-static-spatial-gold',
+  '--dsw-static-spatial-mint', '--dsw-static-spatial-violet'])
 const SURFACE_TOKENS = Object.freeze(['--dsw-alias-bg-layer-1', '--dsw-alias-bg-layer-2'])
 
 /**
@@ -302,13 +328,19 @@ export function safeApprovalTokens(values, log) {
   }
   // THE PALETTE FILLS EVERY HOLE, including the holes the site simply did not fill.
   const final = { ...SAFE_APPROVAL_TOKENS, ...accepted }
-  const fellBack = reasons.length > 0
   for (const name of [...TEXT_TOKENS, ...SURFACE_TOKENS]) {
     const colour = parseColour(final[name])
     if (colour === null || colour[3] < 1) {
       reasons.push(`${name} fell back: the final value is not an opaque colour`)
       final[name] = SAFE_APPROVAL_TOKENS[name]
     }
+  }
+  // A warning must retain its hue. If the face's accent/surface pair is unreadable, use the
+  // spatial fallback palette together rather than turning a red warning into a white label.
+  const accents = TEXT_TOKENS.slice(2)
+  if (accents.some(name => SURFACE_TOKENS.some(surface => contrast(parseColour(final[name]), parseColour(final[surface])) < MIN_CONTRAST))) {
+    reasons.push('spatial accents fell back with their night surfaces to retain readable warning colours')
+    for (const name of [...accents, ...SURFACE_TOKENS]) final[name] = SAFE_APPROVAL_TOKENS[name]
   }
   // RECOMPUTED ON THE FINAL VALUES: the pairs that actually ship, after every substitution above.
   for (const text of TEXT_TOKENS) {
@@ -321,7 +353,7 @@ export function safeApprovalTokens(values, log) {
     }
   }
   for (const reason of reasons) log?.warn?.(`aumlok approval: ${reason}`)
-  return { values: final, reasons, fellBack }
+  return { values: final, reasons, fellBack: reasons.length > 0 }
 }
 
 /**
@@ -374,21 +406,4 @@ export function surfaceColour(releaseDir, theme = 'dark') {
   // AN UNRESOLVED TOKEN IS NOT A COLOUR, exactly as in `ceremonyTokenValues`.
   if (target === undefined || target.startsWith('var(')) return null
   return target.trim()
-}
-
-/**
- * LIGHT OR DARK, FROM THE SHELL'S OWN nativeTheme AND FROM NOWHERE ELSE.
- *
- * The window cannot ask the system itself: it is a sandboxed renderer with no preload verb that
- * reaches the theme, and `matchMedia('(prefers-color-scheme: dark)')` inside it would be a SECOND
- * answer to a question the shell has already answered. A shell that hands over no nativeTheme gets
- * `'light'`, which is the same fact as `data-ds-dark-theme` being absent — the attribute is what the
- * face switches on, so a theme nobody set must not be silently dark.
- * @param {object} deps - the bridge's dependencies.
- * @returns {'dark'|'light'} the theme the window is to be drawn in.
- */
-export function windowTheme(deps) {
-  const nativeTheme = deps.nativeTheme
-  return nativeTheme !== null && nativeTheme !== undefined && nativeTheme.shouldUseDarkColors === true
-    ? 'dark' : 'light'
 }

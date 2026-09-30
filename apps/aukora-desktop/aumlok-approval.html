@@ -35,8 +35,8 @@
    * the computed result against the injected values, so a literal that took over is a finding.
    */
   :root {
-    --approval-surface: var(--dsw-alias-bg-layer-1, #1b1b1c);
-    --approval-raised: var(--dsw-alias-bg-layer-2, #232324);
+    --approval-surface: var(--dsw-alias-bg-layer-1, rgb(11, 13, 24));
+    --approval-raised: var(--dsw-alias-bg-layer-2, rgb(17, 21, 32));
     --approval-border: var(--dsw-alias-border-l2, #3a3a3c);
     --approval-label: var(--dsw-alias-label-primary, #f2f2f2);
     --approval-muted: var(--dsw-alias-label-secondary, #a8a8a8);
@@ -44,6 +44,11 @@
     --approval-glass: var(--dsw-static-spatial-night-900, #16171a);
     --approval-gap: var(--dsh-spatial-gap, 6px);
     --approval-radius: 14px;
+    --approval-blue: var(--dsw-static-spatial-blue, rgb(150, 180, 255));
+    --approval-gold: var(--dsw-static-spatial-gold, rgb(224, 183, 106));
+    --approval-green: var(--dsw-static-spatial-mint, rgb(129, 212, 180));
+    --approval-purple: var(--dsw-static-spatial-violet, rgb(196, 170, 255));
+    --approval-red: var(--dsw-alias-label-error, rgb(242, 85, 90));
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -65,8 +70,10 @@
   main.card {
     display: flex; flex-direction: column; min-height: 0; width: 100%; max-height: 100vh;
     overflow-y: auto; overscroll-behavior: contain;
-    padding: 12px 14px 0; gap: 8px;
-    background: color-mix(in srgb, var(--approval-surface) 97%, transparent);
+    padding: 14px 14px 0; gap: 10px;
+    background: radial-gradient(ellipse at 100% 0%, color-mix(in srgb, var(--approval-purple) 8%, transparent), transparent 65%),
+      color-mix(in srgb, var(--approval-surface) 97%, transparent);
+    backdrop-filter: blur(20px) saturate(1.1); -webkit-backdrop-filter: blur(20px) saturate(1.1);
     border: 1px solid color-mix(in srgb, var(--approval-label) 14%, var(--approval-border));
     border-radius: var(--approval-radius);
     box-shadow: 0 8px 28px color-mix(in srgb, #000 45%, transparent);
@@ -77,13 +84,37 @@
   p.lede { display: none; }
   /* THE CHANGE ITSELF, WITH ITS LINE BREAKS: a diff run together into one paragraph is not something a person can read. */
   .words {
-    margin: 0; padding: 8px 10px; max-height: min(52vh, 480px); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
-    font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 11.5px; line-height: 1.45;
+    margin: 0; padding: 12px; max-height: min(44vh, 360px); overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere;
+    font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 12px; line-height: 1.6;
     background: var(--approval-raised); border: 1px solid var(--approval-border); border-radius: calc(var(--approval-radius) - 6px);
     -webkit-user-select: text; user-select: text;
   }
   #facts { display: flex; flex-direction: column; gap: 8px; }
-  #f-words-note { margin: 0; font-size: 11.5px; color: var(--approval-muted); }
+  #f-words-note { margin: 0; padding: 10px; font-size: 12px; color: var(--approval-red); border: 1px solid currentColor; border-radius: 8px; }
+  .operation-summary { padding: 14px; border: 2px solid var(--approval-blue); border-radius: var(--approval-radius);
+    background: var(--approval-raised); display: flex; flex-direction: column; gap: 10px; }
+  .operation-summary[data-risk="true"] { border-color: var(--approval-red); }
+  .summary-heading { display: flex; align-items: center; gap: 9px; color: var(--approval-label); }
+  .summary-heading h1 { flex: 1; font-size: 13px; letter-spacing: .09em; }
+  .icon { width: 19px; height: 19px; display: inline-flex; flex: none; align-items: center; justify-content: center; }
+  .icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  #summary-risk { color: var(--approval-red); }
+  #summary-reason { margin: 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+  .requester-words { display: flex; align-items: flex-start; gap: 7px; margin-top: 6px; padding-inline-start: 9px;
+    border-inline-start: 2px solid var(--approval-muted); color: var(--approval-muted); font-style: italic; }
+  .requester-words .icon { width: 14px; height: 14px; margin-top: 4px; }
+  .requester-words q { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .summary-counts, .summary-hashes, .summary-effects { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+  .summary-counts { font-size: 12px; font-variant-numeric: tabular-nums; }
+  .summary-hashes { color: var(--approval-muted); font: 11px/1.5 var(--dsw-font-family-mono, ui-monospace, monospace); }
+  .summary-hashes b { font-weight: 500; color: var(--approval-label); }
+  .summary-effects { padding-top: 8px; border-top: 1px solid var(--approval-border); gap: 10px; }
+  .summary-effects .icon { width: 27px; height: 27px; padding: 4px; border-radius: 7px; background: color-mix(in srgb, currentColor 8%, transparent); }
+  [data-effect="memory"], .file-added { color: var(--approval-green); }
+  [data-effect="messages"], .file-modified { color: var(--approval-blue); }
+  [data-effect="approval"], [data-effect="sandbox"], [data-effect="instructions"], .file-deleted { color: var(--approval-red); }
+  [data-effect="shell"] { color: var(--approval-purple); }
+  [data-effect="docs"] { color: var(--approval-gold); }
   details.more > summary { cursor: pointer; color: var(--approval-muted); font-size: 12px; }
   details.more[open] { display: flex; flex-direction: column; gap: 8px; }
   details.more dl { font-size: 12px; }
@@ -100,11 +131,19 @@
   dd { margin: 0; overflow-wrap: anywhere; font-family: var(--dsw-font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: 12px; }
   .filler { flex: 1; }
   .actions {
-    display: flex; justify-content: flex-end; gap: 10px;
+    display: flex; justify-content: space-between; gap: 32px;
     position: sticky; bottom: 0; margin: 0 -14px; padding: 10px 14px 12px;
     background: var(--approval-surface); border-top: 1px solid var(--approval-border);
   }
-  .actions button { padding: 6px 16px; font-size: 13px; }
+  .queue-actions { display: flex; gap: 32px; }
+  .actions button, .queue-actions button { flex: 1; min-width: 0; min-height: 48px; padding: 12px 16px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 14px; font-weight: 600; border-radius: 12px;
+    border: 1px solid var(--approval-border); background: transparent; color: var(--approval-label); }
+  #approve, .queue-actions [data-approval-queue-approve] { border-color: currentColor; color: color-mix(in srgb, var(--approval-green) 70%, var(--approval-muted)); }
+  #refuse, .queue-actions [data-approval-queue-decline] { border-color: currentColor; color: color-mix(in srgb, var(--approval-red) 70%, var(--approval-muted)); }
+  button:hover:not(:disabled) { background: transparent; }
+  button:focus-visible, .words:focus-visible { outline: 2px solid var(--approval-blue); outline-offset: 2px; }
   button {
     font: inherit; font-weight: 600; padding: 8px 18px;
     border-radius: calc(var(--approval-radius) - 7px); cursor: pointer;
@@ -113,7 +152,8 @@
   button.primary { background: var(--approval-label); color: var(--approval-surface); }
   button:disabled { opacity: 0.5; cursor: default; }
   #state { margin: 0; min-height: 0; font-size: 12px; color: var(--approval-muted); }
-  #state.bad { color: var(--approval-label); font-weight: 600; }
+  #state:empty { display: none; }
+  #state.bad { color: var(--approval-red); font-weight: 600; }
   /*
    * THE ROUTED STATE: WHAT THE WINDOW SHOWS WHEN THE DECISION IS NOT ITS OWN TO MAKE.
    *
@@ -151,11 +191,17 @@
 <body>
 <div class="scrim">
 <main class="card">
-  <h1 id="headline">Approve this?</h1>
+  <section id="operation-summary" class="operation-summary" hidden aria-label="Operation summary">
+    <div class="summary-heading"><span id="summary-icon" class="icon" aria-hidden="true"></span><h1 id="headline">Approval</h1><span id="summary-risk" class="icon" role="img" hidden></span></div>
+    <blockquote id="summary-reason" class="requester-words" hidden></blockquote>
+    <div id="summary-counts" class="summary-counts" hidden></div>
+    <div id="summary-hashes" class="summary-hashes" hidden></div>
+    <div id="summary-effects" class="summary-effects" role="group" aria-label="What this can affect" hidden></div>
+  </section>
   <p class="lede">This is the exact operation digest your key would sign. Nothing is signed until you
     approve, and refusing signs nothing.</p>
   <section id="facts" hidden>
-    <div id="f-words" class="words">—</div>
+    <div id="f-words" class="words" tabindex="0" role="region" aria-label="Exact operation text">—</div>
     <p id="f-words-note" hidden></p>
     <details class="more">
       <summary>Details</summary>
@@ -168,6 +214,7 @@
       <!-- THE CARD: SEVEN LABELS (What / Where / Who / Limit / Cost / Until / Irreversible), each read from the record
            the digest covers; a label the record does not answer says so. -->
       <dl id="f-card" class="card-fields" data-approval-card hidden></dl>
+      <p id="shell-assertion" class="shellAssertion" hidden>—</p>
     </details>
   </section>
   <p id="state">Reading the pending questions…</p>
@@ -200,7 +247,6 @@
     <p id="routed-ceiling" hidden></p>
   </section>
   <!-- AND WHEN NO DAEMON IS PRESENT, WHAT THIS APPROVAL ACTUALLY IS. -->
-  <p id="shell-assertion" class="shellAssertion" hidden>—</p>
   <div class="filler"></div>
   <div class="actions" id="actions">
     <!-- **NEITHER BUTTON IS THE DEFAULT (AUMLOK-113).** `approve` carried `class="primary"`, which styled it
@@ -234,23 +280,7 @@
     // answering. Kept, rather than re-derived: re-deriving them would be composing a description for itself.
     var askedDigest = null
     var askedWords = null
-    // ── **ONE ELIGIBILITY RECORD, AND ONE FUNCTION THAT APPLIES IT (AUMLOK-115, CODEX r1)** ────────────────
-    //
-    // MEASURED, AND THE REVIEW IS RIGHT: the words check lived INLINE in the question path (:619) and NOWHERE
-    // else, so the `aukora-owner:submit-unreachable` retry reset `settled` and did `approve.disabled = false`
-    // UNCONDITIONALLY. **A person whose submit never reached the shell got a live Approve back on a description
-    // the window had already said it could not derive** — the same defect the inline check was added to remove,
-    // one branch over. `send()` checked only settlement and challenge, so even the retry's own gate was blind
-    // to it.
-    //
-    // **SO ELIGIBILITY IS STATE, NOT A LINE.** Every path that can enable or disable the pair now goes through
-    // `applyEligibility()`, and `send()` asks the same question before it submits. There is no second place for
-    // the rule to be forgotten in.
-    //
-    // **IT FAILS CLOSED, WHICH THE INLINE FORM DID NOT.** The old test was `reply.wordsTruncated !== true`, so
-    // **a MISSING or malformed flag passed** — an absent field read as "not truncated". Here a witness is
-    // eligible only when `ok === true` AND `truncated === false` STRICTLY: anything else, including a flag that
-    // never arrived, withholds the signing answer.
+    // Keep eligibility in one record so retries use the same verified-text gate.
     var witness = null
     // **WHEN THE QUESTION APPEARED, SO A DECISION CARRIES ITS OWN DWELL (AUMLOK, LIVE-TEST PREP).**
     // The event log records `dwellMs` = shown -> decided, which is the only place "a decision with no time
@@ -381,7 +411,7 @@
       en: {
         digestPrefix: 'digest ',
         approve: 'Approve',
-        decline: 'Decline',
+        decline: 'Refuse',
         reading: 'Checking the description against the bytes being signed…',
         cannotDisplay: 'cannot display',
         queueHeading: 'Also waiting',
@@ -616,23 +646,7 @@
       })
     }
 
-    /**
-     * RENDER THE QUEUE, ONE ENTRY AT A TIME, EACH CHECKABLE ON ITS OWN.
-     *
-     * Every line goes through `witnessText` — the same check the single question uses — so a description the page
-     * cannot verify against the bytes is not shown and the entry carries no button. The marker is what a person
-     * recognises and what the court looks for; the reason is kept beside it because the code already states which
-     * of the four refusals this is, and collapsing them would discard the distinction a person acts on.
-     * @param {unknown} entries - the bridge's pending entries, newest first.
-     */
-    /**
-     * THE CARD, DRAWN FROM THE FACTS AND FROM NOTHING ELSE.
-     *
-     * **EVERY VALUE IS ALREADY A STRING BY THE TIME IT ARRIVES** — the bridge kept only non-empty strings and
-     * replaced everything else with the record's own absence sentence — so this function has no judgement to make
-     * and makes none. It refuses a facts object that is not a list rather than inventing a card, because a window
-     * that shows seven blank labels would look like an operation with nothing to declare.
-     */
+    /** Render the shell's existing field list verbatim. */
     function renderCard(fields) {
       var card = document.getElementById('f-card')
       if (card === null) return
@@ -655,24 +669,260 @@
       card.hidden = card.childNodes.length === 0
     }
 
-    /**
-     * THE PLAIN-WORDS HEADLINE, READ FROM THE VERIFIED TEXT ONLY (2026-09-27, Peter: "these cards need human summaries").
-     * A change's "why" line is the proposer's own words, so it is labelled as Auma's; the exact bytes stay below it.
-     */
-    function summarize(text) {
-      var why = /(?:^|\n)why:?\s+(.+)/u.exec(text)
-      var paths = /(?:^|\n)paths:?\s+(.+)/u.exec(text)
-      if (/code\.change/u.test(text) && why) {
-        var files = paths ? paths[1].split(',').length : 0
-        return 'Auma wants to: ' + why[1].trim() + (files > 0 ? ' (' + files + (files === 1 ? ' file)' : ' files)') : '')
+    // Presentation only: read the digest-checked witness, never alter it or the signing request.
+    // Header parsing stops before a diff, so source lines cannot impersonate operation fields.
+    var icons = {
+      approve: 'm5 12 4 4L19 6',
+      refuse: 'm6 6 12 12M18 6 6 18',
+      move: 'M4 6h13m-4-4 4 4-4 4M20 18H7m4-4-4 4 4 4',
+      code: 'm8 5-6 7 6 7m8-14 6 7-6 7m-3-17-2 20',
+      load: 'M12 2v13m-5-5 5 5 5-5M4 16v5h16v-5',
+      owner: 'M14 3a7 7 0 1 1-5 12l-6 6H1v-4l6-6a7 7 0 0 1 7-8Zm2 4h.01',
+      risk: 'm12 2 10 19H2L12 2Zm0 6v6m0 3h.01',
+      memory: 'M4 5c0-4 16-4 16 0s-16 4-16 0Zm0 0v7c0 4 16 4 16 0V5M4 12v7c0 4 16 4 16 0v-7',
+      messages: 'M3 3h18v14H9l-6 4V3Z',
+      approval: 'M12 2 3 6v6c0 5 9 10 9 10s9-5 9-10V6l-9-4Zm-4 10 3 3 5-6',
+      sandbox: 'M3 3h7M3 3v7m18-7h-7m7-0v7M3 21h7M3 21v-7m18 7h-7m7 0v-7M8 8h8v8H8Z',
+      instructions: 'M5 2h9l5 5v15H5V2Zm9 0v6h5M9 12h6m-6 4h3m3 0v3m0 2h.01',
+      requester: 'M4 5h16v12h-9l-7 4V5Zm4 4h2v4H7v-2l1-2Zm7 0h2v4h-3v-2l1-2Z',
+      shell: 'M2 4h20v16H2V4Zm0 5h20M6 6.5h.01m3 0h.01',
+      docs: 'M5 2h9l5 5v15H5V2Zm9 0v6h5M9 12h6m-6 4h6',
+      unknown: 'M9 8a3 3 0 1 1 5 2c-2 1-2 2-2 4m0 3h.01M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20',
+    }
+    function drawIcon(node, name, label) {
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      svg.setAttribute('viewBox', '0 0 24 24')
+      svg.setAttribute('aria-hidden', 'true')
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      path.setAttribute('d', icons[name] || icons.unknown)
+      svg.appendChild(path)
+      node.appendChild(svg)
+      if (label) { node.setAttribute('aria-label', label); node.setAttribute('title', label) }
+    }
+    function decisionLabel(node, name, label) {
+      node.textContent = ''
+      var icon = document.createElement('span'); icon.className = 'icon'; icon.setAttribute('aria-hidden', 'true')
+      drawIcon(icon, name)
+      var text = document.createElement('span'); text.textContent = label
+      node.appendChild(icon); node.appendChild(text)
+    }
+    decisionLabel(refuse, 'refuse', 'Refuse')
+    decisionLabel(approve, 'approve', 'Approve')
+    function renderReason(node, reason) {
+      node.textContent = ''
+      node.hidden = !reason
+      if (!reason) return
+      var icon = document.createElement('span'); icon.className = 'icon'; icon.setAttribute('role', 'img')
+      drawIcon(icon, 'requester', "Requester's words")
+      var quote = document.createElement('q')
+      // The signer already used escapeWitnessText before hashing this witness. Keep its reversible
+      // escapes verbatim, including literal backslash escapes; these are the requester's bound words.
+      quote.textContent = reason
+      node.appendChild(icon); node.appendChild(quote)
+    }
+    function normalizedRiskPath(path) {
+      var parts = []
+      // Ignore escaped controls only for classification; the original path still marks the summary partial.
+      // Backslash separators arrive escaped by the witness, including literal escape-like filename text.
+      String(path).replace(/\\u\{(?!5c\})[a-f0-9]+\}/giu, '').replace(/\\u\{5C\}/giu, '/').split('/').forEach(function (part) {
+        if (part === '' || part === '.') return
+        if (part === '..' && parts.length > 0 && parts[parts.length - 1] !== '..') parts.pop()
+        else parts.push(part)
+      })
+      return parts.join('/').toLowerCase()
+    }
+    function operationSummary(text) {
+      var body = text.replace(/^operation — its content, exactly as bound:\n/u, '')
+      var header = body.split(/\n(?:\n|diff --git )/u)[0]
+      var first = header.split('\n')[0]
+      var result = { kind: 'unknown', title: 'OPERATION', counts: [], hashes: [], paths: [], components: [], fileStates: {}, risk: false, partial: false }
+      function field(re) { var match = re.exec(header); return match ? match[1] : '' }
+      function count(value, label, tone) { result.counts.push({ text: value + ' ' + label, tone: Number(value) > 0 ? tone || '' : '' }) }
+      function hash(label, value) { if (value) result.hashes.push({ label: label, value: value.slice(0, 9) }) }
+      var reason = field(/^why:?[^\S\n]+([^\n]+)$/mu) || field(/^reason:?[^\S\n]+([^\n]+)$/mu)
+      if (/^AUKORA: (?:MOVE MAIN|REPLACE MAIN WITH A NEW ROOT)$/u.test(first)) {
+        result.kind = 'move'; result.title = first.slice(8)
+        hash('base', field(/^main now[^\S\n]+([a-f0-9]{40}|none)/mu))
+        hash('target', field(/^main after[^\S\n]+([a-f0-9]{40})/mu))
+        var commits = /^commits[^\S\n]+(\d+) added:/mu.exec(header)
+        if (commits) count(commits[1], 'commits')
+        var dropped = /^REPLACES main's history: drops (\d+) commits:/mu.exec(header)
+        if (dropped) count(dropped[1], 'commits removed', 'deleted')
+        var files = /^files[^\S\n]+against main now: (\d+) added, (\d+) modified, (\d+) deleted$/mu.exec(header)
+        if (files) {
+          count(files[1], 'added', 'added'); count(files[2], 'modified', 'modified'); count(files[3], 'deleted', 'deleted')
+          result.risk = result.risk || Number(files[3]) > 0
+        }
+        // Only the file-list section supplies paths; commit subjects are never paths.
+        var fileList = body.split(/^files[^\S\n]+against main now:[^\n]*\n/mu)[1] || ''
+        fileList.split('\n').some(function (line) {
+          var row = /^  ([AMD]) (.+)$/u.exec(line)
+          if (row) {
+            result.paths.push(row[2])
+            if (row[1] === 'D') result.risk = true
+            return false
+          }
+          if (/^  … and \d+ more$/u.test(line)) result.partial = true
+          return true
+        })
+      } else if (/^code\.change(?: —|$)/u.test(first)) {
+        result.kind = 'code'; result.title = 'CODE CHANGE'
+        hash('base', field(/^base: ([a-f0-9]{40})$/mu))
+        hash('tree', field(/^tree: ([a-f0-9]{40})$/mu))
+        result.paths = field(/^paths: (.+)$/mu).split(', ').filter(Boolean)
+        var counts = { added: 0, modified: 0, deleted: 0 }
+        var seen = new Set()
+        body.split(/^diff --git /mu).slice(1).forEach(function (block) {
+          var metadata = block.split(/^@@/mu)[0]
+          if (/^deleted file mode /mu.test(metadata)) result.risk = true
+          var pair = /^a\/(.+) b\/(.+)\n/u.exec(metadata)
+          var path = pair ? pair[2] : null
+          if (!path) { result.partial = true; return }
+          if (!seen.has(path)) {
+            seen.add(path)
+            var status = /^new file mode /mu.test(metadata) ? 'added' : /^deleted file mode /mu.test(metadata) ? 'deleted' : 'modified'
+            counts[status]++
+            result.fileStates[path] = status
+          }
+          if (!result.paths.includes(path)) result.paths.push(path)
+          if (pair[1] !== path) {
+            seen.add(pair[1])
+            if (!result.paths.includes(pair[1])) result.paths.push(pair[1])
+          }
+        })
+        // Generated paths can be absent from the source diff; their add/modify status is not stated.
+        var unlisted = result.paths.filter(function (path) { return !seen.has(path) }).length
+        Object.keys(counts).forEach(function (key) { count(counts[key], key, key) })
+        if (unlisted) count(unlisted, 'unclassified files')
+        result.risk = result.risk || counts.deleted > 0
+      } else if (first === 'AUKORA: ADMIT THESE PLUGINS') {
+        result.kind = 'load'; result.title = 'LOAD RELEASE'
+        reason = reason || field(/^(Approve lets exactly these plugin bytes load\.)/mu)
+        hash('set', field(/^set ([a-f0-9]{64})$/mu))
+        var plugins = /^(\d+) plugins, (\d+) files, sha256 each:$/mu.exec(header)
+        if (plugins) { count(plugins[1], 'plugins'); count(plugins[2], 'files') }
+        // Plugin IDs identify admitted components, but do not supply the full changed path list.
+        for (var row of header.matchAll(/^([a-z0-9-]+)[^\S\n]+\d+ [a-f0-9]{16}$/gmu)) result.components.push(row[1])
+        result.partial = true
+      } else if (/^Switch the live app to release /u.test(first)) {
+        result.kind = 'load'; result.title = 'LOAD RELEASE'
+        reason = reason || first
+        var release = /^Switch the live app to release (.+) \(cut from ([a-f0-9]{7}), green\): ([a-f0-9]{8})$/u.exec(first)
+        if (release) { hash('cut from', release[2]); hash('composition', release[3]) }
+        result.partial = true
+      } else if (/^checks changed: /u.test(first)) {
+        var move = /^Move main from ([a-f0-9]{7}) to ([a-f0-9]{7}): (\d+) commits;/mu.exec(header)
+        if (move) {
+          result.kind = 'move'; result.title = 'MOVE MAIN'
+          hash('base', move[1]); hash('target', move[2]); count(move[3], 'commits')
+          var gates = first.slice('checks changed: '.length)
+          result.paths = gates === 'none' ? [] : gates.split(', ')
+          result.partial = true
+        }
+      } else if (/^(?:aukora:nostr-(?:identity-binding|sas-confirmation):v1$|AUKORA: .*\b(?:OWNER|KEY|IDENTITY|BIND)|(?:owner|identity|key)[. :]|sign-nostr-binding|confirm-nostr-sas)/iu.test(first)) {
+        result.kind = 'owner'; result.title = 'OWNER KEY'; result.risk = true
+        result.components.push('owner-key')
+        if (first === 'aukora:nostr-identity-binding:v1') reason = reason || 'Bind Nostr identity'
+        if (first === 'aukora:nostr-sas-confirmation:v1') reason = reason || 'Confirm Nostr identity'
       }
-      if (/AUKORA: ADMIT THESE PLUGINS/u.test(text)) {
-        var count = /(\d+) plugins, (\d+) files/u.exec(text)
-        return 'Load her new version' + (count ? ' (' + count[1] + ' plugins)' : '')
+      var composition = /^product (\d+) lines, proof (\d+) lines$/mu.exec(header)
+      if (composition) { count(composition[1], 'product lines'); count(composition[2], 'proof lines') }
+      result.reason = reason
+      result.effects = []
+      var docs = /(?:^docs\/|\.(?:md|mdx|rst)$)/iu
+      var instructionPath = /(?:^|\/)(?:agents\.md|claude\.md|skill\.md)$|(?:^|\/)(?:\.claude|\.agents|presets|prompts)\//iu
+      var pluginInstructions = /(?:^|[\/_.-])(?:prompts?|instructions?)(?:[\/_.-]|$)/iu
+      function isInstructionPath(path) {
+        return instructionPath.test(path)
+          || /^plugins\/[^/]+\/.+\.md$/iu.test(path)
+            && pluginInstructions.test(path.replace(/^plugins\/[^/]+\//iu, ''))
       }
-      if (/AUKORA: MOVE MAIN/u.test(text)) return 'Publish to GitHub main' + (why ? ': ' + why[1].trim() : '')
-      var first = text.split('\n').map(function (l) { return l.trim() }).filter(Boolean)[0]
-      return first || 'Approve this?'
+      var paths = result.paths.concat(result.components).map(normalizedRiskPath)
+      var areas = [
+        ['memory', /(?:memory|recall|viking|kira)/iu],
+        ['messages', /(?:messages|threads|chat|conversation)/iu],
+        ['approval', /(?:aumlok|approval|signer|authority|identity|owner|keychain|secret|preload|lane-card|airlock|witness|kernel|own-code|precard|(?:^|[\/_.-])(?:keys?|keypair|keyring|pubkey|privatekey|publickey)(?:[\/_.-]|$)|action-gate|policy|custody|^scripts\/aukora\/(?:self-change|advance|decide)\.mjs$)/iu],
+        ['sandbox', /(?:sandbox|seatbelt|walls?|landlock|openshell|confine|caged|membrane|airlock)/iu],
+        ['shell', /(?:^apps\/aukora-desktop\/|aukora-face[\/-](?:layout|apps)(?:\/|$)|(?:^|\/)(?:become|release|plugin-set)[^\/]*\.)/iu],
+        ['docs', docs],
+      ]
+      if (paths.some(isInstructionPath)) result.effects.push('instructions')
+      areas.forEach(function (area) {
+        if (paths.some(function (path) {
+          return area[1].test(path) && (area[0] === 'docs' || isInstructionPath(path) || !docs.test(path))
+        })) result.effects.push(area[0])
+      })
+      result.partial = result.partial || result.kind === 'unknown' || result.paths.some(function (path) {
+        return /…|\\u\{/u.test(String(path).replace(/\\u\{5C\}/giu, '/'))
+      })
+      result.risk = result.risk || ['instructions', 'approval', 'sandbox'].some(function (area) { return result.effects.includes(area) })
+      return result
+    }
+    function renderQueueSummary(node, text) {
+      var summary = operationSummary(text)
+      node.textContent = summary.kind === 'unknown'
+        ? shortSummary(text.replace(/^operation — its content, exactly as bound:\n/u, '').split('\n').find(function (line) {
+          return line.trim() !== '' && !/^(?:why|reason):?[^\S\n]/u.test(line)
+        }) || summary.title) : summary.title
+      if (summary.reason) {
+        node.textContent += ' '
+        var reason = document.createElement('span'); reason.className = 'requester-words'
+        renderReason(reason, summary.reason); node.appendChild(reason)
+      }
+    }
+    function renderOperation(text, truncated) {
+      var summary = operationSummary(text)
+      var parts = ['summary-icon', 'summary-risk', 'summary-counts', 'summary-hashes', 'summary-effects']
+      parts.forEach(function (id) {
+        document.getElementById(id).textContent = ''
+      })
+      var reason = document.getElementById('summary-reason')
+      renderReason(reason, summary.reason)
+      var box = document.getElementById('operation-summary')
+      box.setAttribute('data-kind', summary.kind)
+      box.setAttribute('data-risk', String(summary.risk))
+      box.hidden = false
+      show('headline', summary.title)
+      drawIcon(document.getElementById('summary-icon'), summary.kind)
+      var risk = document.getElementById('summary-risk')
+      risk.hidden = !summary.risk
+      drawIcon(risk, 'risk', 'Instructions, approval, keys, boundaries or file removal')
+      var counts = document.getElementById('summary-counts')
+      summary.counts.forEach(function (entry) {
+        var item = document.createElement('span'); item.textContent = entry.text
+        if (entry.tone) item.className = 'file-' + entry.tone
+        counts.appendChild(item)
+      })
+      counts.hidden = summary.counts.length === 0
+      var hashes = document.getElementById('summary-hashes')
+      summary.hashes.forEach(function (entry) {
+        var item = document.createElement('span'); item.textContent = entry.label + ' '
+        var value = document.createElement('b'); value.textContent = entry.value
+        item.appendChild(value); hashes.appendChild(item)
+      })
+      hashes.hidden = summary.hashes.length === 0
+      var effects = document.getElementById('summary-effects')
+      var labels = { memory: 'Memory', messages: 'Messages', instructions: 'Agent instructions / prompts', approval: 'Approval / keys / action gate', sandbox: 'Sandbox / walls', shell: 'App shell', docs: 'Docs' }
+      summary.effects.forEach(function (name) {
+        var item = document.createElement('span'); item.className = 'icon'; item.setAttribute('role', 'img')
+        item.setAttribute('data-effect', name); drawIcon(item, name, labels[name]); effects.appendChild(item)
+      })
+      effects.hidden = summary.effects.length === 0
+      var words = document.getElementById('f-words')
+      words.textContent = ''
+      // Span boundaries add no characters. Selection/copy and textContent remain the exact verified witness.
+      var diffTone = ''
+      text.split(/(?<=\n)/u).forEach(function (line) {
+        var span = document.createElement('span')
+        span.textContent = line
+        var diffPath = /^diff --git a\/.+ b\/(.+)\n/u.exec(line)
+        if (diffPath) diffTone = summary.fileStates[diffPath[1]] || 'modified'
+        if (/^(?:  A |\+(?!\+\+))/u.test(line)) span.className = 'file-added'
+        else if (/^(?:  D |-(?!--))/u.test(line)) span.className = 'file-deleted'
+        else if (/^(?:  M |diff --git |generated: |paths: |\+\+\+ |--- )/u.test(line)) span.className = 'file-modified'
+        if (/^(?:diff --git |\+\+\+ |--- )/u.test(line) && diffTone) span.className = 'file-' + diffTone
+        words.appendChild(span)
+      })
     }
 
     function renderQueue(entries, current) {
@@ -726,20 +976,22 @@
             return
           }
           line.setAttribute('data-approval-queue-line', 'shown')
-          line.textContent = summarize(check.text)
+          renderQueueSummary(line, check.text)
+          var actions = document.createElement('div'); actions.className = 'queue-actions'
           var press = document.createElement('button')
           press.setAttribute('data-approval-queue-approve', entryChallenge)
-          press.textContent = t('approve')
+          decisionLabel(press, 'approve', t('approve'))
           press.addEventListener('click', function () { sendFor(entryChallenge, true, check, shown) })
-          row.appendChild(press)
           // **REFUSING SIGNS NOTHING, AND A QUEUE THAT CAN ONLY SAY YES IS NOT A CHOICE.** The pair belongs on every
           // row that can be read, for the same reason it belongs on the routed question: the person decides, and
           // the challenge this click answers is the row's own.
           var decline = document.createElement('button')
           decline.setAttribute('data-approval-queue-decline', entryChallenge)
-          decline.textContent = t('decline')
+          decisionLabel(decline, 'refuse', t('decline'))
           decline.addEventListener('click', function () { sendFor(entryChallenge, false, check, shown) })
-          row.appendChild(decline)
+          actions.appendChild(decline)
+          actions.appendChild(press)
+          row.appendChild(actions)
         })
       })
     }
@@ -854,8 +1106,7 @@
       // description nobody checked.
       witnessText(reply.words, reply.wordsDigest).then(function (checked) {
         if (checked.ok === true) {
-          show('f-words', checked.text)
-          document.getElementById('headline').textContent = summarize(checked.text)
+          renderOperation(checked.text, reply.wordsTruncated)
           if (reply.wordsTruncated === true) {
             var note = document.getElementById('f-words-note')
             note.textContent = 'The description above is SHORTENED for this screen: '
@@ -863,7 +1114,7 @@
               + 'The digest above covers every one of them, and it is the digest that is signed.'
             note.hidden = false
           }
-          say('Approve signs exactly these bytes (digest under Details). Refuse signs nothing.')
+          say('Approve signs exactly these bytes. Refuse signs nothing.')
         } else {
           // NO DESCRIPTION IS SHOWN, AND THE QUESTION IS STILL THE PERSON'S TO ANSWER.
           //
@@ -891,40 +1142,7 @@
           }
           return
         }
-        // ── **APPROVE IS ARMED BY A VERIFIED, COMPLETE DESCRIPTION AND BY NOTHING ELSE (AUMLOK-113)** ─────
-        //
-        // MEASURED: this was `approve.disabled = false; refuse.disabled = false` — UNCONDITIONAL. So a person
-        // shown *"this description could not be derived"* was then offered an Approve button on it: **the
-        // window said it did not know what was being signed and invited the person to sign it.** The line
-        // above the buttons says *"Approve signs exactly the digest above"*, and on that path the digest
-        // covers text the window could not describe.
-        //
-        // **AND A TRUNCATED DESCRIPTION IS NOT A VERIFIED ONE.** Past `WITNESS_DISPLAY_LIMIT` the words line
-        // is shortened — it says so, and the digest still covers every omitted character — **but the person
-        // is approving a text they have not been shown.** The mark is honest and the button is not: what a
-        // reader compares against is the visible prefix, and the signature covers the whole. **So Approve
-        // waits for a description that is BOTH verified AND whole**, which is the only state in which the
-        // sentence above it is true.
-        //
-        // **REFUSE IS ALWAYS ENABLED, AND IT IS NOT A WEAKER BUTTON.** A window that refuses to display a
-        // line and then offers no way to answer hangs until the request expires — which the signer reports as
-        // the OWNER DECLINING, a different and untrue sentence. **The question stays the person's to answer;
-        // it is only the answer that signs something unknown that is withheld.** Both buttons carry the same
-        // weight in the markup — neither is styled as the safe default — because saying "no" to an operation
-        // nobody could describe must not look like the lesser choice.
-        // **THE VERDICT IS RECORDED, NOT JUST APPLIED.** `truncated === false` STRICTLY: the old `!== true`
-        // let a missing or malformed flag read as "not truncated".
-        // **THE FLAG IS THE FLAG, NOT A PREDICATE ABOUT IT — AND MY OWN CONTROL ARM IS WHAT CAUGHT THIS.**
-        //
-        // MEASURED: the first version read `truncated: reply.wordsTruncated === false` — **INVERTED**. A
-        // description that was whole was recorded as TRUNCATED, and one that had been shortened was recorded as
-        // whole, so the gate refused the good case and admitted the bad one. *It failed closed and open at the
-        // same time, which is why it looked like it worked:* the arm below — "an underivable description does not
-        // get Approve" — passed for a reason that had nothing to do with the description.
-        //
-        // **THE STRICTNESS BELONGS IN `approveEligible()`**, which requires `truncated === false` so that a
-        // MISSING or malformed flag withholds the signing answer — the old inline `!== true` let an absent field
-        // read as "not truncated".
+        // Preserve the witness verdict and start the existing dwell measurement after display.
         witness = { ok: checked.ok === true, truncated: reply.wordsTruncated === true }
         shownAt = Date.now()
         applyEligibility()
