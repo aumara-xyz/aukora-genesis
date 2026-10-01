@@ -512,6 +512,8 @@ export function messagesRefusalStatus(reason: MessagesRefusalReason): number {
     case 'messages:add-name-invalid': return 400
     case 'messages:add-body-unreadable': return 400
     case 'messages:add-already-present': return 409
+    case 'messages:add-refresh-target': return 409
+    case 'messages:add-refresh-binding': return 409
     case 'messages:add-contacts-unreadable': return 409
     case 'messages:add-writer-absent': return 500
     case 'messages:add-write-failed': return 500

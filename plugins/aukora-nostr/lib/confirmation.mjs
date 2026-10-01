@@ -11,8 +11,8 @@
  *
  *     {subject, npub, controllerKeyHex, sasDigits, confirmedAt}
  *
- * — the contact's npub, the controller key the contact is anchored to, and **the six digits the
- * person read aloud**. Nothing else is in the preimage, so nothing else can be varied while the
+ * — the contact's npub, the controller key the contact is anchored to, and all 70 comparison digits.
+ * The v2 confirmation domain retires receipts from the former prefix comparison. Nothing else can be varied while the
  * signature still verifies.
  *
  * THE THREE OUTCOMES, AND THEY ARE DIFFERENT FACTS:
@@ -82,7 +82,8 @@ const {
 import { join } from 'node:path'
 
 /** The domain string this document is signed over. Distinct from the binding's, deliberately. */
-export const SAS_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v1'
+export const SAS_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v2'
+const PREFIX_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v1'
 
 /**
  * The ruled key set. A closed set, like the binding's: a confirmation carrying a field this does not
@@ -271,7 +272,8 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
   } catch { return { verdict: 'refused' } }
   if (typeof confirmation !== 'object' || Array.isArray(confirmation)) return { verdict: 'refused' }
   const document = /** @type {Record<string, unknown>} */ (confirmation)
-  if (document.domain !== SAS_CONFIRMATION_DOMAIN) return { verdict: 'refused' }
+  const prefixEra = document.domain === PREFIX_CONFIRMATION_DOMAIN
+  if (document.domain !== SAS_CONFIRMATION_DOMAIN && !prefixEra) return { verdict: 'refused' }
   const statement = document.statement
   if (typeof statement !== 'object' || statement === null || Array.isArray(statement)) return { verdict: 'refused' }
   const fields = /** @type {Record<string, unknown>} */ (statement)
@@ -279,6 +281,7 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
   // is not one it issued, and the extra field would sit outside the signature's meaning.
   const present = Object.keys(fields).sort()
   const legacy = !Object.hasOwn(fields, 'safetyVersion')
+  if (legacy && !prefixEra) return { verdict: 'refused' }
   const keys = legacy ? LEGACY_CONFIRMATION_KEYS : SAS_CONFIRMATION_KEYS
   if (present.join(',') !== [...keys].sort().join(',')) return { verdict: 'refused' }
   for (const key of LEGACY_CONFIRMATION_KEYS) if (typeof fields[key] !== 'string' || fields[key] === '') return { verdict: 'refused' }
@@ -322,8 +325,8 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
   if (!/^[0-9a-f]{128}$/u.test(String(document.signature))) return { verdict: 'refused' }
   const spki = Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(ownerHex, 'hex')])
   try {
-    const preimage = legacy
-      ? `${SAS_CONFIRMATION_DOMAIN}\n${LEGACY_CONFIRMATION_KEYS.map(key => `${key}=${fields[key]}`).join('\n')}`
+    const preimage = prefixEra
+      ? `${PREFIX_CONFIRMATION_DOMAIN}\n${keys.map(key => `${key}=${fields[key]}`).join('\n')}`
       : confirmationPreimage(fields)
     const ok = edVerify(null, Buffer.from(preimage, 'utf8'), createPublicKey({ key: spki, format: 'der', type: 'spki' }), signature)
     if (!ok) return { verdict: 'refused' }
@@ -342,6 +345,8 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
     if (expectation.subject !== undefined && fields.subject !== expectation.subject) return { verdict: 'stale' }
     // A genuine legacy record may remain on disk, but six digits can never confer VERIFIED.
     if (legacy) return { verdict: 'stale', reason: 'contact:legacy-sas' }
+    // Authentic old approvals only enforced two fixed prefixes. They cannot authorize the full-value protocol.
+    if (prefixEra) return { verdict: 'stale', reason: 'contact:comparison-upgrade-required' }
     if (expectation.safetyVersion !== NOSTR_SAFETY_VERSION) return { verdict: 'stale', reason: 'contact:safety-version-mismatch' }
     if (expectation.controllerKeyHex === null || fields.controllerKeyHex !== expectation.controllerKeyHex) {
       return { verdict: 'stale' }

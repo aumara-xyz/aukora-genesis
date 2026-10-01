@@ -13,6 +13,18 @@ import { join } from 'node:path'
 import { format } from 'node:util'
 import { redactTokens } from './backend-status.mjs'
 
+// Renderer failure diagnostics need the host/path, never URL credentials or fragments.
+function diagnosticUrl(raw) {
+  try {
+    const url = new URL(raw)
+    url.username = ''
+    url.password = ''
+    url.search = ''
+    url.hash = ''
+    return url.href
+  } catch { return '(unparseable URL)' }
+}
+
 export function installDesktopLog({ app, stateRoot }) {
   const dir = join(stateRoot, 'logs')
   const path = join(dir, 'desktop.log')
@@ -32,7 +44,7 @@ export function installDesktopLog({ app, stateRoot }) {
   process.on('unhandledRejection', reason => write('unhandledRejection', stack(reason)))
   app.on('render-process-gone', (_event, contents, details) => {
     let url = ''
-    try { url = contents.getURL().split('?')[0] } catch { /* already destroyed */ }
+    try { url = diagnosticUrl(contents.getURL()) } catch { /* already destroyed */ }
     write('render-process-gone', `reason=${details?.reason} exitCode=${details?.exitCode} ${url}`)
   })
   app.on('child-process-gone', (_event, details) => write('child-process-gone',

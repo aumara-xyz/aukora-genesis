@@ -171,7 +171,7 @@ export interface AddContactRow {
 }
 
 export async function postContact(
-  body: { readonly npub: string; readonly controller?: string; readonly name: string; readonly binding?: object },
+  body: { readonly npub: string; readonly controller?: string; readonly name: string; readonly binding?: object; readonly mode?: 'insert' | 'refresh' },
   fetchImpl: ContactsFetch = sameOriginFetch,
 ): Promise<AddContactRead> {
   const read = await readJson(
@@ -414,7 +414,7 @@ export async function confirmSas(
   // AN UNTRUSTED BODY IS NARROWED HERE RATHER THAN CAST: `value` came off the wire, and the only thing
   // this reads from it is the two fields the claim needs.
   const answer = (typeof value === 'object' && value !== null ? value : {}) as { state?: unknown, npub?: unknown }
-  if (status === 200 && answer.state === 'VERIFIED' && typeof answer.npub === 'string') {
+  if (status === 200 && answer.state === 'VERIFIED' && answer.npub === npub) {
     return { kind: 'confirmed', npub: answer.npub }
   }
   return status === 200

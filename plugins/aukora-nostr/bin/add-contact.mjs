@@ -24,7 +24,12 @@ export const ADD_CONTACT_REFUSE = Object.freeze({
   ALREADY_PRESENT: 'nostr:add-contact-already-present',
   /** `setContactConfirmation` was pointed at an npub this list does not carry. */
   NO_SUCH_CONTACT: 'nostr:add-contact-no-such-contact',
+  REFRESH_TARGET: 'nostr:add-contact-refresh-target',
+  REFRESH_BINDING: 'nostr:add-contact-refresh-binding',
 })
+
+const REFRESH_WINDOW_MS = 300_000
+const CLOCK_SKEW_MS = 30_000
 
 /**
  * How long a lock may sit before it is treated as abandoned.
@@ -188,6 +193,10 @@ function isWritableContact(value) {
  * @returns {Readonly<Record<string, unknown>>} what was written.
  */
 export function addContact(input) {
+  const mode = input.mode ?? 'insert'
+  if (mode !== 'insert' && mode !== 'refresh') {
+    throw refuse(ADD_CONTACT_REFUSE.USAGE, 'mode must be insert or explicit refresh')
+  }
   const name = input.name ?? (typeof input.npub === 'string' ? input.npub.slice(0, 16) : '')
   try {
     assertContactFields(name)
@@ -249,10 +258,9 @@ export function addContact(input) {
 
   const file = contactsPath(stateDir)
 
-  // INSERT-ONLY IS THE DEFAULT FOR A CALLER THAT SAYS SO, AND UPSERT REMAINS FOR THE COMMAND LINE.
-  // A person running this by hand to fix a key means to replace it; a BUTTON must not be able to
-  // re-point a friend silently, so `insert` refuses an npub that is already there.
-  const insertOnly = input.mode === 'insert'
+  // Refresh is explicit and cannot rotate an existing trust anchor. It requires a new peer-signed
+  // binding and clears the owner's confirmation: the normal full comparison must happen again.
+  const insertOnly = mode === 'insert'
 
   // EVERYTHING THAT READS THE FILE HAPPENS INSIDE THE LOCK. A check outside it would be the race this
   // exists to close: read, decide, and let another writer land in between.
@@ -267,11 +275,39 @@ export function addContact(input) {
       throw refuse(ADD_CONTACT_REFUSE.ALREADY_PRESENT,
         `${npub} is already in ${file}; this writer is insert-only and will not re-point an existing contact.`)
     }
-    const entry = { npub, name, peerControllerKey: controller.toLowerCase(), binding }
+    let entry = { npub, name, peerControllerKey: controller.toLowerCase(), binding }
+    if (mode === 'refresh') {
+      const targets = existing.filter(sameContact)
+      const current = targets[0]
+      if (targets.length !== 1 || !isWritableContact(current)
+        || (current.peerControllerKey !== '' && current.peerControllerKey.toLowerCase() !== controller.toLowerCase())) {
+        throw refuse(ADD_CONTACT_REFUSE.REFRESH_TARGET, 'refresh needs one readable contact with the same controller key')
+      }
+      if (!hasBinding || resolvedContact.state !== 'BOUND' || resolvedContact.binding !== 'verified') {
+        throw refuse(ADD_CONTACT_REFUSE.REFRESH_BINDING, 'refresh needs a non-test peer-signed binding')
+      }
+      let previousAt = -Infinity
+      if (current.binding !== null) {
+        const previous = resolveContact({ npub, peerControllerKey: current.peerControllerKey, binding: current.binding })
+        if (previous.binding !== 'verified' || !['BOUND', 'TEST'].includes(previous.state)
+          || current.binding.statement.subject !== binding.statement.subject) {
+          throw refuse(ADD_CONTACT_REFUSE.REFRESH_TARGET, 'refresh cannot replace an unverified binding or another subject')
+        }
+        previousAt = Date.parse(current.binding.statement.createdAt)
+      }
+      const createdAt = binding.statement.createdAt
+      const createdMs = Date.parse(createdAt)
+      const now = Date.now()
+      if (!Number.isFinite(createdMs) || (!Number.isFinite(previousAt) && previousAt !== -Infinity)
+        || new Date(createdMs).toISOString().replace('.000Z', 'Z') !== createdAt
+        || createdMs <= previousAt || createdMs > now + CLOCK_SKEW_MS || now - createdMs > REFRESH_WINDOW_MS) {
+        throw refuse(ADD_CONTACT_REFUSE.REFRESH_BINDING, 'refresh needs a newer binding signed within five minutes')
+      }
+      const { confirmation: _oldConfirmation, ...unchanged } = current
+      entry = { ...unchanged, npub, name: current.name, peerControllerKey: controller.toLowerCase(), binding }
+    }
 
-    // UPSERT BY Npub: re-adding somebody updates them in place. Appending would produce two entries for
-    // one person, and the face resolves by npub, so which one won would depend on document order.
-    // A malformed duplicate is retained for repair, rather than silently erased by an upsert.
+    // Only the validated explicit refresh can replace a row; insert refuses duplicates above.
     const others = existing.filter(current => !sameContact(current) || !isWritableContact(current))
     const contacts = [...others, entry]
 
@@ -338,7 +374,7 @@ const USAGE = [
   '  --controller the other side\'s controller ed25519 public key, 64 hex characters',
   '  --name       what to call them on the Messages screen (default: the start of their npub)',
   '  --binding    a binding document THEY issued, if you have one; without it the contact is UNBOUND',
-  '  --mode       upsert (default) replaces an entry for this npub; insert refuses one that exists',
+  '  --mode       insert (default) refuses duplicates; refresh requires a fresh signed binding and clears confirmation',
 ].join('\n')
 
 async function main(argv) {
@@ -353,8 +389,7 @@ async function main(argv) {
       controller: args.controller,
       name: args.name,
       bindingPath: args.binding,
-      // DEFAULT UPSERT, BECAUSE THIS IS A REPAIR TOOL RUN BY HAND. `--mode insert` is what a caller
-      // that must not re-point an existing friend uses, and it is the mode the button takes.
+      // Existing trust changes only through explicit refresh and a new verification ceremony.
       mode: args.mode,
     })
     console.log(`contacts    : ${result.path}`)

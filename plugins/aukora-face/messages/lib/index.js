@@ -255,6 +255,8 @@ const MESSAGES_RELAY_REFUSALS = [
 ];
 /** Every refusal reason, reader-side and wire-side. */
 const MESSAGES_REFUSAL_REASONS = [
+	"messages:add-refresh-target",
+	"messages:add-refresh-binding",
 	...MESSAGES_STORE_REFUSALS,
 	...MESSAGES_WIRE_REFUSALS,
 	"messages:add-binding-invalid",
@@ -1768,7 +1770,7 @@ async function listContacts(resolver, roots) {
 }
 //#endregion
 //#region lib/types/add-contact-route.js
-/** Insert contacts through the release's writer, which validates bindings before taking its lock. */
+/** Insert or explicitly refresh through the release's signed-binding validator and locked writer. */
 var __rewriteRelativeImportExtension$2 = function(path, preserveJsx) {
 	if (typeof path === "string" && /^\.\.?\//.test(path)) return path.replace(/\.(tsx)$|((?:\.d)?)((?:\.[^./]+?)?)\.([cm]?)ts$/i, function(m, tsx, d, ext, cm) {
 		return tsx ? preserveJsx ? ".jsx" : ".js" : d && (!ext || !cm) ? m : d + ext + "." + cm.toLowerCase() + "js";
@@ -1783,6 +1785,8 @@ const MESSAGES_ADD_CONTACT_REFUSALS = Object.freeze({
 	NAME_INVALID: "messages:add-name-invalid",
 	BODY_UNREADABLE: "messages:add-body-unreadable",
 	ALREADY_PRESENT: "messages:add-already-present",
+	REFRESH_TARGET: "messages:add-refresh-target",
+	REFRESH_BINDING: "messages:add-refresh-binding",
 	CONTACTS_UNREADABLE: "messages:add-contacts-unreadable",
 	WRITER_ABSENT: "messages:add-writer-absent",
 	WRITE_FAILED: "messages:add-write-failed"
@@ -1834,6 +1838,12 @@ function refuseWrite(res, cause, url) {
 		case "nostr:add-contact-already-present":
 			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.ALREADY_PRESENT, url, 409);
 			return;
+		case "nostr:add-contact-refresh-target":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.REFRESH_TARGET, url, 409);
+			return;
+		case "nostr:add-contact-refresh-binding":
+			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.REFRESH_BINDING, url, 409);
+			return;
 		case "nostr:add-contact-existing-unreadable":
 			refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTACTS_UNREADABLE, url, 409);
 			return;
@@ -1870,8 +1880,9 @@ function addContactRoute(admitted, stateDirOf) {
 				"npub",
 				"controller",
 				"name",
-				"binding"
-			].includes(key))) {
+				"binding",
+				"mode"
+			].includes(key)) || fields.mode !== void 0 && fields.mode !== "insert" && fields.mode !== "refresh") {
 				refuse$1(res, MESSAGES_ADD_CONTACT_REFUSALS.BODY_UNREADABLE, url);
 				return;
 			}
@@ -1898,14 +1909,14 @@ function addContactRoute(admitted, stateDirOf) {
 					controller: fields.controller,
 					name,
 					binding: fields.binding,
-					mode: "insert"
+					mode: fields.mode ?? "insert"
 				});
 			} catch (cause) {
 				refuseWrite(res, cause, url);
 				return;
 			}
 			try {
-				appendFileSync(join(stateDir, MESSAGES_ADD_LEDGER), `${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/u, "Z")} add npub=${written.entry.npub.slice(0, 12)}… name=${name.length} chars\n`, { mode: 384 });
+				appendFileSync(join(stateDir, MESSAGES_ADD_LEDGER), `${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/u, "Z")} ${fields.mode === "refresh" ? "refresh" : "add"} npub=${written.entry.npub.slice(0, 12)}… name=${name.length} chars\n`, { mode: 384 });
 			} catch {}
 			res.statusCode = 200;
 			res.setHeader("content-type", "application/json");
@@ -1982,9 +1993,9 @@ const MESSAGES_CONFIRM_CONTACT_REFUSALS = Object.freeze({
 	WRITER_UNLOADABLE: "messages:confirm-writer-unloadable",
 	WRITER_UNUSABLE: "messages:confirm-writer-unusable"
 });
-/** How long to wait for the signer, which is a person deciding. */
+/** Compare the complete pair of identity fingerprints obtained from the peer, never fixed prefixes. */
 function comparisonMatches(digits, groups) {
-	return /^[0-9]{70}$/u.test(digits) && Array.isArray(groups) && groups.length === 2 && groups.every((group) => typeof group === "string" && /^[0-9]{5}$/u.test(group)) && groups[0] === digits.slice(0, 5) && groups[1] === digits.slice(35, 40);
+	return /^[0-9]{70}$/u.test(digits) && Array.isArray(groups) && groups.length === 2 && groups.every((group) => typeof group === "string" && /^[0-9]{35}$/u.test(group)) && groups.join("") === digits;
 }
 const SIGNER_TIMEOUT_MS = 31e4;
 /** The largest reply line this route will read. */
@@ -2125,8 +2136,7 @@ function confirmContactRoute(admitted, rootsOf) {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409);
 				return;
 			}
-			const groupIndex = sas?.comparisonGroupIndex;
-			if (groupIndex !== 0 && groupIndex !== 7 || comparison.sasDigits !== digits || !comparisonMatches(digits, comparison.comparisonGroups)) {
+			if (comparison.sasDigits !== digits || !comparisonMatches(digits, comparison.comparisonGroups)) {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.COMPARISON, url, 409);
 				return;
 			}
@@ -2405,6 +2415,8 @@ function messagesRefusalStatus(reason) {
 		case "messages:add-name-invalid": return 400;
 		case "messages:add-body-unreadable": return 400;
 		case "messages:add-already-present": return 409;
+		case "messages:add-refresh-target": return 409;
+		case "messages:add-refresh-binding": return 409;
 		case "messages:add-contacts-unreadable": return 409;
 		case "messages:add-writer-absent": return 500;
 		case "messages:add-write-failed": return 500;

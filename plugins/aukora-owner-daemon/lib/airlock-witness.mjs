@@ -1,6 +1,6 @@
 // Existing Nostr/SAS encoding and signing bytes, moved from the desktop witness.
 // Shared by the shell and daemon so a release carries one definition without importing the desktop.
-export const SAS_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v1'
+export const SAS_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v2'
 export const NOSTR_SAFETY_VERSION = 2
 
 export const SAS_CONFIRMATION_KEYS = Object.freeze([

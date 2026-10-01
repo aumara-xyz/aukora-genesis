@@ -151,7 +151,6 @@ interface SasSeatProps {
   readonly state: MessagesWireContactState
   /** The string to read aloud, or null when no binding verified. */
   readonly sas: WireSas | null
-  readonly hideComparisonGroup?: boolean
   readonly t: PropsLocale<'messages'>['t']
 }
 
@@ -161,11 +160,9 @@ interface SasSeatProps {
  * @param props - the state, the SAS or its absence, and the translate function.
  * @returns the SAS row or the honest alternative to it.
  */
-function SasSeat({ state, sas, t, hideComparisonGroup = false }: SasSeatProps) {
+function SasSeat({ state, sas, t }: SasSeatProps) {
   if (sas !== null) {
-    const spoken = hideComparisonGroup
-      ? sas.spoken.split(' ').map((group, index) => index === sas.comparisonGroupIndex ? '•••••' : group).join(' ')
-      : sas.spoken
+    const spoken = sas.spoken
     return (
       <span className={css.sas} data-sas="present" data-state={state}>
         <span className={css.sasGlyph}><SasIcon /></span>
@@ -304,12 +301,12 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
   // THE CONFIRMATION IS NOT RENDERED UNTIL THE DIGITS ARE. A button that says "I compared these digits" on a
   // sheet showing no digits is a button that confirms nothing, so the whole block is absent rather than
   // disabled — unreachable is a decision about rendering, not an attribute, and there is nothing here for a
-  // reader or a script to reach before the six digits are on screen.
+  // reader or a script to reach before the complete safety number is on screen.
   const [refusal, setRefusal] = useState<string | null>(null)
   const [comparisonGroups, setComparisonGroups] = useState<[string, string]>(['', ''])
   const matched = state === 'BOUND' && sas !== null
-    && comparisonGroups.every(group => /^[0-9]{5}$/u.test(group))
-    && comparisonGroups[0] === sas.digits.slice(0, 5) && comparisonGroups[1] === sas.digits.slice(35, 40)
+    && comparisonGroups.every(group => /^[0-9]{35}$/u.test(group))
+    && comparisonGroups.join('') === sas.digits
   // THE WAIT IS REAL AND IT IS LONG: the button asks the host, the host asks the shell signer, and the
   // signer opens a window for a person to decide in. So the button disables itself while that is
   // happening — a second press would raise a second request and a second challenge.
@@ -339,19 +336,19 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
         <StateBadge state={state} t={t} />
       </div>
       <p className={css.sheetSentence} data-verify-state={state}>{t(CONTACT_STATE[state].title)}</p>
-      <SasSeat state={state} sas={sas} t={t} hideComparisonGroup />
+      <SasSeat state={state} sas={sas} t={t} />
       {sas !== null && (
         <div className={css.verifyConfirm}>
           {comparisonGroups.map((group, index) => (
             <input
               key={index}
-              data-verify-comparison-group={index === 0 ? 0 : 7}
+              data-verify-comparison-half={index}
               aria-label={`${t('sas.label')} ${index + 1}`}
-              inputMode="numeric" autoComplete="off" maxLength={5}
+              inputMode="numeric" autoComplete="off" maxLength={41}
               value={group} disabled={asking || state !== 'BOUND'}
               onChange={event => setComparisonGroups(previous => {
                 const next: [string, string] = [...previous]
-                next[index] = event.target.value.replace(/[^0-9]/gu, '').slice(0, 5)
+                next[index] = event.target.value.replace(/\s/gu, '').slice(0, 35)
                 return next
               })}
             />
@@ -413,6 +410,7 @@ function AddContactSheet({ t, onClose, onAdded }: {
   readonly onAdded: () => void
 }) {
   const [draft, setDraft] = useState<ContactDraft>({ name: '', npub: '', controller: '' })
+  const [refresh, setRefresh] = useState(false)
   const [refusal, setRefusal] = useState<string | null>(null)
   const [warningOpen, setWarningOpen] = useState(false)
   const [controllerOpen, setControllerOpen] = useState(false)
@@ -550,7 +548,7 @@ function AddContactSheet({ t, onClose, onAdded }: {
     submitting.current = true
     setSending(true)
     clearRefusal()
-    void postContact(checked.body).then((read) => {
+    void postContact({ ...checked.body, mode: refresh ? 'refresh' : 'insert' }).then((read) => {
       if (!alive.current) return
       if (read.kind === 'added') {
         onAdded()
@@ -632,6 +630,10 @@ function AddContactSheet({ t, onClose, onAdded }: {
                 clearRefusal()
               }} />
           </label>
+        )}
+        {(refresh || refusal === 'messages:add-already-present') && (
+          <ActionButton type="button" disabled={sending} aria-pressed={refresh} data-add-refresh
+            onClick={() => { setRefresh(value => !value); clearRefusal() }}>{t('add.refresh')}</ActionButton>
         )}
         <ActionButton type="button" className={css.addSubmit} data-add-submit="ready"
           disabled={sending || !draft.name.trim() || !draft.npub.trim()} onClick={submit}>{t('add.submit')}</ActionButton>
@@ -1067,6 +1069,8 @@ const CONTACT_WARNINGS: Record<string, MessagesKey> = {
   'messages:add-controller-invalid': 'warning.add-controller',
   'messages:add-body-unreadable': 'warning.add-contact',
   'messages:add-already-present': 'warning.add-duplicate',
+  'messages:add-refresh-target': 'warning.add-refresh-target',
+  'messages:add-refresh-binding': 'warning.add-refresh-binding',
   'messages:add-contacts-unreadable': 'warning.contacts',
   'messages:add-writer-absent': 'warning.add-writer',
   'messages:add-write-failed': 'warning.add-write',

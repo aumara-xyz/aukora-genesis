@@ -1,4 +1,4 @@
-/** Insert contacts through the release's writer, which validates bindings before taking its lock. */
+/** Insert or explicitly refresh through the release's signed-binding validator and locked writer. */
 import { existsSync, appendFileSync } from 'node:fs'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
@@ -17,6 +17,8 @@ export const MESSAGES_ADD_CONTACT_REFUSALS = Object.freeze({
   NAME_INVALID: 'messages:add-name-invalid',
   BODY_UNREADABLE: 'messages:add-body-unreadable',
   ALREADY_PRESENT: 'messages:add-already-present',
+  REFRESH_TARGET: 'messages:add-refresh-target',
+  REFRESH_BINDING: 'messages:add-refresh-binding',
   CONTACTS_UNREADABLE: 'messages:add-contacts-unreadable',
   WRITER_ABSENT: 'messages:add-writer-absent',
   WRITE_FAILED: 'messages:add-write-failed',
@@ -80,6 +82,10 @@ function refuseWrite(res: ServerResponse, cause: unknown, url: string): void {
       refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.BINDING_INVALID, url); return
     case 'nostr:add-contact-already-present':
       refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.ALREADY_PRESENT, url, 409); return
+    case 'nostr:add-contact-refresh-target':
+      refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.REFRESH_TARGET, url, 409); return
+    case 'nostr:add-contact-refresh-binding':
+      refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.REFRESH_BINDING, url, 409); return
     case 'nostr:add-contact-existing-unreadable':
       refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.CONTACTS_UNREADABLE, url, 409); return
     case 'nostr:add-contact-locked':
@@ -117,7 +123,8 @@ export function addContactRoute(
       }
       const fields = body
       // A closed body rejects bindingPath and every other request-selected filesystem path.
-      if (Object.keys(fields).some(key => !['npub', 'controller', 'name', 'binding'].includes(key))) {
+      if (Object.keys(fields).some(key => !['npub', 'controller', 'name', 'binding', 'mode'].includes(key))
+        || (fields.mode !== undefined && fields.mode !== 'insert' && fields.mode !== 'refresh')) {
         refuse(res, MESSAGES_ADD_CONTACT_REFUSALS.BODY_UNREADABLE, url)
         return
       }
@@ -143,7 +150,7 @@ export function addContactRoute(
           controller: fields.controller,
           name,
           binding: fields.binding,
-          mode: 'insert',
+          mode: fields.mode ?? 'insert',
         })
       } catch (cause) {
         refuseWrite(res, cause, url)
@@ -153,7 +160,7 @@ export function addContactRoute(
       try {
         appendFileSync(
           join(stateDir, MESSAGES_ADD_LEDGER),
-          `${new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z')} add npub=${written.entry.npub.slice(0, 12)}… name=${name.length} chars\n`,
+          `${new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z')} ${fields.mode === 'refresh' ? 'refresh' : 'add'} npub=${written.entry.npub.slice(0, 12)}… name=${name.length} chars\n`,
           { mode: 0o600 },
         )
       } catch {

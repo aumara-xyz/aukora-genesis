@@ -71,11 +71,11 @@ export const MESSAGES_CONFIRM_CONTACT_REFUSALS = Object.freeze({
   WRITER_UNUSABLE: 'messages:confirm-writer-unusable',
 })
 
-/** How long to wait for the signer, which is a person deciding. */
+/** Compare the complete pair of identity fingerprints obtained from the peer, never fixed prefixes. */
 export function comparisonMatches(digits: string, groups: unknown): boolean {
   return /^[0-9]{70}$/u.test(digits) && Array.isArray(groups) && groups.length === 2
-    && groups.every(group => typeof group === 'string' && /^[0-9]{5}$/u.test(group))
-    && groups[0] === digits.slice(0, 5) && groups[1] === digits.slice(35, 40)
+    && groups.every(group => typeof group === 'string' && /^[0-9]{35}$/u.test(group))
+    && groups.join('') === digits
 }
 
 const SIGNER_TIMEOUT_MS = 310_000
@@ -256,10 +256,9 @@ export function confirmContactRoute(
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409)
         return
       }
-      // Bind the submission to the exact screen and require the group hidden on this screen.
-      // Re-resolving also checks both authenticated protocol versions before asking any signer.
-      const groupIndex = sas?.comparisonGroupIndex
-      if ((groupIndex !== 0 && groupIndex !== 7) || comparison.sasDigits !== digits
+      // Re-resolve the bound identities and require every digit from the peer's comparison.
+      // The submitted screen value alone is not evidence of an out-of-band comparison.
+      if (comparison.sasDigits !== digits
         || !comparisonMatches(digits, comparison.comparisonGroups)) {
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.COMPARISON, url, 409)
         return

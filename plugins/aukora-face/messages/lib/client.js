@@ -46,7 +46,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:Messages.module.css.mjs
-		const css = ".RBzk7q_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--aukora-text);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.RBzk7q_surface[hidden]{display:none}.RBzk7q_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.RBzk7q_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.RBzk7q_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.RBzk7q_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.RBzk7q_actions{align-items:center;gap:2px;display:inline-flex}.RBzk7q_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.RBzk7q_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.RBzk7q_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.RBzk7q_posture[data-posture=connected]{color:var(--aukora-green)}.RBzk7q_posture[data-posture=connected]:before{background:var(--aukora-green)}.RBzk7q_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.RBzk7q_noticeTitle{font-weight:600}.RBzk7q_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.RBzk7q_contactRow{align-items:center;min-height:64px}.RBzk7q_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.RBzk7q_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.RBzk7q_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.RBzk7q_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.RBzk7q_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.RBzk7q_trustMark[data-state=TEST]{color:var(--aukora-gold)}.RBzk7q_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.RBzk7q_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.RBzk7q_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.RBzk7q_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.RBzk7q_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.RBzk7q_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.RBzk7q_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.RBzk7q_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.RBzk7q_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.RBzk7q_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.RBzk7q_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.RBzk7q_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.RBzk7q_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.RBzk7q_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.RBzk7q_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.RBzk7q_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.RBzk7q_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.RBzk7q_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.RBzk7q_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.RBzk7q_sasHint,.RBzk7q_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.RBzk7q_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.RBzk7q_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.RBzk7q_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.RBzk7q_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.RBzk7q_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.RBzk7q_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.RBzk7q_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.RBzk7q_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.RBzk7q_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.RBzk7q_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.RBzk7q_personRow:hover{transform:translate(3px)}.RBzk7q_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.RBzk7q_rowActions{flex:none;align-items:center;gap:2px;display:none}.RBzk7q_personRow:hover .RBzk7q_rowActions,.RBzk7q_personRow:focus-within .RBzk7q_rowActions{display:inline-flex}.RBzk7q_personRow:hover .RBzk7q_time,.RBzk7q_personRow:focus-within .RBzk7q_time{display:none}.RBzk7q_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.RBzk7q_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.RBzk7q_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.RBzk7q_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.RBzk7q_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.RBzk7q_threadHeader{padding-inline:74px}}.RBzk7q_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.RBzk7q_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.RBzk7q_chip[data-trust-chip=FOREIGN]{border-style:dashed}.RBzk7q_chip[data-trust-chip=UNBOUND]{border-style:dotted}.RBzk7q_chipWord{display:inline-block}.RBzk7q_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.RBzk7q_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.RBzk7q_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.RBzk7q_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.RBzk7q_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.RBzk7q_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.RBzk7q_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.RBzk7q_composerRow{justify-content:flex-end;display:flex}.RBzk7q_sendCircle{flex:none;width:34px;height:34px;padding:0}.RBzk7q_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.RBzk7q_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.RBzk7q_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.RBzk7q_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.RBzk7q_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.RBzk7q_sheetBadgeRow{align-items:center;gap:8px;display:flex}.RBzk7q_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.RBzk7q_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.RBzk7q_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.RBzk7q_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.RBzk7q_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.RBzk7q_menuItem,.RBzk7q_menuItemActive{width:100%}.RBzk7q_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.RBzk7q_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.RBzk7q_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.RBzk7q_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.RBzk7q_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.RBzk7q_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.RBzk7q_threadTitle{text-align:left}.RBzk7q_headerTail{flex:100%;justify-content:flex-end}}.RBzk7q_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.RBzk7q_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.RBzk7q_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.RBzk7q_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.RBzk7q_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.RBzk7q_addField{flex-direction:column;gap:4px;display:flex}.RBzk7q_addLabel{color:var(--aukora-text-secondary)}.RBzk7q_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.RBzk7q_addSubmit{padding:9px 12px;font-weight:600}.RBzk7q_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.RBzk7q_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.RBzk7q_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.RBzk7q_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.RBzk7q_addTools .RBzk7q_addRefusal{margin:0 0 0 auto}.RBzk7q_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.RBzk7q_searchInput:focus-visible,.RBzk7q_addInput:focus-visible,.RBzk7q_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
+		const css = ".EBPSoG_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--aukora-text);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.EBPSoG_surface[hidden]{display:none}.EBPSoG_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.EBPSoG_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.EBPSoG_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.EBPSoG_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.EBPSoG_actions{align-items:center;gap:2px;display:inline-flex}.EBPSoG_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.EBPSoG_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.EBPSoG_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.EBPSoG_posture[data-posture=connected]{color:var(--aukora-green)}.EBPSoG_posture[data-posture=connected]:before{background:var(--aukora-green)}.EBPSoG_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.EBPSoG_noticeTitle{font-weight:600}.EBPSoG_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.EBPSoG_contactRow{align-items:center;min-height:64px}.EBPSoG_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.EBPSoG_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.EBPSoG_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.EBPSoG_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.EBPSoG_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.EBPSoG_trustMark[data-state=TEST]{color:var(--aukora-gold)}.EBPSoG_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.EBPSoG_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.EBPSoG_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.EBPSoG_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.EBPSoG_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.EBPSoG_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.EBPSoG_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.EBPSoG_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.EBPSoG_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.EBPSoG_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.EBPSoG_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.EBPSoG_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.EBPSoG_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.EBPSoG_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.EBPSoG_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.EBPSoG_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.EBPSoG_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.EBPSoG_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.EBPSoG_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.EBPSoG_sasHint,.EBPSoG_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.EBPSoG_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.EBPSoG_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.EBPSoG_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.EBPSoG_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.EBPSoG_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.EBPSoG_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.EBPSoG_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.EBPSoG_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.EBPSoG_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.EBPSoG_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.EBPSoG_personRow:hover{transform:translate(3px)}.EBPSoG_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.EBPSoG_rowActions{flex:none;align-items:center;gap:2px;display:none}.EBPSoG_personRow:hover .EBPSoG_rowActions,.EBPSoG_personRow:focus-within .EBPSoG_rowActions{display:inline-flex}.EBPSoG_personRow:hover .EBPSoG_time,.EBPSoG_personRow:focus-within .EBPSoG_time{display:none}.EBPSoG_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.EBPSoG_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.EBPSoG_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.EBPSoG_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.EBPSoG_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.EBPSoG_threadHeader{padding-inline:74px}}.EBPSoG_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.EBPSoG_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.EBPSoG_chip[data-trust-chip=FOREIGN]{border-style:dashed}.EBPSoG_chip[data-trust-chip=UNBOUND]{border-style:dotted}.EBPSoG_chipWord{display:inline-block}.EBPSoG_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.EBPSoG_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.EBPSoG_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.EBPSoG_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.EBPSoG_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.EBPSoG_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.EBPSoG_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.EBPSoG_composerRow{justify-content:flex-end;display:flex}.EBPSoG_sendCircle{flex:none;width:34px;height:34px;padding:0}.EBPSoG_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.EBPSoG_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.EBPSoG_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.EBPSoG_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.EBPSoG_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.EBPSoG_sheetBadgeRow{align-items:center;gap:8px;display:flex}.EBPSoG_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.EBPSoG_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.EBPSoG_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.EBPSoG_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.EBPSoG_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.EBPSoG_menuItem,.EBPSoG_menuItemActive{width:100%}.EBPSoG_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.EBPSoG_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.EBPSoG_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.EBPSoG_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.EBPSoG_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.EBPSoG_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.EBPSoG_threadTitle{text-align:left}.EBPSoG_headerTail{flex:100%;justify-content:flex-end}}.EBPSoG_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.EBPSoG_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.EBPSoG_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.EBPSoG_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.EBPSoG_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.EBPSoG_addField{flex-direction:column;gap:4px;display:flex}.EBPSoG_addLabel{color:var(--aukora-text-secondary)}.EBPSoG_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.EBPSoG_addSubmit{padding:9px 12px;font-weight:600}.EBPSoG_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.EBPSoG_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.EBPSoG_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.EBPSoG_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.EBPSoG_addTools .EBPSoG_addRefusal{margin:0 0 0 auto}.EBPSoG_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.EBPSoG_searchInput:focus-visible,.EBPSoG_addInput:focus-visible,.EBPSoG_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
 		const tagId = "@aukora/face-messages/Messages.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -56,89 +56,89 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Messages_module_css_default = {
-			"actions": "RBzk7q_actions",
-			"addAdded": "RBzk7q_addAdded",
-			"addField": "RBzk7q_addField",
-			"addForm": "RBzk7q_addForm",
-			"addHint": "RBzk7q_addHint",
-			"addInput": "RBzk7q_addInput",
-			"addLabel": "RBzk7q_addLabel",
-			"addReason": "RBzk7q_addReason",
-			"addRefusal": "RBzk7q_addRefusal",
-			"addSubmit": "RBzk7q_addSubmit",
-			"addTools": "RBzk7q_addTools",
-			"addVideo": "RBzk7q_addVideo",
-			"avatar": "RBzk7q_avatar",
-			"badge": "RBzk7q_badge",
-			"badgeWord": "RBzk7q_badgeWord",
-			"brandActions": "RBzk7q_brandActions",
-			"brandMark": "RBzk7q_brandMark",
-			"brandName": "RBzk7q_brandName",
-			"brandRow": "RBzk7q_brandRow",
-			"bubbleText": "RBzk7q_bubbleText",
-			"chip": "RBzk7q_chip",
-			"chipWord": "RBzk7q_chipWord",
-			"composerCard": "RBzk7q_composerCard",
-			"composerRow": "RBzk7q_composerRow",
-			"contactRow": "RBzk7q_contactRow",
-			"headerTail": "RBzk7q_headerTail",
-			"iconButton": "RBzk7q_iconButton",
-			"lane": "RBzk7q_lane",
-			"listEmpty": "RBzk7q_listEmpty",
-			"menuCopy": "RBzk7q_menuCopy",
-			"menuItem": "RBzk7q_menuItem",
-			"menuItemActive": "RBzk7q_menuItemActive",
-			"messages": "RBzk7q_messages",
-			"msgMe": "RBzk7q_msgMe",
-			"msgThem": "RBzk7q_msgThem",
-			"notice": "RBzk7q_notice",
-			"noticeReason": "RBzk7q_noticeReason",
-			"noticeTitle": "RBzk7q_noticeTitle",
-			"npub": "RBzk7q_npub",
-			"personRow": "RBzk7q_personRow",
-			"pinMark": "RBzk7q_pinMark",
-			"posture": "RBzk7q_posture",
-			"receiptMark": "RBzk7q_receiptMark",
-			"rowActions": "RBzk7q_rowActions",
-			"rowMain": "RBzk7q_rowMain",
-			"rowPreview": "RBzk7q_rowPreview",
-			"rowTitleInMain": "RBzk7q_rowTitleInMain",
-			"rowTop": "RBzk7q_rowTop",
-			"rows": "RBzk7q_rows",
-			"sas": "RBzk7q_sas",
-			"sasAbsent": "RBzk7q_sasAbsent",
-			"sasAbsentGlyph": "RBzk7q_sasAbsentGlyph",
-			"sasAbsentText": "RBzk7q_sasAbsentText",
-			"sasBody": "RBzk7q_sasBody",
-			"sasDigits": "RBzk7q_sasDigits",
-			"sasGlyph": "RBzk7q_sasGlyph",
-			"sasHint": "RBzk7q_sasHint",
-			"sasLabel": "RBzk7q_sasLabel",
-			"searchInput": "RBzk7q_searchInput",
-			"searchRow": "RBzk7q_searchRow",
-			"sendCircle": "RBzk7q_sendCircle",
-			"sheet": "RBzk7q_sheet",
-			"sheetBackdrop": "RBzk7q_sheetBackdrop",
-			"sheetBadgeRow": "RBzk7q_sheetBadgeRow",
-			"sheetBody": "RBzk7q_sheetBody",
-			"sheetHeader": "RBzk7q_sheetHeader",
-			"sheetLabel": "RBzk7q_sheetLabel",
-			"sheetRow": "RBzk7q_sheetRow",
-			"sheetSentence": "RBzk7q_sheetSentence",
-			"sheetTitle": "RBzk7q_sheetTitle",
-			"sheetValue": "RBzk7q_sheetValue",
-			"surface": "RBzk7q_surface",
-			"thread": "RBzk7q_thread",
-			"threadHeader": "RBzk7q_threadHeader",
-			"threadNotice": "RBzk7q_threadNotice",
-			"threadTitle": "RBzk7q_threadTitle",
-			"time": "RBzk7q_time",
-			"trustMark": "RBzk7q_trustMark",
-			"unreadDot": "RBzk7q_unreadDot",
-			"verifyConfirm": "RBzk7q_verifyConfirm",
-			"verifyConfirmButton": "RBzk7q_verifyConfirmButton",
-			"verifyConfirmNote": "RBzk7q_verifyConfirmNote",
-			"visuallyHidden": "RBzk7q_visuallyHidden"
+			"actions": "EBPSoG_actions",
+			"addAdded": "EBPSoG_addAdded",
+			"addField": "EBPSoG_addField",
+			"addForm": "EBPSoG_addForm",
+			"addHint": "EBPSoG_addHint",
+			"addInput": "EBPSoG_addInput",
+			"addLabel": "EBPSoG_addLabel",
+			"addReason": "EBPSoG_addReason",
+			"addRefusal": "EBPSoG_addRefusal",
+			"addSubmit": "EBPSoG_addSubmit",
+			"addTools": "EBPSoG_addTools",
+			"addVideo": "EBPSoG_addVideo",
+			"avatar": "EBPSoG_avatar",
+			"badge": "EBPSoG_badge",
+			"badgeWord": "EBPSoG_badgeWord",
+			"brandActions": "EBPSoG_brandActions",
+			"brandMark": "EBPSoG_brandMark",
+			"brandName": "EBPSoG_brandName",
+			"brandRow": "EBPSoG_brandRow",
+			"bubbleText": "EBPSoG_bubbleText",
+			"chip": "EBPSoG_chip",
+			"chipWord": "EBPSoG_chipWord",
+			"composerCard": "EBPSoG_composerCard",
+			"composerRow": "EBPSoG_composerRow",
+			"contactRow": "EBPSoG_contactRow",
+			"headerTail": "EBPSoG_headerTail",
+			"iconButton": "EBPSoG_iconButton",
+			"lane": "EBPSoG_lane",
+			"listEmpty": "EBPSoG_listEmpty",
+			"menuCopy": "EBPSoG_menuCopy",
+			"menuItem": "EBPSoG_menuItem",
+			"menuItemActive": "EBPSoG_menuItemActive",
+			"messages": "EBPSoG_messages",
+			"msgMe": "EBPSoG_msgMe",
+			"msgThem": "EBPSoG_msgThem",
+			"notice": "EBPSoG_notice",
+			"noticeReason": "EBPSoG_noticeReason",
+			"noticeTitle": "EBPSoG_noticeTitle",
+			"npub": "EBPSoG_npub",
+			"personRow": "EBPSoG_personRow",
+			"pinMark": "EBPSoG_pinMark",
+			"posture": "EBPSoG_posture",
+			"receiptMark": "EBPSoG_receiptMark",
+			"rowActions": "EBPSoG_rowActions",
+			"rowMain": "EBPSoG_rowMain",
+			"rowPreview": "EBPSoG_rowPreview",
+			"rowTitleInMain": "EBPSoG_rowTitleInMain",
+			"rowTop": "EBPSoG_rowTop",
+			"rows": "EBPSoG_rows",
+			"sas": "EBPSoG_sas",
+			"sasAbsent": "EBPSoG_sasAbsent",
+			"sasAbsentGlyph": "EBPSoG_sasAbsentGlyph",
+			"sasAbsentText": "EBPSoG_sasAbsentText",
+			"sasBody": "EBPSoG_sasBody",
+			"sasDigits": "EBPSoG_sasDigits",
+			"sasGlyph": "EBPSoG_sasGlyph",
+			"sasHint": "EBPSoG_sasHint",
+			"sasLabel": "EBPSoG_sasLabel",
+			"searchInput": "EBPSoG_searchInput",
+			"searchRow": "EBPSoG_searchRow",
+			"sendCircle": "EBPSoG_sendCircle",
+			"sheet": "EBPSoG_sheet",
+			"sheetBackdrop": "EBPSoG_sheetBackdrop",
+			"sheetBadgeRow": "EBPSoG_sheetBadgeRow",
+			"sheetBody": "EBPSoG_sheetBody",
+			"sheetHeader": "EBPSoG_sheetHeader",
+			"sheetLabel": "EBPSoG_sheetLabel",
+			"sheetRow": "EBPSoG_sheetRow",
+			"sheetSentence": "EBPSoG_sheetSentence",
+			"sheetTitle": "EBPSoG_sheetTitle",
+			"sheetValue": "EBPSoG_sheetValue",
+			"surface": "EBPSoG_surface",
+			"thread": "EBPSoG_thread",
+			"threadHeader": "EBPSoG_threadHeader",
+			"threadNotice": "EBPSoG_threadNotice",
+			"threadTitle": "EBPSoG_threadTitle",
+			"time": "EBPSoG_time",
+			"trustMark": "EBPSoG_trustMark",
+			"unreadDot": "EBPSoG_unreadDot",
+			"verifyConfirm": "EBPSoG_verifyConfirm",
+			"verifyConfirmButton": "EBPSoG_verifyConfirmButton",
+			"verifyConfirmNote": "EBPSoG_verifyConfirmNote",
+			"visuallyHidden": "EBPSoG_visuallyHidden"
 		};
 		//#endregion
 		//#region src/client/MessagesMenu.tsx
@@ -11375,6 +11375,8 @@ window.__ModuleLoader__.load({
 		];
 		/** Every refusal reason, reader-side and wire-side. */
 		const MESSAGES_REFUSAL_REASONS = [
+			"messages:add-refresh-target",
+			"messages:add-refresh-binding",
 			...MESSAGES_STORE_REFUSALS,
 			...MESSAGES_WIRE_REFUSALS,
 			"messages:add-binding-invalid",
@@ -11863,7 +11865,7 @@ window.__ModuleLoader__.load({
 		});
 		//#endregion
 		//#region src/add-contact-route.ts
-		/** Insert contacts through the release's writer, which validates bindings before taking its lock. */
+		/** Insert or explicitly refresh through the release's signed-binding validator and locked writer. */
 		const MESSAGES_ADD_CONTACT_ENDPOINT = "/aukora-messages/add-contact";
 		Object.freeze({
 			NPUB_INVALID: "messages:add-npub-invalid",
@@ -11872,6 +11874,8 @@ window.__ModuleLoader__.load({
 			NAME_INVALID: "messages:add-name-invalid",
 			BODY_UNREADABLE: "messages:add-body-unreadable",
 			ALREADY_PRESENT: "messages:add-already-present",
+			REFRESH_TARGET: "messages:add-refresh-target",
+			REFRESH_BINDING: "messages:add-refresh-binding",
 			CONTACTS_UNREADABLE: "messages:add-contacts-unreadable",
 			WRITER_ABSENT: "messages:add-writer-absent",
 			WRITE_FAILED: "messages:add-write-failed"
@@ -12229,7 +12233,7 @@ window.__ModuleLoader__.load({
 				}
 			};
 			const answer = typeof value === "object" && value !== null ? value : {};
-			if (status === 200 && answer.state === "VERIFIED" && typeof answer.npub === "string") return {
+			if (status === 200 && answer.state === "VERIFIED" && answer.npub === npub) return {
 				kind: "confirmed",
 				npub: answer.npub
 			};
@@ -12973,9 +12977,9 @@ window.__ModuleLoader__.load({
 		* @param props - the state, the SAS or its absence, and the translate function.
 		* @returns the SAS row or the honest alternative to it.
 		*/
-		function SasSeat({ state, sas, t, hideComparisonGroup = false }) {
+		function SasSeat({ state, sas, t }) {
 			if (sas !== null) {
-				const spoken = hideComparisonGroup ? sas.spoken.split(" ").map((group, index) => index === sas.comparisonGroupIndex ? "•••••" : group).join(" ") : sas.spoken;
+				const spoken = sas.spoken;
 				return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 					className: Messages_module_css_default.sas,
 					"data-sas": "present",
@@ -13123,7 +13127,7 @@ window.__ModuleLoader__.load({
 		function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }) {
 			const [refusal, setRefusal] = (0, react.useState)(null);
 			const [comparisonGroups, setComparisonGroups] = (0, react.useState)(["", ""]);
-			const matched = state === "BOUND" && sas !== null && comparisonGroups.every((group) => /^[0-9]{5}$/u.test(group)) && comparisonGroups[0] === sas.digits.slice(0, 5) && comparisonGroups[1] === sas.digits.slice(35, 40);
+			const matched = state === "BOUND" && sas !== null && comparisonGroups.every((group) => /^[0-9]{35}$/u.test(group)) && comparisonGroups.join("") === sas.digits;
 			const [asking, setAsking] = (0, react.useState)(false);
 			const ask = async () => {
 				if (!matched || sas === null) return;
@@ -13163,23 +13167,22 @@ window.__ModuleLoader__.load({
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SasSeat, {
 						state,
 						sas,
-						t,
-						hideComparisonGroup: true
+						t
 					}),
 					sas !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: Messages_module_css_default.verifyConfirm,
 						children: [
 							comparisonGroups.map((group, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								"data-verify-comparison-group": index === 0 ? 0 : 7,
+								"data-verify-comparison-half": index,
 								"aria-label": `${t("sas.label")} ${index + 1}`,
 								inputMode: "numeric",
 								autoComplete: "off",
-								maxLength: 5,
+								maxLength: 41,
 								value: group,
 								disabled: asking || state !== "BOUND",
 								onChange: (event) => setComparisonGroups((previous) => {
 									const next = [...previous];
-									next[index] = event.target.value.replace(/[^0-9]/gu, "").slice(0, 5);
+									next[index] = event.target.value.replace(/\s/gu, "").slice(0, 35);
 									return next;
 								})
 							}, index)),
@@ -13248,6 +13251,7 @@ window.__ModuleLoader__.load({
 				npub: "",
 				controller: ""
 			});
+			const [refresh, setRefresh] = (0, react.useState)(false);
 			const [refusal, setRefusal] = (0, react.useState)(null);
 			const [warningOpen, setWarningOpen] = (0, react.useState)(false);
 			const [controllerOpen, setControllerOpen] = (0, react.useState)(false);
@@ -13399,7 +13403,10 @@ window.__ModuleLoader__.load({
 				submitting.current = true;
 				setSending(true);
 				clearRefusal();
-				postContact(checked.body).then((read) => {
+				postContact({
+					...checked.body,
+					mode: refresh ? "refresh" : "insert"
+				}).then((read) => {
 					if (!alive.current) return;
 					if (read.kind === "added") {
 						onAdded();
@@ -13563,6 +13570,17 @@ window.__ModuleLoader__.load({
 									clearRefusal();
 								}
 							})
+						}),
+						(refresh || refusal === "messages:add-already-present") && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+							type: "button",
+							disabled: sending,
+							"aria-pressed": refresh,
+							"data-add-refresh": true,
+							onClick: () => {
+								setRefresh((value) => !value);
+								clearRefusal();
+							},
+							children: t("add.refresh")
 						}),
 						/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 							type: "button",
@@ -13908,6 +13926,8 @@ window.__ModuleLoader__.load({
 			"messages:add-controller-invalid": "warning.add-controller",
 			"messages:add-body-unreadable": "warning.add-contact",
 			"messages:add-already-present": "warning.add-duplicate",
+			"messages:add-refresh-target": "warning.add-refresh-target",
+			"messages:add-refresh-binding": "warning.add-refresh-binding",
 			"messages:add-contacts-unreadable": "warning.contacts",
 			"messages:add-writer-absent": "warning.add-writer",
 			"messages:add-write-failed": "warning.add-write",
@@ -14696,6 +14716,8 @@ window.__ModuleLoader__.load({
 			"warning.add-qr": "这不是可用的身份二维码。",
 			"warning.add-binding": "身份绑定无法核验，请索取新的二维码。",
 			"warning.add-duplicate": "这个联系人已经在通讯录中。",
+			"warning.add-refresh-target": "新绑定必须属于原联系人的同一控制密钥和身份。",
+			"warning.add-refresh-binding": "请索取五分钟内签发的新绑定，然后重新核对全部数字。",
 			"warning.add-writer": "暂时无法保存联系人，请重试。",
 			"warning.add-write": "联系人未能保存，请重试。",
 			"warning.add-contact": "无法添加这个联系人，请检查资料后重试。",
@@ -14723,7 +14745,7 @@ window.__ModuleLoader__.load({
 			"state.BOUND.title": "已绑定：密钥对得上；还没有人当面确认过。",
 			"state.BOUND.detail": "密钥对得上；还没有人当面确认过",
 			"verify.confirm.button": "我和 {contact} 当面核对了这些数字，它们一致",
-			"verify.confirm.ready": "请两个人一起念出这六个数字。一致再按。",
+			"verify.confirm.ready": "通过可信的通道核对全部70位数字。输入对方屏幕上的两个完整35位数字，仅在全部一致时确认。",
 			"details.open": "详情",
 			"details.title": "详情",
 			"details.host": "本机状态",
@@ -14813,6 +14835,7 @@ window.__ModuleLoader__.load({
 			"add.npub": "npub",
 			"add.controller": "控制密钥（可选）",
 			"add.submit": "添加",
+			"add.refresh": "更新已签名的绑定，之后重新核对全部数字",
 			"add.hint": "这三个字段由你核对。添加后为「已绑定」——密钥对得上，但还没有人当面确认过。",
 			"add.added": "已添加 {name}（{npub}），状态 {state}。",
 			"state.VERIFIED.word": "已确认",
@@ -14845,6 +14868,8 @@ window.__ModuleLoader__.load({
 			"warning.add-qr": "This is not a supported identity QR code.",
 			"warning.add-binding": "This identity binding could not be checked. Ask for a new QR code.",
 			"warning.add-duplicate": "This contact is already in your contacts.",
+			"warning.add-refresh-target": "The new binding must keep the saved contact’s controller key and identity.",
+			"warning.add-refresh-binding": "Ask for a new binding signed within five minutes, then compare all digits again.",
 			"warning.add-writer": "Contact saving is unavailable. Try again.",
 			"warning.add-write": "Could not save this contact. Try again.",
 			"warning.add-contact": "Could not add this contact. Check the details and try again.",
@@ -14872,7 +14897,7 @@ window.__ModuleLoader__.load({
 			"state.BOUND.title": "Bound: the key checks out; nobody has confirmed it in person.",
 			"state.BOUND.detail": "the key checks out; nobody has confirmed it in person",
 			"verify.confirm.button": "I compared these digits with {contact} and they matched",
-			"verify.confirm.ready": "Read the six digits aloud together. Press only if they match.",
+			"verify.confirm.ready": "Compare all 70 digits over a trusted channel. Enter both complete 35-digit halves from the peer’s screen. Confirm only if every digit matches.",
 			"details.open": "Details",
 			"details.title": "Details",
 			"details.host": "Host status",
@@ -14962,6 +14987,7 @@ window.__ModuleLoader__.load({
 			"add.npub": "npub",
 			"add.controller": "Controller key (optional)",
 			"add.submit": "Add",
+			"add.refresh": "Refresh signed binding; compare all digits again",
 			"add.hint": "You check these three yourself. The contact is added as Bound — the key checks out, and nobody has confirmed it in person.",
 			"add.added": "Added {name} ({npub}), shown as {state}.",
 			"state.VERIFIED.word": "Verified",

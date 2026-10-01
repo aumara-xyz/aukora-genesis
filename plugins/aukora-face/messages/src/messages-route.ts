@@ -305,6 +305,8 @@ export type MessagesRefusalReason =
   | 'messages:add-name-invalid'
   | 'messages:add-body-unreadable'
   | 'messages:add-already-present'
+  | 'messages:add-refresh-target'
+  | 'messages:add-refresh-binding'
   | 'messages:add-contacts-unreadable'
   | 'messages:add-writer-absent'
   | 'messages:add-write-failed'
@@ -382,6 +384,8 @@ export const MESSAGES_RELAY_REFUSALS: readonly MessagesRefusalReason[] = [
 
 /** Every refusal reason, reader-side and wire-side. */
 export const MESSAGES_REFUSAL_REASONS: readonly MessagesRefusalReason[] = [
+  'messages:add-refresh-target',
+  'messages:add-refresh-binding',
   ...MESSAGES_STORE_REFUSALS,
   ...MESSAGES_WIRE_REFUSALS,
   'messages:add-binding-invalid',

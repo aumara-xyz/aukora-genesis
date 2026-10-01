@@ -221,7 +221,7 @@ export function safetyNumber({ stateDir, controllerDir, npub, peerControllerKey,
   const peerDigits = fingerprint(peer).digits
   const digits = [localDigits, peerDigits].sort().join('')
   return Object.freeze({ digits, spoken: digits.match(/.{5}/gu).join(' '),
-    // Hide one group from our own half during comparison. The other screen hides its other half.
+    // Legacy wire metadata identifies the local half; it never selects a shorter comparison.
     comparisonGroupIndex: localDigits <= peerDigits ? 0 : 7 })
 }
 
@@ -433,7 +433,8 @@ export function resolveContact({ npub, peerControllerKey, binding, expectSubject
   // and until now it decided it from a string that `identity.mjs` says outright is NOT SIGNED — so
   // `label: "VERIFIED"` was a claim anybody could type. The label now earns at most BOUND. VERIFIED
   // requires a confirmation the OWNER signed over these exact values: this npub, this controller key,
-  // and the six digits a person read aloud and compared.
+  // and all 70 digits compared over a trusted out-of-band channel. The receipt attests the owner's
+  // approval; the verifier cannot establish human attendance or an honest renderer.
   const confirmed = verifySasConfirmationDetailed(confirmation, {
     npub,
     controllerKeyHex: peerKeyHex ?? controllerKeyHex,
