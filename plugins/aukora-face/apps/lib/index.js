@@ -1,13 +1,13 @@
 import z from "@deepseek-ai/schemastery";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { lstat, open, readFile, readdir, realpath } from "node:fs/promises";
+import { lstat, readFile, readdir, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { accessSync, appendFileSync, chmodSync, closeSync, constants, existsSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync, writeSync } from "node:fs";
-import { homedir } from "node:os";
 import { credentialRef } from "@deepseek-ai/dsh-credentials";
 import { SessionId } from "@deepseek-ai/dsh-session";
 import { once } from "node:events";
+import { homedir } from "node:os";
 import { extractSessionEventText } from "@deepseek-ai/dsh-session-query";
 import { execFile } from "node:child_process";
 import WebSocket, { WebSocketServer } from "ws";
@@ -198,242 +198,6 @@ function createEmbeddedAssetHandlers(serveStatic) {
 		}
 	};
 }
-//#endregion
-//#region lib/types/room.js
-const MAX_BYTES = 16384;
-const PAGE_BYTES = 256 * 1024;
-const TAIL_CHUNK_BYTES = 16 * 1024;
-const O_EXLOCK = 32;
-const SPEAKERS = new Set([
-	"PETER",
-	"AUMA",
-	"CLAUDE",
-	"CODEX-DESKTOP",
-	"AUMA-CODEX",
-	"GROK"
-]);
-let appends = Promise.resolve();
-var RoomError = class extends Error {
-	status;
-	constructor(status, message) {
-		super(message);
-		this.status = status;
-	}
-};
-function code(error) {
-	return error?.code;
-}
-async function readRange(file, start, end) {
-	const bytes = Buffer.alloc(end - start);
-	let used = 0;
-	while (used < bytes.length) {
-		const { bytesRead } = await file.read(bytes, used, bytes.length - used, start + used);
-		if (bytesRead === 0) break;
-		used += bytesRead;
-	}
-	return bytes.subarray(0, used);
-}
-function pageOf(bytes, start, reset) {
-	const messages = [];
-	let used = 0;
-	for (let end = bytes.indexOf(10); end !== -1; end = bytes.indexOf(10, used)) {
-		const index = start + used;
-		const line = bytes.subarray(used, end).toString("utf8");
-		used = end + 1;
-		let row;
-		try {
-			row = JSON.parse(line);
-		} catch {
-			continue;
-		}
-		if (row === null || typeof row !== "object" || "ack" in row) continue;
-		const record = row;
-		if (typeof record.id !== "string" || typeof record.at !== "string" || typeof record.from !== "string" || !SPEAKERS.has(record.from) || typeof record.msg !== "string") continue;
-		messages.push({
-			index,
-			id: record.id,
-			at: record.at,
-			from: record.from,
-			msg: record.msg
-		});
-		if (messages.length > 300) messages.shift();
-	}
-	return {
-		messages,
-		cursor: start + used,
-		reset
-	};
-}
-/** Last 300 complete physical lines, with a hard byte budget even for corrupt giant records. */
-async function tailOf(file, size, reset) {
-	const chunks = [];
-	const floor = Math.max(0, size - PAGE_BYTES);
-	let start = size;
-	let newlines = 0;
-	while (start > floor && newlines <= 300) {
-		const from = Math.max(floor, start - TAIL_CHUNK_BYTES);
-		const chunk = await readRange(file, from, start);
-		if (chunk.length !== start - from) throw new Error("room-changed-during-read");
-		chunks.unshift(chunk);
-		for (const byte of chunk) if (byte === 10) newlines++;
-		start = from;
-	}
-	const bytes = Buffer.concat(chunks);
-	let first = 0;
-	if (start > 0) {
-		first = bytes.indexOf(10) + 1;
-		if (first === 0) return {
-			messages: [],
-			cursor: null,
-			reset
-		};
-		newlines--;
-	}
-	while (newlines > 300) {
-		first = bytes.indexOf(10, first) + 1;
-		newlines--;
-	}
-	return pageOf(bytes.subarray(first), start + first, reset);
-}
-function json(res, status, body) {
-	res.writeHead(status, {
-		"content-type": "application/json; charset=utf-8",
-		"cache-control": "no-store"
-	});
-	res.end(JSON.stringify(body));
-}
-function bodyOf(req) {
-	return new Promise((resolve, reject) => {
-		const chunks = [];
-		let size = 0;
-		const cleanup = () => {
-			req.off("data", data).off("end", end).off("error", failed).off("aborted", failed);
-		};
-		const failed = () => {
-			cleanup();
-			reject(new RoomError(400, "invalid-body"));
-		};
-		const data = (chunk) => {
-			size += chunk.length;
-			if (size > MAX_BYTES) {
-				cleanup();
-				req.resume();
-				reject(new RoomError(413, "message-too-large"));
-			} else chunks.push(chunk);
-		};
-		const end = () => {
-			cleanup();
-			try {
-				resolve(JSON.parse(Buffer.concat(chunks).toString("utf8")));
-			} catch {
-				reject(new RoomError(400, "invalid-body"));
-			}
-		};
-		req.on("data", data).on("end", end).on("error", failed).on("aborted", failed);
-	});
-}
-function localISO(date) {
-	const offset = -date.getTimezoneOffset();
-	const local = new Date(date.getTime() + offset * 6e4).toISOString().slice(0, -1);
-	const pad = (n) => String(n).padStart(2, "0");
-	return `${local}${offset < 0 ? "-" : "+"}${pad(Math.floor(Math.abs(offset) / 60))}:${pad(Math.abs(offset) % 60)}`;
-}
-/** In-process room I/O. Both handlers are registered behind the host's requestRejection gate. */
-var RoomHttp = class {
-	room;
-	constructor(roomLogPath = "~/aukora-live/room.log") {
-		this.room = roomLogPath.startsWith("~/") ? join(homedir(), roomLogPath.slice(2)) : roomLogPath;
-	}
-	append(record) {
-		const line = Buffer.from(`${JSON.stringify(record)}\n`);
-		const result = appends.then(async () => {
-			const file = await open(this.room, constants.O_WRONLY | constants.O_APPEND | constants.O_CREAT | O_EXLOCK, 384);
-			try {
-				for (let offset = 0; offset < line.length;) {
-					const { bytesWritten } = await file.write(line, offset, line.length - offset);
-					if (bytesWritten === 0) throw new Error("short-room-write");
-					offset += bytesWritten;
-				}
-				await file.sync();
-			} finally {
-				await file.close();
-			}
-		});
-		appends = result.catch(() => {});
-		return result;
-	}
-	recent = async (req, res) => {
-		if (req.method !== "GET") {
-			res.setHeader("allow", "GET");
-			json(res, 405, { error: "method-not-allowed" });
-			return;
-		}
-		try {
-			const afterText = new URL(req.url ?? "/", "http://localhost").searchParams.get("after");
-			const after = afterText === null ? null : Number(afterText);
-			if (afterText !== null && (!/^(?:0|[1-9]\d*)$/.test(afterText) || !Number.isSafeInteger(after))) throw new RoomError(400, "invalid-cursor");
-			let file;
-			try {
-				file = await open(this.room, "r");
-			} catch (error) {
-				if (code(error) !== "ENOENT") throw error;
-				json(res, 200, {
-					messages: [],
-					cursor: 0,
-					reset: after !== null && after > 0
-				});
-				return;
-			}
-			let page;
-			try {
-				const { size } = await file.stat();
-				const reset = after !== null && size < after;
-				if (after === null || reset) page = await tailOf(file, size, reset);
-				else {
-					page = pageOf(await readRange(file, after, Math.min(size, after + PAGE_BYTES)), after, false);
-					if (page.cursor === after && size > after + PAGE_BYTES) {
-						const tail = await tailOf(file, size, false);
-						if (tail.cursor !== null) page = tail;
-					}
-				}
-			} finally {
-				await file.close();
-			}
-			json(res, 200, page);
-		} catch (error) {
-			this.failure(res, error);
-		}
-	};
-	post = async (req, res) => {
-		if (req.method !== "POST") {
-			res.setHeader("allow", "POST");
-			json(res, 405, { error: "method-not-allowed" });
-			return;
-		}
-		try {
-			const body = await bodyOf(req);
-			const msg = body !== null && typeof body === "object" ? body.msg : void 0;
-			if (typeof msg !== "string" || msg.trim().length === 0) throw new RoomError(400, "invalid-message");
-			if (Buffer.byteLength(msg) > MAX_BYTES) throw new RoomError(413, "message-too-large");
-			const now = /* @__PURE__ */ new Date();
-			const record = {
-				id: `PETER-${now.getTime()}-${randomBytes(2).toString("hex")}`,
-				at: localISO(now),
-				from: "PETER",
-				to: "ALL",
-				msg,
-				origin: "aukora-room-app"
-			};
-			await this.append(record);
-			json(res, 201, { id: record.id });
-		} catch (error) {
-			this.failure(res, error);
-		}
-	};
-	failure(res, error) {
-		json(res, error instanceof RoomError ? error.status : 503, { error: error instanceof RoomError ? error.message : "room-unavailable" });
-	}
-};
 //#endregion
 //#region lib/types/auma-live/disclosure.js
 /** Every class, in one place, **so a policy can be checked for completeness rather than trusted.** */
@@ -3496,10 +3260,7 @@ var PresenceEngine = class {
 		this.crossLane = crossLane;
 		this.dependencies = dependencies;
 		const transport = dependencies.fetch ?? fetch;
-		this.fetchImpl = (input, init) => {
-			if (this.dependencies.providerSendConsent !== true) return Promise.reject(new ProviderConsentRefusal());
-			return transport(input, init);
-		};
+		this.fetchImpl = transport;
 		this.spendGate = dependencies.spendGate ?? defaultSpendGate();
 		this.identityBlock = dependencies.identityBlock ?? loadIdentityBlock;
 		this.now = dependencies.now ?? Date.now;
@@ -3528,7 +3289,7 @@ var PresenceEngine = class {
 			if (!response.write(`data: ${JSON.stringify(payload)}\n\n`)) await once(response, "drain");
 		};
 		response.write(": open\n\n");
-		if (this.dependencies.providerSendConsent !== true) {
+		if (request.voiceAuthorization !== void 0 ? request.voiceAuthorization.allows(this.minds[request.mind]?.endpoint ?? "") !== true : this.dependencies.providerSendConsent !== true) {
 			this.dependencies.reportRecordFailure?.(/* @__PURE__ */ new Error("auma-live turn refused: provider-consent-required"));
 			await write({
 				t: "done",
@@ -3710,7 +3471,7 @@ var PresenceEngine = class {
 					});
 					return completedRecord();
 				}
-				const segment = await this.streamSegment(request.mind, selected.endpoint, key, body, signal, write, lensLookups > 0 || webLookups > 0 || recallLookups > 0 || weightsVerbs > 0, [...new Set([...discloses, ...continuationClasses])]);
+				const segment = await this.streamSegment(request.mind, selected.endpoint, key, body, signal, write, lensLookups > 0 || webLookups > 0 || recallLookups > 0 || weightsVerbs > 0, [...new Set([...discloses, ...continuationClasses])], request.voiceAuthorization);
 				spoken += segment.spokeAloud ? segment.full : "";
 				spokeAloud ||= segment.spokeAloud;
 				completionReason = segment.reason;
@@ -3886,7 +3647,7 @@ var PresenceEngine = class {
 	* change is coming.
 	* @returns Raw model text, collected lens requests, and completion facts.
 	*/
-	async streamSegment(mind, endpoint, key, body, signal, writeRaw, holdUntilRead, discloses = ["turn-text"]) {
+	async streamSegment(mind, endpoint, key, body, signal, writeRaw, holdUntilRead, discloses = ["turn-text"], voiceAuthorization) {
 		let settleDeep = () => {};
 		const deepReady = new Promise((resolve) => {
 			settleDeep = resolve;
@@ -3903,7 +3664,16 @@ var PresenceEngine = class {
 		let spokeAloud = false;
 		const lensRequests = [];
 		const recipient = this.dependencies.disclosureRecipient ?? "openrouter.ai";
-		const policy = this.dependencies.disclosurePolicy?.();
+		const loadedPolicy = this.dependencies.disclosurePolicy?.();
+		const policy = voiceAuthorization !== void 0 ? {
+			recipient: loadedPolicy?.recipient ?? "",
+			allowed: (loadedPolicy?.allowed ?? []).filter((cls) => voiceAuthorization.allowed.includes(cls))
+		} : loadedPolicy;
+		const fetchForTurn = (input, init) => {
+			if (voiceAuthorization !== void 0 ? voiceAuthorization.allows(endpoint) !== true : this.dependencies.providerSendConsent !== true) return Promise.reject(new ProviderConsentRefusal());
+			if (signal.aborted) return Promise.reject(/* @__PURE__ */ new Error("auma-live: voice turn cancelled"));
+			return this.fetchImpl(input, init);
+		};
 		for (const dataClass of discloses) {
 			const disclosure = {
 				recipient,
@@ -3931,7 +3701,7 @@ var PresenceEngine = class {
 			mind,
 			endpoint,
 			key,
-			fetchImpl: this.fetchImpl,
+			fetchImpl: fetchForTurn,
 			signal,
 			deepReady,
 			speak: (text) => {
@@ -3945,7 +3715,7 @@ var PresenceEngine = class {
 		}).catch(() => {});
 		let upstream;
 		try {
-			upstream = await this.fetchImpl(endpoint, {
+			upstream = await fetchForTurn(endpoint, {
 				method: "POST",
 				signal,
 				headers: {
@@ -4257,6 +4027,7 @@ async function coldEvents$1(persistence, id) {
 }
 var AumaLiveHttp = class {
 	dependencies;
+	voiceSessions = /* @__PURE__ */ new Map();
 	engine;
 	minds;
 	restoreSuffixes;
@@ -4599,15 +4370,26 @@ var AumaLiveHttp = class {
 			return;
 		}
 		let input;
+		let body;
 		try {
-			input = parsePresenceRequest(await readJsonBody(req, this.dependencies.maxRequestBodyBytes), this.minds);
+			const parsed = await readJsonBody(req, this.dependencies.maxRequestBodyBytes);
+			if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) throw new RequestBodyError("invalid");
+			body = parsed;
+			if (body["action"] === "start-voice" || body["action"] === "stop-voice") {
+				await this.voiceSessionAction(body, res);
+				return;
+			}
+			input = parsePresenceRequest(body, this.minds);
 		} catch (error) {
 			const tooLarge = error instanceof RequestBodyError && error.message === "too-large";
 			res.writeHead(tooLarge ? 413 : 400, { "content-type": "text/plain; charset=utf-8" });
 			res.end(tooLarge ? "request body too large" : "invalid presence request");
 			return;
 		}
-		if (this.dependencies.providerSendConsent !== true) {
+		const token = typeof body["voiceSessionToken"] === "string" ? body["voiceSessionToken"] : "";
+		const voiceSession = this.voiceSessions.get(token);
+		const voiceAuthorized = voiceSession !== void 0 && voiceSession.sessionId === input.sessionId && voiceSession.expiresAt > Date.now() && this.dependencies.sessions.get(input.sessionId) !== void 0 && (this.dependencies.disclosureRecipient ?? "openrouter.ai") === "openrouter.ai";
+		if (!voiceAuthorized) {
 			this.dependencies.reportRecordFailure?.(/* @__PURE__ */ new Error("auma-live turn refused: provider-consent-required"));
 			res.writeHead(200, {
 				"content-type": "text/event-stream; charset=utf-8",
@@ -4633,12 +4415,27 @@ var AumaLiveHttp = class {
 			return;
 		}
 		const session = found.session;
+		const voiceAuthorization = voiceAuthorized && voiceSession !== void 0 ? {
+			recipient: "openrouter.ai",
+			allowed: Object.freeze(["turn-text", "history"]),
+			allows: (endpoint) => {
+				if (this.voiceSessions.get(token) !== voiceSession || voiceSession.expiresAt <= Date.now() || voiceSession.sessionId !== session.id || this.dependencies.sessions.get(session.id) !== session || (this.dependencies.disclosureRecipient ?? "openrouter.ai") !== "openrouter.ai") return false;
+				try {
+					const url = new URL(endpoint);
+					return url.protocol === "https:" && url.host === "openrouter.ai" && url.username === "" && url.password === "";
+				} catch {
+					return false;
+				}
+			}
+		} : void 0;
 		const turn = {
 			...input,
-			sessionId: session.id
+			sessionId: session.id,
+			...voiceAuthorization === void 0 ? {} : { voiceAuthorization }
 		};
 		this.dependencies.crossLane.synchronizeChat(session.id, session.snapshotEvents());
 		const abort = new AbortController();
+		if (voiceAuthorized) voiceSession?.active.add(abort);
 		res.once("close", () => {
 			abort.abort();
 		});
@@ -4675,8 +4472,76 @@ var AumaLiveHttp = class {
 			await writeTurnFault(res, error);
 		} finally {
 			clearInterval(heartbeat);
+			voiceSession?.active.delete(abort);
 			if (!res.writableEnded) res.end();
 		}
+	}
+	/** Explicit Start/Stop Voice commands. Authority is local, bounded, revocable and never persisted. */
+	async voiceSessionAction(body, res) {
+		const answer = (status, value) => {
+			res.writeHead(status, {
+				"content-type": "application/json",
+				"cache-control": "no-store"
+			});
+			res.end(JSON.stringify(value));
+		};
+		if (body["action"] === "stop-voice") {
+			const token = typeof body["voiceSessionToken"] === "string" ? body["voiceSessionToken"] : "";
+			const grant = this.voiceSessions.get(token);
+			this.voiceSessions.delete(token);
+			grant?.active.forEach((controller) => {
+				controller.abort();
+			});
+			answer(200, { stopped: true });
+			return;
+		}
+		if (body["recipient"] !== "openrouter.ai" || JSON.stringify(body["classes"]) !== "[\"turn-text\",\"history\"]" || (this.dependencies.disclosureRecipient ?? "openrouter.ai") !== "openrouter.ai") {
+			answer(400, { refusal: "voice-scope-mismatch" });
+			return;
+		}
+		const policy = this.dependencies.disclosurePolicy?.();
+		if (policy?.recipient !== "openrouter.ai" || !policy.allowed.includes("turn-text") || !policy.allowed.includes("history")) {
+			answer(409, { refusal: "disclosure-refused" });
+			return;
+		}
+		const requested = typeof body["sessionId"] === "string" ? body["sessionId"].trim() : "";
+		if (requested.length > 256) {
+			answer(400, { refusal: "invalid-session" });
+			return;
+		}
+		const found = await resolvePresenceSession(requested, {
+			homeSession: this.dependencies.homeSession ?? "",
+			live: (id) => this.dependencies.sessions.get(id),
+			...this.dependencies.resumeSession === void 0 ? {} : { resume: this.dependencies.resumeSession }
+		});
+		if ("refusal" in found) {
+			answer(found.refusal.status, { refusal: found.refusal.code });
+			return;
+		}
+		for (const [token, grant] of this.voiceSessions) if (grant.expiresAt <= Date.now()) {
+			this.voiceSessions.delete(token);
+			grant.active.forEach((controller) => {
+				controller.abort();
+			});
+		}
+		if (this.voiceSessions.size >= 128) {
+			answer(429, { refusal: "voice-session-limit" });
+			return;
+		}
+		const token = randomBytes(24).toString("hex");
+		const expiresAt = Date.now() + 3600 * 1e3;
+		this.voiceSessions.set(token, {
+			sessionId: found.session.id,
+			expiresAt,
+			active: /* @__PURE__ */ new Set()
+		});
+		answer(200, {
+			voiceSessionToken: token,
+			sessionId: found.session.id,
+			recipient: "openrouter.ai",
+			classes: ["turn-text", "history"],
+			expiresAt
+		});
 	}
 	/**
 	* Resume the configured home without making the caller wait, reporting a failure either way.
@@ -7766,18 +7631,7 @@ async function apply(ctx, config) {
 			...config.privateMindRunsOn.length === 0 ? {} : { runsOn: config.privateMindRunsOn }
 		} } }
 	});
-	const roomHttp = new RoomHttp(config.roomLogPath);
 	const routes = [
-		{
-			kind: "exact",
-			path: "/api/room/recent",
-			handler: roomHttp.recent
-		},
-		{
-			kind: "exact",
-			path: "/api/room/message",
-			handler: roomHttp.post
-		},
 		{
 			kind: "prefix",
 			path: "/app",

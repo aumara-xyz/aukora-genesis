@@ -1,6 +1,6 @@
 {
   "face": "apps",
-  "srcDigest": "2e938d63e79d8785a0f761d732f0c8f95d1644835d8a9875faa3e148cb02d0c8",
+  "srcDigest": "4be10a33aac25d9bb7bdb44631ebd87f619a9a4bb7f99ff94c8d63c440aeb5f8",
   "files": [
     "package.json",
     "src/auma-canvas-tool.ts",
@@ -242,5 +242,5 @@
     "vendor/zeta-harp/js/zh-fixtures-2.js",
     "vendor/zeta-harp/js/zh-math.js"
   ],
-  "builtAt": "2026-10-01T04:05:11Z"
+  "builtAt": "2026-10-01T07:19:28Z"
 }
