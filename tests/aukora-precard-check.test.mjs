@@ -32,13 +32,27 @@ if (process.argv.includes('--unix-boundary')) {
     }
     const alias = join(privateRoot, 'outside-alias.sock')
     fs.symlinkSync(outside, alias)
+    const hardlink = join(privateRoot, 'outside-hardlink-control.sock')
+    let hardlinkCreated = false
+    try {
+      fs.linkSync(outside, hardlink)
+      hardlinkCreated = true
+      console.log('HARDLINK fixture creation succeeded; denied connection required')
+    } catch (error) {
+      assert.ok(['EPERM', 'EACCES', 'ENOTSUP', 'EOPNOTSUPP'].includes(error.code), error)
+      console.log(`HARDLINK fixture creation refused: ${error.code}; hardlink connection NOT TESTED`)
+    }
     fs.writeFileSync(policy, checkSandboxProfile({ home, support: join(home, 'support'),
       writablePaths: [privateRoot], unixSocketPaths: [privateRoot] }))
     const client = `import errno, os, socket, sys
 s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 s.settimeout(2)
 try:
-    if len(sys.argv) > 2: os.link(sys.argv[2], sys.argv[1])
+    if len(sys.argv) > 2:
+        try: os.link(sys.argv[2], sys.argv[1])
+        except OSError as error:
+            print('LINK_CREATION_REFUSED ' + errno.errorcode.get(error.errno, str(error.errno))); sys.exit(5)
+        print('LINK_CREATED')
     s.connect(sys.argv[1]); s.sendall(b'fixture-only'); reply = s.recv(64)
     print('CONNECTED ' + reply.decode()); sys.exit(0 if reply == b'fixture-ok' else 4)
 except OSError as error:
@@ -47,7 +61,8 @@ finally:
     s.close()
 `
     for (const [label, path] of [['outside', outside], ['inside', inside], ['outside-alias', alias],
-      ['outside-hardlink', join(privateRoot, 'outside-hardlink.sock')]]) {
+      ['outside-hardlink', join(privateRoot, 'outside-hardlink.sock')],
+      ...(hardlinkCreated ? [['outside-hardlink-connect', hardlink]] : [])]) {
       const result = await new Promise((fulfill, reject) => {
         const child = spawn('/usr/bin/sandbox-exec', ['-f', policy, '/usr/bin/python3', '-c', client, path,
           ...(label === 'outside-hardlink' ? [outside] : [])],
@@ -62,15 +77,24 @@ finally:
       if (result.stderr.includes('sandbox-exec:')) throw new Error(result.stderr)
       observations.push(result)
     }
-    for (const label of ['outside', 'outside-alias', 'outside-hardlink']) {
+    for (const label of ['outside', 'outside-alias', ...(hardlinkCreated ? ['outside-hardlink-connect'] : [])]) {
       const result = observations.find(row => row.label === label)
       assert.equal(result.status, 3, `${label}: host socket must be refused`)
       assert.match(result.stdout, /^(?:EPERM|EACCES)$/u)
     }
+    const attemptedLink = observations.find(row => row.label === 'outside-hardlink')
+    if (attemptedLink.status === 5) {
+      assert.match(attemptedLink.stdout, /^LINK_CREATION_REFUSED (?:EPERM|EACCES)$/u)
+      console.log('HARDLINK candidate creation refused; connection was not attempted in this arm')
+    } else {
+      assert.equal(attemptedLink.status, 3, 'created hardlink: host connection must be refused')
+      assert.match(attemptedLink.stdout, /^LINK_CREATED\n(?:EPERM|EACCES)$/u)
+    }
     assert.equal(received.outside, 0, 'outside host socket received no fixture bytes')
     assert.equal(observations.find(row => row.label === 'inside').status, 0, 'private socket must work')
     assert.equal(received.inside, Buffer.byteLength('fixture-only'))
-    console.log('PASS real Unix boundary: outside, symlink and hardlink denied; private fixture exchanged bytes')
+    console.log('PASS real Unix boundary: outside and symlink denied; private fixture exchanged bytes; '
+      + (hardlinkCreated ? 'created hardlink connection denied' : 'hardlink connection NOT TESTED (fixture creation refused)'))
   } finally {
     for (const server of servers) await new Promise(fulfill => server.close(fulfill))
     fs.rmSync(directory, { recursive: true, force: true })

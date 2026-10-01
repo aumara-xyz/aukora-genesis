@@ -1,6 +1,6 @@
 {
   "face": "apps",
-  "srcDigest": "1e4d60edefa17fd290f7caefbef9f1e3dfda31a9f0259c6ef55d9df236263645",
+  "srcDigest": "d074c4a5397fb02b05b26cdbfe92cf45bd1becb00aa91ff2135ad6c00476146d",
   "files": [
     "package.json",
     "src/auma-canvas-tool.ts",
@@ -27,6 +27,7 @@
     "src/auma-live/memory-speech.ts",
     "src/auma-live/memory-tiers.ts",
     "src/auma-live/model-request-store.ts",
+    "src/auma-live/organism-disclosure.ts",
     "src/auma-live/organism-lens.ts",
     "src/auma-live/organism-state-lens.ts",
     "src/auma-live/presence-deps.ts",
@@ -204,10 +205,12 @@
     "vendor/auma-live/voice/.gitignore",
     "vendor/auma-live/voice/MODELS.md",
     "vendor/auma-live/voice/README.md",
+    "vendor/auma-live/voice/aurora_prompt.py",
     "vendor/auma-live/voice/requirements.txt",
     "vendor/auma-live/voice/run.sh",
     "vendor/auma-live/voice/setup.sh",
     "vendor/auma-live/voice/sidecar.py",
+    "vendor/auma-live/voice/test_aurora_prompt.py",
     "vendor/auma-live/voice/test_e2e.py",
     "vendor/auma-live/voice/test_fixes.py",
     "vendor/auma-live/voice/test_lazy_engines.py",
@@ -237,5 +240,5 @@
     "vendor/zeta-harp/js/zh-fixtures-2.js",
     "vendor/zeta-harp/js/zh-math.js"
   ],
-  "builtAt": "2026-09-30T12:17:38Z"
+  "builtAt": "2026-10-01T01:33:04Z"
 }

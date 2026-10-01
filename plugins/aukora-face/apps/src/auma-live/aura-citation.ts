@@ -31,7 +31,8 @@ export const CITE_UNVERIFIED = 'UNVERIFIED'
  * reading her will rely on.
  */
 export const AURA_RAIL = [
-  'Citations: each record below carries either "Aura #<n>, verified" or "UNVERIFIED: <reason>".',
+  'Citations: each record below carries "Aura #<n>, verified", "Remembered chain kira.remembered …, verified integrity", or "UNVERIFIED: <reason>".',
+  'Remembered chain indexes are in a separate unsigned namespace; they are never Aura sequences or owner approvals.',
   'You may say a record is in memory at a particular Aura sequence ONLY when its line says "verified" — that is',
   'the only case where a sequence is true. For an UNVERIFIED record, say plainly that it could not be verified;',
   'do not give a sequence for it and do not imply one. Never state an Aura sequence that was not handed to you',
@@ -44,6 +45,10 @@ export interface Citation {
   readonly line: string
   /** The sequence, ONLY when the citation verified and the sequence was a finite number. */
   readonly auraSequence?: number
+  /** Checked unsigned remembered-chain pointer; never substitute it for auraSequence. */
+  readonly namespace?: 'kira.remembered'
+  readonly chainIndex?: number
+  readonly entryHash?: string
 }
 
 /** The shape `aura.cite` answers with, as far as this module reads it. */

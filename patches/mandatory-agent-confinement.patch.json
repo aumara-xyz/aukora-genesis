@@ -1,0 +1,237 @@
+{
+  "formatVersion": 1,
+  "name": "mandatory-agent-confinement",
+  "reason": "Agent process launch requires the AUKORA native confinement service before child execution; full-access session mode cannot bypass it, and unwired native SDK providers refuse startup.",
+  "edits": [
+    {
+      "path": "packages/sandbox/sandbox/src/index.ts",
+      "find": "    sandbox: SandboxProvider\n",
+      "replace": "    sandbox: SandboxProvider\n    /** Required AUKORA provider, registered only by approved host composition. */\n    aukoraConfinement: Pick<SandboxProvider, 'confine'>\n",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/sandbox/sandbox/src/index.ts",
+      "find": "      + 'restricted-token runner can start (Windows) \u2014 otherwise switch the consumer to '\n      + 'danger-full-access.'",
+      "replace": "      + 'restricted-token runner can start (Windows). Required AUKORA confinement cannot be disabled by session mode.'",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/sandbox/sandbox/src/index.ts",
+      "find": "export default SandboxProvider\n",
+      "replace": "/** Require the deployment boundary before choosing any child-launch path; session mode never disables it. */\nexport function requiredConfinement(ctx: Context, policy: unknown): {\n  provider: Pick<SandboxProvider, 'confine'>\n  policy: SandboxPolicy\n} {\n  const provider = ctx.get('aukoraConfinement')\n  if (provider === undefined || typeof provider.confine !== 'function') {\n    throw new HarnessError('AUKORA_CONFINEMENT_REQUIRED: required native confinement is unavailable; child startup refused', 'AUKORA_CONFINEMENT_REQUIRED')\n  }\n  if (policy === null || typeof policy !== 'object' || Array.isArray(policy)) {\n    throw new HarnessError('AUKORA_CONFINEMENT_POLICY: a resolved confined policy is required; child startup refused', 'AUKORA_CONFINEMENT_POLICY')\n  }\n  const input = policy as Partial<SandboxExecutionPolicy>\n  const mode = input.mode\n  if ((mode !== 'read-only' && mode !== 'workspace-write') || typeof input.workspaceRoot !== 'string' || input.workspaceRoot.length === 0) {\n    throw new HarnessError('AUKORA_CONFINEMENT_POLICY: read-only or workspace-write with a workspaceRoot is required; child startup refused', 'AUKORA_CONFINEMENT_POLICY')\n  }\n  return { provider, policy: { ...input, mode, workspaceRoot: input.workspaceRoot } }\n}\n\nexport default SandboxProvider\n",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "find": "import { SandboxUnavailableError } from '@deepseek-ai/dsh-sandbox'",
+      "replace": "import { SandboxUnavailableError, requiredConfinement } from '@deepseek-ai/dsh-sandbox'",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "find": "  SandboxEnforcement,\n  SandboxExecutionPolicy,\n",
+      "replace": "  SandboxEnforcement,\n",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "find": "    const policy = spec.sandboxPolicy as SandboxExecutionPolicy\n    const { mode } = policy\n    if (mode === 'danger-full-access') {\n      const result = await super.run(spec)\n      return { ...result, sandbox: { mode, denied: false } }\n    }",
+      "replace": "    const { policy } = requiredConfinement(this.ctx, spec.sandboxPolicy)\n    const { mode } = policy",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "find": "    const policy = spec.sandboxPolicy as SandboxExecutionPolicy\n    const { mode } = policy\n    if (mode === 'danger-full-access') return super.start(spec)",
+      "replace": "    const { policy } = requiredConfinement(this.ctx, spec.sandboxPolicy)\n    const { mode } = policy",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "find": "    return this.ctx.sandbox.confine(['bash', '-c', command], policy, signal)",
+      "replace": "    const required = requiredConfinement(this.ctx, policy)\n    return required.provider.confine(['bash', '-c', command], required.policy, signal)",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/terminal/terminal-bash/src/index.ts",
+      "find": "import type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'",
+      "replace": "import { requiredConfinement } from '@deepseek-ai/dsh-sandbox'\nimport type { SandboxExecutionPolicy } from '@deepseek-ai/dsh-sandbox'",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/terminal/terminal-bash/src/index.ts",
+      "find": "  if (policy.mode === 'danger-full-access') return argv\n  const sandbox = ctx.get('sandbox')\n  if (sandbox === undefined) {\n    throw new Error(`terminal-bash: sandbox mode \"${policy.mode}\" requires a ctx.sandbox provider in the execution world`)\n  }\n  // Re-state the discriminant because object spread does not preserve its narrowed type.\n  return (await sandbox.confine(argv, { ...policy, mode: policy.mode }, signal)).argv",
+      "replace": "  const required = requiredConfinement(ctx, policy)\n  return (await required.provider.confine(argv, required.policy, signal)).argv",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime-node/src/index.ts",
+      "find": "import { SandboxUnavailableError, classifyRunnerFailure, isRunnerSpawnFailure } from '@deepseek-ai/dsh-sandbox'",
+      "replace": "import { SandboxUnavailableError, classifyRunnerFailure, isRunnerSpawnFailure, requiredConfinement } from '@deepseek-ai/dsh-sandbox'",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime-node/src/index.ts",
+      "find": "      confined = policy.mode === 'danger-full-access' ? undefined : await this.ctx.sandbox.confine(argv, { ...policy, mode: policy.mode }, signal)",
+      "replace": "      const required = requiredConfinement(this.ctx, policy)\n      confined = await required.provider.confine(argv, required.policy, signal)",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime-node/src/index.ts",
+      "find": "handle = this.ctx.subprocess.spawn({ argv: confined?.argv ?? argv,",
+      "replace": "handle = this.ctx.subprocess.spawn({ argv: confined.argv,",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/api/terminal-controller/src/index.ts",
+      "find": "import type {} from '@deepseek-ai/dsh-sandbox'",
+      "replace": "import { requiredConfinement } from '@deepseek-ai/dsh-sandbox'",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/api/terminal-controller/src/index.ts",
+      "find": "    let argv = [shell.path, ...shell.args]\n    if (policy.mode !== 'danger-full-access') {\n      const sandbox = agent.ctx.get('sandbox')\n      if (sandbox === undefined) throw new Error('The Session sandbox mode requires an execution sandbox provider')\n      argv = (await sandbox.confine(argv, { ...policy, mode: policy.mode }, signal)).argv\n    }",
+      "replace": "    const required = requiredConfinement(agent.ctx, policy)\n    const argv = (await required.provider.confine([shell.path, ...shell.args], required.policy, signal)).argv\n    signal.throwIfAborted()",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/subagent/subagent-codex/src/index.ts",
+      "find": "const DEFAULT_PROVIDER_NAME = ",
+      "replace": "function refuseUnconfinedNativeProvider(): void {\n  const error = new Error('AUKORA_NATIVE_CONFINEMENT_UNWIRED: subagent-codex child startup refused until its SDK launch closure enforces native confinement')\n  Object.assign(error, { code: 'AUKORA_NATIVE_CONFINEMENT_UNWIRED' })\n  throw error\n}\n\nconst DEFAULT_PROVIDER_NAME = ",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/subagent/subagent-codex/src/index.ts",
+      "find": "  start(request: ResolvedSubagentStartRequest) {",
+      "replace": "  start(request: ResolvedSubagentStartRequest) {\n    refuseUnconfinedNativeProvider()",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/subagent/subagent-claude-code/src/index.ts",
+      "find": "const DEFAULT_PROVIDER_NAME = ",
+      "replace": "function refuseUnconfinedNativeProvider(): void {\n  const error = new Error('AUKORA_NATIVE_CONFINEMENT_UNWIRED: subagent-claude-code child startup refused until its SDK launch closure enforces native confinement')\n  Object.assign(error, { code: 'AUKORA_NATIVE_CONFINEMENT_UNWIRED' })\n  throw error\n}\n\nconst DEFAULT_PROVIDER_NAME = ",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/subagent/subagent-claude-code/src/index.ts",
+      "find": "  async start(request: ResolvedSubagentStartRequest) {",
+      "replace": "  async start(request: ResolvedSubagentStartRequest) {\n    refuseUnconfinedNativeProvider()",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "find": "import { SandboxUnavailableError } from '@deepseek-ai/dsh-sandbox'",
+      "replace": "import { SandboxUnavailableError, requiredConfinement } from '@deepseek-ai/dsh-sandbox'",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "find": "  SandboxEnforcement,\n  SandboxExecutionPolicy,\n",
+      "replace": "  SandboxEnforcement,\n",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "find": "    const policy = spec.sandboxPolicy as SandboxExecutionPolicy\n    const { mode } = policy\n    if (mode === 'danger-full-access') {\n      const result = await super.run(spec)\n      return { ...result, sandbox: { mode, denied: false } }\n    }",
+      "replace": "    const { policy } = requiredConfinement(this.ctx, spec.sandboxPolicy)\n    const { mode } = policy",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "find": "    const policy = spec.sandboxPolicy as SandboxExecutionPolicy\n    const { mode } = policy\n    if (mode === 'danger-full-access') return super.start(spec)",
+      "replace": "    const { policy } = requiredConfinement(this.ctx, spec.sandboxPolicy)\n    const { mode } = policy",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "find": "    return this.ctx.sandbox.confine(this.argv(spec), policy, signal)",
+      "replace": "    const required = requiredConfinement(this.ctx, policy)\n    return required.provider.confine(this.argv(spec), required.policy, signal)",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "find": "    return { ...super.resolve(request), sandboxPolicy: request.sandboxPolicy ?? this.ctx.sandboxPolicy.resolve() }",
+      "replace": "    const { policy } = requiredConfinement(this.ctx, Object.hasOwn(request, 'sandboxPolicy') ? request.sandboxPolicy : this.ctx.sandboxPolicy.resolve())\n    return { ...super.resolve(request), sandboxPolicy: policy }",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "find": "    return { ...super.resolve(request), sandboxPolicy: request.sandboxPolicy ?? this.ctx.sandboxPolicy.resolve() }",
+      "replace": "    const { policy } = requiredConfinement(this.ctx, Object.hasOwn(request, 'sandboxPolicy') ? request.sandboxPolicy : this.ctx.sandboxPolicy.resolve())\n    return { ...super.resolve(request), sandboxPolicy: policy }",
+      "occurrences": 1
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime-node/src/index.ts",
+      "find": "    const sandboxPolicy = request.sandboxPolicy ?? this.ctx.sandboxPolicy.resolve()",
+      "replace": "    const { policy: sandboxPolicy } = requiredConfinement(this.ctx, Object.hasOwn(request, 'sandboxPolicy') ? request.sandboxPolicy : this.ctx.sandboxPolicy.resolve())",
+      "occurrences": 1
+    }
+  ],
+  "expectAfterApply": [
+    {
+      "path": "packages/sandbox/sandbox/src/index.ts",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/shell/bash-sandbox/src/index.ts",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/terminal/terminal-bash/src/index.ts",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime-node/src/index.ts",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/api/terminal-controller/src/index.ts",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/subagent/subagent-codex/src/index.ts",
+      "contains": "    refuseUnconfinedNativeProvider()"
+    },
+    {
+      "path": "packages/subagent/subagent-claude-code/src/index.ts",
+      "contains": "    refuseUnconfinedNativeProvider()"
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/src/index.ts",
+      "contains": "requiredConfinement"
+    }
+  ],
+  "expectAfterBuild": [
+    {
+      "path": "packages/sandbox/sandbox/lib/index.js",
+      "contains": "AUKORA_CONFINEMENT_REQUIRED"
+    },
+    {
+      "path": "packages/shell/bash-sandbox/lib/index.js",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/terminal/terminal-bash/lib/index.js",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime-node/lib/index.js",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/api/terminal-controller/lib/index.js",
+      "contains": "requiredConfinement"
+    },
+    {
+      "path": "packages/subagent/subagent-codex/lib/index.js",
+      "contains": "AUKORA_NATIVE_CONFINEMENT_UNWIRED"
+    },
+    {
+      "path": "packages/subagent/subagent-claude-code/lib/index.js",
+      "contains": "AUKORA_NATIVE_CONFINEMENT_UNWIRED"
+    },
+    {
+      "path": "packages/shell/pwsh-sandbox/lib/index.js",
+      "contains": "requiredConfinement"
+    }
+  ]
+}

@@ -25,6 +25,8 @@
  */
 
 import { execFile } from 'node:child_process'
+import { lstat, realpath } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
 
 /** What one executed lens command produced. Exactly the shape the readers' contracts already expect. */
 export interface LensExecResult {
@@ -65,7 +67,28 @@ export const LENS_TIMEOUT_MS = 8_000
  * @param options - working directory, deadline and output ceiling.
  * @returns stdout and an error string, exactly as the readers' contract says.
  */
-export function lensExec(command: string, args: string[], options: LensExecOptions = {}): Promise<LensExecResult> {
+export async function lensExec(command: string, args: string[], options: LensExecOptions = {}): Promise<LensExecResult> {
+  let gitEnvironment: NodeJS.ProcessEnv | undefined
+  if (command === 'git' || command === '/usr/bin/git') {
+    try {
+      // Each call checks the named root, including grep and cache refreshes. Gitfiles/worktrees and .git symlinks are refused.
+      if (options.cwd === undefined) throw new Error('a repository root is required')
+      const root = await realpath(options.cwd)
+      const gitDir = join(root, '.git')
+      if (!(await lstat(gitDir)).isDirectory()) throw new Error('.git must be a real directory')
+      command = '/usr/bin/git'
+      args = ['--no-replace-objects', '--no-optional-locks', `--git-dir=${gitDir}`, `--work-tree=${root}`,
+        '-c', 'core.fsmonitor=false', '-c', 'core.hooksPath=/dev/null', '-c', 'core.attributesFile=/dev/null', ...args]
+      // Match the repository's hardened subprocess pattern: an allowlisted environment, never inherited Git controls.
+      gitEnvironment = {
+        PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: '/dev/null', LANG: 'C.UTF-8',
+        GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_SYSTEM: '/dev/null', GIT_CONFIG_GLOBAL: '/dev/null',
+        GIT_CEILING_DIRECTORIES: dirname(root), GIT_TERMINAL_PROMPT: '0', GIT_NO_LAZY_FETCH: '1',
+      }
+    } catch {
+      return { stdout: '', status: null, error: 'repository root requires a real .git directory' }
+    }
+  }
   const timeoutMs = options.timeoutMs ?? LENS_TIMEOUT_MS
   return new Promise<LensExecResult>((resolve) => {
     execFile(
@@ -73,6 +96,7 @@ export function lensExec(command: string, args: string[], options: LensExecOptio
       args,
       {
         cwd: options.cwd,
+        ...(gitEnvironment === undefined ? {} : { env: gitEnvironment }),
         // THE DEADLINE IS ENFORCED BY KILLING THE CHILD. Without it a wedged `gh` would hold a lane's turn open
         // for as long as GitHub felt like taking.
         timeout: timeoutMs,

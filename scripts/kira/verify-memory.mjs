@@ -24,7 +24,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 import { percentiles, verifyRecord } from '../../plugins/aukora-kira/lib/memory-verify.mjs'
-import { findSessionFile, readSessionEventStreamed } from '../../plugins/aukora-kira/lib/session-read.mjs'
+import { findSessionFile, readCaptureEventStreamed } from '../../plugins/aukora-kira/lib/session-read.mjs'
 import { STORE_PATHS, objectFileName } from '../../plugins/aukora-kira/lib/memory-store.mjs'
 import { rememberedChainEntry } from '../../plugins/aukora-kira/lib/memory-deps.mjs'
 
@@ -83,7 +83,7 @@ for (const name of files) {
     // right and this caller was wrong: a Promise is not the line.
     let line = null
     if (typeof sessionId === 'string' && Number.isInteger(seq)) {
-      const event = await readSessionEventStreamed({ stateRoot: stateDir, sessionId, seq })
+      const event = await readCaptureEventStreamed({ stateRoot: stateDir, source })
       line = event === null || event === undefined ? null : event.line
     }
     // THE CHAIN, READ FROM THE CHAIN FILE — the same reader the Memory app's verify route uses. This passed the record's own

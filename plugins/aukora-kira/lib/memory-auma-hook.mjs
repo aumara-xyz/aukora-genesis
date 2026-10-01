@@ -257,7 +257,8 @@ export function registerAumaTurnCapture(ctx, options = {}) {
       memory = options.memory ? (typeof options.memory === 'function' ? options.memory() : options.memory)
         : memory ?? createTrackedMemory({ stateDir, subject: policy.subject, policyOf,
             config: options.config ?? readBridgeConfig(openVikingHome(stateDir)), fetch: options.fetch })
-      const result = turn.quotedFrom === 'ownerText' ? await memory.captureTurn(turn, { ...policy, attributedTo: 'owner-voice', explicitRemember: turn.control === 'remember' }) : { remembered: 0 }
+      const result = turn.quotedFrom === 'ownerText' ? await memory.captureTurn(turn, { ...policy, attributedTo: 'owner-voice',
+        sourceKind: 'auma-live/model-request', explicitRemember: turn.control === 'remember' }) : { remembered: 0 }
       if (result.remembered) onRemembered?.({ sessionId: turn.sessionId, turn: turn.turn, ...result })
       // The voice reply is a distinct agent report. Its source is the emitted reply, not a fabricated assistant session line.
       if (typeof payload.text === 'string' && payload.text.trim()) {

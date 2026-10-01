@@ -19,3 +19,6 @@ jobs:
         with:
           node-version: '22'
       - run: sh scripts/check.sh
+      # Separate from precard: this fixture applies its own real Seatbelt profile.
+      - name: Verify native Unix socket boundary
+        run: node tests/aukora-precard-check.test.mjs --unix-boundary

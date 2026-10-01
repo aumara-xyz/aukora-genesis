@@ -39,6 +39,7 @@
     "src/auma-live/identity.ts",
     "src/auma-live/organism-lens.ts",
     "src/auma-live/organism-state-lens.ts",
+    "src/auma-live/organism-disclosure.ts",
     "src/auma-live/disclosure.ts",
     "src/vendor/organism.ts",
     "src/auma-live/presence.ts",

@@ -1,9 +1,9 @@
 {
   "_README": [
-    "WHAT MAY LEAVE THIS MACHINE. This file is yours to edit; nothing else widens it.",
+    "RELEASE DISCLOSURE POLICY. Only this shipped file is read; widening requires approved self-change.",
     "",
     "recipient  — the ONE host disclosures may be addressed to. A disclosure to any other host is refused.",
-    "allowed    — the data classes pre-authorised for that host, so ordinary turns need no popup.",
+    "allowed    — the class ceiling for that host; providerSendConsent must separately be explicitly true.",
     "             turn-text      what you said this turn",
     "             history        earlier turns, as she recalls them",
     "             screen         anything visible on your screen        (OFF by default)",
@@ -11,11 +11,11 @@
     "             organism-state the organism's own state document      (OFF by default)",
     "             memory         records from her memory store",
     "",
-    "A class that is not listed is REFUSED BY NAME and she says so. It is never trimmed, summarised, or",
+    "A class that is not listed is refused. Local logs name the reason; the client shows a blocked icon. It is never",
     "sent with a different label. An unreadable or malformed file authorises NOTHING — it does not fall",
-    "back to this default, because a deleted file must not restore a class you removed.",
+    "back to this default, because a missing release file must not restore authorisations.",
     "",
-    "Adding a class here is the ONLY way to allow it. No environment variable, flag or build step widens it."
+    "No owner-file or environment override is accepted. A missing release policy also authorises nothing."
   ],
   "recipient": "openrouter.ai",
   "allowed": ["turn-text", "history"]

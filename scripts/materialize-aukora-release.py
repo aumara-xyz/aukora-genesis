@@ -1030,6 +1030,11 @@ def main() -> int:
         for name in ('index.js', 'client.js', 'invariant.js'):
             if (face_src / 'lib' / name).is_file():
                 shutil.copy2(face_src / 'lib' / name, face_out / 'lib' / name)
+        # A face may carry `disclosure-policy.json` beside `lib/`: the default Auma Live's disclosure checkpoint reads from
+        # `<lib>/../disclosure-policy.json`. Without it a release reads NO policy and refuses every turn ("nothing authorised").
+        # It is covered by the `plugins/aukora-face-*/disclosure-policy.json` host pattern in scripts/artifacts-coverage.json.
+        if (face_src / 'disclosure-policy.json').is_file():
+            shutil.copy2(face_src / 'disclosure-policy.json', face_out / 'disclosure-policy.json')
         # The stock apps are iframes over vendored application trees; the host half
         # serves them from a path relative to the package, so they travel beside it.
         if (face_src / 'vendor').is_dir():

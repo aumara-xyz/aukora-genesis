@@ -23,6 +23,11 @@
       "file": "patches/subprocess-output-tail-copy.patch.json",
       "sha256": "b116a442e173e37ae9054b6a0a8fc171c70ee408c7b99109d78f941bb4de4edf",
       "reason": "H5, MEASURED 2026-09-27 by tests/aukora-subprocess-output-retention.test.mjs: OutputCollector.push trims its head chunk with `head.subarray(excess)`, and Buffer.subarray returns a VIEW sharing the parent's backing store. A retained window of 1024 B therefore PINS A 1048576 B ALLOCATION (x1024 amplification) while the collector's own byte counter reports 1024 B \u2014 which is why the leak is invisible in its own accounting. In the alpha-17 snapshot pair this was the ONLY one of the reviewed roots that grew: across 120 driven turns Session (H1) and projection (H2) were unchanged, `chunks` grew, and Buffer 12.66 MB / ArrayBuffer 12.30 MB were the largest retained structures in a 50 MB heap. The fix copies the trimmed tail so it stops pinning the whole parent allocation; MEASURED on a copy of the module, the same window then pins a pooled 8192 B slab \u2014 x128 less."
+    },
+    {
+      "file": "patches/mandatory-agent-confinement.patch.json",
+      "sha256": "d7091a14e87ab13116b5cdd5f772fef8d499a0a83396df391a0a79de5fc69c9f",
+      "reason": "Agent process launch requires the AUKORA native confinement service before child execution; full-access session mode cannot bypass it, and unwired native SDK providers refuse startup."
     }
   ]
 }

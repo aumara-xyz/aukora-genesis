@@ -30,6 +30,7 @@
     "scripts/aukora/desktop-cutover.mjs",
     "apps/aukora-desktop/card-chain.mjs",
     "plugins/aukora-kira/retention-policy.json",
+    "plugins/aukora-face-*/disclosure-policy.json",
     "vendor/append-only/**",
     "vendor/receipt/**",
     "vendor/kira-export/**",

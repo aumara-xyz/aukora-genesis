@@ -1154,12 +1154,14 @@ export function mountAumaLive(root, options = {}) {
     mindNote.textContent = (MINDS.find((m) => m.id === chosenMind) || MINDS[0]).note;
   }
 
+  let presenceBlocked = false;
   const setOrb = () => {
     orb.className = 'alv-orb'
       + (channel ? ' live' : '')
       + (field.mode === 'thinking' ? ' thinking' : '')
       + (field.mode === 'speaking' ? ' speaking' : '')
-      + (!duplex ? ' fb' : '');
+      + (!duplex ? ' fb' : '')
+      + (presenceBlocked ? ' presence-blocked' : '');
     orb.title = channel ? 'close the channel' : 'open the channel';
     orb.setAttribute('aria-label', channel ? 'Close voice channel' : 'Open voice channel');
     orb.setAttribute('aria-pressed', String(channel));
@@ -2047,6 +2049,7 @@ export function mountAumaLive(root, options = {}) {
       return;
     }
 
+    presenceBlocked = false;
     field.burst = 1; field.think = 1; setMode('thinking');
     await ensureAudio();
 
@@ -2183,6 +2186,12 @@ export function mountAumaLive(root, options = {}) {
       }
       clearPresenceTimer();
       full += dirs.flush();
+      if (doneReason === 'provider-consent-required' || doneReason === 'disclosure-refused') {
+        presenceBlocked = true;
+        endTurn();
+        setOrb();
+        return;
+      }
       if (!full.trim()) {
         const message = doneReason === 'record-failed'
           ? 'This turn could not be secured in its thread, so I did not send it.'
@@ -2444,7 +2453,7 @@ function injectStyle() {
   .alv-orb.live.speaking .alv-orb-core { background:rgba(var(--hue-r),0.95); box-shadow:0 0 30px rgba(var(--hue-r),0.8); animation:alvBreath 1.6s ease-in-out infinite; }
   .alv-orb.live.speaking .alv-orb-ring { border-color:rgba(var(--hue-r),0.85); }
   .alv-orb.fb .alv-orb-ring { border-style:dashed; border-color:rgba(255,196,140,0.55); }
-  .alv-orb.blocked .alv-orb-ring { border-color:rgba(255,120,120,0.9); animation:alvBlocked 0.5s ease-in-out 3; }
+  .alv-orb.blocked .alv-orb-ring, .alv-orb.presence-blocked .alv-orb-ring { border-color:rgba(255,120,120,0.9); animation:alvBlocked 0.5s ease-in-out 3; }
 
   /* status whisper — bottom center, above the orb; brief, honest, self-fading */
   .alv-status { position:absolute; left:50%; bottom:116px; transform:translateX(-50%) translateY(8px); z-index:6;

@@ -16,7 +16,7 @@
  *
  * @module @aukora/dsh-plugin-kira/session-read
  */
-import { closeSync, fstatSync, openSync, readFileSync, readSync, readdirSync, lstatSync } from 'node:fs'
+import { closeSync, constants as FS, fstatSync, openSync, readFileSync, readSync, readdirSync, lstatSync } from 'node:fs'
 import { zstdDecompressSync } from 'node:zlib'
 
 import { MAX_ARTIFACT_BYTES } from './strict-read.mjs'
@@ -330,6 +330,47 @@ export async function readSessionEventStreamed({ stateRoot, sessionId, seq, maxB
   const events = await readSessionEventsStreamed({ stateRoot, sessionId, forSeqs: [seq], maxBytes })
   if (events === null) return null
   return events.find(one => one.seq === seq)
+}
+
+/** Receipts name one format. Untagged historical receipts retain the session reader;
+ * never search a second store until a digest happens to match. Voice seq is the
+ * one-based physical request line, including blank or malformed preceding lines. */
+export async function readCaptureEventStreamed({ stateRoot, source, maxBytes = MAX_ARTIFACT_BYTES }) {
+  const { kind, sessionId, seq } = source ?? {}
+  if (kind === undefined) return readSessionEventStreamed({ stateRoot, sessionId, seq, maxBytes })
+  if (kind !== 'auma-live/model-request') throw new Error('kira.read:capture-source-unsupported')
+  if (typeof stateRoot !== 'string' || !stateRoot.startsWith('/') || typeof sessionId !== 'string'
+    || !Number.isSafeInteger(seq) || seq < 1 || !Number.isSafeInteger(maxBytes) || maxBytes < 1) throw new Error('kira.read:capture-source-invalid')
+  // Same filename mapping as the maintained Apps model-request writer.
+  const safe = sessionId.replace(/[^A-Za-z0-9._-]/gu, '_')
+  if (!safe || safe === '.' || safe === '..') throw new Error('kira.read:capture-source-invalid')
+  let fd
+  try { fd = openSync(`${stateRoot}/auma-live/${safe}.jsonl`, FS.O_RDONLY | FS.O_NOFOLLOW | FS.O_NONBLOCK) }
+  catch (error) { if (error.code === 'ENOENT') return null; throw error }
+  try {
+    if (!fstatSync(fd).isFile()) throw new Error('kira.read:capture-source-nonregular')
+    const buffer = Buffer.alloc(Math.min(64 * 1024, maxBytes)), pieces = []
+    let scanned = 0, physicalLine = 1
+    while (scanned < maxBytes) {
+      const count = readSync(fd, buffer, 0, Math.min(buffer.length, maxBytes - scanned), null)
+      if (!count) return undefined // A torn final line is not a committed receipt.
+      scanned += count
+      let start = 0
+      for (let end = 0; end < count; end++) if (buffer[end] === 10) {
+        if (physicalLine === seq) {
+          pieces.push(Buffer.from(buffer.subarray(start, end)))
+          const line = Buffer.concat(pieces).toString('utf8')
+          let event
+          try { event = JSON.parse(line) } catch { return undefined }
+          if (event?.type !== 'auma-live/model-request' || !Number.isFinite(event.spokenAt)) return undefined
+          return { seq, at: event.spokenAt, line }
+        }
+        physicalLine++; start = end + 1
+      }
+      if (physicalLine === seq) pieces.push(Buffer.from(buffer.subarray(start, count)))
+    }
+    throw new Error('kira.read:capture-source-limit')
+  } finally { closeSync(fd) }
 }
 
 

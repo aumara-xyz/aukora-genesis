@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import type { readOwnerPolicy } from './disclosure.ts'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import { SessionId, type SessionEvent, type SessionStore } from '@deepseek-ai/dsh-session'
@@ -20,6 +21,7 @@ import { mindsPayloadOf, statusPayloadOf, waitingLanesOfSessions } from '../stat
 import {
   PRESENCE_MINDS,
   PresenceEngine,
+  writeTurnFault,
   type PresenceMind,
   type PresenceRequest,
   type PresenceRingMessage,
@@ -210,6 +212,17 @@ export interface AumaLiveHttpDependencies {
   organismLens?: () => Promise<string>
   /** **THE SECOND DECLARATION OF THE SAME SEAM** — see `presence.ts`; both must name it or the wiring refuses at the call site. */
   organismStateLens?: () => Promise<string>
+  /**
+   * **THE DISCLOSURE CHECKPOINT'S INPUTS, FORWARDED TO THE ENGINE.** Declared here and listed in `presence-deps.ts`; before they
+   * were, `index.ts` built a policy reader that this class dropped, so the engine saw no policy and refused every turn
+   * ("no-policy") even with a valid file on disk.
+   */
+  disclosurePolicy?: () => ReturnType<typeof readOwnerPolicy>
+  /** Only explicit true permits presence provider requests. Absent or false keeps the turn local. */
+  providerSendConsent?: boolean
+  disclosureRecipient?: string
+  onDisclosure?: (disclosure: unknown) => void
+  onDisclosureRefused?: (why: string, dataClass: string) => void
   /** The claims packet, read per turn like the organism lens and dropped by the same missing spread. */
   claimsPacket?: () => Promise<string>
   /** The money gate the engine consults before every provider call. */
@@ -716,6 +729,13 @@ export class AumaLiveHttp {
       res.end(tooLarge ? 'request body too large' : 'invalid presence request')
       return
     }
+    // Refuse before resuming a session or preparing history; a fresh install needs no live session to show this state.
+    if (this.dependencies.providerSendConsent !== true) {
+      this.dependencies.reportRecordFailure?.(new Error('auma-live turn refused: provider-consent-required'))
+      res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store' })
+      res.end(`data: ${JSON.stringify({ t: 'done', reason: 'provider-consent-required' })}\n\n`)
+      return
+    }
     // **LIVE, ELSE HER HOME — RESUMED ON DEMAND.** This was `sessions.get(input.sessionId)` and a 409 for anything
     // not already in memory, so her home answered "not live" on every fresh start. A selected thread that is not
     // live now falls back to the home; the home is resumed through the host's own path; and a missing or unknown
@@ -796,6 +816,11 @@ export class AumaLiveHttp {
           res.write(`data: ${JSON.stringify({ t: 'manifested', replyId: replyIdOf(turn.sessionId, record.turn) })}\n\n`)
         }
       }
+    } catch (error: unknown) {
+      // **BACKSTOP FOR A THROW THAT ESCAPES THE ENGINE** (one raised before the engine's own `try`): the stream still gets a
+      // spoken, named reason and a `done` frame, and the failure is reported. Never an open stream, never a bare close.
+      this.dependencies.reportRecordFailure?.(error)
+      await writeTurnFault(res, error)
     } finally {
       clearInterval(heartbeat)
       if (!res.writableEnded) res.end()

@@ -461,8 +461,8 @@
       "sha256": "7020369c50a06bdbc151ca36a334219ecbd1643ca0a30f01b65e8c2b7bbcf6a0"
     },
     "auma-live/runtime/app/aumalive.js": {
-      "bytes": 130818,
-      "sha256": "4345b125334c2c1c6d2fe1b614137b793a6d097486300de98d0631381b7192a6"
+      "bytes": 131160,
+      "sha256": "0392ef4437c20226f57c2eacad2e3daeaf87d58390f9d1337440317bb8c4d527"
     },
     "auma-live/runtime/app/aura-trace.js": {
       "bytes": 10213,
@@ -568,6 +568,10 @@
       "bytes": 628,
       "sha256": "2a5d7c373b58ac714eaaec86ce9bbbd7c3adb6943c8b01f9904151047fee1482"
     },
+    "auma-live/voice/aurora_prompt.py": {
+      "bytes": 1798,
+      "sha256": "07b1c50bc2d2b458431307806edc9c1e544115750c4a0988d3880c902fab53bb"
+    },
     "auma-live/voice/MODELS.md": {
       "bytes": 906,
       "sha256": "c13f3013d5a5655da0846163c7dca942c602d557cf3a452537bbcaf3f3ab452b"
@@ -589,8 +593,12 @@
       "sha256": "5689f752285d77841d9324dcdf164f564fd950e8607820e10b8a400ed171bd87"
     },
     "auma-live/voice/sidecar.py": {
-      "bytes": 46857,
-      "sha256": "55fff820376cfafc0d94853833d300d0a234ec9ee2b6398fbe66f930611bb279"
+      "bytes": 47269,
+      "sha256": "54e6375481b1672dd6bc9ac6a5cacfb9efaee19604c34c1b2157c814db41d8b7"
+    },
+    "auma-live/voice/test_aurora_prompt.py": {
+      "bytes": 9801,
+      "sha256": "145548e633b0a3867fcb01904ceb734b157d74ec996927c783ba9f496e318927"
     },
     "auma-live/voice/test_e2e.py": {
       "bytes": 6224,

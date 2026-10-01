@@ -61,6 +61,11 @@ os.environ["ORT_DISABLE_TELEMETRY"] = "1"
 
 import numpy as np
 
+# The sidecar runs from inside a materialized release, whose tree is verified file-for-file (strip manifest). Importing a
+# sibling module would otherwise write __pycache__/ there and the NEXT launch would refuse the release as tampered.
+sys.dont_write_bytecode = True
+from aurora_prompt import find_prompt
+
 # kokoro's phonemizer logs a "words count mismatch" WARNING on almost every
 # short line — hundreds of lines of noise in the pm2 err log that buried the
 # one message that mattered (the Errno 48 bind race). Quiet it to ERROR.
@@ -255,13 +260,14 @@ class PocketTts:
         # logged in (`hf auth login`). Once granted, this loads and becomes the
         # default automatically. We log WHY it's off so the owner gets feedback.
         try:
-            prompt = os.path.join(MODELS, "aurora-prompt.wav")
-            if os.path.exists(prompt):
+            # WHERE SETUP WROTE IT FIRST (same env/default as setup.sh), then MODELS — see aurora_prompt.py.
+            prompt, tried = find_prompt(MODELS)
+            if prompt is not None:
                 self.states["aurora-live"] = self.model.get_state_for_audio_prompt(prompt)
                 self.VOICES = {"aurora-live": ("aurora-live", "Aurora", "her own blend — cloned, streaming"), **self.VOICES}
                 print("[voice] aurora voice-clone ACTIVE — her real streamed voice is live", flush=True)
             else:
-                print(f"[voice] aurora clone off: no prompt wav at {prompt}", flush=True)
+                print(f"[voice] aurora clone off: no prompt wav at {' or '.join(tried)}", flush=True)
         except Exception as e:
             reason = str(e)
             if "gated" in reason.lower() or "restricted" in reason.lower() or "403" in reason:

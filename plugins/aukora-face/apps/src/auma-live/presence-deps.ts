@@ -46,6 +46,8 @@ const FORWARDED = Object.freeze([
   // exact state auma-53 exists to end: KIRA's consumer has waited since kira-122 with nothing emitting. The court
   // beside this list asserts it against the interface's declarations, so this entry is checked rather than hoped for.
   'turnFinished',
+  // **THE DISCLOSURE CHECKPOINT'S INPUTS.** Not forwarded, the engine has no policy and refuses every turn as `no-policy`.
+  'providerSendConsent', 'disclosurePolicy', 'disclosureRecipient', 'onDisclosure', 'onDisclosureRefused',
 ])
 
 /**

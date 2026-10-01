@@ -36,7 +36,7 @@ import { nextEntry } from './memory-journal.mjs'
 import { contentFreeTombstone } from './memory-law.mjs'
 import { signedRecallRecord } from './recall-filter/filter.mjs'
 import { readTrackedMemory } from './tracked-memory.mjs'
-import { readSessionEventStreamed } from './session-read.mjs'
+import { readCaptureEventStreamed } from './session-read.mjs'
 
 /**
  * THE CHAIN'S OWN ANSWER FOR ONE REMEMBERED NOTE: the `entryHash` its chain entry carries, read from the chain file and checked.
@@ -335,7 +335,7 @@ export function buildRouteDeps(input) {
     if (typeof source.sessionId === 'string' && Number.isInteger(source.seq)) {
       // THE SESSIONS ROOT, NOT THE STORE ROOT: session events are written by the harness beside the store, and reading
       // them from the store directory is how a receipt would answer MISSING for a session that is right there.
-      const event = await readSessionEventStreamed({ stateRoot: sessions, sessionId: source.sessionId, seq: source.seq })
+      const event = await readCaptureEventStreamed({ stateRoot: sessions, source })
       line = event === null || event === undefined ? null : event.line
     }
     // *** A REFUSAL IS NOT "MISSING". *** `verifyRecord` refuses when there is nothing to check against — a note with no

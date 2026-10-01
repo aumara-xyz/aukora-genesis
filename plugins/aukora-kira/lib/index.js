@@ -34,6 +34,8 @@ import { createOpenVikingRecall, openVikingHome, readBridgeConfig, semanticNotes
 import { createPartialFailureLedger, PARTIAL_FAILURE_SERVICE, reconcileRecallAvailability, rememberedWithLedger } from './partial-failure.mjs'
 import { countDrop, governRecords, recallAnnotations } from './recall-filter/filter.mjs'
 import { createTrackedMemory, readTrackedMemory } from './tracked-memory.mjs'
+import { readCaptureEventStreamed } from './session-read.mjs'
+import { verifyRecord } from './memory-verify.mjs'
 
 /** Cordis plugin name. */
 export const name = 'aukora-kira'
@@ -313,9 +315,42 @@ export async function apply(ctx, config) {
         ctx.provide('kira.recall', Object.freeze({
           describe: () => ({ ...policy, grantsAuthority: false }),
           read: async () => ({ status: 'match', records: memoryFor().read().notes }),
-          recall: async question => {
-            const result = await memoryFor().recall({ question: typeof question === 'string' ? question : question?.text ?? '' })
+          recall: async (question, session) => {
+            // The face may pass a live host Session, never client-authored scopes or owner claims. Identity with
+            // the current session store also refuses stale objects after a remount and lookalike metadata.
+            const hostSession = typeof session?.id === 'string' && ctx.sessions?.get?.(session.id) === session ? session : undefined
+            const result = await memoryFor().recall({ question: typeof question === 'string' ? question : question?.text ?? '',
+              context: hostSession ? recallContext({ session: hostSession }) : {} })
             return { ...result, status: result.state === 'found' ? 'match' : result.state, records: result.notes }
+          },
+          citeRemembered: async (recordId, session) => {
+            const unverified = reason => ({ verdict: 'UNVERIFIED', namespace: 'kira.remembered', reason })
+            if (typeof recordId !== 'string' || !/^rem:[0-9a-f]{64}$/u.test(recordId)) return unverified('record-id-invalid')
+            try {
+              const eligible = async () => {
+                const currentPolicy = readOwnerPolicy(await owner.describe())
+                const hostSession = typeof session?.id === 'string' && ctx.sessions?.get?.(session.id) === session ? session : undefined
+                const live = readTrackedMemory(memoryOwner.stateDir)
+                const note = governRecords(live.notes, { ...currentPolicy,
+                  ...(hostSession ? recallContext({ session: hostSession }) : {}), nowMs: Date.now(),
+                  forgotten: live.forgotten, states: live.states }, { dropped: 0, reasons: {} }).find(note => note.id === recordId)
+                return { live, note }
+              }
+              let { live, note } = await eligible()
+              if (!note) return unverified('record-unavailable')
+              const event = await readCaptureEventStreamed({ stateRoot: String(memoryOwner.stateDir).replace(/\/[^/]+$/u, ''), source: note.source })
+              // Reacquire object, policy and host scope after the asynchronous source read.
+              ;({ live, note } = await eligible())
+              if (!note) return unverified('record-unavailable')
+              const index = live.chain.findIndex(entry => entry.id === recordId && ['add', 'remember'].includes(entry.op))
+              const entry = live.chain[index]
+              if (!Number.isSafeInteger(index) || index < 0 || entry.index !== index || note.aura?.index !== index
+                || entry.contentHash !== note.contentHash || !/^[0-9a-f]{64}$/u.test(entry.entryHash)) return unverified('remembered-chain-binding-invalid')
+              const checked = verifyRecord(note, () => event?.line, () => entry.entryHash)
+              if (checked.source !== 'VERIFIED') return unverified(`source-${checked.source.toLowerCase()}`)
+              return { verdict: 'VERIFIED', namespace: 'kira.remembered', recordId, index,
+                entryHash: entry.entryHash, contentHash: note.contentHash, sourceSha256: note.source.sha256 }
+            } catch { return unverified('remembered-verification-unavailable') }
           },
         }))
         return

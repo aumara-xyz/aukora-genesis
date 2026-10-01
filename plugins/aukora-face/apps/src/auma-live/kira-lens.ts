@@ -141,11 +141,16 @@ export function tieredFrom(answer: { records: readonly unknown[] }): TieredMemor
     // **`Number.isInteger` DOES NOT NARROW `unknown` TO `number`** — it is a predicate the compiler cannot follow into
     // the assignment below, so the type check has to be written out. *`TS2322: Type 'unknown' is not assignable to type
     // 'number'` at the `seq:` line, which is the compiler asking for a narrowing rather than a different value.*
-    const seq = record.seq
-    const sha256 = record.sha256
+    // Tracked captures carry their canonical receipt under `source`; older read-service rows carry it flat.
+    // Choose one complete shape. A malformed nested receipt must never be repaired with unrelated flat fields.
+    const source = Object.hasOwn(record, 'source') ? record.source : record
+    if (source === null || typeof source !== 'object' || Array.isArray(source)) continue
+    const receipt = source as Record<string, unknown>
+    const seq = receipt.seq
+    const sha256 = receipt.sha256
     if (typeof seq !== 'number' || !Number.isInteger(seq)) continue
     if (typeof sha256 !== 'string' || sha256 === '') continue
-    const at = typeof record.at === 'string' ? record.at : ''
+    const at = typeof receipt.at === 'string' ? receipt.at : ''
     out.push({
       id: record.id,
       tier,
@@ -155,8 +160,9 @@ export function tieredFrom(answer: { records: readonly unknown[] }): TieredMemor
         at,
         seq,
         sha256,
-        sessionId: typeof record.sessionId === 'string' ? record.sessionId : '',
-        sessionTitle: typeof record.title === 'string' ? record.title : '',
+        sessionId: typeof receipt.sessionId === 'string' ? receipt.sessionId : '',
+        sessionTitle: typeof receipt.sessionTitle === 'string' ? receipt.sessionTitle
+          : source === record && typeof record.title === 'string' ? record.title : '',
       },
     })
   }
@@ -174,6 +180,7 @@ export function viewRecord(raw: unknown): KiraRecordView {
   // changes behaviour.** An empty string is treated as absent at every level: a blank id is not an identification.
   const citation = (record.citation ?? {}) as Record<string, unknown>
   const inner = (record.record ?? {}) as Record<string, unknown>
+  const source = (record.source ?? {}) as Record<string, unknown>
   const named = (...candidates: unknown[]): string | null => {
     for (const candidate of candidates) {
       if (typeof candidate === 'string' && candidate !== '') return candidate
@@ -190,8 +197,8 @@ export function viewRecord(raw: unknown): KiraRecordView {
   //
   // **NESTED FIRST, THEN FLAT, EXACTLY AS `id` DOES IT** — so neither a real row nor an existing flat caller changes
   // behaviour, and the empty string is absent at every level for the same reason it is for an id.
-  const kind = named(inner.kind, record.kind) ?? 'unknown-kind'
-  const at = named(inner.createdAt, record.createdAt) ?? 'undated'
+  const kind = named(inner.kind, record.kind, record.attributedTo) ?? 'unknown-kind'
+  const at = named(inner.createdAt, record.createdAt, record.observedAt, source.at) ?? 'undated'
   const content = record.content
   const text = typeof content === 'string'
     ? content
@@ -201,6 +208,41 @@ export function viewRecord(raw: unknown): KiraRecordView {
       // that said nothing, and rendering it as JSON would put store internals in her mouth.
       : '[this record carries no readable text]'
   return { id, kind, at, text: text.replace(/\s+/gu, ' ').trim() }
+}
+
+/** A remembered index belongs to its unsigned chain, never the settled Aura sequence namespace.
+ * The host Kira verifier must re-read the source, object and chain. Returned pointers alone cannot
+ * establish verification; this adapter also binds its verdict to the exact recalled text/receipt.
+ */
+export async function rememberedCitationOf(raw: unknown, answer: unknown): Promise<Citation> {
+  const unverified = (reason: string): Citation => ({ line: `UNVERIFIED: ${reason}` })
+  if (raw === null || typeof raw !== 'object' || answer === null || typeof answer !== 'object') {
+    return unverified('remembered-chain citation is not available on this Host')
+  }
+  const record = raw as Record<string, unknown>
+  const checked = answer as Record<string, unknown>
+  if (checked.verdict !== 'VERIFIED') return unverified(
+    typeof checked.reason === 'string' && checked.reason !== '' ? checked.reason : 'the remembered-chain verifier did not verify this record',
+  )
+  const pointer = record.rememberedChain as { index?: unknown; entryHash?: unknown } | null | undefined
+  const source = record.source as { sha256?: unknown } | null | undefined
+  const hex = (value: unknown): value is string => typeof value === 'string' && /^[0-9a-f]{64}$/u.test(value)
+  if (checked.namespace !== 'kira.remembered' || checked.recordId !== record.id
+    || typeof record.id !== 'string' || !/^rem:[0-9a-f]{64}$/u.test(record.id)
+    || typeof checked.index !== 'number' || !Number.isSafeInteger(checked.index) || checked.index < 0
+    || checked.index !== pointer?.index || !hex(checked.entryHash) || checked.entryHash !== pointer?.entryHash
+    || !hex(checked.contentHash) || checked.contentHash !== record.contentHash
+    || !hex(checked.sourceSha256) || checked.sourceSha256 !== source?.sha256
+    || typeof record.text !== 'string' || record.text.length === 0 || record.text.length > 60_000) {
+    return unverified('the remembered-chain verdict does not match the recalled record and receipt')
+  }
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(record.text))
+  const contentHash = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('')
+  if (contentHash !== checked.contentHash) return unverified('the recalled text does not match the checked content hash')
+  return {
+    line: `Remembered chain kira.remembered index ${String(checked.index)}, entry ${checked.entryHash}, verified integrity (unsigned; no owner approval or Aura sequence)`,
+    namespace: 'kira.remembered', chainIndex: checked.index, entryHash: checked.entryHash,
+  }
 }
 
 /**
@@ -299,6 +341,9 @@ export class KiraLens {
 
   readonly #resolve: KiraServiceResolver
 
+  /** Resolve metadata only from the host session store; request payloads cannot supply scopes or owner claims. */
+  readonly #resolveSession: ((sessionId: string) => unknown) | undefined
+
   /**
    * A SECOND RESOLVER, FOR THE CHAIN RATHER THAN THE MEMORY.
    *
@@ -316,13 +361,16 @@ export class KiraLens {
   /**
    * @param resolve - called on EVERY lookup; may return undefined while the service is absent.
    * @param resolveCite - called on EVERY lookup that returns records; absent means nothing can be verified.
+   * @param resolveSession - host session lookup, called per request; absent keeps recall owner-scoped.
    */
   constructor(
     resolve: KiraServiceResolver,
     resolveCite?: () => { cite?: (recordId: string) => Promise<unknown> } | undefined,
+    resolveSession?: (sessionId: string) => unknown,
   ) {
     this.#resolve = resolve
     this.#resolveCite = resolveCite
+    this.#resolveSession = resolveSession
   }
 
   /** How many times the CITATION resolver has been consulted. For the court that proves it is not cached. */
@@ -336,10 +384,11 @@ export class KiraLens {
    *
    * @param question - what she is trying to remember.
    * @param nonce - the turn's nonce.
+   * @param sessionId - the session validated by the host presence route, resolved again through its session store.
    * @returns the answer; a missing or failing service is REPORTED, never thrown, because a turn with no memory
    *          is still a turn and she can say she could not reach it.
    */
-  async ask(question: string, nonce: string): Promise<KiraAnswer> {
+  async ask(question: string, nonce: string, sessionId?: string): Promise<KiraAnswer> {
     this.#calls += 1
     // **RESOLVED HERE, ON EVERY CALL.** A service captured in the constructor would keep answering after the
     // memory behind it was replaced, and nothing about the answer would look wrong.
@@ -370,7 +419,8 @@ export class KiraLens {
       }
     }
     try {
-      const answer = await (recall as (q: string) => Promise<unknown>).call(service, question)
+      const session = typeof sessionId === 'string' ? this.#resolveSession?.(sessionId) : undefined
+      const answer = await (recall as (q: string, session?: unknown) => Promise<unknown>).call(service, question, session)
       const shaped = (answer ?? {}) as { status?: unknown; records?: unknown }
       const status = typeof shaped.status === 'string' ? shaped.status : 'undetermined'
       const records = Array.isArray(shaped.records) ? shaped.records : []
@@ -378,10 +428,25 @@ export class KiraLens {
       // will truncate away would ask the chain about records she is never handed.
       const shown = records.slice(0, KIRA_MAX_RECORDS).map(viewRecord)
       this.#citeResolutions += this.#resolveCite === undefined ? 0 : 1
+      const visible = records.slice(0, KIRA_MAX_RECORDS)
+      const isRemembered = (record: unknown): record is Record<string, unknown> => record !== null
+        && typeof record === 'object' && Object.hasOwn(record, 'rememberedChain')
       const citations = await resolveCitations(
-        shown.map(view => view.id),
+        shown.filter((_view, index) => !isRemembered(visible[index])).map(view => view.id),
         { cite: this.#resolveCite?.()?.cite },
       )
+      const citeRemembered = (service as { citeRemembered?: unknown }).citeRemembered
+      for (const raw of visible.filter(isRemembered)) {
+        let checked: unknown
+        try {
+          checked = typeof citeRemembered === 'function'
+            ? await (citeRemembered as (id: string, session?: unknown) => Promise<unknown>).call(service, viewRecord(raw).id, session)
+            : undefined
+          citations.set(viewRecord(raw).id, await rememberedCitationOf(raw, checked))
+        } catch {
+          citations.set(viewRecord(raw).id, { line: 'UNVERIFIED: the remembered-chain verifier could not check this record' })
+        }
+      }
       // **THE HANDLES COME OUT BESIDE THE TEXT, FROM THE SAME `records` THE FRAME IS BUILT FROM.**
       //
       // The counter is the lens's own and lives as long as the face does, **so a handle is never reused within a

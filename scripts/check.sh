@@ -128,12 +128,31 @@ run_check() {
         }
         open my $output, "<", "$prefix.log" or die "read log: $!";
         my $last = "(no output)";
-        while (<$output>) { chomp; $last = $_ if /\S/ }
+        my (@tail, $private);
+        while (<$output>) {
+            chomp;
+            my $end_private = /-----END .*PRIVATE KEY-----/;
+            $private ||= /-----BEGIN .*PRIVATE KEY-----/;
+            $_ = "[private key omitted]" if $private;
+            $private = 0 if $end_private;
+            s{(https?://)[^/\s]+\@}{${1}[redacted]\@}giu;
+            s{\b(Bearer\s+)\S+}{${1}[redacted]}giu;
+            $_ = "[sensitive or environment field omitted]" if
+                /(?:password|secret|token|authorization|cookie|api[_-]?key|private[_-]?key)[a-z0-9_-]*\s*["\x27]?\s*[:=]/iu ||
+                /^\s*["\x27]?[A-Z][A-Z0-9_]*["\x27]?\s*[:=]/u;
+            $_ = substr($_, 0, 512);
+            $last = $_ if /\S/;
+            if (!$ok && /\S/) { push @tail, $_; shift @tail if @tail > 32 }
+        }
         close $output;
         open my $row, ">", "$prefix.row" or die "row: $!";
         printf {$row} "%s %6.2fs | %s%s | %s\n",
             $ok ? "PASS" : "FAIL", time - $start, $command,
             $reason eq "" ? "" : " [$reason]", $last;
+        if (!$ok) {
+            print {$row} "  failed-check output (last 32 nonempty lines, up to 512 bytes each):\n";
+            print {$row} "  | $_\n" for @tail;
+        }
         close $row or die "close row: $!";
         exit($ok ? 0 : 1);
     ' "$work/$count" "$1" "$2" &

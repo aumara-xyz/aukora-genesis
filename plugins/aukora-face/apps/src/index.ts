@@ -27,7 +27,7 @@ import { RoomHttp } from './room.ts'
 import { AumaLiveHttp } from './auma-live/http.ts'
 import { checkHomeSessionConfig, CONTROLLER_UNMOUNTED, type HomeResume } from './auma-live/home-session.ts'
 import { CrossLaneMemory } from './auma-live/cross-lane.ts'
-import { RepoLens } from './auma-live/repo-lens.ts'
+import { isGitWorkTree, RepoLens } from './auma-live/repo-lens.ts'
 import { readClaimsPacket } from './auma-live/claims-packet.ts'
 import { lensCache } from './auma-live/lens-cache.ts'
 // **THE LINE READER, NAMED WHERE IT IS USED.** `readNewestModelRequestLine` is the whole of the turn-finished payload:
@@ -176,7 +176,9 @@ import type { SessionId } from '@deepseek-ai/dsh-session'
 import { KiraLens } from './auma-live/kira-lens.ts'
 import { organismLensText } from './auma-live/organism-lens.ts'
 import { organismStateLens } from './auma-live/organism-state-lens.ts'
-import { readOwnerPolicy } from './auma-live/disclosure.ts'
+import { organismDisclosureDependencies } from './auma-live/organism-disclosure.ts'
+import { readOwnerPolicy, readOwnerPolicyText } from './auma-live/disclosure.ts'
+import { setOwnerName } from './auma-live/presence.ts'
 // **THE READERS, NOT THE RENDER.** The status route needs the projection rows and the approval rule; it does NOT
 // need `readOrganism`, which would run `git log`, `git status` and `gh run list` on every status poll.
 import { readLanes, unansweredApprovalOf } from './vendor/organism.ts'
@@ -221,6 +223,10 @@ export interface Config {
   voiceRuntimeDirectory: string
   /** Repository root the presence lens may read, resolved from the host working directory; empty disables the lens. */
   repoLensRoot: string
+  /** Explicit consent for presence provider requests, including prompts, identity and history. Default false. */
+  providerSendConsent: boolean
+  /** What Auma calls the owner; only letters, marks, space, dot, apostrophe and hyphen, at most 40 characters. */
+  ownerName: string
   /** The DSH home the organism reader reads; empty disables the organism block. */
   organismDshHome: string
   /** The repository the organism reader reports on; empty falls back to `repoLensRoot`. */
@@ -294,6 +300,9 @@ export const Config: z<Config> = z.object({
   voiceAutoStart: z.boolean().default(true),
   voiceRuntimeDirectory: z.string().default(''),
   repoLensRoot: z.string().default('.'),
+  providerSendConsent: z.boolean().default(false),
+  // setOwnerName validates the value; an invalid name uses the neutral default without disabling the apps plugin.
+  ownerName: z.string().default(''),
   /**
    * The DSH home Aura's organism reader reads, and the repository it reports on. EMPTY DISABLES THE LENS:
    * the reader takes `dshHome` as an argument and this app never assumes one, so a deployment that does not
@@ -417,6 +426,7 @@ async function resumeThroughController(ctx: Context, sessionId: SessionId): Prom
  * @returns Completion after the guarded static server is loaded and the routes are registered.
  */
 export async function apply(ctx: Context, config: Config): Promise<void> {
+  setOwnerName(config.ownerName)
   const { serveStatic } = await import('@deepseek-ai/dsh-host-frontend-static')
   const { existsSync } = await import('node:fs')
   const path = await import('node:path')
@@ -511,7 +521,24 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   if (config.repoLensRoot.length > 0 && config.repoLensLookups > 0) {
     const root = path.resolve(config.repoLensRoot)
     if (!existsSync(root)) throw new Error(`ui-stock-apps: repoLensRoot does not exist: ${root}`)
-    repoLens = new RepoLens({ root, maxFileBytes: config.repoLensFileBytes })
+    // **A ROOT THAT IS NOT A GIT WORK TREE MEANS NO REPO LENS, AND THE LOG SAYS SO.** The default root is `.`, the backend's cwd,
+    // which on a fresh install is `<stateRoot>/workspace`: an empty non-git directory. `git ls-files` fails there, and a lens
+    // built on it failed every spoken turn. The lens is a read of what git tracks; without git there is nothing to read.
+    if (await isGitWorkTree(root)) {
+      repoLens = new RepoLens({ root, maxFileBytes: config.repoLensFileBytes })
+    } else {
+      ctx.logger.warn(`ui-stock-apps: repoLensRoot ${root} is not inside a git work tree, so the Auma Live repo lens is OFF (no repository block, no repo lookups). Point repoLensRoot at a git checkout to turn it on.`)
+    }
+  }
+  // Only release bytes govern disclosure. Missing/invalid policy fails closed; consent stays independently off by default.
+  const policyText = () => readOwnerPolicyText({
+    release: path.join(import.meta.dirname, '..', 'disclosure-policy.json'),
+  })
+  const policyAtStartup = policyText()
+  if (policyAtStartup.text === undefined) {
+    ctx.logger.warn(`ui-stock-apps: the Auma Live disclosure policy could not be read (${policyAtStartup.problem ?? 'no candidate'}), so NOTHING is authorised to leave this machine and every turn will be refused by name.`)
+  } else {
+    ctx.logger.info(`ui-stock-apps: Auma Live disclosure policy is read from ${policyAtStartup.source} on every turn.`)
   }
   // THE LENS THE CLAIMS PACKET READS THROUGH, held as a const: `repoLens` is narrowable here and not inside
   // the closure that runs on every spoken turn.
@@ -618,6 +645,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
   })
 
   const liveHttp = new AumaLiveHttp({
+    providerSendConsent: config.providerSendConsent,
     credentials: ctx.credentials,
     apiKeyEnv: config.apiKeyEnv,
     maxRequestBodyBytes: config.maxRequestBodyBytes,
@@ -766,74 +794,28 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
           .then(packet => packet.text),
       ).get,
     }),
-    // AURA'S READER, CALLED AS ITS OWN: read whole, rendered by her, capped for the turn here, and scrubbed
-    // for secrets at the injection boundary. The home is passed, never assumed.
-    ...(config.organismDshHome.length === 0 ? {} : {
-      // **THIS ONE BLOCKS THE WHOLE BACKEND.** `organismLensText` runs `git log`, `git status` and
-      // `gh run list` through a SYNCHRONOUS spawn, each with a ten-second timeout, and it used to run on every
-      // spoken turn inside the single process hosting all seven lanes. Cached for a window and shared by
-      // concurrent callers, so two turns in flight cause ONE set of execs rather than two.
-      // **AND THE ORGANISM DOCUMENT — ALPHA's `organism-state.json`, DELIBERATELY NOT CACHED.**
-      //
-      // **THE CACHE ABOVE EXISTS BECAUSE `organismLensText` RUNS FOUR SYNCHRONOUS SPAWNS; THIS READS ONE FILE.** *So
-      // the reason for the cache does not apply* — **and caching it would actively break the lens's own rule:** *a
-      // document cached for even a few minutes would be reported with the age it had when it was read, and* **the whole
-      // point of the 30-minute staleness verdict is that the age must be the real one at the moment he asks.**
-      //
-      // **A FAILED READ IS NOT AN ABSENT DEPENDENCY.** *`organismStateLens` never throws: `ENOENT`, `EACCES` and a
-      // malformed document each return a line that says so* — *so this always hands the engine a string, and the block is
-      // absent only when the dependency itself is not wired.* **That is the difference between "I could not look" and
-      // "nobody told me to look", and the second is the one that must never masquerade as the first.**
-      // **THE OWNER'S POLICY, READ FROM THE FILE HE EDITS, ON EVERY CALL.**
-      //
-      // *Read per call rather than captured at mount*, so an edit he makes takes effect on the next turn instead of the next
-      // restart — **and read as bytes rather than merged with anything**, because `readOwnerPolicy` treats unreadable as
-      // authorising nothing and a merge here would undo that.
-      //
-      // **THE PATH IS THE COMMITTED DEFAULT AND HE MAY REPLACE IT** — *`AUKORA_DISCLOSURE_POLICY` names a file, and when it
-      // is unset the repository's own `plugins/aukora-face/disclosure-policy.json` is what is read.*
-      disclosurePolicy: () => readOwnerPolicy((() => {
-        // **A FILE THAT CANNOT BE READ IS `undefined`, WHICH `readOwnerPolicy` READS AS "NOTHING IS AUTHORISED".**
-        // *Not an empty string and not the default* — *a policy this process could not read is a state in which it does not
-        // know what the owner permits, and the only safe reading of that is "send nothing".*
-        try {
-          return readFileSync(
-            // *The repository's own file by default; an env var names another for a deployment that keeps it elsewhere.*
-            process.env.AUKORA_DISCLOSURE_POLICY ?? path.join(import.meta.dirname, '..', 'disclosure-policy.json'),
-            'utf8',
-          )
-        } catch { return undefined }
-      })()),
+    // Policy reaches the engine even without an organism home. Both optional lenses consult it before
+    // reading state/memory or returning cached text; the engine still admits every declared disclosure.
+    ...organismDisclosureDependencies({
+      disclosurePolicy: () => readOwnerPolicy(policyText().text),
       disclosureRecipient: process.env.AUKORA_DISCLOSURE_RECIPIENT ?? 'openrouter.ai',
-      organismStateLens: async () => stateHome === null
-        // **A NULL STATE HOME IS SAID RATHER THAN DEFAULTED.** *`stateHomeOf` returns `null` when `organismDshHome` is
-        // unset, and substituting `''` would build the path `/organism-state.json` and report ENOENT* — **which the lens
-        // would then print as "no organism state file has been written", a claim about the producer when the truth is
-        // that this Host was never told where to look.**
-        ? 'INDETERMINATE — no state home is configured on this Host, so the organism document was not looked for.'
-        : (await organismStateLens({ stateDir: stateHome })).lines.join('\n'),
-      organismLens: lensCache(
-        // ASYNC, BECAUSE THE MEMORY VIEW IS RESOLVED BEFORE THE LENS IS RENDERED: a cached resolver that could
-        // not await would render every lane with no summary while the service was mounted and working.
-        async () => organismLensText({
-          dshHome: path.resolve(config.organismDshHome),
-          repo: path.resolve(config.organismRepo.length > 0 ? config.organismRepo : config.repoLensRoot),
-          // **WHAT THE LANES CONCLUDED, RESOLVED PER TURN AND PASSED AS DATA.** The `organism.memory` service
-          // assembles it (Kira's own `newestPerLane`/`buildCoreDigest` over `kira.recall`, the review queue, and
-          // a cite verdict per settled summary). Resolved on EVERY call rather than captured: `kira.recall` and
-          // `aura.cite` may be provided after this face loads, and a service held from mount would answer from
-          // whatever existed at boot. When it is not mounted, `null` travels and every lane keeps
-          // `summary: null` — nothing is invented to fill the gap.
-          memory: await readOrganismMemory(ctx),
-          // **THE APPROVAL A LANE IS SITTING ON, FROM ITS OWN SESSION EVENTS.** AK-UI waited from 19:34 on an
-          // unanswered sandbox escalation while its projection said `RUNNING` with three turns queued, so the
-          // block read as a busy lane and nobody was told. This is the same route CORE's report already takes —
-          // `ctx.sessions.get(id).snapshotEvents()`, the real store — and NOT a projection field, because no
-          // projection row carries approvals. Resolved per call for the same reason the memory view is: a lane
-          // may be asked after this face mounts, and a reader held from boot would answer from a stale world.
-          eventsOf: (sessionId) => ctx.sessions.get(sessionId as SessionId)?.snapshotEvents() ?? [],
-        }),
-      ).get,
+      ...(config.organismDshHome.length === 0 ? {} : {
+        // The state document stays uncached so its staleness verdict uses the current age.
+        // Failed authorised reads still return the lens's explicit INDETERMINATE text.
+        organismStateLens: async () => stateHome === null
+          ? 'INDETERMINATE — no state home is configured on this Host, so the organism document was not looked for.'
+          : (await organismStateLens({ stateDir: stateHome })).lines.join('\n'),
+        // Share the expensive organism read across concurrent turns, with the policy gate outside the cache.
+        organismLens: lensCache(
+          async () => organismLensText({
+            dshHome: path.resolve(config.organismDshHome),
+            repo: path.resolve(config.organismRepo.length > 0 ? config.organismRepo : config.repoLensRoot),
+            // Resolve memory and session events when the authorised read runs, never at mount.
+            memory: await readOrganismMemory(ctx),
+            eventsOf: (sessionId) => ctx.sessions.get(sessionId as SessionId)?.snapshotEvents() ?? [],
+          }),
+        ).get,
+      }),
     }),
     ...(webLens === undefined ? {} : { webLens, webLensLookups: config.webLensLookups }),
     // **THE HOME SESSION IS PASSED SO RECALL CAN BE SCOPED TO IT.** `recallLookups` bounded how MANY lookups a turn
@@ -912,6 +894,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
     kiraLens: new KiraLens(
       () => ctx.get('kira.recall'),
       () => ctx.get('aura.cite') as { cite?: (recordId: string) => Promise<unknown> } | undefined,
+      sessionId => ctx.sessions.get(sessionId as SessionId),
     ),
     ...(config.offeredMinds.length === 0 ? {} : { offeredMinds: config.offeredMinds }),
     ...(config.privateMindLabel.length === 0

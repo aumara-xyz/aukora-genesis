@@ -172,6 +172,9 @@ export function sameRelation(statement, related) {
 
 export function consumeTurn(turn, policy) {
   const { subject, privacy, stagedTurns = new Set(), forbidden = [], secretPatterns, auraIndex = 0, journalPrevious = null, observedAt, known, related = null } = policy ?? {}
+  if (policy?.sourceKind !== undefined && policy.sourceKind !== 'auma-live/model-request') {
+    throw new KiraCaptureHookError('source-kind-unsupported', 'capture source kind is not supported')
+  }
   // *** A MISSING FILTER IS NOT A CLEAN TURN. *** Fable measured at HEAD that BOTH capture hooks called this without `secretPatterns`,
   // and the old default of `[]` meant the secret filter could never fire: the remembered tier has needed no approval since 0b71ca6db, so a
   // key pasted into a sentence ("from now on use key sk-…") would have been stored verbatim. Same "not configured reads as clean" class
@@ -327,7 +330,8 @@ export function consumeTurn(turn, policy) {
       validFrom: String(item.validFrom ?? observedAt).slice(0, 10), observedAt,
       // THE SAME TURN THE EVIDENCE CAME FROM, in the shape a verifier re-reads: sessionId, seq, at and the digest of the
       // EXACT canonical event line.
-      source: { sessionId: String(turn.sessionId), sessionTitle: String(turn.sessionTitle ?? ''), seq: Number(turn.seq), at: String(turn.at), sha256: sha256Hex(String(turn.canonicalEventLine)) },
+      source: { sessionId: String(turn.sessionId), sessionTitle: String(turn.sessionTitle ?? ''), seq: Number(turn.seq), at: String(turn.at), sha256: sha256Hex(String(turn.canonicalEventLine)),
+        ...(policy?.sourceKind ? { kind: policy.sourceKind } : {}) },
       possibleChange: item.possibleChange === true,
       // *** THE HARNESS'S LINKS WERE COMPUTED AND THEN THROWN AWAY. *** `applyHarness` builds `supersedes` / `possible-change` / `conflicts-with`
       // from §3.5 rules 4-6, `buildRememberedNote` accepts a `links` array, and this call passed neither — so even a candidate that carried a

@@ -68,6 +68,34 @@ interface TrackedIndex {
   directories: Set<string>
 }
 
+/**
+ * **WHETHER `root` IS THE TOP OF A GIT WORK TREE — THE ONLY KIND OF ROOT THIS LENS SHOULD SERVE.**
+ *
+ * TRACKEDNESS (rule 2) is answered by `git ls-files`, so a root that is not in a work tree can answer nothing: every
+ * summary throws. A fresh install's backend cwd is `<stateRoot>/workspace`, an empty non-git directory, and the default
+ * `repoLensRoot` of `.` pointed the lens straight at it. The caller uses this to mean NO LENS (and to say so at startup)
+ * instead of a lens that fails on every turn.
+ *
+ * **THE ROOT MUST BE THE WORK TREE'S OWN TOP, NOT MERELY SOMEWHERE INSIDE ONE.** A workspace folder that sits under a
+ * repository the owner never meant to share (a dotfiles repo at `~`) would otherwise turn "inside a work tree" into
+ * "serves that repository", which is a wider disclosure than the config named. A git that cannot run at all is also
+ * `false`: no lens beats a broken one.
+ *
+ * @param root - Absolute directory to test.
+ * @returns `true` only when git says `root` is itself a work tree's top-level directory.
+ */
+export async function isGitWorkTree(root: string): Promise<boolean> {
+  const run = await lensExec('git', ['rev-parse', '--show-toplevel'], { cwd: root, maxBuffer: 4096 })
+  if (run.status !== 0) return false
+  const top = run.stdout.trim()
+  if (top.length === 0) return false
+  try {
+    return (await realpath(top)) === (await realpath(root))
+  } catch {
+    return false
+  }
+}
+
 /** Lens construction settings. */
 export interface RepoLensConfig {
   /** Absolute repository root the lens may read below. */
@@ -222,7 +250,8 @@ export class RepoLens {
     if (trimmed.length === 0) throw new Error('grep needs a pattern')
     // **THE EVENT LOOP IS NOT HELD WHILE GIT SEARCHES.** `git grep` over a large repository is the longest
     // command in the lens path, and it used to run synchronously inside the one process hosting every lane.
-    const run = await lensExec('git', ['-C', this.root, 'grep', '-n', '-I', '-e', trimmed], {
+    const run = await lensExec('git', ['grep', '-n', '-I', '-e', trimmed], {
+      cwd: this.root,
       maxBuffer: 8 * 1024 * 1024,
     })
     // 1 IS "NO MATCHES", which is an answer; anything else is git refusing to run.
@@ -326,7 +355,7 @@ export class RepoLens {
   private async git(args: string[]): Promise<{ status: number | null; stdout: string }> {
     // A DEADLINE, WHICH THIS CALL NEVER HAD. The synchronous version carried no timeout at all, so a wedged git
     // held the backend open indefinitely rather than for ten seconds.
-    const run = await lensExec('git', ['-C', this.root, ...args], { maxBuffer: 8 * 1024 * 1024 })
+    const run = await lensExec('git', args, { cwd: this.root, maxBuffer: 8 * 1024 * 1024 })
     return { status: run.status, stdout: run.stdout }
   }
 }
