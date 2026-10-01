@@ -9,6 +9,74 @@ const { tmpdir } = os
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
+
+// Real OS proof, separate from the VM recursion below; every socket is fixture-owned.
+if (process.argv.includes('--unix-boundary')) {
+  assert.equal(process.platform, 'darwin', 'Unix boundary proof requires macOS Seatbelt')
+  const { createServer } = await import('node:net')
+  const { checkSandboxProfile } = await import('../scripts/aukora/precard-check.mjs')
+  const directory = fs.realpathSync.native(fs.mkdtempSync('/tmp/precard-unix-'))
+  const home = join(directory, 'home'), privateRoot = join(directory, 'private')
+  fs.mkdirSync(home); fs.mkdirSync(privateRoot)
+  const outside = join(directory, 'owner-fixture.sock'), inside = join(privateRoot, 'fixture.sock')
+  const policy = join(directory, 'candidate.sb'), servers = [], observations = []
+  const received = { outside: 0, inside: 0 }
+  try {
+    for (const [label, path] of [['outside', outside], ['inside', inside]]) {
+      const server = createServer(socket => {
+        socket.on('error', () => {})
+        socket.on('data', bytes => { received[label] += bytes.length; socket.end('fixture-ok') })
+      })
+      servers.push(server)
+      await new Promise((fulfill, reject) => { server.once('error', reject); server.listen(path, fulfill) })
+    }
+    const alias = join(privateRoot, 'outside-alias.sock')
+    fs.symlinkSync(outside, alias)
+    fs.writeFileSync(policy, checkSandboxProfile({ home, support: join(home, 'support'),
+      writablePaths: [privateRoot], unixSocketPaths: [privateRoot] }))
+    const client = `import errno, os, socket, sys
+s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+s.settimeout(2)
+try:
+    if len(sys.argv) > 2: os.link(sys.argv[2], sys.argv[1])
+    s.connect(sys.argv[1]); s.sendall(b'fixture-only'); reply = s.recv(64)
+    print('CONNECTED ' + reply.decode()); sys.exit(0 if reply == b'fixture-ok' else 4)
+except OSError as error:
+    print(errno.errorcode.get(error.errno, str(error.errno))); sys.exit(3)
+finally:
+    s.close()
+`
+    for (const [label, path] of [['outside', outside], ['inside', inside], ['outside-alias', alias],
+      ['outside-hardlink', join(privateRoot, 'outside-hardlink.sock')]]) {
+      const result = await new Promise((fulfill, reject) => {
+        const child = spawn('/usr/bin/sandbox-exec', ['-f', policy, '/usr/bin/python3', '-c', client, path,
+          ...(label === 'outside-hardlink' ? [outside] : [])],
+          { env: { PATH: '/usr/bin:/bin', HOME: home }, stdio: ['ignore', 'pipe', 'pipe'] })
+        let stdout = '', stderr = ''
+        const timeout = setTimeout(() => child.kill('SIGKILL'), 5000)
+        child.stdout.on('data', bytes => { stdout += bytes }); child.stderr.on('data', bytes => { stderr += bytes })
+        child.once('error', error => { clearTimeout(timeout); reject(error) })
+        child.once('close', status => { clearTimeout(timeout); fulfill({ label, status, stdout: stdout.trim(), stderr: stderr.trim() }) })
+      })
+      console.log('UNIX FIXTURE', JSON.stringify({ ...result, received: { ...received } }))
+      if (result.stderr.includes('sandbox-exec:')) throw new Error(result.stderr)
+      observations.push(result)
+    }
+    for (const label of ['outside', 'outside-alias', 'outside-hardlink']) {
+      const result = observations.find(row => row.label === label)
+      assert.equal(result.status, 3, `${label}: host socket must be refused`)
+      assert.match(result.stdout, /^(?:EPERM|EACCES)$/u)
+    }
+    assert.equal(received.outside, 0, 'outside host socket received no fixture bytes')
+    assert.equal(observations.find(row => row.label === 'inside').status, 0, 'private socket must work')
+    assert.equal(received.inside, Buffer.byteLength('fixture-only'))
+    console.log('PASS real Unix boundary: outside, symlink and hardlink denied; private fixture exchanged bytes')
+  } finally {
+    for (const server of servers) await new Promise(fulfill => server.close(fulfill))
+    fs.rmSync(directory, { recursive: true, force: true })
+  }
+  process.exit(0)
+}
 // Suite recursion models only sandbox launch in a VM. All other production gate
 // code and disposable Git/timeout effects are real. This is not OS enforcement
 // evidence: the separate full precard run must enter actual Seatbelt.

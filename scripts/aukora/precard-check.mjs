@@ -82,12 +82,12 @@ export function measureCard({ repo, tree, base, timeoutMs = 180_000 }) {
 // THE CHECKS RUN UNDER THIS PROFILE ON macOS: no network beyond loopback, no AUKORA state or signer socket, no keys or
 // credentials; writes only in the candidate checkout/home and its disposable fixture scratch. The candidate's code runs here before anyone has approved it.
 const quote = path => `"${path.replace(/[\\"]/gu, m => `\\${m}`)}"`
-export function checkSandboxProfile({ home = homedir(), support = join(home, 'Library', 'Application Support', 'AUKORA'), protectedPaths = [], writablePaths = [] } = {}) {
+export function checkSandboxProfile({ home = homedir(), support = join(home, 'Library', 'Application Support', 'AUKORA'), protectedPaths = [], writablePaths = [], unixSocketPaths = [] } = {}) {
   const secret = [support, join(home, '.ssh'), join(home, 'Library', 'Keychains'), join(home, '.config', 'gh'),
     join(home, 'aukora-private'), join(home, '.codex'), join(home, '.claude')]
   return ['(version 1)', '(allow default)',
-    '(deny network-outbound (remote ip "*:*"))', '(allow network-outbound (remote ip "localhost:*"))',
-    `(deny network-outbound (remote unix-socket (subpath ${quote(support)})))`,
+    '(deny network-outbound)', '(allow network-outbound (remote ip "localhost:*"))',
+    ...(unixSocketPaths.length ? [`(allow network-outbound ${unixSocketPaths.map(path => `(remote unix-socket (subpath ${quote(path)}))`).join(' ')})`] : []),
     `(deny file-read* ${secret.map(path => `(subpath ${quote(path)})`).join(' ')} (literal ${quote(join(home, '.git-credentials'))}))`,
     '(deny file-write*)',
     '(allow file-write* (literal "/dev/null"))',
@@ -145,6 +145,7 @@ if (tool === 'sh' && args.length === 2 && args[0] === '-c'
   const literal = value => JSON.stringify(value)
   const text = fixed.profile + '\\n(deny file-write* (subpath ' + literal(dirname(scratch)) + '))\\n'
     + '(allow file-write* (subpath ' + literal(scratch) + '))\\n'
+    + '(allow network-outbound (remote unix-socket (subpath ' + literal(scratch) + ')))\\n'
   const policy = join(directory, 'candidate.sb')
   writeFileSync(policy, text)
   command = '/usr/bin/sandbox-exec'
@@ -262,7 +263,7 @@ export async function precardCheck({ repo, tree, base, evidence, timeoutMs = 180
       const profile = join(temporary, 'checks.sb')
       control = join(temporary, 'controller')
       mkdirSync(control, { mode: 0o700 })
-      const policy = checkSandboxProfile({ protectedPaths: [temporary], writablePaths: [checkout, home] })
+      const policy = checkSandboxProfile({ protectedPaths: [temporary], writablePaths: [checkout, home], unixSocketPaths: [checkout, home] })
       writeFileSync(profile, policy)
       // Validate actual Seatbelt admission. An env hook/executable's presence is
       // never evidence, and a kernel refusal is not retried or relabeled green.
