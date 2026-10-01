@@ -39,14 +39,20 @@ let shell
 let callbacks = 0
 function bridge(patches, onBound = async () => {}) {
   const handlers = {}
-  const sender = {}
+  // Supply the shell-owned main-frame contract; all state and signing still belong to this scratch fixture.
+  const applicationOrigin = 'http://127.0.0.1:3187'
+  const frame = { url: `${applicationOrigin}/`, origin: applicationOrigin, processId: 7, routingId: 11,
+    parent: null, detached: false, isDestroyed: () => false }
+  const sender = { mainFrame: frame, isDestroyed: () => false }
   const installed = installApprovalBridge({
+    here: join(repo, 'apps', 'aukora-desktop'), applicationOrigin,
     ipcMain: { handle: (channel, fn) => { handlers[channel] = fn }, removeHandler() {}, removeAllListeners() {} },
     getWindow: () => ({ webContents: sender }), getReleaseDir: () => repo, getPatchPaths: () => patches,
     getStateRoot: () => stateRoot, getSupportRoot: () => support,
     ownerDaemonStatus: async () => ({ installed: false }), readBindingState: readState, headless: true, log: () => {}, onBound,
   })
-  return { ...installed, call: (name, payload) => handlers[APPROVAL_CHANNELS[name]]({ sender }, payload) }
+  return { ...installed, call: (name, payload) => handlers[APPROVAL_CHANNELS[name]]({ sender,
+    type: 'frame', senderFrame: frame, processId: frame.processId, frameId: frame.routingId }, payload) }
 }
 try {
   mkdirSync(join(release, '.dsh-build'), { recursive: true })
