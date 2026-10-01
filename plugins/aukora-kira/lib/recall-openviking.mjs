@@ -405,5 +405,6 @@ export function semanticNotes(answer, chars = 600) {
       advisoryOnly: true, grantsAuthority: false, containment: note.containment, staleness: note.staleness })),
     droppedUnmapped: answer.dropped.unmapped.length, droppedTampered: answer.dropped.tampered.length,
     droppedUnreadable: answer.dropped.unreadable.length, droppedBelowThreshold: answer.dropped.belowThreshold,
-    diagnostics: answer.diagnostics, threshold: answer.threshold, index: answer.sync, ceiling: SEMANTIC_CEILING }
+    ...(answer.diagnostics === undefined ? {} : { diagnostics: answer.diagnostics }), threshold: answer.threshold,
+    ...(answer.sync === undefined ? {} : { index: answer.sync }), ceiling: SEMANTIC_CEILING }
 }
