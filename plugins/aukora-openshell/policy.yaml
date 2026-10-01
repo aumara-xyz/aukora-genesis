@@ -1,0 +1,16 @@
+# AUKORA's sandbox policy for agent shell commands under OpenShell (schema: OpenShell v0.1.2 docs/how-it-works/policies/schema.mdx).
+# Filesystem: only the sandbox working directory (/sandbox) and /tmp are writable; the image's binaries and libraries are
+# readable; nothing else exists to the workload. Landlock is a HARD requirement: a kernel or runtime that cannot apply it
+# refuses to start the sandbox rather than running without the rules.
+# Network: no rules, so every outbound connection is denied by the supervisor; the Docker driver additionally starts the
+# workload container with network_mode=none. Widening this file is a release change.
+version: 1
+filesystem_policy:
+  include_workdir: true
+  read_only: [/usr, /lib, /lib64, /bin, /etc, /proc, /dev/urandom]
+  read_write: [/tmp, /dev/null]
+landlock:
+  compatibility: hard_requirement
+process:
+  run_as_user: "1000"
+  run_as_group: "1000"

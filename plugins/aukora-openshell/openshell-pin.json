@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "project": "https://github.com/NVIDIA/OpenShell",
+  "version": "0.1.2",
+  "tag": "v0.1.2",
+  "commit": "6648bd0c290efbc41ba131ee9831ee45cd431f94",
+  "release": {
+    "deb": { "name": "openshell_0.1.2-1_amd64.deb", "sha256": "1f5416ea08f32fdc621f20a2cc0324298e60aba8bbe996459d9e3b44195f23df" },
+    "checksums": "https://github.com/NVIDIA/OpenShell/releases/download/v0.1.2/openshell-checksums-sha256.txt"
+  },
+  "cli": { "path": "/usr/bin/openshell", "sha256": { "linux-x86_64": "f334da80f867776dde9034e0ca3c2406d48ba77b0d0abe64b5aa610490a34fca" } },
+  "gateway": { "path": "/usr/bin/openshell-gateway", "sha256": { "linux-x86_64": "37c3d29f6305b42df349407ddc946b8c4755e464aaf875bdf2eb5af833b5de45" } },
+  "images": {
+    "why": "ghcr.io blob storage and nvcr.io are unreachable from the build host, so the supervisor and sandbox binaries are built from the tagged source (cargo build --release --locked -p openshell-sandbox -p openshell-supervisor) and imported by bin/build-images.sh",
+    "supervisor": "aukora-openshell/supervisor:0.1.2",
+    "sandboxRuntime": "aukora-openshell/sandbox:0.1.2",
+    "workload": "aukora-openshell/workload:0.1.2"
+  }
+}
