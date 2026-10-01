@@ -68,14 +68,15 @@ On macOS with Python 3, Node.js 22 or newer, Perl and `/usr/bin/cc` (Xcode Comma
 git clone https://github.com/aumara-xyz/aukora-genesis && cd aukora-genesis && sh scripts/check.sh
 ```
 
-Expected final line (elapsed time varies):
+Expected final line (elapsed time and check counts depend on this checkout):
 
 ```text
-TOTAL <elapsed>s | 38/38 passed
+TOTAL <elapsed>s | <passed>/<run> passed
 ```
 
 [CI](.github/workflows/check.yml) runs the same checks on every push. They check disposable repository fixtures,
 not the installed app; see the [reviewer packet](#reviewer-packet) for scope and skipped-check caveats.
+When checks are skipped, the final line also reports their count; read the explicit `SKIP` rows for their scope.
 
 ## Read
 
@@ -94,7 +95,7 @@ Third-party components retain their own licenses and notices.
 
 ## Further limits and recorded evidence
 
-The installed app runs `aukora-release-0496ba077`, built from main `0496ba077` (operator-reported).
+Peter's operator record on 2026-10-01 names `b7b8d841c431a8800f6d1929fe53b81a6388a7b2` as the installed deployment's source.
 The installed results quoted here are operator records, not independent live verification of this checkout;
 source inspection and disposable checks do not verify the installed app.
 
@@ -179,10 +180,10 @@ so the materializer refuses.
 ## Reviewer packet
 
 Run `sh scripts/check.sh` from the repository root with the prerequisites above. No keys, network, harness build
-or running app are needed. The 19 commands run in parallel, with a 55-second timeout per command including its
+or running app are needed. The commands registered in this checkout run in parallel, with a 55-second timeout per command including its
 subprocesses. Each row prints PASS or FAIL, elapsed time, the command and its last nonblank output line. Any
 failure or timeout makes the packet exit nonzero; the final `TOTAL` line then names the retained log directory.
-The packet takes about 18 seconds; the TrustedStateStore check waits out a bounded 15-second lock.
+Elapsed time varies with the machine and contention; the TrustedStateStore check waits out a bounded 15-second lock.
 
 PASS means exit zero, not a live-app measurement. In particular, the box check exits zero with `SKIPPED` off
 macOS or `NOT RUN (nested sandbox)` when sandbox admission is unavailable. Read its row, not only the TOTAL.
