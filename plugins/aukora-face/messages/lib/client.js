@@ -46,7 +46,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:Messages.module.css.mjs
-		const css = ".EBPSoG_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--aukora-text);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.EBPSoG_surface[hidden]{display:none}.EBPSoG_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.EBPSoG_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.EBPSoG_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.EBPSoG_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.EBPSoG_actions{align-items:center;gap:2px;display:inline-flex}.EBPSoG_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.EBPSoG_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.EBPSoG_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.EBPSoG_posture[data-posture=connected]{color:var(--aukora-green)}.EBPSoG_posture[data-posture=connected]:before{background:var(--aukora-green)}.EBPSoG_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.EBPSoG_noticeTitle{font-weight:600}.EBPSoG_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.EBPSoG_contactRow{align-items:center;min-height:64px}.EBPSoG_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.EBPSoG_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.EBPSoG_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.EBPSoG_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.EBPSoG_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.EBPSoG_trustMark[data-state=TEST]{color:var(--aukora-gold)}.EBPSoG_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.EBPSoG_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.EBPSoG_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.EBPSoG_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.EBPSoG_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.EBPSoG_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.EBPSoG_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.EBPSoG_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.EBPSoG_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.EBPSoG_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.EBPSoG_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.EBPSoG_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.EBPSoG_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.EBPSoG_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.EBPSoG_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.EBPSoG_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.EBPSoG_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.EBPSoG_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.EBPSoG_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.EBPSoG_sasHint,.EBPSoG_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.EBPSoG_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.EBPSoG_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.EBPSoG_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.EBPSoG_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.EBPSoG_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.EBPSoG_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.EBPSoG_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.EBPSoG_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.EBPSoG_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.EBPSoG_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.EBPSoG_personRow:hover{transform:translate(3px)}.EBPSoG_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.EBPSoG_rowActions{flex:none;align-items:center;gap:2px;display:none}.EBPSoG_personRow:hover .EBPSoG_rowActions,.EBPSoG_personRow:focus-within .EBPSoG_rowActions{display:inline-flex}.EBPSoG_personRow:hover .EBPSoG_time,.EBPSoG_personRow:focus-within .EBPSoG_time{display:none}.EBPSoG_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.EBPSoG_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.EBPSoG_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.EBPSoG_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.EBPSoG_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.EBPSoG_threadHeader{padding-inline:74px}}.EBPSoG_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.EBPSoG_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.EBPSoG_chip[data-trust-chip=FOREIGN]{border-style:dashed}.EBPSoG_chip[data-trust-chip=UNBOUND]{border-style:dotted}.EBPSoG_chipWord{display:inline-block}.EBPSoG_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.EBPSoG_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.EBPSoG_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.EBPSoG_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.EBPSoG_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.EBPSoG_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.EBPSoG_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.EBPSoG_composerRow{justify-content:flex-end;display:flex}.EBPSoG_sendCircle{flex:none;width:34px;height:34px;padding:0}.EBPSoG_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.EBPSoG_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.EBPSoG_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.EBPSoG_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.EBPSoG_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.EBPSoG_sheetBadgeRow{align-items:center;gap:8px;display:flex}.EBPSoG_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.EBPSoG_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.EBPSoG_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.EBPSoG_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.EBPSoG_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.EBPSoG_menuItem,.EBPSoG_menuItemActive{width:100%}.EBPSoG_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.EBPSoG_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.EBPSoG_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.EBPSoG_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.EBPSoG_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.EBPSoG_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.EBPSoG_threadTitle{text-align:left}.EBPSoG_headerTail{flex:100%;justify-content:flex-end}}.EBPSoG_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.EBPSoG_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.EBPSoG_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.EBPSoG_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.EBPSoG_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.EBPSoG_addField{flex-direction:column;gap:4px;display:flex}.EBPSoG_addLabel{color:var(--aukora-text-secondary)}.EBPSoG_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.EBPSoG_addSubmit{padding:9px 12px;font-weight:600}.EBPSoG_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.EBPSoG_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.EBPSoG_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.EBPSoG_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.EBPSoG_addTools .EBPSoG_addRefusal{margin:0 0 0 auto}.EBPSoG_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.EBPSoG_searchInput:focus-visible,.EBPSoG_addInput:focus-visible,.EBPSoG_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
+		const css = ".fX20MG_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--aukora-text);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.fX20MG_surface[hidden]{display:none}.fX20MG_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.fX20MG_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.fX20MG_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.fX20MG_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.fX20MG_actions{align-items:center;gap:2px;display:inline-flex}.fX20MG_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.fX20MG_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.fX20MG_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.fX20MG_posture[data-posture=connected]{color:var(--aukora-green)}.fX20MG_posture[data-posture=connected]:before{background:var(--aukora-green)}.fX20MG_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.fX20MG_noticeTitle{font-weight:600}.fX20MG_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.fX20MG_contactRow{align-items:center;min-height:64px}.fX20MG_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.fX20MG_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.fX20MG_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.fX20MG_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.fX20MG_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.fX20MG_trustMark[data-state=TEST]{color:var(--aukora-gold)}.fX20MG_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.fX20MG_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.fX20MG_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.fX20MG_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.fX20MG_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.fX20MG_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.fX20MG_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.fX20MG_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.fX20MG_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.fX20MG_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.fX20MG_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.fX20MG_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.fX20MG_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.fX20MG_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.fX20MG_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.fX20MG_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.fX20MG_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.fX20MG_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.fX20MG_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.fX20MG_sasHint,.fX20MG_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.fX20MG_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.fX20MG_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.fX20MG_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.fX20MG_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.fX20MG_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.fX20MG_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.fX20MG_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.fX20MG_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.fX20MG_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.fX20MG_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.fX20MG_personRow:hover{transform:translate(3px)}.fX20MG_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.fX20MG_rowActions{flex:none;align-items:center;gap:2px;display:none}.fX20MG_personRow:hover .fX20MG_rowActions,.fX20MG_personRow:focus-within .fX20MG_rowActions{display:inline-flex}.fX20MG_personRow:hover .fX20MG_time,.fX20MG_personRow:focus-within .fX20MG_time{display:none}.fX20MG_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.fX20MG_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.fX20MG_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.fX20MG_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.fX20MG_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.fX20MG_threadHeader{padding-inline:74px}}.fX20MG_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.fX20MG_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.fX20MG_chip[data-trust-chip=FOREIGN]{border-style:dashed}.fX20MG_chip[data-trust-chip=UNBOUND]{border-style:dotted}.fX20MG_chipWord{display:inline-block}.fX20MG_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.fX20MG_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.fX20MG_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.fX20MG_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.fX20MG_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.fX20MG_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.fX20MG_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.fX20MG_composerRow{justify-content:flex-end;display:flex}.fX20MG_sendCircle{flex:none;width:34px;height:34px;padding:0}.fX20MG_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.fX20MG_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.fX20MG_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.fX20MG_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.fX20MG_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.fX20MG_sheetBadgeRow{align-items:center;gap:8px;display:flex}.fX20MG_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.fX20MG_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.fX20MG_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.fX20MG_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.fX20MG_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.fX20MG_menuItem,.fX20MG_menuItemActive{width:100%}.fX20MG_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.fX20MG_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.fX20MG_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.fX20MG_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.fX20MG_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.fX20MG_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.fX20MG_threadTitle{text-align:left}.fX20MG_headerTail{flex:100%;justify-content:flex-end}}.fX20MG_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.fX20MG_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.fX20MG_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.fX20MG_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.fX20MG_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.fX20MG_addField{flex-direction:column;gap:4px;display:flex}.fX20MG_addLabel{color:var(--aukora-text-secondary)}.fX20MG_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.fX20MG_addSubmit{padding:9px 12px;font-weight:600}.fX20MG_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.fX20MG_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.fX20MG_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.fX20MG_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.fX20MG_addTools .fX20MG_addRefusal{margin:0 0 0 auto}.fX20MG_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.fX20MG_searchInput:focus-visible,.fX20MG_addInput:focus-visible,.fX20MG_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
 		const tagId = "@aukora/face-messages/Messages.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -56,89 +56,89 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Messages_module_css_default = {
-			"actions": "EBPSoG_actions",
-			"addAdded": "EBPSoG_addAdded",
-			"addField": "EBPSoG_addField",
-			"addForm": "EBPSoG_addForm",
-			"addHint": "EBPSoG_addHint",
-			"addInput": "EBPSoG_addInput",
-			"addLabel": "EBPSoG_addLabel",
-			"addReason": "EBPSoG_addReason",
-			"addRefusal": "EBPSoG_addRefusal",
-			"addSubmit": "EBPSoG_addSubmit",
-			"addTools": "EBPSoG_addTools",
-			"addVideo": "EBPSoG_addVideo",
-			"avatar": "EBPSoG_avatar",
-			"badge": "EBPSoG_badge",
-			"badgeWord": "EBPSoG_badgeWord",
-			"brandActions": "EBPSoG_brandActions",
-			"brandMark": "EBPSoG_brandMark",
-			"brandName": "EBPSoG_brandName",
-			"brandRow": "EBPSoG_brandRow",
-			"bubbleText": "EBPSoG_bubbleText",
-			"chip": "EBPSoG_chip",
-			"chipWord": "EBPSoG_chipWord",
-			"composerCard": "EBPSoG_composerCard",
-			"composerRow": "EBPSoG_composerRow",
-			"contactRow": "EBPSoG_contactRow",
-			"headerTail": "EBPSoG_headerTail",
-			"iconButton": "EBPSoG_iconButton",
-			"lane": "EBPSoG_lane",
-			"listEmpty": "EBPSoG_listEmpty",
-			"menuCopy": "EBPSoG_menuCopy",
-			"menuItem": "EBPSoG_menuItem",
-			"menuItemActive": "EBPSoG_menuItemActive",
-			"messages": "EBPSoG_messages",
-			"msgMe": "EBPSoG_msgMe",
-			"msgThem": "EBPSoG_msgThem",
-			"notice": "EBPSoG_notice",
-			"noticeReason": "EBPSoG_noticeReason",
-			"noticeTitle": "EBPSoG_noticeTitle",
-			"npub": "EBPSoG_npub",
-			"personRow": "EBPSoG_personRow",
-			"pinMark": "EBPSoG_pinMark",
-			"posture": "EBPSoG_posture",
-			"receiptMark": "EBPSoG_receiptMark",
-			"rowActions": "EBPSoG_rowActions",
-			"rowMain": "EBPSoG_rowMain",
-			"rowPreview": "EBPSoG_rowPreview",
-			"rowTitleInMain": "EBPSoG_rowTitleInMain",
-			"rowTop": "EBPSoG_rowTop",
-			"rows": "EBPSoG_rows",
-			"sas": "EBPSoG_sas",
-			"sasAbsent": "EBPSoG_sasAbsent",
-			"sasAbsentGlyph": "EBPSoG_sasAbsentGlyph",
-			"sasAbsentText": "EBPSoG_sasAbsentText",
-			"sasBody": "EBPSoG_sasBody",
-			"sasDigits": "EBPSoG_sasDigits",
-			"sasGlyph": "EBPSoG_sasGlyph",
-			"sasHint": "EBPSoG_sasHint",
-			"sasLabel": "EBPSoG_sasLabel",
-			"searchInput": "EBPSoG_searchInput",
-			"searchRow": "EBPSoG_searchRow",
-			"sendCircle": "EBPSoG_sendCircle",
-			"sheet": "EBPSoG_sheet",
-			"sheetBackdrop": "EBPSoG_sheetBackdrop",
-			"sheetBadgeRow": "EBPSoG_sheetBadgeRow",
-			"sheetBody": "EBPSoG_sheetBody",
-			"sheetHeader": "EBPSoG_sheetHeader",
-			"sheetLabel": "EBPSoG_sheetLabel",
-			"sheetRow": "EBPSoG_sheetRow",
-			"sheetSentence": "EBPSoG_sheetSentence",
-			"sheetTitle": "EBPSoG_sheetTitle",
-			"sheetValue": "EBPSoG_sheetValue",
-			"surface": "EBPSoG_surface",
-			"thread": "EBPSoG_thread",
-			"threadHeader": "EBPSoG_threadHeader",
-			"threadNotice": "EBPSoG_threadNotice",
-			"threadTitle": "EBPSoG_threadTitle",
-			"time": "EBPSoG_time",
-			"trustMark": "EBPSoG_trustMark",
-			"unreadDot": "EBPSoG_unreadDot",
-			"verifyConfirm": "EBPSoG_verifyConfirm",
-			"verifyConfirmButton": "EBPSoG_verifyConfirmButton",
-			"verifyConfirmNote": "EBPSoG_verifyConfirmNote",
-			"visuallyHidden": "EBPSoG_visuallyHidden"
+			"actions": "fX20MG_actions",
+			"addAdded": "fX20MG_addAdded",
+			"addField": "fX20MG_addField",
+			"addForm": "fX20MG_addForm",
+			"addHint": "fX20MG_addHint",
+			"addInput": "fX20MG_addInput",
+			"addLabel": "fX20MG_addLabel",
+			"addReason": "fX20MG_addReason",
+			"addRefusal": "fX20MG_addRefusal",
+			"addSubmit": "fX20MG_addSubmit",
+			"addTools": "fX20MG_addTools",
+			"addVideo": "fX20MG_addVideo",
+			"avatar": "fX20MG_avatar",
+			"badge": "fX20MG_badge",
+			"badgeWord": "fX20MG_badgeWord",
+			"brandActions": "fX20MG_brandActions",
+			"brandMark": "fX20MG_brandMark",
+			"brandName": "fX20MG_brandName",
+			"brandRow": "fX20MG_brandRow",
+			"bubbleText": "fX20MG_bubbleText",
+			"chip": "fX20MG_chip",
+			"chipWord": "fX20MG_chipWord",
+			"composerCard": "fX20MG_composerCard",
+			"composerRow": "fX20MG_composerRow",
+			"contactRow": "fX20MG_contactRow",
+			"headerTail": "fX20MG_headerTail",
+			"iconButton": "fX20MG_iconButton",
+			"lane": "fX20MG_lane",
+			"listEmpty": "fX20MG_listEmpty",
+			"menuCopy": "fX20MG_menuCopy",
+			"menuItem": "fX20MG_menuItem",
+			"menuItemActive": "fX20MG_menuItemActive",
+			"messages": "fX20MG_messages",
+			"msgMe": "fX20MG_msgMe",
+			"msgThem": "fX20MG_msgThem",
+			"notice": "fX20MG_notice",
+			"noticeReason": "fX20MG_noticeReason",
+			"noticeTitle": "fX20MG_noticeTitle",
+			"npub": "fX20MG_npub",
+			"personRow": "fX20MG_personRow",
+			"pinMark": "fX20MG_pinMark",
+			"posture": "fX20MG_posture",
+			"receiptMark": "fX20MG_receiptMark",
+			"rowActions": "fX20MG_rowActions",
+			"rowMain": "fX20MG_rowMain",
+			"rowPreview": "fX20MG_rowPreview",
+			"rowTitleInMain": "fX20MG_rowTitleInMain",
+			"rowTop": "fX20MG_rowTop",
+			"rows": "fX20MG_rows",
+			"sas": "fX20MG_sas",
+			"sasAbsent": "fX20MG_sasAbsent",
+			"sasAbsentGlyph": "fX20MG_sasAbsentGlyph",
+			"sasAbsentText": "fX20MG_sasAbsentText",
+			"sasBody": "fX20MG_sasBody",
+			"sasDigits": "fX20MG_sasDigits",
+			"sasGlyph": "fX20MG_sasGlyph",
+			"sasHint": "fX20MG_sasHint",
+			"sasLabel": "fX20MG_sasLabel",
+			"searchInput": "fX20MG_searchInput",
+			"searchRow": "fX20MG_searchRow",
+			"sendCircle": "fX20MG_sendCircle",
+			"sheet": "fX20MG_sheet",
+			"sheetBackdrop": "fX20MG_sheetBackdrop",
+			"sheetBadgeRow": "fX20MG_sheetBadgeRow",
+			"sheetBody": "fX20MG_sheetBody",
+			"sheetHeader": "fX20MG_sheetHeader",
+			"sheetLabel": "fX20MG_sheetLabel",
+			"sheetRow": "fX20MG_sheetRow",
+			"sheetSentence": "fX20MG_sheetSentence",
+			"sheetTitle": "fX20MG_sheetTitle",
+			"sheetValue": "fX20MG_sheetValue",
+			"surface": "fX20MG_surface",
+			"thread": "fX20MG_thread",
+			"threadHeader": "fX20MG_threadHeader",
+			"threadNotice": "fX20MG_threadNotice",
+			"threadTitle": "fX20MG_threadTitle",
+			"time": "fX20MG_time",
+			"trustMark": "fX20MG_trustMark",
+			"unreadDot": "fX20MG_unreadDot",
+			"verifyConfirm": "fX20MG_verifyConfirm",
+			"verifyConfirmButton": "fX20MG_verifyConfirmButton",
+			"verifyConfirmNote": "fX20MG_verifyConfirmNote",
+			"visuallyHidden": "fX20MG_visuallyHidden"
 		};
 		//#endregion
 		//#region src/client/MessagesMenu.tsx
@@ -11337,6 +11337,7 @@ window.__ModuleLoader__.load({
 		const MESSAGES_SEND_ENDPOINT = "/aukora-messages/send";
 		/** Where the Confirm button POSTs: the backend asks the signer, verifies, and stores. */
 		const MESSAGES_CONFIRM_CONTACT_ENDPOINT = "/aukora-messages/confirm-contact";
+		const MESSAGES_REISSUE_IDENTITY_ENDPOINT = "/aukora-messages/reissue-identity";
 		/** Every state, in the order the design names them. */
 		const MESSAGES_WIRE_CONTACT_STATES = [
 			"VERIFIED",
@@ -11360,6 +11361,8 @@ window.__ModuleLoader__.load({
 		];
 		/** The wire's own refusals: the ones a caller can earn without any file being involved. */
 		const MESSAGES_WIRE_REFUSALS = [
+			"messages:identity-reissue-failed",
+			"messages:identity-changed",
 			"messages:malformed-request",
 			"messages:request-body-unreadable",
 			"messages:no-such-route",
@@ -11478,7 +11481,7 @@ window.__ModuleLoader__.load({
 				subject: `entry ${index}${typeof fields.name === "string" ? ` name ${safeContactDiagnostic(fields.name)}` : ""}${typeof fields.npub === "string" ? ` npub ${safeContactDiagnostic(fields.npub)}` : ""}`
 			};
 		}
-		/** The sole displayed/confirmed safety-number format; legacy six-digit SAS never reaches the UI. */
+		/** The displayed own half; the backend independently verifies the complete submitted pair. */
 		function parseSafetyNumber(value) {
 			if (value === null) return null;
 			if (!isRecord(value) || !hasExactKeys(value, [
@@ -11486,7 +11489,7 @@ window.__ModuleLoader__.load({
 				"spoken",
 				"comparisonGroupIndex"
 			]) || !contactFieldsAreSafe(value)) return void 0;
-			if (typeof value.digits !== "string" || !/^[0-9]{70}$/u.test(value.digits)) return void 0;
+			if (typeof value.digits !== "string" || !/^[0-9]{35}$/u.test(value.digits)) return void 0;
 			if (value.spoken !== value.digits.match(/.{5}/gu)?.join(" ")) return void 0;
 			if (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return void 0;
 			return {
@@ -11895,11 +11898,11 @@ window.__ModuleLoader__.load({
 		* A missing timeout degrades to the runtime's own request behaviour; it never throws here.
 		* @returns the signal, or undefined.
 		*/
-		function timeoutSignal() {
+		function timeoutSignal(timeoutMs = CONTACTS_REQUEST_TIMEOUT_MS) {
 			const factory = globalThis.AbortSignal;
 			if (factory?.timeout === void 0) return void 0;
 			try {
-				return factory.timeout(CONTACTS_REQUEST_TIMEOUT_MS);
+				return factory.timeout(timeoutMs);
 			} catch {
 				return;
 			}
@@ -12214,12 +12217,14 @@ window.__ModuleLoader__.load({
 		* @returns whether the host confirmed it, or why it did not.
 		*/
 		async function confirmSas(npub, comparison, fetchImpl = sameOriginFetch) {
+			const signal = timeoutSignal(315e3);
 			const read = await readJson(MESSAGES_CONFIRM_CONTACT_ENDPOINT, {
 				method: "POST",
 				body: JSON.stringify({
 					npub,
 					...comparison
-				})
+				}),
+				...signal === void 0 ? {} : { signal }
 			}, fetchImpl);
 			if (read.kind === "failed") return read;
 			const { status, value } = read.value;
@@ -12248,9 +12253,23 @@ window.__ModuleLoader__.load({
 				failure: refusalOf(status, value)
 			};
 		}
-		/** Read only the shareable public identity; the host never returns the secret key. */
+		/** Read only the shareable public identity; reading never requests a signature. */
 		async function readIdentity(fetchImpl = sameOriginFetch) {
-			const read = await readJson("/aukora-messages/identity", { method: "GET" }, fetchImpl);
+			return identityAnswer(await readJson("/aukora-messages/identity", { method: "GET" }, fetchImpl));
+		}
+		/** User-initiated binding issuance/migration; the body pins the identity already shown. */
+		async function reissueIdentity(npub, subject, fetchImpl = sameOriginFetch) {
+			const signal = timeoutSignal(315e3);
+			return identityAnswer(await readJson(MESSAGES_REISSUE_IDENTITY_ENDPOINT, {
+				method: "POST",
+				body: JSON.stringify({
+					npub,
+					subject
+				}),
+				...signal === void 0 ? {} : { signal }
+			}, fetchImpl));
+		}
+		function identityAnswer(read) {
 			if (read.kind === "failed") return read;
 			const { status, value } = read.value;
 			const refusal = parseMessagesRefusalBody(value);
@@ -12279,7 +12298,8 @@ window.__ModuleLoader__.load({
 				kind: "ready",
 				value: {
 					npub: npub.npub,
-					subject: body.subject
+					subject: body.subject,
+					bindingReady: body.binding?.statement?.safetyVersion === 2
 				}
 			};
 		}
@@ -13126,15 +13146,16 @@ window.__ModuleLoader__.load({
 		*/
 		function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }) {
 			const [refusal, setRefusal] = (0, react.useState)(null);
-			const [comparisonGroups, setComparisonGroups] = (0, react.useState)(["", ""]);
-			const matched = state === "BOUND" && sas !== null && comparisonGroups.every((group) => /^[0-9]{35}$/u.test(group)) && comparisonGroups.join("") === sas.digits;
+			const [peerHalf, setPeerHalf] = (0, react.useState)("");
+			const ready = state === "BOUND" && sas !== null && /^[0-9]{35}$/u.test(sas.digits) && /^[0-9]{35}$/u.test(peerHalf);
 			const [asking, setAsking] = (0, react.useState)(false);
 			const ask = async () => {
-				if (!matched || sas === null) return;
+				if (!ready || sas === null) return;
 				setAsking(true);
 				setRefusal(null);
+				const comparisonGroups = sas.comparisonGroupIndex === 0 ? [sas.digits, peerHalf] : [peerHalf, sas.digits];
 				const answer = await confirmSas(npub, {
-					sasDigits: sas.digits,
+					sasDigits: comparisonGroups.join(""),
 					safetyVersion: 2,
 					comparisonGroups
 				});
@@ -13172,26 +13193,22 @@ window.__ModuleLoader__.load({
 					sas !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: Messages_module_css_default.verifyConfirm,
 						children: [
-							comparisonGroups.map((group, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
-								"data-verify-comparison-half": index,
-								"aria-label": `${t("sas.label")} ${index + 1}`,
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								"data-verify-comparison-half": "peer",
+								"aria-label": t("verify.peer-half"),
 								inputMode: "numeric",
 								autoComplete: "off",
 								maxLength: 41,
-								value: group,
+								value: peerHalf,
 								disabled: asking || state !== "BOUND",
-								onChange: (event) => setComparisonGroups((previous) => {
-									const next = [...previous];
-									next[index] = event.target.value.replace(/\s/gu, "").slice(0, 35);
-									return next;
-								})
-							}, index)),
+								onChange: (event) => setPeerHalf(event.target.value.replace(/\s/gu, "").slice(0, 35))
+							}),
 							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 								type: "button",
 								variant: "green",
 								className: Messages_module_css_default.verifyConfirmButton,
 								"data-verify-confirm": "available",
-								disabled: asking || !matched,
+								disabled: asking || !ready,
 								onClick: () => {
 									ask();
 								},
@@ -13996,6 +14013,9 @@ window.__ModuleLoader__.load({
 			const identityGeneration = (0, react.useRef)(0);
 			const clipboardGeneration = (0, react.useRef)(0);
 			const [publicNpub, setPublicNpub] = (0, react.useState)(null);
+			const [identitySubject, setIdentitySubject] = (0, react.useState)(null);
+			const [identityReady, setIdentityReady] = (0, react.useState)(false);
+			const [reissuing, setReissuing] = (0, react.useState)(false);
 			const [threadProblem, setThreadProblem] = (0, react.useState)(null);
 			const threadFailure = threadProblem !== null && threadProblem.npub === openId ? threadProblem.failure : null;
 			const openConversation = entries.find((conversation) => conversation.id === openId);
@@ -14096,9 +14116,13 @@ window.__ModuleLoader__.load({
 					if (!activeRef.current || mine !== identityGeneration.current) return;
 					if (read.kind === "ready") {
 						setPublicNpub(read.value.npub);
+						setIdentitySubject(read.value.subject);
+						setIdentityReady(read.value.bindingReady);
 						setIdentityFailure(null);
 					} else {
 						setPublicNpub(null);
+						setIdentitySubject(null);
+						setIdentityReady(false);
 						setIdentityFailure(read.failure);
 					}
 				});
@@ -14129,6 +14153,23 @@ window.__ModuleLoader__.load({
 				} catch {
 					failed();
 				}
+			};
+			const reissue = async () => {
+				if (reissuing || identityReady || publicNpub === null || identitySubject === null) return;
+				const mine = ++identityGeneration.current;
+				setReissuing(true);
+				const result = await reissueIdentity(publicNpub, identitySubject);
+				setReissuing(false);
+				if (!activeRef.current || mine !== identityGeneration.current) return;
+				if (result.kind === "failed") {
+					setIdentityFailure(result.failure);
+					openSheet("warning", null);
+					return;
+				}
+				setIdentityReady(result.value.bindingReady);
+				setIdentityFailure(null);
+				loadContacts();
+				loadIdentity();
 			};
 			(0, react.useEffect)(() => {
 				if (copyState !== "copied") return void 0;
@@ -14390,6 +14431,17 @@ window.__ModuleLoader__.load({
 									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 										className: clsx(Messages_module_css_default.actions, Messages_module_css_default.brandActions),
 										children: [
+											!identityReady && identitySubject !== null && publicNpub !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+												type: "button",
+												className: Messages_module_css_default.iconButton,
+												"data-reissue-identity": reissuing ? "asking" : "ready",
+												"aria-label": t("identity.reissue"),
+												disabled: reissuing,
+												onClick: () => {
+													reissue();
+												},
+												children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(KeyIcon, {})
+											}),
 											/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
 												type: "button",
 												className: Messages_module_css_default.iconButton,
@@ -14732,6 +14784,7 @@ window.__ModuleLoader__.load({
 			"add.camera.stop": "停止扫描",
 			"add.image": "选择二维码图片",
 			"identity.copy": "复制我的 npub",
+			"identity.reissue": "批准绑定或更新我的 Messages 身份",
 			"identity.copied": "已复制",
 			"identity.failed": "无法复制 npub",
 			"row.nothing-sent": "这里还没发出过消息。",
@@ -14742,10 +14795,11 @@ window.__ModuleLoader__.load({
 			"trust.unverified": "未验证",
 			"verify.open": "查看验证",
 			"verify.title": "验证",
-			"state.BOUND.title": "已绑定：密钥对得上；还没有人当面确认过。",
-			"state.BOUND.detail": "密钥对得上；还没有人当面确认过",
-			"verify.confirm.button": "我和 {contact} 当面核对了这些数字，它们一致",
-			"verify.confirm.ready": "通过可信的通道核对全部70位数字。输入对方屏幕上的两个完整35位数字，仅在全部一致时确认。",
+			"state.BOUND.title": "已绑定：密钥对得上；没有当前的所有者密钥核对签名。",
+			"state.BOUND.detail": "密钥对得上；没有当前的所有者密钥核对签名",
+			"verify.confirm.button": "请求批准与 {contact} 的数字核对",
+			"verify.confirm.ready": "通过已认证的通道向对方读出你显示的35位数字，并输入对方读出的35位数字。主机会核对完整数字对，批准只记录密钥签名，不证明本人在场。",
+			"verify.peer-half": "通过已认证的通道收到的对方35位数字",
 			"details.open": "详情",
 			"details.title": "详情",
 			"details.host": "本机状态",
@@ -14776,15 +14830,15 @@ window.__ModuleLoader__.load({
 			"contact.binding.verified": "出示的绑定已验证",
 			"contact.binding.refused": "出示的绑定未通过验证",
 			"state.label": "身份状态",
-			"state.VERIFIED.title": "已确认：有人当面核对了这些数字，并签署了确认。",
-			"state.VERIFIED.detail": "已当面核对并签署确认",
+			"state.VERIFIED.title": "已确认：所有者密钥签署了完整数字核对，不证明本人在场。",
+			"state.VERIFIED.detail": "所有者密钥已签署核对；本人在场未被证明",
 			"state.TEST.title": "测试：绑定在结构上验证通过，但带着 TEST 标记——还不是某个人的声明。",
 			"state.TEST.detail": "结构上有效，标为 TEST",
 			"state.UNBOUND.title": "未绑定：本机持有这个 npub，但没有任何东西为它背书。",
 			"state.UNBOUND.detail": "没有任何东西为它背书",
 			"state.FOREIGN.title": "外来：出示了绑定，但它未通过验证。冒充看起来就是这样，而且绝不与未绑定合并。",
 			"state.FOREIGN.detail": "出示的绑定未通过验证",
-			"sas.label": "读出并比对",
+			"sas.label": "你的35位数字：读给对方",
 			"sas.spoken": "口头",
 			"sas.hint": "这是一段供两人用语音逐字比对的短验证串——不是身份，也不代表任何一方已被验证。",
 			"sas.absent.VERIFIED": "已确认的绑定没有给出可读出的数字串。",
@@ -14836,7 +14890,7 @@ window.__ModuleLoader__.load({
 			"add.controller": "控制密钥（可选）",
 			"add.submit": "添加",
 			"add.refresh": "更新已签名的绑定，之后重新核对全部数字",
-			"add.hint": "这三个字段由你核对。添加后为「已绑定」——密钥对得上，但还没有人当面确认过。",
+			"add.hint": "这三个字段由你核对。添加后为「已绑定」——密钥对得上，但没有当前的所有者密钥核对签名。",
 			"add.added": "已添加 {name}（{npub}），状态 {state}。",
 			"state.VERIFIED.word": "已确认",
 			"state.BOUND.word": "已绑定",
@@ -14884,6 +14938,7 @@ window.__ModuleLoader__.load({
 			"add.camera.stop": "Stop scanning",
 			"add.image": "Choose QR image",
 			"identity.copy": "Copy my npub",
+			"identity.reissue": "Approve binding or updating my Messages identity",
 			"identity.copied": "Copied",
 			"identity.failed": "Could not copy npub",
 			"row.nothing-sent": "Nothing has been sent from here yet.",
@@ -14894,10 +14949,11 @@ window.__ModuleLoader__.load({
 			"trust.unverified": "Unverified",
 			"verify.open": "Check verification",
 			"verify.title": "Verification",
-			"state.BOUND.title": "Bound: the key checks out; nobody has confirmed it in person.",
-			"state.BOUND.detail": "the key checks out; nobody has confirmed it in person",
-			"verify.confirm.button": "I compared these digits with {contact} and they matched",
-			"verify.confirm.ready": "Compare all 70 digits over a trusted channel. Enter both complete 35-digit halves from the peer’s screen. Confirm only if every digit matches.",
+			"state.BOUND.title": "Bound: the key checks out; no current owner-key comparison signature.",
+			"state.BOUND.detail": "the key checks out; no current owner-key comparison signature",
+			"verify.confirm.button": "Request approval of this comparison with {contact}",
+			"verify.confirm.ready": "Read your displayed 35 digits to the peer over a channel whose identity you have authenticated. Enter their 35 digits from that channel. The host checks the complete pair; approval records a key signature, not human presence.",
+			"verify.peer-half": "Peer’s 35 digits received over an authenticated channel",
 			"details.open": "Details",
 			"details.title": "Details",
 			"details.host": "Host status",
@@ -14928,15 +14984,15 @@ window.__ModuleLoader__.load({
 			"contact.binding.verified": "the presented binding verified",
 			"contact.binding.refused": "the presented binding did not verify",
 			"state.label": "identity state",
-			"state.VERIFIED.title": "Verified: a person compared these digits and signed a confirmation.",
-			"state.VERIFIED.detail": "compared in person and signed",
+			"state.VERIFIED.title": "Verified: the owner key signed the complete comparison; human presence is unproven.",
+			"state.VERIFIED.detail": "owner key signed the comparison; human presence unproven",
 			"state.TEST.title": "Test: the binding verifies structurally and is TEST-labelled — not yet a claim about a person.",
 			"state.TEST.detail": "structurally valid, TEST-labelled",
 			"state.UNBOUND.title": "Unbound: this node holds the npub and nothing vouches for it.",
 			"state.UNBOUND.detail": "nothing vouches for it",
 			"state.FOREIGN.title": "Foreign: something was presented and it did not verify. An impersonation attempt looks like this, and it is never merged with unbound.",
 			"state.FOREIGN.detail": "the presented binding did not verify",
-			"sas.label": "read aloud and compare",
+			"sas.label": "Your 35 digits: read these to the peer",
 			"sas.spoken": "spoken",
 			"sas.hint": "A short string for two people to compare by voice, word for word — it is not an identity, and it does not mean either side has been verified.",
 			"sas.absent.VERIFIED": "The confirmed binding carried no string to read aloud.",
@@ -14988,7 +15044,7 @@ window.__ModuleLoader__.load({
 			"add.controller": "Controller key (optional)",
 			"add.submit": "Add",
 			"add.refresh": "Refresh signed binding; compare all digits again",
-			"add.hint": "You check these three yourself. The contact is added as Bound — the key checks out, and nobody has confirmed it in person.",
+			"add.hint": "You check these three yourself. The contact is added as Bound — the key checks out, with no current owner-key comparison signature.",
 			"add.added": "Added {name} ({npub}), shown as {state}.",
 			"state.VERIFIED.word": "Verified",
 			"state.BOUND.word": "Bound",

@@ -1,6 +1,6 @@
 {
   "face": "apps",
-  "srcDigest": "d074c4a5397fb02b05b26cdbfe92cf45bd1becb00aa91ff2135ad6c00476146d",
+  "srcDigest": "2e938d63e79d8785a0f761d732f0c8f95d1644835d8a9875faa3e148cb02d0c8",
   "files": [
     "package.json",
     "src/auma-canvas-tool.ts",
@@ -49,6 +49,8 @@
     "src/client/DakiniCode.tsx",
     "src/client/EmbeddedAppSurface.tsx",
     "src/client/HumanGraphSurface.tsx",
+    "src/client/MediaSurface.module.css",
+    "src/client/MediaSurface.tsx",
     "src/client/RoomSurface.module.css",
     "src/client/RoomSurface.tsx",
     "src/client/StockAppMenu.tsx",
@@ -240,5 +242,5 @@
     "vendor/zeta-harp/js/zh-fixtures-2.js",
     "vendor/zeta-harp/js/zh-math.js"
   ],
-  "builtAt": "2026-10-01T01:33:04Z"
+  "builtAt": "2026-10-01T04:05:11Z"
 }

@@ -153,6 +153,7 @@ const MESSAGES_THREAD_ENDPOINT = "/aukora-messages/thread";
 const MESSAGES_SEND_ENDPOINT = "/aukora-messages/send";
 /** Where the Confirm button POSTs: the backend asks the signer, verifies, and stores. */
 const MESSAGES_CONFIRM_CONTACT_ENDPOINT = "/aukora-messages/confirm-contact";
+const MESSAGES_REISSUE_IDENTITY_ENDPOINT = "/aukora-messages/reissue-identity";
 /**
 * How long a SEND may take before this route answers, whatever the relays are doing.
 *
@@ -222,6 +223,8 @@ const MESSAGES_STORE_REFUSALS = [
 ];
 /** The wire's own refusals: the ones a caller can earn without any file being involved. */
 const MESSAGES_WIRE_REFUSALS = [
+	"messages:identity-reissue-failed",
+	"messages:identity-changed",
 	"messages:malformed-request",
 	"messages:request-body-unreadable",
 	"messages:no-such-route",
@@ -400,7 +403,7 @@ function skippedContact(index, value) {
 		subject: `entry ${index}${typeof fields.name === "string" ? ` name ${safeContactDiagnostic(fields.name)}` : ""}${typeof fields.npub === "string" ? ` npub ${safeContactDiagnostic(fields.npub)}` : ""}`
 	};
 }
-/** The sole displayed/confirmed safety-number format; legacy six-digit SAS never reaches the UI. */
+/** The displayed own half; the backend independently verifies the complete submitted pair. */
 function parseSafetyNumber(value) {
 	if (value === null) return null;
 	if (!isRecord$3(value) || !hasExactKeys(value, [
@@ -408,7 +411,7 @@ function parseSafetyNumber(value) {
 		"spoken",
 		"comparisonGroupIndex"
 	]) || !contactFieldsAreSafe(value)) return void 0;
-	if (typeof value.digits !== "string" || !/^[0-9]{70}$/u.test(value.digits)) return void 0;
+	if (typeof value.digits !== "string" || !/^[0-9]{35}$/u.test(value.digits)) return void 0;
 	if (value.spoken !== value.digits.match(/.{5}/gu)?.join(" ")) return void 0;
 	if (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return void 0;
 	return {
@@ -1322,7 +1325,13 @@ function asBindingStatus(value) {
 * @returns the two leaf fields, or null.
 */
 function contactSas(value) {
-	return parseSafetyNumber(value) ?? null;
+	if (!isRecord$2(value) || typeof value.digits !== "string" || !/^[0-9]{70}$/u.test(value.digits) || value.spoken !== value.digits.match(/.{5}/gu)?.join(" ") || value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return null;
+	const digits = value.digits.slice(value.comparisonGroupIndex * 5, value.comparisonGroupIndex * 5 + 35);
+	return parseSafetyNumber({
+		digits,
+		spoken: digits.match(/.{5}/gu)?.join(" "),
+		comparisonGroupIndex: value.comparisonGroupIndex
+	}) ?? null;
 }
 /**
 * Resolve one stored contact into the seven leaf fields this face serves.
@@ -1412,7 +1421,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 		reason: reasonText(answer.reason),
 		subject: typeof answer.subject === "string" && answer.subject !== "" ? answer.subject : null,
 		sas: verified ? contactSas(answer.sas) : null,
-		safetyNumber: verified ? parseSafetyNumber(answer.safetyNumber) ?? null : null,
+		safetyNumber: verified ? contactSas(answer.safetyNumber) : null,
 		binding,
 		peerControllerKey: peer
 	};
@@ -2409,6 +2418,8 @@ function messagesRefusalStatus(reason) {
 		case "messages:confirm-writer-absent": return 500;
 		case "messages:confirm-writer-unloadable": return 500;
 		case "messages:confirm-writer-unusable": return 500;
+		case "messages:identity-reissue-failed": return 409;
+		case "messages:identity-changed": return 409;
 		case "messages:add-npub-invalid": return 400;
 		case "messages:add-controller-invalid": return 400;
 		case "messages:add-binding-invalid": return 400;
@@ -2655,20 +2666,12 @@ function controllerDirectory(ctx) {
 function roots(ctx) {
 	return messagesContactsRoots(controllerDirectory(ctx));
 }
-const identityAttempts = /* @__PURE__ */ new Map();
 const inboxAnnouncements = /* @__PURE__ */ new Map();
+async function identityBootstrap() {
+	return await import(__rewriteRelativeImportExtension(`${resolveContactModuleSpecifier().replace(/contact\.mjs$/u, "")}bootstrap.mjs`));
+}
 async function prepareIdentity(stateRoots) {
-	const bootstrap = await import(__rewriteRelativeImportExtension(`${resolveContactModuleSpecifier().replace(/contact\.mjs$/u, "")}bootstrap.mjs`));
-	const identity = await bootstrap.readMessagesIdentity(stateRoots);
-	const attempt = `${stateRoots.stateDir}:${identity.subject}`;
-	if (identity.subject && !identity.binding && Date.now() >= (identityAttempts.get(attempt) ?? 0)) {
-		identityAttempts.set(attempt, Infinity);
-		bootstrap.ensureMessagesIdentity(stateRoots).then(() => {
-			identityAttempts.set(attempt, Date.now() + 3e4);
-		}).catch((error) => {
-			if (error?.code !== "signer:declined" && error?.code !== "signer:request-expired") identityAttempts.set(attempt, Date.now() + 3e4);
-		});
-	}
+	const identity = await (await identityBootstrap()).readMessagesIdentity(stateRoots);
 	if (Date.now() >= (inboxAnnouncements.get(stateRoots.stateDir) ?? 0)) {
 		inboxAnnouncements.set(stateRoots.stateDir, Date.now() + 3e4);
 		(async () => {
@@ -2701,6 +2704,47 @@ function identityRoute(gate, rootsOf) {
 				});
 			} catch (error) {
 				answer(res, messagesRefusalBody("messages:unreadable-state", causeMessage(error)));
+			}
+		}
+	};
+}
+/** Only an explicit POST can request a Messages binding; paths and signer anchors stay host-owned. */
+function reissueIdentityRoute(gate, rootsOf) {
+	return {
+		kind: "exact",
+		path: MESSAGES_REISSUE_IDENTITY_ENDPOINT,
+		handler: async (req, res) => {
+			if (!admitted(gate, "POST", req, res)) return;
+			const named = hostOwnedRefusal(new URL(req.url ?? "/", "http://x").search, req);
+			if (named !== void 0) {
+				answer(res, named);
+				return;
+			}
+			const read = await readRequestBody(req);
+			if (read.kind === "refused") {
+				answer(res, read.refusal);
+				return;
+			}
+			let body;
+			try {
+				body = JSON.parse(read.text);
+			} catch {}
+			if (!isRecord(body) || Object.keys(body).sort().join(",") !== "npub,subject" || !contactFieldsAreSafe(body) || typeof body.npub !== "string" || typeof body.subject !== "string" || body.subject === "") {
+				answer(res, messagesRefusalBody("messages:malformed-request", MESSAGES_REISSUE_IDENTITY_ENDPOINT));
+				return;
+			}
+			try {
+				json(res, 200, {
+					status: "ok",
+					...await (await identityBootstrap()).reissueMessagesIdentity({
+						...rootsOf(),
+						expectedNpub: body.npub,
+						expectedSubject: body.subject
+					})
+				});
+			} catch (error) {
+				const code = typeof error?.code === "string" ? String(error.code) : "nostr:identity-runtime-unavailable";
+				json(res, code === "nostr:identity-signer-unreachable" ? 503 : 409, messagesRefusalBody(code === "nostr:identity-changed" ? "messages:identity-changed" : "messages:identity-reissue-failed", code));
 			}
 		}
 	};
@@ -3267,6 +3311,7 @@ function apply(ctx) {
 	const gate = () => Reflect.get(ctx, "connection");
 	const rootsOf = () => roots(ctx);
 	ctx.effect(() => register(identityRoute(gate, rootsOf)), "ui-messages: identity route");
+	ctx.effect(() => register(reissueIdentityRoute(gate, rootsOf)), "ui-messages: explicit identity reissue route");
 	ctx.effect(() => register(contactsRoute(gate, rootsOf)), "ui-messages: contacts route");
 	ctx.effect(() => register(requestRoute(gate)), "ui-messages: contacts request route");
 	ctx.effect(() => register(threadRoute(gate, rootsOf)), "ui-messages: thread route");
@@ -3275,4 +3320,4 @@ function apply(ctx) {
 	ctx.effect(() => register(confirmContactRoute((method, req, res) => admitted(gate, method, req, res), () => rootsOf())), "ui-messages: confirm-contact route");
 }
 //#endregion
-export { MESSAGES_CONTACTS_DOMAIN, MESSAGES_CONTACTS_ENDPOINT, MESSAGES_CONTACTS_REFUSAL_REASONS, MESSAGES_CONTACTS_REQUEST_ENDPOINT, MESSAGES_CONTACT_MODULE_CANDIDATES, MESSAGES_CONTACT_MODULE_ENV, MESSAGES_CONTROLLER_SERVICE_NAME, MESSAGES_COPY_ROLES, MESSAGES_EVIDENCE_MODULE_ABSENT, MESSAGES_EVIDENCE_NO_PUBLISH, MESSAGES_EVIDENCE_NO_WRAP_OPENED, MESSAGES_EVIDENCE_OUTCOMES, MESSAGES_EVIDENCE_UNWRITABLE, MESSAGES_HOST_OWNED_QUERY_FIELDS, MESSAGES_NOSTR_TREE_ABSENT, MESSAGES_REFUSAL_REASONS, MESSAGES_RELAYS_ENV, MESSAGES_RELAY_REFUSALS, MESSAGES_RELAY_TIMEOUT_ENV, MESSAGES_SEND_BUDGET_MS, MESSAGES_SEND_ENDPOINT, MESSAGES_STATE_DIR_ENV, MESSAGES_STORE_REFUSALS, MESSAGES_TEXT_MAX_BYTES, MESSAGES_THREAD_BUDGET_MS, MESSAGES_THREAD_ENDPOINT, MESSAGES_WIRE_CONTACT_STATES, MESSAGES_WIRE_REFUSALS, apply, contactSas, defaultContactModuleSpecifier, fenceRejectionOf, inject, isMessagesContactBinding, isMessagesContactState, isMessagesCopyRole, isMessagesEvidenceOutcome, isMessagesRefusalReason, listContacts, loadContactResolver, loadMailModules, mailThread, messagesContactsPath, messagesContactsRequest, messagesContactsRoots, messagesEvidenceFields, messagesHostOwnedQueryField, messagesNostrDir, messagesRefusalBody, messagesRefusalStatus, messagesRelayTimeoutMs, messagesRelays, messagesStateDir, messagesTextBytes, openedThreadWraps, parseMessagesContactEntry, parseMessagesContactsAnswer, parseMessagesContactsBody, parseMessagesContactsDocument, parseMessagesContactsRequest, parseMessagesRefusalBody, parseMessagesSendBody, parseMessagesSendRequest, parseMessagesThreadBody, parseMessagesThreadRequest, parseMessagesWireMessage, parseStoredContact, readContactsFile, readMailThread, readNodeSecretKey, resolveContactModuleSpecifier, resolveStoredContact, writerAbsenceName };
+export { MESSAGES_CONTACTS_DOMAIN, MESSAGES_CONTACTS_ENDPOINT, MESSAGES_CONTACTS_REFUSAL_REASONS, MESSAGES_CONTACTS_REQUEST_ENDPOINT, MESSAGES_CONTACT_MODULE_CANDIDATES, MESSAGES_CONTACT_MODULE_ENV, MESSAGES_CONTROLLER_SERVICE_NAME, MESSAGES_COPY_ROLES, MESSAGES_EVIDENCE_MODULE_ABSENT, MESSAGES_EVIDENCE_NO_PUBLISH, MESSAGES_EVIDENCE_NO_WRAP_OPENED, MESSAGES_EVIDENCE_OUTCOMES, MESSAGES_EVIDENCE_UNWRITABLE, MESSAGES_HOST_OWNED_QUERY_FIELDS, MESSAGES_NOSTR_TREE_ABSENT, MESSAGES_REFUSAL_REASONS, MESSAGES_RELAYS_ENV, MESSAGES_RELAY_REFUSALS, MESSAGES_RELAY_TIMEOUT_ENV, MESSAGES_SEND_BUDGET_MS, MESSAGES_SEND_ENDPOINT, MESSAGES_STATE_DIR_ENV, MESSAGES_STORE_REFUSALS, MESSAGES_TEXT_MAX_BYTES, MESSAGES_THREAD_BUDGET_MS, MESSAGES_THREAD_ENDPOINT, MESSAGES_WIRE_CONTACT_STATES, MESSAGES_WIRE_REFUSALS, apply, contactSas, defaultContactModuleSpecifier, fenceRejectionOf, inject, isMessagesContactBinding, isMessagesContactState, isMessagesCopyRole, isMessagesEvidenceOutcome, isMessagesRefusalReason, listContacts, loadContactResolver, loadMailModules, mailThread, messagesContactsPath, messagesContactsRequest, messagesContactsRoots, messagesEvidenceFields, messagesHostOwnedQueryField, messagesNostrDir, messagesRefusalBody, messagesRefusalStatus, messagesRelayTimeoutMs, messagesRelays, messagesStateDir, messagesTextBytes, openedThreadWraps, parseMessagesContactEntry, parseMessagesContactsAnswer, parseMessagesContactsBody, parseMessagesContactsDocument, parseMessagesContactsRequest, parseMessagesRefusalBody, parseMessagesSendBody, parseMessagesSendRequest, parseMessagesThreadBody, parseMessagesThreadRequest, parseMessagesWireMessage, parseStoredContact, readContactsFile, readMailThread, readNodeSecretKey, reissueIdentityRoute, resolveContactModuleSpecifier, resolveStoredContact, writerAbsenceName };

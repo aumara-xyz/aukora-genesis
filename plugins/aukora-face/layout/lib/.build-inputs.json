@@ -1,6 +1,6 @@
 {
   "face": "layout",
-  "srcDigest": "0a78cdeb557d85f70d31226da056ebe6f48578b4b31e5c1da0d49963bd9a726f",
+  "srcDigest": "7f94239b8c1f7c2275a7f91587bbfa0fe585f7e070998e2720fba5f7ea5e85d5",
   "files": [
     "package.json",
     "src/approvals-log.ts",
@@ -9,6 +9,8 @@
     "src/client/Approvals.module.css",
     "src/client/ApprovalsMenu.tsx",
     "src/client/ApprovalsSurface.tsx",
+    "src/client/ComposerControls.module.css",
+    "src/client/ComposerControls.tsx",
     "src/client/FirstRun.module.css",
     "src/client/FirstRunSurface.tsx",
     "src/client/Health.module.css",
@@ -38,6 +40,8 @@
     "src/client/waiting.ts",
     "src/client/why-api.ts",
     "src/client/why-model.ts",
+    "src/composer-mode-types.ts",
+    "src/composer-mode.ts",
     "src/css-modules.d.ts",
     "src/first-run-host.ts",
     "src/health-sample.ts",
@@ -47,5 +51,5 @@
     "src/why-store.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-09-30T07:50:40Z"
+  "builtAt": "2026-10-01T04:05:15Z"
 }

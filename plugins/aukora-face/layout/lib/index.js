@@ -1,7 +1,77 @@
+import { z } from "zod";
+import { CommandDefinitionId } from "@deepseek-ai/dsh-commands/brand";
+import { setSandboxMode } from "@deepseek-ai/dsh-sandbox-policy";
+import { requiredConfinement } from "@deepseek-ai/dsh-sandbox";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, statfsSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { execFile } from "node:child_process";
 import { fileURLToPath } from "node:url";
+//#region lib/types/composer-mode.js
+/** Registers a read-only projection and a sandbox-only command. Installation never changes session state. */
+function installComposerMode(ctx) {
+	ctx.inject([
+		"sessionProjections",
+		"commands",
+		"sandboxPolicy"
+	], (scope) => {
+		const modeSchema = z.enum([
+			"read-only",
+			"workspace-write",
+			"danger-full-access"
+		]);
+		scope.sessionProjections.register({
+			key: "aukoraComposerMode",
+			stateVersion: 1,
+			stateSchema: modeSchema.nullable(),
+			init: () => null,
+			apply: (state, event) => event.type === "sandbox/mode" ? event.data.mode : state,
+			wire: {
+				viewSchema: z.object({
+					mode: modeSchema,
+					available: z.boolean()
+				}),
+				view: (state) => ({
+					mode: state ?? scope.sandboxPolicy.defaultMode,
+					available: typeof scope.get("aukoraConfinement")?.confine === "function"
+				})
+			}
+		});
+		scope.commands.register({
+			definitionId: CommandDefinitionId("@aukora/composer-mode"),
+			name: "aukora-mode",
+			description: "Select confined Chat or Build mode without changing approval policy",
+			input: { hint: "<read-only|workspace-write>" },
+			handler: ({ agent, rawInput }) => {
+				const requested = rawInput.trim();
+				if (requested !== "read-only" && requested !== "workspace-write") return {
+					kind: "error",
+					text: "Required confinement allows only Chat or Build; YOLO is unavailable."
+				};
+				try {
+					requiredConfinement(scope, scope.sandboxPolicy.resolve({
+						session: agent.session,
+						mode: requested
+					}));
+					if (scope.sandboxPolicy.resolve({ session: agent.session }).mode !== requested) setSandboxMode(agent.session, requested);
+					if (scope.sandboxPolicy.resolve({ session: agent.session }).mode !== requested) return {
+						kind: "error",
+						text: "The host did not confirm the requested sandbox mode."
+					};
+					return {
+						kind: "success",
+						text: requested === "read-only" ? "Chat mode" : "Build mode"
+					};
+				} catch {
+					return {
+						kind: "error",
+						text: "Mode change unavailable; check the host-reported state."
+					};
+				}
+			}
+		});
+	});
+}
+//#endregion
 //#region lib/types/first-run-host.js
 /**
 * THE FIRST RUN'S HOST HALF — the two facts the screen cannot know by itself, and the one secret it must not keep.
@@ -676,6 +746,7 @@ function send(res, status, body) {
 	res.end(JSON.stringify(body));
 }
 function apply(ctx) {
+	installComposerMode(ctx);
 	ctx.inject(["webServer", "connection"], (webCtx) => {
 		const fence = (req) => fenceRejectionOf(Reflect.get(webCtx, "connection"), req).rejection;
 		/** Every route starts here: fence first, then the method, then the work. */

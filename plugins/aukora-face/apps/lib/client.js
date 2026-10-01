@@ -8,19 +8,19 @@ window.__ModuleLoader__.load({
 		let react_jsx_runtime = require("react/jsx-runtime");
 		let _aukora_face_layout_client = require("@aukora/face-layout/client");
 		//#region \0dsh-css:StockApps.module.css.mjs
-		const css$1 = ".RjacUa_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.RjacUa_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.RjacUa_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.RjacUa_surfaceSeat[data-stock-app=human-graph],.RjacUa_embeddedFrame[data-stock-app-frame=human-graph]{background:0 0}.RjacUa_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.RjacUa_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.RjacUa_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
-		const tagId$1 = "@aukora/face-apps/StockApps.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
+		const css$2 = ".vLcJoa_surfaceSeat{border-radius:inherit;background:var(--dsw-specific-spatial-canvas,#111520);width:100%;min-width:0;height:100%;min-height:0;position:absolute;inset:0;overflow:hidden}.vLcJoa_surfaceSeat:not([data-active]){visibility:hidden;pointer-events:none}.vLcJoa_embeddedFrame{background:var(--dsw-specific-spatial-canvas,#111520);border:0;width:100%;height:100%;display:block}.vLcJoa_surfaceSeat[data-stock-app=human-graph],.vLcJoa_embeddedFrame[data-stock-app-frame=human-graph]{background:0 0}.vLcJoa_menuCopy{flex-direction:column;align-items:flex-end;gap:2px;width:100%;min-width:0;max-width:100%;display:flex}.vLcJoa_menuCopy strong{font-size:var(--dsh-spatial-menu-title-size,14px);line-height:var(--dsh-spatial-menu-title-line-height,20px);font-weight:570}.vLcJoa_menuCopy span{width:100%;max-width:100%;color:var(--dsw-alias-label-tertiary);font-size:var(--dsh-spatial-menu-description-size,12px);line-height:var(--dsh-spatial-menu-description-line-height,18px);text-align:right;text-overflow:ellipsis;white-space:nowrap;display:block;overflow:hidden}";
+		const tagId$2 = "@aukora/face-apps/StockApps.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$2) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@aukora/face-apps";
-			tag.dataset.pluginCss = tagId$1;
-			tag.textContent = css$1;
+			tag.dataset.pluginCss = tagId$2;
+			tag.textContent = css$2;
 			document.head.appendChild(tag);
 		}
 		var StockApps_module_css_default = {
-			"embeddedFrame": "RjacUa_embeddedFrame",
-			"menuCopy": "RjacUa_menuCopy",
-			"surfaceSeat": "RjacUa_surfaceSeat"
+			"embeddedFrame": "vLcJoa_embeddedFrame",
+			"menuCopy": "vLcJoa_menuCopy",
+			"surfaceSeat": "vLcJoa_surfaceSeat"
 		};
 		//#endregion
 		//#region src/client/EmbeddedAppSurface.tsx
@@ -290,23 +290,23 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:RoomSurface.module.css.mjs
-		const css = ".XYW7pW_menuLauncher{width:100%}.XYW7pW_room.XYW7pW_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.XYW7pW_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.XYW7pW_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.XYW7pW_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.XYW7pW_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.XYW7pW_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.XYW7pW_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.XYW7pW_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.XYW7pW_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.XYW7pW_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.XYW7pW_meta time{color:var(--aukora-text-muted);font-size:11px}.XYW7pW_message[data-speaker=PETER] .XYW7pW_meta{justify-content:flex-end}.XYW7pW_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.XYW7pW_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.XYW7pW_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.XYW7pW_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.XYW7pW_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
-		const tagId = "@aukora/face-apps/RoomSurface.module.css";
-		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+		const css$1 = ".xzMNgW_menuLauncher{width:100%}.xzMNgW_room.xzMNgW_room{background:var(--aukora-background);box-sizing:border-box;color:var(--aukora-text);font-family:var(--dsw-font-family);flex-direction:column;gap:12px;padding:16px;display:flex}.xzMNgW_messages{overflow-anchor:none;flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.xzMNgW_message{--speaker-color:var(--aukora-text);align-self:flex-start;min-width:0;max-width:min(525px,82%)}.xzMNgW_message[data-speaker=PETER]{--speaker-color:var(--aukora-blue);align-self:flex-end}.xzMNgW_message[data-speaker=AUMA]{--speaker-color:var(--aukora-purple)}.xzMNgW_message[data-speaker=CLAUDE]{--speaker-color:var(--aukora-gold)}.xzMNgW_message[data-speaker=CODEX-DESKTOP]{--speaker-color:var(--aukora-green)}.xzMNgW_message[data-speaker=AUMA-CODEX]{--speaker-color:var(--aukora-gold)}.xzMNgW_message[data-speaker=GROK]{--speaker-color:var(--aukora-purple)}.xzMNgW_meta{color:var(--speaker-color);flex-wrap:wrap;align-items:baseline;gap:8px;padding:0 16px 4px;font-size:12px;line-height:18px;display:flex}.xzMNgW_meta time{color:var(--aukora-text-muted);font-size:11px}.xzMNgW_message[data-speaker=PETER] .xzMNgW_meta{justify-content:flex-end}.xzMNgW_bubble{border-color:color-mix(in srgb, var(--speaker-color) 30%, transparent);white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 16px;font-size:16px;line-height:24px}.xzMNgW_composer{box-sizing:border-box;flex-direction:column;flex:none;width:100%;padding:12px 12px 10px;display:flex}.xzMNgW_composer textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.xzMNgW_composer textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:4px}.xzMNgW_composer textarea[aria-invalid=true]{outline:2px solid var(--aukora-red-warning);outline-offset:4px}";
+		const tagId$1 = "@aukora/face-apps/RoomSurface.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId$1) + "]") === null) {
 			const tag = document.createElement("style");
 			tag.dataset.plugin = "@aukora/face-apps";
-			tag.dataset.pluginCss = tagId;
-			tag.textContent = css;
+			tag.dataset.pluginCss = tagId$1;
+			tag.textContent = css$1;
 			document.head.appendChild(tag);
 		}
 		var RoomSurface_module_css_default = {
-			"bubble": "XYW7pW_bubble",
-			"composer": "XYW7pW_composer",
-			"menuLauncher": "XYW7pW_menuLauncher",
-			"message": "XYW7pW_message",
-			"messages": "XYW7pW_messages",
-			"meta": "XYW7pW_meta",
-			"room": "XYW7pW_room"
+			"bubble": "xzMNgW_bubble",
+			"composer": "xzMNgW_composer",
+			"menuLauncher": "xzMNgW_menuLauncher",
+			"message": "xzMNgW_message",
+			"messages": "xzMNgW_messages",
+			"meta": "xzMNgW_meta",
+			"room": "xzMNgW_room"
 		};
 		//#endregion
 		//#region src/client/RoomSurface.tsx
@@ -514,6 +514,533 @@ window.__ModuleLoader__.load({
 			return props.activeSurface === "human-graph" ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MountedGraph, { ...props }) : null;
 		}
 		//#endregion
+		//#region \0dsh-css:MediaSurface.module.css.mjs
+		const css = ".M7-9na_surface.M7-9na_surface{color:var(--aukora-text);font-family:var(--dsw-font-family);background:0 0;overflow:auto;container:M7-9na_media-seat/inline-size}.M7-9na_content{box-sizing:border-box;min-width:0;max-width:1280px;margin:0 auto;padding:28px}.M7-9na_header{gap:12px;margin-bottom:24px}.M7-9na_header h1{letter-spacing:-.5px;margin:0;font-size:24px;font-weight:570;line-height:32px}.M7-9na_brandIcon{width:40px;height:40px;color:var(--aukora-blue);border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);border-radius:var(--aukora-radius);place-items:center;display:grid}.M7-9na_headerActions{gap:8px;margin-left:auto;display:flex}.M7-9na_workspace{grid-template-columns:minmax(280px,.9fr) minmax(0,1.3fr);align-items:stretch;gap:18px;display:grid}.M7-9na_composer,.M7-9na_preview,.M7-9na_gallery{background:color-mix(in srgb, var(--aukora-surface) 40%, transparent)}.M7-9na_composer{flex-direction:column;gap:22px;padding:20px;display:flex}.M7-9na_modeSwitch{grid-template-columns:1fr 1fr;gap:8px;display:grid}.M7-9na_modeSwitch button{background:0 0;min-height:40px}.M7-9na_editor{flex-direction:column;min-width:0;display:flex}.M7-9na_promptLabel,.M7-9na_field,.M7-9na_audio{color:var(--aukora-text-secondary);font-size:12px;line-height:18px}.M7-9na_promptLabel{margin-bottom:10px}.M7-9na_prompt{box-sizing:border-box;border:1px solid var(--aukora-border);width:100%;min-height:138px;max-height:260px;color:var(--aukora-text);font:inherit;resize:vertical;background:0 0;border-radius:10px;padding:14px;font-size:14px;line-height:22px;display:block}.M7-9na_prompt::placeholder{color:var(--aukora-text-muted)}.M7-9na_controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;margin-top:20px;display:grid}.M7-9na_field{flex-direction:column;gap:7px;min-width:0;display:flex}.M7-9na_model{grid-column:1/-1}.M7-9na_field select,.M7-9na_field input{box-sizing:border-box;border:1px solid var(--aukora-border);width:100%;min-width:0;min-height:40px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;padding:8px 10px;font-size:13px;line-height:20px}.M7-9na_field select{cursor:pointer;color-scheme:dark}.M7-9na_field option{background:var(--aukora-surface);color:var(--aukora-text)}.M7-9na_field input:disabled{opacity:.45;cursor:not-allowed}.M7-9na_audio{justify-content:space-between;align-self:end;align-items:center;min-height:40px;display:flex}.M7-9na_audio input{appearance:none;box-sizing:border-box;border:1px solid var(--aukora-border);cursor:pointer;background:0 0;border-radius:20px;width:34px;height:20px;margin:0}.M7-9na_audio input:before{content:\"\";background:var(--aukora-text-muted);border-radius:50%;width:12px;height:12px;margin:3px;transition:transform .16s;display:block}.M7-9na_audio input:checked{border-color:color-mix(in srgb, var(--aukora-green) 50%, transparent);background:color-mix(in srgb, var(--aukora-green) 12%, transparent)}.M7-9na_audio input:checked:before{background:var(--aukora-green);transform:translate(14px)}.M7-9na_prompt:focus-visible,.M7-9na_field select:focus-visible,.M7-9na_audio input:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:3px}.M7-9na_generateArea{margin-top:auto}.M7-9na_generate{background:0 0;width:100%;min-height:44px}.M7-9na_reason{color:var(--aukora-text-muted);text-align:center;text-wrap:balance;margin:10px 0 0;font-size:11px;line-height:17px}.M7-9na_preview{flex-direction:column;min-height:390px;padding:20px;display:flex}.M7-9na_previewHeader{flex-wrap:wrap;justify-content:space-between;gap:8px}.M7-9na_previewHeader h2,.M7-9na_galleryHeader h2,.M7-9na_settingsHeader h2{margin:0;font-size:14px;font-weight:570;line-height:20px}.M7-9na_previewHeader>span{color:var(--aukora-text-muted);font-size:11px}.M7-9na_dot{color:var(--aukora-purple);margin:0 7px}.M7-9na_previewCanvas{flex-direction:column;flex:1;justify-content:center;align-items:center;gap:20px;min-width:0;padding:28px 4px;display:flex}.M7-9na_emptyFrame{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 22%, transparent);background:radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--aukora-green) 7%, transparent), transparent 60%), radial-gradient(ellipse at 90% 95%, color-mix(in srgb, var(--aukora-purple) 9%, transparent), transparent 60%);border-radius:12px;flex:none;place-items:center;max-width:100%;display:grid;position:relative}.M7-9na_emptyFrame:after{content:\"\";border:1px dashed color-mix(in srgb, var(--aukora-blue) 12%, transparent);border-radius:5px;position:absolute;inset:12px}.M7-9na_emptyIcon{border:1px solid color-mix(in srgb, var(--aukora-blue) 25%, transparent);width:62px;height:62px;color:var(--aukora-blue);border-radius:18px;place-items:center;display:grid}.M7-9na_emptyIcon svg{width:28px;height:28px}.M7-9na_emptyCaption{color:var(--aukora-text-muted);font-size:12px;line-height:18px}.M7-9na_gallery{margin-top:18px;padding:18px 20px}.M7-9na_galleryHeader{gap:10px}.M7-9na_count{color:var(--aukora-text-muted);margin-left:auto;font-size:12px}.M7-9na_galleryEmpty{color:var(--aukora-text-muted);justify-content:center;align-items:center;gap:12px;padding:26px 8px 12px;font-size:12px;display:flex}.M7-9na_galleryGlyph{border:1px dashed color-mix(in srgb, var(--aukora-purple) 25%, transparent);width:36px;height:36px;color:var(--aukora-purple);border-radius:10px;place-items:center;display:grid}.M7-9na_purple{color:var(--aukora-purple);display:inline-flex}.M7-9na_gold{color:var(--aukora-gold);display:inline-flex}.M7-9na_dialog{width:min(440px,100vw - 32px);max-height:calc(100dvh - 32px);color:var(--aukora-text);font-family:var(--dsw-font-family);border-radius:var(--aukora-radius);background:0 0;border:0;padding:0;overflow:auto}.M7-9na_dialog::backdrop{background:var(--aukora-backdrop);backdrop-filter:blur(5px)}.M7-9na_settingsPanel{background:var(--dsw-alias-bg-layer-1,var(--aukora-surface));padding:24px}.M7-9na_settingsHeader{gap:10px}.M7-9na_settingsHeader button{min-width:32px;margin-left:auto;padding:6px}.M7-9na_provider{color:var(--aukora-text-secondary);flex-wrap:wrap;justify-content:space-between;gap:8px;margin:24px 0;font-size:13px;display:flex}.M7-9na_disconnected{color:var(--aukora-gold);font-size:12px}.M7-9na_settingsPanel .M7-9na_field+.M7-9na_field{margin-top:16px}.M7-9na_settingsReason{color:var(--aukora-text-secondary);margin:18px 0 24px;font-size:12px;line-height:19px}.M7-9na_settingsActions{flex-wrap:wrap;justify-content:flex-end;gap:8px;display:flex}@container M7-9na_media-seat (width<=700px){.M7-9na_content{padding:20px}.M7-9na_workspace{grid-template-columns:minmax(0,1fr)}.M7-9na_preview{min-height:350px}}@container M7-9na_media-seat (width<=380px){.M7-9na_content{padding:12px}.M7-9na_header{gap:8px}.M7-9na_header h1{font-size:20px}.M7-9na_headerActions{gap:6px}.M7-9na_headerActions button{padding:6px 8px}.M7-9na_brandIcon{display:none}.M7-9na_composer,.M7-9na_preview{padding:16px}}@media (prefers-reduced-motion:reduce){.M7-9na_audio input:before{transition:none}}";
+		const tagId = "@aukora/face-apps/MediaSurface.module.css";
+		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
+			const tag = document.createElement("style");
+			tag.dataset.plugin = "@aukora/face-apps";
+			tag.dataset.pluginCss = tagId;
+			tag.textContent = css;
+			document.head.appendChild(tag);
+		}
+		var MediaSurface_module_css_default = {
+			"audio": "M7-9na_audio",
+			"brandIcon": "M7-9na_brandIcon",
+			"composer": "M7-9na_composer",
+			"content": "M7-9na_content",
+			"controls": "M7-9na_controls",
+			"count": "M7-9na_count",
+			"dialog": "M7-9na_dialog",
+			"disconnected": "M7-9na_disconnected",
+			"dot": "M7-9na_dot",
+			"editor": "M7-9na_editor",
+			"emptyCaption": "M7-9na_emptyCaption",
+			"emptyFrame": "M7-9na_emptyFrame",
+			"emptyIcon": "M7-9na_emptyIcon",
+			"field": "M7-9na_field",
+			"gallery": "M7-9na_gallery",
+			"galleryEmpty": "M7-9na_galleryEmpty",
+			"galleryGlyph": "M7-9na_galleryGlyph",
+			"galleryHeader": "M7-9na_galleryHeader",
+			"generate": "M7-9na_generate",
+			"generateArea": "M7-9na_generateArea",
+			"gold": "M7-9na_gold",
+			"header": "M7-9na_header",
+			"headerActions": "M7-9na_headerActions",
+			"media-seat": "M7-9na_media-seat",
+			"modeSwitch": "M7-9na_modeSwitch",
+			"model": "M7-9na_model",
+			"preview": "M7-9na_preview",
+			"previewCanvas": "M7-9na_previewCanvas",
+			"previewHeader": "M7-9na_previewHeader",
+			"prompt": "M7-9na_prompt",
+			"promptLabel": "M7-9na_promptLabel",
+			"provider": "M7-9na_provider",
+			"purple": "M7-9na_purple",
+			"reason": "M7-9na_reason",
+			"settingsActions": "M7-9na_settingsActions",
+			"settingsHeader": "M7-9na_settingsHeader",
+			"settingsPanel": "M7-9na_settingsPanel",
+			"settingsReason": "M7-9na_settingsReason",
+			"surface": "M7-9na_surface",
+			"workspace": "M7-9na_workspace"
+		};
+		//#endregion
+		//#region src/client/MediaSurface.tsx
+		const IMAGE_RATIOS = [
+			"1:1",
+			"2:3",
+			"3:2",
+			"3:4",
+			"4:3",
+			"7:9",
+			"9:7",
+			"9:16",
+			"16:9",
+			"21:9"
+		];
+		const VIDEO_RATIOS = [
+			"16:9",
+			"4:3",
+			"1:1",
+			"3:4",
+			"9:16",
+			"21:9"
+		];
+		const DURATIONS = Array.from({ length: 12 }, (_, index) => index + 4);
+		/** Small native outline glyphs; no remote media or simulated generation results. */
+		function MediaIcon({ kind }) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
+				width: "20",
+				height: "20",
+				viewBox: "0 0 24 24",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: "1.5",
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
+				"aria-hidden": "true",
+				children: [
+					kind === "image" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+							x: "3",
+							y: "3",
+							width: "18",
+							height: "18",
+							rx: "3"
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+							cx: "8",
+							cy: "8",
+							r: "1.5"
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m3 17 6-6 4 4 3-3 5 5" })
+					] }),
+					kind === "video" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+						x: "3",
+						y: "4",
+						width: "18",
+						height: "16",
+						rx: "3"
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m10 8 6 4-6 4Z" })] }),
+					kind === "settings" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M4 7h16M4 17h16" }),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+							cx: "9",
+							cy: "7",
+							r: "3"
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("circle", {
+							cx: "15",
+							cy: "17",
+							r: "3"
+						})
+					] }),
+					kind === "close" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "m6 6 12 12M6 18 18 6" }),
+					kind === "lock" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+						x: "5",
+						y: "10",
+						width: "14",
+						height: "11",
+						rx: "3"
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M8 10V7a4 4 0 0 1 8 0v3M12 15v2" })] }),
+					kind === "gallery" && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("rect", {
+						x: "7",
+						y: "7",
+						width: "14",
+						height: "14",
+						rx: "3"
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("path", { d: "M17 3H6a3 3 0 0 0-3 3v11M11 16l3-3 3 3" })] })
+				]
+			});
+		}
+		function MediaSettings({ t, onDismiss, trigger }) {
+			const dialog = (0, react.useRef)(null);
+			const form = (0, react.useRef)(null);
+			const id = (0, react.useId)();
+			(0, react.useLayoutEffect)(() => {
+				const element = dialog.current;
+				element?.showModal();
+				return () => {
+					form.current?.reset();
+					element?.close();
+					if (trigger.current?.closest("[data-active]")) trigger.current.focus();
+				};
+			}, [trigger]);
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("dialog", {
+				ref: dialog,
+				className: MediaSurface_module_css_default.dialog,
+				"aria-labelledby": `${id}-title`,
+				"aria-describedby": `${id}-reason`,
+				onCancel: (event) => {
+					event.preventDefault();
+					onDismiss();
+				},
+				onClick: (event) => {
+					if (event.target === event.currentTarget) onDismiss();
+				},
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
+					className: MediaSurface_module_css_default.settingsPanel,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
+							className: MediaSurface_module_css_default.settingsHeader,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: MediaSurface_module_css_default.gold,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "settings" })
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", {
+									id: `${id}-title`,
+									children: t("media.settings")
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+									autoFocus: true,
+									variant: "gold",
+									"aria-label": t("media.closeSettings"),
+									onClick: onDismiss,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "close" })
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: MediaSurface_module_css_default.provider,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "Higgsfield" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: MediaSurface_module_css_default.disconnected,
+								children: t("media.disconnected")
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("form", {
+							ref: form,
+							autoComplete: "off",
+							onSubmit: (event) => event.preventDefault(),
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+									className: MediaSurface_module_css_default.field,
+									children: [t("media.keyId"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										type: "text",
+										disabled: true,
+										defaultValue: "",
+										autoComplete: "off",
+										"aria-describedby": `${id}-reason`
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+									className: MediaSurface_module_css_default.field,
+									children: [t("media.keySecret"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+										type: "password",
+										disabled: true,
+										defaultValue: "",
+										autoComplete: "new-password",
+										"aria-describedby": `${id}-reason`
+									})]
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+									id: `${id}-reason`,
+									className: MediaSurface_module_css_default.settingsReason,
+									children: t("media.credentialsUnavailable")
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: MediaSurface_module_css_default.settingsActions,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+										variant: "gold",
+										onClick: onDismiss,
+										children: t("media.cancel")
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+										variant: "green",
+										disabled: true,
+										"aria-describedby": `${id}-reason`,
+										children: t("media.saveConnect")
+									})]
+								})
+							]
+						})
+					]
+				})
+			});
+		}
+		/** Native Apps seat. Draft controls are local only; provider and credential actions are unavailable. */
+		function MediaSurface({ activeSurface, closeSurface, t }) {
+			const active = activeSurface === "media";
+			const surface = (0, react.useRef)(null);
+			const settingsTrigger = (0, react.useRef)(null);
+			const imageTab = (0, react.useRef)(null);
+			const videoTab = (0, react.useRef)(null);
+			const id = (0, react.useId)();
+			const [mode, setMode] = (0, react.useState)("image");
+			const [drafts, setDrafts] = (0, react.useState)({
+				image: "",
+				video: ""
+			});
+			const [imageRatio, setImageRatio] = (0, react.useState)("1:1");
+			const [videoRatio, setVideoRatio] = (0, react.useState)("16:9");
+			const [videoResolution, setVideoResolution] = (0, react.useState)("1080p");
+			const [duration, setDuration] = (0, react.useState)(8);
+			const [audio, setAudio] = (0, react.useState)(true);
+			const [settingsOpen, setSettingsOpen] = (0, react.useState)(false);
+			const video = mode === "video";
+			const ratio = video ? videoRatio : imageRatio;
+			const [width = 1, height = 1] = ratio.split(":").map(Number);
+			(0, react.useEffect)(() => {
+				if (!active) {
+					setSettingsOpen(false);
+					const focused = document.activeElement;
+					if (focused instanceof HTMLElement && surface.current?.contains(focused)) focused.blur();
+					return;
+				}
+				const onKeyDown = (event) => {
+					if (event.key !== "Escape" || event.defaultPrevented || settingsOpen || isEditableTarget(event.target)) return;
+					event.preventDefault();
+					closeSurface();
+				};
+				document.addEventListener("keydown", onKeyDown);
+				return () => document.removeEventListener("keydown", onKeyDown);
+			}, [
+				active,
+				closeSurface,
+				settingsOpen
+			]);
+			const selectMode = (next, focus = false) => {
+				setMode(next);
+				if (focus) (next === "image" ? imageTab : videoTab).current?.focus();
+			};
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+				...active ? {} : { inert: "" },
+				ref: surface,
+				"data-stock-app": "media",
+				"data-active": active ? "" : void 0,
+				"aria-hidden": !active,
+				className: `${StockApps_module_css_default.surfaceSeat} ${MediaSurface_module_css_default.surface}`,
+				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+					className: MediaSurface_module_css_default.content,
+					children: [
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
+							className: MediaSurface_module_css_default.header,
+							children: [
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: MediaSurface_module_css_default.brandIcon,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "gallery" })
+								}),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h1", { children: t("media.name") }),
+								/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: MediaSurface_module_css_default.headerActions,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.ActionButton, {
+										ref: settingsTrigger,
+										variant: "gold",
+										onClick: () => setSettingsOpen(true),
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "settings" }), t("media.settings")]
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+										variant: "blue",
+										"aria-label": t("media.close"),
+										onClick: closeSurface,
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "close" })
+									})]
+								})
+							]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+							className: MediaSurface_module_css_default.workspace,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
+								className: MediaSurface_module_css_default.composer,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: MediaSurface_module_css_default.modeSwitch,
+										role: "tablist",
+										"aria-label": t("media.mode"),
+										onKeyDown: (event) => {
+											if (![
+												"ArrowLeft",
+												"ArrowRight",
+												"Home",
+												"End"
+											].includes(event.key)) return;
+											event.preventDefault();
+											selectMode(event.key === "Home" ? "image" : event.key === "End" ? "video" : video ? "image" : "video", true);
+										},
+										children: ["image", "video"].map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.ActionButton, {
+											ref: value === "image" ? imageTab : videoTab,
+											role: "tab",
+											id: `${id}-${value}-tab`,
+											"aria-selected": mode === value,
+											"aria-controls": `${id}-editor`,
+											tabIndex: mode === value ? 0 : -1,
+											"aria-pressed": mode === value,
+											variant: value === "image" ? "blue" : "purple",
+											onClick: () => selectMode(value),
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: value }), t(value === "image" ? "media.image" : "media.video")]
+										}, value))
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										id: `${id}-editor`,
+										role: "tabpanel",
+										"aria-labelledby": `${id}-${mode}-tab`,
+										className: MediaSurface_module_css_default.editor,
+										children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("label", {
+												className: MediaSurface_module_css_default.promptLabel,
+												htmlFor: `${id}-prompt`,
+												children: t("media.prompt")
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("textarea", {
+												id: `${id}-prompt`,
+												className: MediaSurface_module_css_default.prompt,
+												rows: 5,
+												value: drafts[mode],
+												maxLength: video ? 4e3 : 800,
+												placeholder: t(video ? "media.videoPlaceholder" : "media.imagePlaceholder"),
+												onChange: (event) => setDrafts((previous) => ({
+													...previous,
+													[mode]: event.target.value
+												}))
+											}),
+											/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+												className: MediaSurface_module_css_default.controls,
+												children: [
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+														className: `${MediaSurface_module_css_default.field} ${MediaSurface_module_css_default.model}`,
+														children: [t("media.model"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+															value: video ? "seedance2" : "z-image-turbo",
+															onChange: () => {},
+															children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", {
+																value: video ? "seedance2" : "z-image-turbo",
+																children: video ? "Seedance 2.0" : "Z-Image Turbo"
+															})
+														})]
+													}),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+														className: MediaSurface_module_css_default.field,
+														children: [t("media.ratio"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+															value: ratio,
+															onChange: (event) => (video ? setVideoRatio : setImageRatio)(event.target.value),
+															children: (video ? VIDEO_RATIOS : IMAGE_RATIOS).map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", { children: value }, value))
+														})]
+													}),
+													/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+														className: MediaSurface_module_css_default.field,
+														children: [t("media.resolution"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+															value: video ? videoResolution : "1k",
+															onChange: (event) => {
+																if (video) setVideoResolution(event.target.value);
+															},
+															children: (video ? [
+																"480p",
+																"720p",
+																"1080p",
+																"4k"
+															] : ["1k"]).map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("option", { children: value }, value))
+														})]
+													}),
+													video && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+														className: MediaSurface_module_css_default.field,
+														children: [t("media.duration"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("select", {
+															value: duration,
+															onChange: (event) => setDuration(Number(event.target.value)),
+															children: DURATIONS.map((value) => /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("option", {
+																value,
+																children: [value, " s"]
+															}, value))
+														})]
+													}),
+													video && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("label", {
+														className: MediaSurface_module_css_default.audio,
+														children: [t("media.audio"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+															type: "checkbox",
+															role: "switch",
+															checked: audio,
+															onChange: (event) => setAudio(event.target.checked)
+														})]
+													})
+												]
+											})
+										]
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+										className: MediaSurface_module_css_default.generateArea,
+										children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.ActionButton, {
+											className: MediaSurface_module_css_default.generate,
+											variant: "green",
+											disabled: true,
+											"aria-describedby": `${id}-unavailable`,
+											children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "lock" }), t("media.generate")]
+										}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+											id: `${id}-unavailable`,
+											className: MediaSurface_module_css_default.reason,
+											children: t("media.generationUnavailable")
+										})]
+									})
+								]
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
+								className: MediaSurface_module_css_default.preview,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
+									className: MediaSurface_module_css_default.previewHeader,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", { children: t("media.preview") }), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", { children: [
+										ratio,
+										/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: MediaSurface_module_css_default.dot,
+											children: "·"
+										}),
+										video ? videoResolution : "1k",
+										video && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [
+											/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+												className: MediaSurface_module_css_default.dot,
+												children: "·"
+											}),
+											duration,
+											" s"
+										] })
+									] })]
+								}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+									className: MediaSurface_module_css_default.previewCanvas,
+									children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
+										className: MediaSurface_module_css_default.emptyFrame,
+										"data-media-ratio": ratio,
+										style: {
+											aspectRatio: `${width} / ${height}`,
+											width: `min(100%, ${280 * width / height}px)`
+										},
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+											className: MediaSurface_module_css_default.emptyIcon,
+											children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: mode })
+										})
+									}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: MediaSurface_module_css_default.emptyCaption,
+										children: t("media.noPreview")
+									})]
+								})]
+							})]
+						}),
+						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.Panel, {
+							className: MediaSurface_module_css_default.gallery,
+							children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)(_aukora_face_layout_client.SectionHeader, {
+								className: MediaSurface_module_css_default.galleryHeader,
+								children: [
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: MediaSurface_module_css_default.purple,
+										children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "gallery" })
+									}),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("h2", { children: t("media.gallery") }),
+									/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+										className: MediaSurface_module_css_default.count,
+										children: "0"
+									})
+								]
+							}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
+								className: MediaSurface_module_css_default.galleryEmpty,
+								children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: MediaSurface_module_css_default.galleryGlyph,
+									children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaIcon, { kind: "image" })
+								}), t("media.noGenerations")]
+							})]
+						})
+					]
+				}), active && settingsOpen && /* @__PURE__ */ (0, react_jsx_runtime.jsx)(MediaSettings, {
+					t,
+					onDismiss: () => setSettingsOpen(false),
+					trigger: settingsTrigger
+				})]
+			});
+		}
+		//#endregion
 		//#region src/client/DakiniCode.tsx
 		/** Render the independent Dakini Code app launcher. */
 		function DakiniCodeMenu({ activeSurface, openSurface, t }) {
@@ -573,17 +1100,24 @@ window.__ModuleLoader__.load({
 			copy: "humanGraph",
 			presentation: "full-bleed"
 		};
+		const MEDIA_APP = {
+			id: "media",
+			copy: "media",
+			presentation: "contained"
+		};
 		const STOCK_APPS = [
 			AUMA_LANGUAGE_APP,
 			AUMA_LIVE_APP,
 			ZETA_HARP_APP,
 			AUMA_CANVAS_APP,
 			ROOM_APP,
-			HUMAN_GRAPH_APP
+			HUMAN_GRAPH_APP,
+			MEDIA_APP
 		];
 		function StockAppMenu({ spec, activeSurface, openSurface, t }) {
 			const active = activeSurface === spec.id;
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
+				"aria-label": t(`${spec.copy}.name`),
 				type: "button",
 				"data-stock-app-launcher": spec.id,
 				"aria-current": active ? "page" : void 0,
@@ -592,7 +1126,7 @@ window.__ModuleLoader__.load({
 				},
 				children: /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 					className: StockApps_module_css_default.menuCopy,
-					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), spec.copy !== "room" && spec.copy !== "humanGraph" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: t(`${spec.copy}.name`) }), spec.copy !== "room" && spec.copy !== "humanGraph" && spec.copy !== "media" && /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: t(`${spec.copy}.menu`) })]
 				})
 			});
 		}
@@ -630,11 +1164,44 @@ window.__ModuleLoader__.load({
 				spec: HUMAN_GRAPH_APP
 			});
 		}
+		function MediaMenu(props) {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsx)(StockAppMenu, {
+				...props,
+				spec: MEDIA_APP
+			});
+		}
 		//#endregion
 		//#region src/client/locales.ts
 		/** Stock-app launcher, surface, and interaction dictionaries. */
 		/** Simplified Chinese dictionary (the key-set source of truth). */
 		const zh = {
+			"media.name": "媒体",
+			"media.settings": "设置",
+			"media.closeSettings": "关闭媒体设置",
+			"media.close": "关闭媒体",
+			"media.disconnected": "未连接",
+			"media.keyId": "Higgsfield Key ID",
+			"media.keySecret": "Higgsfield Key Secret",
+			"media.credentialsUnavailable": "接入安全的服务端凭据存储后才能输入密钥和连接。请暂时不要输入密钥。",
+			"media.cancel": "取消",
+			"media.saveConnect": "保存并连接",
+			"media.mode": "媒体类型",
+			"media.image": "图像",
+			"media.video": "视频",
+			"media.prompt": "提示词",
+			"media.imagePlaceholder": "描述画面、光线和构图…",
+			"media.videoPlaceholder": "描述场景、动作和镜头运动…",
+			"media.model": "模型",
+			"media.ratio": "画面比例",
+			"media.resolution": "分辨率",
+			"media.duration": "时长",
+			"media.audio": "生成音频",
+			"media.generate": "生成",
+			"media.generationUnavailable": "未连接。接入安全凭据和生成服务后才能生成。",
+			"media.preview": "预览",
+			"media.noPreview": "暂无预览",
+			"media.gallery": "作品库",
+			"media.noGenerations": "尚无生成作品",
 			"humanGraph.name": "人际图谱",
 			"room.name": "房间",
 			"room.message": "房间消息",
@@ -679,6 +1246,33 @@ window.__ModuleLoader__.load({
 		};
 		/** English dictionary, checked complete against the Chinese key set. */
 		const en = {
+			"media.name": "Media",
+			"media.settings": "Settings",
+			"media.closeSettings": "Close Media settings",
+			"media.close": "Close Media",
+			"media.disconnected": "Not connected",
+			"media.keyId": "Higgsfield Key ID",
+			"media.keySecret": "Higgsfield Key Secret",
+			"media.credentialsUnavailable": "Key entry and connection will be available after secure server-side credential storage is wired. Do not enter keys yet.",
+			"media.cancel": "Cancel",
+			"media.saveConnect": "Save & connect",
+			"media.mode": "Media type",
+			"media.image": "Image",
+			"media.video": "Video",
+			"media.prompt": "Prompt",
+			"media.imagePlaceholder": "Describe the subject, light, and composition…",
+			"media.videoPlaceholder": "Describe the scene, action, and camera movement…",
+			"media.model": "Model",
+			"media.ratio": "Aspect ratio",
+			"media.resolution": "Resolution",
+			"media.duration": "Duration",
+			"media.audio": "Generate audio",
+			"media.generate": "Generate",
+			"media.generationUnavailable": "Not connected. Generation requires secure credentials and a generation service.",
+			"media.preview": "Preview",
+			"media.noPreview": "No preview yet",
+			"media.gallery": "Gallery",
+			"media.noGenerations": "No generations yet",
 			"humanGraph.name": "Human Graph",
 			"room.name": "Room",
 			"room.message": "Room message",
@@ -772,6 +1366,11 @@ window.__ModuleLoader__.load({
 					app: STOCK_APPS[5],
 					Menu: HumanGraphMenu,
 					Surface: HumanGraphSurface
+				},
+				{
+					app: STOCK_APPS[6],
+					Menu: MediaMenu,
+					Surface: MediaSurface
 				}
 			].forEach(({ app, Menu, Surface }, index) => {
 				ctx.slots.inject("shell.menu.apps", () => ctx.slots.register({

@@ -435,6 +435,128 @@ var RoomHttp = class {
 	}
 };
 //#endregion
+//#region lib/types/auma-live/disclosure.js
+/** Every class, in one place, **so a policy can be checked for completeness rather than trusted.** */
+const DATA_CLASSES = Object.freeze([
+	"turn-text",
+	"history",
+	"screen",
+	"repo",
+	"web",
+	"identity",
+	"organism-state",
+	"memory"
+]);
+/** Read-only setup facts, never an admission or configuration write. */
+function providerSetupOf(consent, policy) {
+	const recipient = typeof policy?.recipient === "string" && policy.recipient.length <= 253 && /^[a-z0-9][a-z0-9.-]*$/iu.test(policy.recipient) ? policy.recipient : null;
+	const classes = policy?.allowed;
+	const allowed = recipient !== null && Array.isArray(classes) ? DATA_CLASSES.filter((value) => classes.includes(value)) : [];
+	return {
+		consentEnabled: consent === true,
+		recipient,
+		allowed,
+		nativeSdkProviders: [{
+			id: "codex",
+			available: false,
+			reason: "AUKORA_NATIVE_CONFINEMENT_UNWIRED: subagent-codex child startup refused until its SDK launch closure enforces native confinement"
+		}, {
+			id: "claude-code",
+			available: false,
+			reason: "AUKORA_NATIVE_CONFINEMENT_UNWIRED: subagent-claude-code child startup refused until its SDK launch closure enforces native confinement"
+		}]
+	};
+}
+Object.freeze({
+	recipient: "openrouter.ai",
+	allowed: Object.freeze(["turn-text", "history"])
+});
+/** **THE ONE SENTENCE A REFUSAL SAYS OUT LOUD**, so every refusal path sounds the same to him. */
+const REFUSED_SO_SAY = "I can't send that.";
+/**
+* **THE CHECKPOINT. EVERY PROVIDER CALL PASSES HERE BEFORE THE REQUEST EXISTS.**
+*
+* @param disclosure - what the caller is about to send.
+* @param policy - **the release policy, read from its shipped file.** *Not merged with a default and not widened here.*
+* @returns whether it may go, **and on a refusal the class and recipient by name.**
+*/
+function admitDisclosure(disclosure, policy) {
+	if (disclosure === null || typeof disclosure !== "object") return refuse("the disclosure is not an object", "malformed-disclosure");
+	if (!DATA_CLASSES.includes(disclosure.dataClass)) return refuse(`the data class ${JSON.stringify(disclosure.dataClass)} is not one this build discloses`, "unknown-data-class");
+	if (typeof disclosure.recipient !== "string" || disclosure.recipient === "") return refuse("the disclosure names no recipient", "no-recipient");
+	if (typeof disclosure.purpose !== "string" || disclosure.purpose.trim() === "") return refuse(`a ${disclosure.dataClass} disclosure was attempted with no purpose`, "no-purpose");
+	if (typeof disclosure.retention !== "string" || disclosure.retention.trim() === "") return refuse(`a ${disclosure.dataClass} disclosure was attempted with no retention expectation`, "no-retention");
+	if (disclosure.transport !== "https") return refuse(`the transport ${JSON.stringify(disclosure.transport)} is not one this build uses`, "bad-transport");
+	if (typeof disclosure.maxScope !== "number" || !Number.isFinite(disclosure.maxScope) || disclosure.maxScope <= 0) return refuse(`the ${disclosure.dataClass} disclosure states no positive byte scope`, "no-scope");
+	const policyRecipient = typeof policy?.recipient === "string" ? policy.recipient : "";
+	const allowed = Array.isArray(policy?.allowed) ? policy.allowed : [];
+	if (policyRecipient === "" || allowed.length === 0) return refuse("no owner policy is loaded, so nothing is pre-authorised", "no-policy");
+	if (disclosure.recipient !== policyRecipient) return refuse(`the ${disclosure.dataClass} disclosure is addressed to ${disclosure.recipient}, and the owner's policy names ${policyRecipient}`, "recipient-not-in-policy");
+	if (!allowed.includes(disclosure.dataClass)) return refuse(`${disclosure.dataClass} is not pre-authorised for ${disclosure.recipient}; the owner's policy allows ${allowed.join(", ")}`, "class-not-in-policy");
+	return {
+		allowed: true,
+		disclosure
+	};
+}
+/** **THE ONE PLACE A REFUSAL IS BUILT**, *so every path carries a machine name and a human sentence.* */
+function refuse(why, code) {
+	return {
+		allowed: false,
+		why: `${code}: ${why}`,
+		soSay: REFUSED_SO_SAY
+	};
+}
+/**
+* **PARSE THE RELEASE POLICY FILE. UNREADABLE OR MALFORMED MEANS NOTHING IS AUTHORISED.**
+*
+* *A policy that cannot be read is not an empty policy and it is not the default policy* — **it is a state in which this
+* process does not know what the owner permits, and the only safe reading of that is "send nothing".** *Returning
+* {@link DEFAULT_POLICY} here would be the fail-open pin: a deleted file would silently restore classes he may have removed.*
+*
+* @param raw - the file's bytes, or `undefined` when it is not there.
+*/
+function readOwnerPolicy(raw) {
+	const empty = {
+		recipient: "",
+		allowed: Object.freeze([])
+	};
+	if (raw === void 0 || raw.trim() === "") return empty;
+	let parsed;
+	try {
+		parsed = JSON.parse(raw);
+	} catch {
+		return empty;
+	}
+	if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return empty;
+	const document = parsed;
+	const recipient = typeof document.recipient === "string" ? document.recipient : "";
+	if (recipient === "" || recipient.trim() !== recipient || !Array.isArray(document.allowed) || !document.allowed.every((one) => DATA_CLASSES.includes(one))) return empty;
+	return {
+		recipient,
+		allowed: Object.freeze([...document.allowed])
+	};
+}
+/** Read only the release-shipped file. Missing/unreadable bytes authorise nothing; no fallback or override. */
+function readOwnerPolicyText(options) {
+	const read = options.read ?? ((file) => readFileSync(file, "utf8"));
+	try {
+		return {
+			text: read(options.release),
+			source: options.release
+		};
+	} catch (error) {
+		return {
+			text: void 0,
+			source: options.release,
+			problem: String(error?.message ?? error)
+		};
+	}
+}
+/** What a disclosure's byte cost is, **measured from the text rather than estimated**, so the ceiling means something. */
+function bytesOf(text) {
+	return typeof text === "string" ? new TextEncoder().encode(text).length : 0;
+}
+//#endregion
 //#region lib/types/auma-live/presence-deps.js
 /**
 * THE ONE PLACE THE PRESENCE ENGINE'S DEPENDENCIES ARE ASSEMBLED.
@@ -648,35 +770,66 @@ function ensureStoreDirectory(dshHome) {
 	} catch {}
 	return directory;
 }
-/**
-* Append one request, durably.
-*
-* **`fsync` BEFORE RETURNING, BECAUSE THE POINT OF THE RECORD IS SURVIVING THE CRASH THAT LOSES THE ANSWER.**
-* A write that is still in the page cache when the process dies is not a record of anything. The record is
-* flushed before dispatch for exactly that reason; a buffered append would quietly undo it.
-*
-* @param options - the home, the session, the request payload and the time it was recorded.
-* @returns the path written to.
-*/
-function appendModelRequest({ dshHome, sessionId, request, spokenAt = Date.now() }) {
+function requestPayload(request) {
+	return request?.body?.messages === void 0 ? request : request.body;
+}
+/** Append durably and locate this append's unique line, never the session's newest line. */
+function appendModelRequestReceipt({ dshHome, sessionId, request, spokenAt = Date.now() }) {
 	if (typeof dshHome !== "string" || dshHome === "") throw new Error("model-request-store: dshHome is required and is never assumed; pass the home this app was configured with");
 	ensureStoreDirectory(dshHome);
 	const path = storePath(dshHome, sessionId);
-	const payload = request?.body?.messages === void 0 ? request : request.body;
-	const line = `${JSON.stringify({
+	if (!Number.isFinite(spokenAt) || Math.abs(spokenAt) > 864e13) throw new Error("model-request-store: invalid time");
+	const payload = requestPayload(request);
+	const canonical = JSON.stringify({
 		type: LEGACY_EVENT_TYPE,
 		spokenAt,
+		requestId: randomUUID(),
 		body: payload
-	})}\n`;
+	});
+	const line = `${canonical}\n`;
 	const descriptor = openSync(path, "a", 384);
 	try {
 		fchmodSync(descriptor, 384);
-		writeSync(descriptor, line);
+		if (writeSync(descriptor, line) !== Buffer.byteLength(line)) throw new Error("model-request-store: incomplete append; dispatch refused");
 		fsyncSync(descriptor);
 	} finally {
 		closeSync(descriptor);
 	}
-	return path;
+	const lines = readFileSync(path, "utf8").split("\n");
+	const index = lines.indexOf(canonical);
+	if (index < 0 || lines.lastIndexOf(canonical) !== index) throw new Error("model-request-store: appended line cannot be bound uniquely; dispatch refused");
+	return Object.freeze({
+		sessionId,
+		line: canonical,
+		turn: index + 1,
+		spokenAt
+	});
+}
+/** Validate a recorder's result against the exact request before provider dispatch. */
+function modelRequestReceiptMatches(receipt, request) {
+	if (receipt === null || typeof receipt !== "object") return false;
+	const record = receipt;
+	if (record.sessionId !== request.sessionId || !Number.isSafeInteger(record.turn) || record.turn < 1 || !Number.isFinite(record.spokenAt) || Math.abs(record.spokenAt) > 864e13 || typeof record.line !== "string" || /[\r\n]/u.test(record.line)) return false;
+	try {
+		const event = JSON.parse(record.line);
+		return event.type === "auma-live/model-request" && event.spokenAt === record.spokenAt && typeof event.requestId === "string" && /^[0-9a-f-]{36}$/u.test(event.requestId) && JSON.stringify(event.body) === JSON.stringify(request.body);
+	} catch {
+		return false;
+	}
+}
+/** Recheck the captured physical position. Never substitute another line when it is missing or changed. */
+function readRecordedModelRequest({ dshHome, sessionId, receipt }) {
+	if (typeof dshHome !== "string" || dshHome === "" || receipt === void 0) return void 0;
+	try {
+		const body = JSON.parse(receipt.line).body;
+		if (!modelRequestReceiptMatches(receipt, {
+			sessionId,
+			body
+		})) return void 0;
+		return readFileSync(storePath(dshHome, sessionId), "utf8").split("\n")[receipt.turn - 1] === receipt.line ? receipt : void 0;
+	} catch {
+		return;
+	}
 }
 /**
 * The newest restorable request for one session, from HER file.
@@ -747,61 +900,11 @@ function isLegacyModelRequest(event) {
 * it had been recorded.** An advertised boundary that the only implementation cannot fail is not a boundary.
 *
 * @param options - the home, the session and the request about to be sent.
-* @returns the path written to.
+* @returns this append's canonical line and physical position.
 */
 function recordOrRefuse(options) {
 	if (typeof options.dshHome !== "string" || options.dshHome === "") throw new Error("model-request-store: no home is configured, so this dispatch cannot be secured before it is sent and must not be sent");
-	return appendModelRequest(options);
-}
-/**
-* **THE NEWEST RECORD AS THE STORE HOLDS IT — THE LINE ITSELF, AND WHICH LINE IT IS.**
-*
-* `readNewestModelRequest` answers *"what should she remember"* and returns the parsed body. **KIRA's turn-finished
-* consumer needs two different things from the same file, and neither is the body:**
-*
-* - **`line`** — *"the EXACT canonical event line, byte for byte."* **A receipt is a digest of those bytes**, so a
-*   reconstructed line mints a receipt that reads CHANGED the first time anyone verifies it, **which looks like
-*   tampering rather than a mismatch.** This returns the line as it was written, not a re-serialisation of it.
-* - **`turn`** — the key a LATER verifier uses to find that line. `memory-verify.mjs` calls
-*   `readEventLine({sessionId, citedTurn})` and a record whose line cannot be produced **verifies as MISSING.**
-*
-* **THE INDEX IS THE KEY, AND IT IS ONE-BASED.** A line's position in an append-only file is monotonic, **stable
-* across restarts because it is a property of the file rather than of any process**, and derivable by a reader that
-* can count to it. **A process-local counter has none of those three properties** — it resets, repeats, and a repeat is
-* dropped by the consumer as a duplicate turn.
-*
-* **A DAMAGED TAIL IS SKIPPED RATHER THAN THROWING**, matching `readNewestModelRequest`: the payload crossed a durable
-* file boundary, and one bad line must not cost her the conversation. **But the INDEX RETURNED IS THE DAMAGED LINE'S
-* OWN POSITION** — not a re-count of the good ones — **because it has to match what a verifier counting the same file
-* will compute.**
-*
-* @param options - the home and the session.
-* @returns the line, its one-based position, and the instant it carries; or undefined when nothing is readable.
-*/
-function readNewestModelRequestLine({ dshHome, sessionId }) {
-	if (typeof dshHome !== "string" || dshHome === "") return void 0;
-	let raw;
-	try {
-		raw = readFileSync(storePath(dshHome, sessionId), "utf8");
-	} catch {
-		return;
-	}
-	const lines = raw.split("\n");
-	for (let index = lines.length - 1; index >= 0; index -= 1) {
-		const line = lines[index];
-		if (line === void 0 || line.trim() === "") continue;
-		try {
-			const parsed = JSON.parse(line);
-			if (typeof parsed.spokenAt !== "number") continue;
-			return {
-				line,
-				turn: index + 1,
-				spokenAt: parsed.spokenAt
-			};
-		} catch {
-			continue;
-		}
-	}
+	return appendModelRequestReceipt(options);
 }
 //#endregion
 //#region lib/types/auma-live/reply-manifest.js
@@ -1425,108 +1528,6 @@ const OUTSIDE_WORD_BLOCKS = Object.freeze([
 */
 function turnStartsWithUntrusted(blocks) {
 	return OUTSIDE_WORD_BLOCKS.some((name) => (blocks[name] ?? "").trim().length > 0);
-}
-//#endregion
-//#region lib/types/auma-live/disclosure.js
-/** Every class, in one place, **so a policy can be checked for completeness rather than trusted.** */
-const DATA_CLASSES = Object.freeze([
-	"turn-text",
-	"history",
-	"screen",
-	"repo",
-	"web",
-	"identity",
-	"organism-state",
-	"memory"
-]);
-Object.freeze({
-	recipient: "openrouter.ai",
-	allowed: Object.freeze(["turn-text", "history"])
-});
-/** **THE ONE SENTENCE A REFUSAL SAYS OUT LOUD**, so every refusal path sounds the same to him. */
-const REFUSED_SO_SAY = "I can't send that.";
-/**
-* **THE CHECKPOINT. EVERY PROVIDER CALL PASSES HERE BEFORE THE REQUEST EXISTS.**
-*
-* @param disclosure - what the caller is about to send.
-* @param policy - **the release policy, read from its shipped file.** *Not merged with a default and not widened here.*
-* @returns whether it may go, **and on a refusal the class and recipient by name.**
-*/
-function admitDisclosure(disclosure, policy) {
-	if (disclosure === null || typeof disclosure !== "object") return refuse("the disclosure is not an object", "malformed-disclosure");
-	if (!DATA_CLASSES.includes(disclosure.dataClass)) return refuse(`the data class ${JSON.stringify(disclosure.dataClass)} is not one this build discloses`, "unknown-data-class");
-	if (typeof disclosure.recipient !== "string" || disclosure.recipient === "") return refuse("the disclosure names no recipient", "no-recipient");
-	if (typeof disclosure.purpose !== "string" || disclosure.purpose.trim() === "") return refuse(`a ${disclosure.dataClass} disclosure was attempted with no purpose`, "no-purpose");
-	if (typeof disclosure.retention !== "string" || disclosure.retention.trim() === "") return refuse(`a ${disclosure.dataClass} disclosure was attempted with no retention expectation`, "no-retention");
-	if (disclosure.transport !== "https") return refuse(`the transport ${JSON.stringify(disclosure.transport)} is not one this build uses`, "bad-transport");
-	if (typeof disclosure.maxScope !== "number" || !Number.isFinite(disclosure.maxScope) || disclosure.maxScope <= 0) return refuse(`the ${disclosure.dataClass} disclosure states no positive byte scope`, "no-scope");
-	const policyRecipient = typeof policy?.recipient === "string" ? policy.recipient : "";
-	const allowed = Array.isArray(policy?.allowed) ? policy.allowed : [];
-	if (policyRecipient === "" || allowed.length === 0) return refuse("no owner policy is loaded, so nothing is pre-authorised", "no-policy");
-	if (disclosure.recipient !== policyRecipient) return refuse(`the ${disclosure.dataClass} disclosure is addressed to ${disclosure.recipient}, and the owner's policy names ${policyRecipient}`, "recipient-not-in-policy");
-	if (!allowed.includes(disclosure.dataClass)) return refuse(`${disclosure.dataClass} is not pre-authorised for ${disclosure.recipient}; the owner's policy allows ${allowed.join(", ")}`, "class-not-in-policy");
-	return {
-		allowed: true,
-		disclosure
-	};
-}
-/** **THE ONE PLACE A REFUSAL IS BUILT**, *so every path carries a machine name and a human sentence.* */
-function refuse(why, code) {
-	return {
-		allowed: false,
-		why: `${code}: ${why}`,
-		soSay: REFUSED_SO_SAY
-	};
-}
-/**
-* **PARSE THE RELEASE POLICY FILE. UNREADABLE OR MALFORMED MEANS NOTHING IS AUTHORISED.**
-*
-* *A policy that cannot be read is not an empty policy and it is not the default policy* — **it is a state in which this
-* process does not know what the owner permits, and the only safe reading of that is "send nothing".** *Returning
-* {@link DEFAULT_POLICY} here would be the fail-open pin: a deleted file would silently restore classes he may have removed.*
-*
-* @param raw - the file's bytes, or `undefined` when it is not there.
-*/
-function readOwnerPolicy(raw) {
-	const empty = {
-		recipient: "",
-		allowed: Object.freeze([])
-	};
-	if (raw === void 0 || raw.trim() === "") return empty;
-	let parsed;
-	try {
-		parsed = JSON.parse(raw);
-	} catch {
-		return empty;
-	}
-	if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) return empty;
-	const document = parsed;
-	const recipient = typeof document.recipient === "string" ? document.recipient : "";
-	if (recipient === "" || recipient.trim() !== recipient || !Array.isArray(document.allowed) || !document.allowed.every((one) => DATA_CLASSES.includes(one))) return empty;
-	return {
-		recipient,
-		allowed: Object.freeze([...document.allowed])
-	};
-}
-/** Read only the release-shipped file. Missing/unreadable bytes authorise nothing; no fallback or override. */
-function readOwnerPolicyText(options) {
-	const read = options.read ?? ((file) => readFileSync(file, "utf8"));
-	try {
-		return {
-			text: read(options.release),
-			source: options.release
-		};
-	} catch (error) {
-		return {
-			text: void 0,
-			source: options.release,
-			problem: String(error?.message ?? error)
-		};
-	}
-}
-/** What a disclosure's byte cost is, **measured from the text rather than estimated**, so the ceiling means something. */
-function bytesOf(text) {
-	return typeof text === "string" ? new TextEncoder().encode(text).length : 0;
 }
 //#endregion
 //#region lib/types/auma-live/core-lens.js
@@ -3637,6 +3638,8 @@ var PresenceEngine = class {
 		let spoken = "";
 		let spokeAloud = false;
 		let completionReason = "eos";
+		let record;
+		const completedRecord = () => presenceTurnHeard(completionReason, this.now() - startedAt, spoken) ? record : void 0;
 		try {
 			let pending = messages;
 			const continuationClasses = /* @__PURE__ */ new Set();
@@ -3682,14 +3685,18 @@ var PresenceEngine = class {
 						t: "done",
 						reason: spend.reason
 					});
-					return;
+					return completedRecord();
 				}
 				try {
-					await recordRequest({
+					record = void 0;
+					const outgoing = {
 						sessionId: request.sessionId,
 						endpoint: selected.endpoint,
 						body
-					});
+					};
+					const receipt = await recordRequest(outgoing);
+					if (!modelRequestReceiptMatches(receipt, outgoing)) throw new Error("auma-live: recorder returned no valid request binding; dispatch refused");
+					record = Object.freeze({ ...receipt });
 				} catch (error) {
 					this.dependencies.reportRecordFailure?.(error);
 					completionReason = "record-failed";
@@ -3701,13 +3708,13 @@ var PresenceEngine = class {
 						t: "done",
 						reason: completionReason
 					});
-					return;
+					return completedRecord();
 				}
 				const segment = await this.streamSegment(request.mind, selected.endpoint, key, body, signal, write, lensLookups > 0 || webLookups > 0 || recallLookups > 0 || weightsVerbs > 0, [...new Set([...discloses, ...continuationClasses])]);
 				spoken += segment.spokeAloud ? segment.full : "";
 				spokeAloud ||= segment.spokeAloud;
 				completionReason = segment.reason;
-				if (segment.doneWritten) return;
+				if (segment.doneWritten) return completedRecord();
 				if (signal.aborted) break;
 				const repoAsked = lens === void 0 ? [] : segment.lensRequests.filter((entry) => entry.kind === "repo").slice(0, lookupsRemaining);
 				const webAsked = web === void 0 ? [] : segment.lensRequests.filter((entry) => entry.kind === "web").slice(0, webRemaining);
@@ -3832,12 +3839,14 @@ var PresenceEngine = class {
 			this.dependencies.reportRecordFailure?.(/* @__PURE__ */ new Error(`auma-live turn ended (${completionReason}): ${String(error?.message ?? error)}`));
 			await writeTurnFault(response, error);
 		} finally {
-			if (presenceTurnHeard(completionReason, this.now() - startedAt, spoken)) {
+			const completed = completedRecord();
+			if (completed !== void 0) {
 				this.dependencies.turnFinished?.({
 					sessionId: String(request.sessionId),
 					ownerText: request.text,
 					text: spoken,
 					startedAt,
+					record: completed,
 					lensAnswers: [...lensAnswers],
 					memoryInjected: [...memoryInjected]
 				});
@@ -3855,6 +3864,7 @@ var PresenceEngine = class {
 				this.crossLane.noteVoiceTurn(request.sessionId, "auma", spoken, this.now());
 			}
 		}
+		return completedRecord();
 	}
 	/**
 	* Dispatch one provider request and relay its stream: speakable text goes
@@ -4429,9 +4439,7 @@ var AumaLiveHttp = class {
 	/**
 	* Record one model request in HER OWN store, and never in a lane's session log.
 	*
-	* **A FAILURE HERE MUST NOT FAIL THE TURN.** The request has already been dispatched by the time this runs, so
-	* throwing would abort a reply that is on its way. It is reported instead, through the same channel a
-	* record-failure has always used, so a person asking "why does she not remember" has an answer somewhere.
+	* Recording completes durably before dispatch and returns that append's receipt. Failures refuse dispatch.
 	*
 	* **THE SESSION ID IS PASSED IN, NOT REMEMBERED.** A field holding "the session being served" would be wrong
 	* the moment two turns overlap, and this is the one record that must name the right file.
@@ -4441,7 +4449,7 @@ var AumaLiveHttp = class {
 	recordModelRequest(sessionId, request) {
 		const dshHome = this.dependencies.modelRequestHome;
 		try {
-			recordOrRefuse({
+			return recordOrRefuse({
 				dshHome: typeof dshHome === "string" ? dshHome : "",
 				sessionId,
 				request
@@ -4515,18 +4523,25 @@ var AumaLiveHttp = class {
 		const labels = this.dependencies.mindLabels;
 		const homeSession = this.dependencies.homeSession ?? "";
 		this.resumeHomeInBackground(res, homeSession);
-		const body = JSON.stringify(mindsPayloadOf({
-			minds: Object.keys(this.minds),
-			labels,
-			homeSession,
-			coreExists: this.dependencies.coreExists?.() ?? null,
-			spend: this.dependencies.spendToday?.() ?? null,
-			waiting: waitingLanesOfSessions(this.dependencies.sessions.list().map((session) => ({
-				id: session.id,
-				title: this.dependencies.sessionTitle?.(session.id) ?? session.id,
-				events: session.snapshotEvents()
-			})), { cap: 24 })
-		}));
+		let setupPolicy;
+		try {
+			setupPolicy = this.dependencies.disclosurePolicy?.();
+		} catch {}
+		const body = JSON.stringify({
+			...mindsPayloadOf({
+				minds: Object.keys(this.minds),
+				labels,
+				homeSession,
+				coreExists: this.dependencies.coreExists?.() ?? null,
+				spend: this.dependencies.spendToday?.() ?? null,
+				waiting: waitingLanesOfSessions(this.dependencies.sessions.list().map((session) => ({
+					id: session.id,
+					title: this.dependencies.sessionTitle?.(session.id) ?? session.id,
+					events: session.snapshotEvents()
+				})), { cap: 24 })
+			}),
+			providerSetup: providerSetupOf(this.dependencies.providerSendConsent, setupPolicy)
+		});
 		res.writeHead(200, {
 			"content-type": "application/json; charset=utf-8",
 			"cache-control": "no-store"
@@ -4640,14 +4655,15 @@ var AumaLiveHttp = class {
 		}, this.dependencies.heartbeatIntervalMs ?? 1e4);
 		heartbeat.unref?.();
 		try {
-			await this.engine.stream(turn, abort.signal, res, async (request) => {
-				this.recordModelRequest(turn.sessionId, request);
+			const receipt = await this.engine.stream(turn, abort.signal, res, async (request) => {
+				return this.recordModelRequest(turn.sessionId, request);
 			});
 			const home = this.dependencies.modelRequestHome;
 			if (typeof home === "string" && home !== "" && !res.writableEnded) {
-				const record = readNewestModelRequestLine({
+				const record = readRecordedModelRequest({
 					dshHome: home,
-					sessionId: turn.sessionId
+					sessionId: turn.sessionId,
+					receipt
 				});
 				if (record !== void 0) res.write(`data: ${JSON.stringify({
 					t: "manifested",
@@ -7338,7 +7354,7 @@ const Config = z.object({
 	voiceAutoStart: z.boolean().default(true),
 	voiceRuntimeDirectory: z.string().default(""),
 	repoLensRoot: z.string().default("."),
-	providerSendConsent: z.boolean().default(false),
+	providerSendConsent: z.boolean().default(false).description("Owner consent for Auma Live provider prompts and conversation history. Enable explicitly in the existing aukora-face-apps composition config; false disables sending. The release disclosure policy still checks every data class and continuation."),
 	ownerName: z.string().default(""),
 	/**
 	* The DSH home Aura's organism reader reads, and the repository it reports on. EMPTY DISABLES THE LENS:
@@ -7608,27 +7624,17 @@ async function apply(ctx, config) {
 		* key finding: her conversations reached the ring, the cross-lane notes and her own request file, and never
 		* reached memory.** KIRA built the consumer; nothing emitted.
 		*
-		* **THE PAYLOAD IS READ FROM THE REQUEST FILE, NOT FROM A SESSION LOG.** A voice turn deliberately writes no
-		* session event — `http.ts:725-729` records why: the type was not in `KNOWN_SESSION_EVENT_TYPES` and `append`
-		* cannot set `ignorable`, so the harness refused to load the thread after any restart. **The canonical record of a
-		* voice turn is therefore the line `appendModelRequest` wrote, and `readNewestModelRequestLine` returns it with
-		* the position a later verifier will use to find it.**
-		*
-		* **EVERY FIELD COMES FROM THAT ONE READ, WHICH IS WHY THE RECEIPT CAN VERIFY.** `line` is the bytes as written
-		* rather than a re-serialisation; `turn` is the line's own position in the file; `at` is the `spokenAt` that same
-		* line already carries — **so the instant and the line cannot describe different moments, and a line counted by a
-		* verifier long afterwards lands on the same number.**
-		*
-		* A turn whose record is missing or unreadable emits nothing. **The engine's `presenceTurnHeard` gate has already
-		* decided the turn was heard; if its record cannot be produced there is no receipt to mint, and a capture without
-		* a line is the failure `memory-verify.mjs` answers MISSING for.**
+		* The engine carries the exact append receipt from this turn. Rechecking that physical line binds capture and
+		* the reply manifest to its own request, including when another request in the same session finishes first.
+		* A missing or changed binding emits nothing; the newest session line is never a substitute.
 		*/
 		turnFinished: (turn) => {
 			if (suppressesCapture(memoryControlIn(turn.ownerText))) return;
 			if (stateHome === null) return;
-			const record = readNewestModelRequestLine({
+			const record = readRecordedModelRequest({
 				dshHome: stateHome,
-				sessionId: turn.sessionId
+				sessionId: turn.sessionId,
+				receipt: turn.record
 			});
 			if (record === void 0) return;
 			const at = new Date(record.spokenAt).toISOString().replace(/\.\d{3}Z$/u, "Z");
