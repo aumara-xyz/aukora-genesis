@@ -114,9 +114,10 @@ source inspection and disposable checks do not verify the installed app.
   Each judged call uses the kernel's `decide()`, without a one-use grant; one-use applies to self-change and
   MOVE MAIN. On `25149f573`, the recorded full-access `sed -i` attempt on `plugins/aukora-kira/` was refused with
   `rule: authority:governing-code`, `kernelCode: sacred_target`, file untouched (2026-09-27T23:53:16Z).
-- **Seatbelt has a limited scope.** It confines BUILD (`workspace-write`) and read-only shells, not Auma's
-  `danger-full-access` sessions, the backend process or its plugins. CORE's Codex and Claude Code subagents are
-  enabled by `presets/core/agent.cordis.yml` and run as the owner's user.
+- **Agent process launchers require native confinement in source.** Launchers require read-only or workspace-write
+  policy; full-access/auto cannot bypass that requirement. This does not confine the backend or its plugins.
+  CORE's native Codex and Claude Code SDK delegation tools are disabled, and their host provider startup paths
+  also refuse `AUKORA_NATIVE_CONFINEMENT_UNWIRED` until the SDK launch closures enforce native confinement.
 - **Composition approval rests on same-UID files.** The policy records the AUKORA plugin files mounted by a
   release and checks their approved bytes at import. Stock plugins and `node_modules` remain ungoverned
   (`STOCK_PLUGINS_NOT_YET_UNDER_POLICY`). The record, approval and pinned approver are all writable by the
@@ -239,8 +240,9 @@ historical evidence, not results for this checkout:
   before the call runs. It refuses a write or edit tool call on governing code (naming `self-change.mjs` as the
   route), key material, pushes to main, publishing and hosts off its allowlist. It reads shell commands as text
   only: literal write targets are judged, while a script or variable can hide a target from this check.
-  It does not judge every tool the Codex and Claude Code subagents run. Seatbelt confines BUILD and read-only
-  shells; it does not confine Auma's `danger-full-access` sessions.
+  It does not judge same-UID processes outside the app. Source agent process launchers require native confinement
+  and refuse full-access/auto policy; the unwired native SDK subagent providers refuse startup, and CORE does
+  not advertise their delegation tools.
 
 ## How it runs
 

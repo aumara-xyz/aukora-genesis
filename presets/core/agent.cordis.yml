@@ -7,22 +7,12 @@
 #
 # WHAT CORE GIVES UP: the shell (`tool-bash`, `tool-pwsh`) and the network tool (`tool-web`).
 #
-# ── AND WHAT IT KEEPS, WHICH THIS HEADER USED TO GET BACKWARDS. ──────────────────────────────────────
-# **PETER DECIDED THAT CORE'S CODE-RUNNING SUBAGENTS STAY ON**, so BOTH subagent providers are ENABLED
-# here — `tool-subagent-codex` and `tool-subagent-claude-code` carry NO `disabled:` key, and
-# the archived court `tests/aura-core-preset.test.mjs` asserted exactly that (ARCHIVE.md).
-#
-# *This paragraph said the opposite until aura-82*: "Both subagent providers stay disabled, as upstream
-# ships them — Codex sends no sandbox by default and Claude Code defaults to `dontAsk`, so neither may
-# be enabled until a court pins it read-only." **The FILE never carried those disables**, so the header
-# and the artifact disagreed, and *a reader who trusted the header would have described CORE wrongly* —
-# the same failure as a comment that describes a loop the code does not run.
-#
-# **THE HONEST STATEMENT OF THE TRADE**: *a CORE session can spawn a code-running subagent*, and what
-# bounds that is **the child's inherited preset** — a child composes the PARENT's preset, which is why
-# the archived court `tests/aura-core-preset.test.mjs` asserted `composedPreset(parent.ctx)` against the child-agent source.
-# *So the decision is not "no code runs under CORE"; it is "code runs under CORE only through children
-# that inherit CORE's own restrictions."*
+# CORE keeps host-backed spawn/fork delegation and workflows; process/tool effects
+# remain subject to the host's confinement and authority rules.
+# Native Codex and Claude Code SDK delegation tools are disabled below: their launch
+# closures currently refuse AUKORA_NATIVE_CONFINEMENT_UNWIRED. A registered provider
+# is not evidence that it can launch. Disabling these tool rows removes their tool
+# and prompt registrations without disabling the available delegation families.
 #
 # WHICH MODEL CORE RUNS ON, AND WHY IT IS NOT THE POWERFUL ONE. The pinned catalog carries
 # `anthropic/claude-opus-5`, NOT `anthropic/claude-opus-5.5` — and **nothing AUKORA owns routes 5.5 for a
@@ -243,30 +233,13 @@
         toolName: subagent_fork
         backgroundMode: continuable
 
-    # ── THE SUBSCRIPTION HANDS, ENABLED HERE AND NOWHERE ELSE ────────────────────────────────────────────
-    #
-    # The orchestrator runs on DeepSeek V4.1 Flash, which is cheap. For real coding it calls Claude Code and
-    # Codex, which run on Peter's SUBSCRIPTIONS rather than OpenRouter — Opus over OpenRouter cost about a
-    # dollar a minute, and a subscription hand is the difference between delegating work and buying it by the
-    # minute. Later, with funding, a stronger model moves in.
-    #
-    # **UPSTREAM SHIPS BOTH OFF, AND UPSTREAM IS RIGHT TO.** Measured in the vendored source:
-    # `subagent-codex/src/wire.ts:32-46` — the `never` permission mode sends `{approvalPolicy:'never'}` and NO
-    # SANDBOX, so a run inherits whatever `~/.codex/config.toml` trusts; `subagent-claude-code/src/run.ts:56`
-    # — the default mode is `dontAsk`. Enabling them as shipped would hand a model Peter's machine.
-    #
-    # **THE PINS ARE NOT IN THIS FILE, AND THAT IS DELIBERATE.** The adapters take the child's cwd from the
-    # PARENT SESSION and expose no tool allowlist, no added directory, no lock and no wall-clock timeout, so the
-    # pins cannot be expressed as preset config: they live in `plugins/aukora-subscription-hands/lib/pins.mjs`
-    # and `lib/run.mjs`, which BUILD the argv and the environment. **A model supplies a task string and nothing
-    # else**, which is what makes these pins unoverridable rather than merely defaulted.
-    #
-    # The provider rows themselves belong in the HOST composition — a provider name may only be registered once
-    # — and the exact rows, with their `permissionMode` and `env`, are in
-    # `plugins/aukora-subscription-hands/CONFIG.md`. A host that has not mounted them will resolve these tools
-    # against no provider and refuse at spawn, which is the correct failure: no provider, no hand.
+    # Native SDK providers belong to the host registry. Their current pinned launch
+    # closures refuse before SDK startup (patches/mandatory-agent-confinement.patch.json).
+    # Keep their model-facing tools unadvertised until those closures enforce native
+    # confinement; a panel availability message does not remove a tool registration.
     - id: tool-subagent-codex
       name: '@deepseek-ai/dsh-tool-subagent'
+      disabled: true
       config:
         provider: codex
         toolName: subagent_codex
@@ -275,6 +248,7 @@
 
     - id: tool-subagent-claude-code
       name: '@deepseek-ai/dsh-tool-subagent'
+      disabled: true
       config:
         provider: claude-code
         toolName: subagent_claude_code
