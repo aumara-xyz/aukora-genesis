@@ -58,6 +58,7 @@ function settleOperationOf(intent) {
 import { spawn } from 'node:child_process'
 import { lstatSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 // THE DRAW HALF OF THE CROSSING, imported rather than re-implemented: one module owns the phrase's
 // shape, its one in-memory slot and its refusal names, and this file owns the channel it arrives on.
 import { BIND_REFUSE, DRAW_REFUSE, createAumlokDraw } from './aumlok-draw.mjs'
@@ -107,6 +108,19 @@ function recordPathOccupied(path) {
   }
 }
 
+/** Electron's sending frame must still be the live main frame that sent this invocation. */
+function currentIpcFrame(event, contents) {
+  try {
+    if (!contents || contents.isDestroyed() || event?.sender !== contents || event.type !== 'frame') return null
+    const frame = event.senderFrame, main = contents.mainFrame
+    if (!frame || !main || frame.isDestroyed() || frame.detached !== false || frame.parent !== null
+      || !Number.isSafeInteger(frame.processId) || !Number.isSafeInteger(frame.routingId)
+      || frame.processId !== main.processId || frame.routingId !== main.routingId
+      || event.processId !== frame.processId || event.frameId !== frame.routingId) return null
+    return frame
+  } catch { return null } // Destroyed/detached frame access can throw in Electron.
+}
+
 /** Register the approval question's IPC surface and hand back a disposer.
  *
  * ONE WINDOW AT A TIME, AND IT IS MODAL. A second approval window would be a second chance to answer,
@@ -128,6 +142,15 @@ export function installApprovalBridge(deps) {
   // passes its own instance; the app builds the shell's one and nothing else in this process can make
   // a second, so there is exactly one place a phrase can be drawn from and exactly one slot holding it.
   const draw = deps.draw ?? createAumlokDraw()
+  // Only the shell-owned backend supplies this pin. An attach URL is a display target,
+  // not authority to use this bridge; never infer trust from the renderer or any loopback URL.
+  let applicationOrigin = null
+  try {
+    const expected = new URL(deps.applicationOrigin)
+    if (expected.protocol === 'http:' && expected.hostname === '127.0.0.1'
+      && expected.origin === deps.applicationOrigin) applicationOrigin = expected.origin
+  } catch { /* Missing or malformed trusted context refuses every application IPC. */ }
+  const approvalDocument = pathToFileURL(join(here, 'aumlok-approval.html')).href
   // TWO SEAMS, AND EACH IS ONE LINE BECAUSE A SEAM THAT NEEDS MORE IS A REWRITE.
   //
   // `ownerDaemonStatus` IS INJECTABLE so a court can put the daemon PRESENT or ABSENT without installing one
@@ -201,15 +224,27 @@ export function installApprovalBridge(deps) {
     }
   }
 
-  /** Only the application window may read the public state. */
+  /** Only the current main document at the shell-owned backend's exact origin may call. */
   function fromApplication(event) {
-    const owner = getWindow()
-    return owner !== null && owner !== undefined && event.sender === owner.webContents
+    try {
+      const frame = currentIpcFrame(event, getWindow()?.webContents)
+      if (!frame || applicationOrigin === null || frame.origin !== applicationOrigin) return false
+      const url = new URL(frame.url)
+      return url.protocol === 'http:' && url.origin === applicationOrigin && url.username === '' && url.password === ''
+    } catch { return false }
   }
 
   /** Only the approval window may ask what it is answering, or answer it. */
   function fromApproval(event) {
-    return approval !== null && !approval.webContents.isDestroyed() && event.sender === approval.webContents
+    try {
+      const frame = currentIpcFrame(event, approval?.webContents)
+      // Electron 44 serializes file-frame origins as file://. That alone trusts every file;
+      // also pin the exact packaged document, preserving its theme query and fragment.
+      if (!frame || frame.origin !== 'file://') return false
+      const url = new URL(frame.url)
+      url.search = ''; url.hash = ''
+      return url.href === approvalDocument
+    } catch { return false }
   }
 
   /**
@@ -534,6 +569,7 @@ export function installApprovalBridge(deps) {
     if (!fromApplication(event)) return { ok: false, reason: APPROVAL_REFUSE.FORBIDDEN_SENDER }
     try {
       const { library: lib, directory: dir } = await context()
+      if (!fromApplication(event)) return { ok: false, reason: APPROVAL_REFUSE.FORBIDDEN_SENDER }
       return { ok: true, directory: dir, ...readState(lib, dir), signing: readSigningState() }
     } catch (error) {
       return { ok: false, reason: error?.code ?? String(error?.message ?? error) }
@@ -544,8 +580,8 @@ export function installApprovalBridge(deps) {
    * DRAW ONE PHRASE FOR THE APPLICATION'S OWN WINDOW, and for no other caller.
    *
    * THE WORDS GO TO THE PAGE AND NOWHERE ELSE. `fromApplication` is the same check `state` uses, and it
-   * is the whole of the sender validation: the draw is bound to the webContents that asked, so a second
-   * window that guessed this channel's name reaches the refusal and never the words.
+   * checks the current main frame and pinned origin. The draw also belongs to its webContents,
+   * so another window cannot answer a phrase drawn for this one.
    */
   ipcMain.handle(APPROVAL_CHANNELS.DRAW, async (event, payload) => {
     // THE DRAW MODULE'S OWN NAME, not the approval module's: a court and a screen both match on the
@@ -574,7 +610,13 @@ export function installApprovalBridge(deps) {
           }
         }
       }
-      return draw.draw(event.sender, intent, getReleaseDir())
+      if (!fromApplication(event)) return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
+      const result = await draw.draw(event.sender, intent, getReleaseDir())
+      if (!fromApplication(event)) {
+        draw.forget()
+        return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
+      }
+      return result
     } catch (error) {
       say(`draw refused: ${String(error?.message ?? error)}`)
       // A NAME OF OURS OR THE DRAW MODULE'S OWN, never a raw message: the same rule SUBMIT's catch applies below.
@@ -615,6 +657,7 @@ export function installApprovalBridge(deps) {
       ? payload.handle : undefined
     try {
       const { library, directory } = await context()
+      if (!fromApplication(event)) return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
       // WHERE THE HANDLE COMES FROM, PER CEREMONY. A BIND carries the handle the person just typed —
       // on a new machine it is the first thing they type. A REFRESH does not ask for it again: the
       // record on disk already publishes it, so it is read from the same public state `state` reads.
@@ -627,6 +670,7 @@ export function installApprovalBridge(deps) {
       // (`settleBytesFor` is the one place that serialisation lives), so the owner answers the operation the
       // screen asked for rather than a summary of it.
       const daemon = await ownerDaemonStatusOf()
+      if (!fromApplication(event)) return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
       // *** AN INSTALLATION THAT IS PRESENT AND DID NOT ANSWER REFUSES HERE, BEFORE THE CEREMONY. ***
       // Falling through to the in-process settle is what an agent gets by making the hello fail, so this
       // branch comes FIRST and writes nothing: no draw, no signature, no file.
@@ -663,6 +707,7 @@ export function installApprovalBridge(deps) {
         }
       }
       const verdict = await draw.submit(event.sender, intent, words, { library, directory, handle })
+      if (!fromApplication(event)) return { ok: false, reason: DRAW_REFUSE.FORBIDDEN_SENDER }
       if (verdict?.ok === true) {
         recordInstallSettings(library, directory)
         // Launch initially found no key. Serve it now, before the face refreshes its state.
@@ -730,6 +775,7 @@ export function installApprovalBridge(deps) {
     // `tests/aukora-aumlok-bridge-handlers.test.mjs` (e) holds both directions and (d) removes this very
     // block, so the refusal is a red arm rather than a claim.
     const daemonForAnswer = await ownerDaemonStatusOf()
+    if (!fromApproval(event)) return { ok: false, reason: APPROVAL_REFUSE.FORBIDDEN_SENDER }
     // AND THE SAME REFUSAL ON THE ANSWER PATH, for the same reason: an unreachable daemon must not hand this
     // handler the authority to answer a question the owner was asked to settle.
     if (daemonForAnswer?.installed === true && daemonForAnswer?.reachable !== true) {

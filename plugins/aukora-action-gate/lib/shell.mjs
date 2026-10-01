@@ -190,6 +190,39 @@ function operands(words, values = new Set()) {
   return out
 }
 
+/** chmod's mode is not a target; a reference supplies it without becoming a write target. */
+function chmodOperands(words) {
+  const files = []
+  let mode = true
+  let options = true
+  for (let i = 1; i < words.length; i += 1) {
+    const word = words[i]
+    if (options) {
+      if (word === '--') { options = false; continue }
+      if (word === '--reference') { mode = false; i += 1; continue }
+      if (word.startsWith('--reference=')) { mode = false; continue }
+      // BSD's -N (remove ACL) and -E (ACL from stdin) take files without a mode operand.
+      if (/^-[RcfvhHLPEN]+$/u.test(word)) { if (/[EN]/u.test(word)) mode = false; continue }
+      // A leading minus can be a symbolic mode, as in `chmod -w file`.
+      if (word.startsWith('-') && !/^-[rwxXstugo]*(?:[+=-][rwxXstugo]*)*(?:,[ugoa]*(?:[+=-][rwxXstugo]*)+)*$/u.test(word)) continue
+    }
+    if (mode) mode = false
+    else files.push(word)
+  }
+  return files
+}
+
+/** Python's -c ends its option list; script/module arguments are not executable command strings. */
+function pythonCommand(words) {
+  for (let i = 1; i < words.length; i += 1) {
+    const word = words[i]
+    if (word === '--' || word === '-' || !word.startsWith('-') || word.startsWith('-m')) break
+    if (word === '-c') return words[i + 1]
+    if (word.startsWith('-c')) return word.slice(2)
+    if (['-W', '-X', '--check-hash-based-pycs'].includes(word)) i += 1
+  }
+}
+
 /** Direct literal Python/Node write calls; variables, expressions, escapes and aliases are not evaluated. */
 function codeWriteTargets(code, python) {
   const targets = []
@@ -215,6 +248,8 @@ function codeWriteTargets(code, python) {
 export function literalWriteTargets({ words, redirects }, workdir, home) {
   const targets = [...redirects]
   const program = basename(words[0] ?? '')
+  if (program === 'rm') targets.push(...operands(words))
+  if (program === 'chmod') targets.push(...chmodOperands(words))
   if (program === 'tee') targets.push(...operands(words).filter(word => word !== '-'))
   if (program === 'dd') targets.push(...words.slice(1).filter(word => word.startsWith('of=')).map(word => word.slice(3)))
   if (program === 'truncate') targets.push(...operands(words, new Set(['-s', '--size', '-r', '--reference'])))
@@ -265,9 +300,12 @@ export function literalWriteTargets({ words, redirects }, workdir, home) {
   }
   const python = /^python(?:\d+(?:\.\d+)*)?$/u.test(program)
   if (python || program === 'node' || program === 'nodejs') {
-    const at = words.findIndex(word => python ? word === '-c' : word === '-e' || word === '--eval')
-    const code = at === -1 && !python ? words.find(word => word.startsWith('--eval='))?.slice(7) : words[at + 1]
-    if (code !== undefined && (at !== -1 || !python)) targets.push(...codeWriteTargets(code, python))
+    const end = words.indexOf('--')
+    const options = words.slice(1, end === -1 ? undefined : end)
+    const at = options.findIndex(word => word === '-e' || word === '--eval')
+    const code = python ? pythonCommand(words)
+      : at === -1 ? options.find(word => word.startsWith('--eval='))?.slice(7) : options[at + 1]
+    if (code !== undefined) targets.push(...codeWriteTargets(code, python))
   }
   return [...new Set(targets.map(target => literalPath(target, workdir, home)).filter(target => target !== null))]
 }

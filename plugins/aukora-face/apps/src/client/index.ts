@@ -7,7 +7,6 @@ import type {} from '@aukora/face-layout/client'
 import { AumaLanguageSurface } from './AumaLanguageSurface.tsx'
 import { AumaLiveSurface } from './AumaLiveSurface.tsx'
 import { ZetaHarpSurface } from './ZetaHarpSurface.tsx'
-import { RoomSurface } from './RoomSurface.tsx'
 import { HumanGraphSurface } from './HumanGraphSurface.tsx'
 import { MediaSurface } from './MediaSurface.tsx'
 import { DakiniCodeMenu, DakiniCodeSurface } from './DakiniCode.tsx'
@@ -16,7 +15,6 @@ import {
   AumaLiveMenu,
   STOCK_APPS,
   ZetaHarpMenu,
-  RoomMenu,
   HumanGraphMenu,
   MediaMenu,
 } from './StockAppMenu.tsx'
@@ -25,7 +23,6 @@ import { en, zh, type StockAppsKey } from './locales.ts'
 export type { StockAppMenuProps, StockAppSurfaceProps } from './contract.ts'
 export type { StockAppsKey } from './locales.ts'
 export type { StockAppId } from './StockAppMenu.tsx'
-export { RoomSurface }
 export type * from '../auma-canvas/types.ts'
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
@@ -66,9 +63,8 @@ export function apply(ctx: ClientContext): void {
     { app: STOCK_APPS[0], Menu: AumaLanguageMenu, Surface: AumaLanguageSurface },
     { app: STOCK_APPS[1], Menu: AumaLiveMenu, Surface: AumaLiveSurface },
     { app: STOCK_APPS[2], Menu: ZetaHarpMenu, Surface: ZetaHarpSurface },
-    { app: STOCK_APPS[4], Menu: RoomMenu, Surface: RoomSurface },
-    { app: STOCK_APPS[5], Menu: HumanGraphMenu, Surface: HumanGraphSurface },
-    { app: STOCK_APPS[6], Menu: MediaMenu, Surface: MediaSurface },
+    { app: STOCK_APPS[4], Menu: HumanGraphMenu, Surface: HumanGraphSurface },
+    { app: STOCK_APPS[5], Menu: MediaMenu, Surface: MediaSurface },
   ] as const
   registrations.forEach(({ app, Menu, Surface }, index) => {
     ctx.slots.inject('shell.menu.apps', () => ctx.slots.register({

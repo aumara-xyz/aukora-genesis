@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { IncomingMessage, ServerResponse } from 'node:http'
+import { randomBytes } from 'node:crypto'
 import { providerSetupOf, type readOwnerPolicy } from './disclosure.ts'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
@@ -25,6 +26,7 @@ import {
   type PresenceMind,
   type PresenceRequest,
   type PresenceRingMessage,
+  type VoiceAuthorization,
 } from './presence.ts'
 import type { RepoLens } from './repo-lens.ts'
 import type { RecallLens } from './recall-lens.ts'
@@ -267,6 +269,11 @@ async function coldEvents(
 }
 
 export class AumaLiveHttp {
+  private readonly voiceSessions = new Map<string, {
+    sessionId: string
+    expiresAt: number
+    active: Set<AbortController>
+  }>()
   private readonly engine: PresenceEngine
   private readonly minds: Readonly<Record<string, PresenceMind>>
   private readonly restoreSuffixes: readonly string[]
@@ -722,8 +729,16 @@ export class AumaLiveHttp {
       return
     }
     let input: PresenceRequest
+    let body: Record<string, unknown>
     try {
-      input = parsePresenceRequest(await readJsonBody(req, this.dependencies.maxRequestBodyBytes), this.minds)
+      const parsed: unknown = await readJsonBody(req, this.dependencies.maxRequestBodyBytes)
+      if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) throw new RequestBodyError('invalid')
+      body = parsed as Record<string, unknown>
+      if (body['action'] === 'start-voice' || body['action'] === 'stop-voice') {
+        await this.voiceSessionAction(body, res)
+        return
+      }
+      input = parsePresenceRequest(body, this.minds)
     } catch (error) {
       const tooLarge = error instanceof RequestBodyError && error.message === 'too-large'
       res.writeHead(tooLarge ? 413 : 400, { 'content-type': 'text/plain; charset=utf-8' })
@@ -731,7 +746,12 @@ export class AumaLiveHttp {
       return
     }
     // Refuse before resuming a session or preparing history; a fresh install needs no live session to show this state.
-    if (this.dependencies.providerSendConsent !== true) {
+    const token = typeof body['voiceSessionToken'] === 'string' ? body['voiceSessionToken'] : ''
+    const voiceSession = this.voiceSessions.get(token)
+    const voiceAuthorized = voiceSession !== undefined && voiceSession.sessionId === input.sessionId
+      && voiceSession.expiresAt > Date.now() && this.dependencies.sessions.get(input.sessionId) !== undefined
+      && (this.dependencies.disclosureRecipient ?? 'openrouter.ai') === 'openrouter.ai'
+    if (!voiceAuthorized) {
       this.dependencies.reportRecordFailure?.(new Error('auma-live turn refused: provider-consent-required'))
       res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store' })
       res.end(`data: ${JSON.stringify({ t: 'done', reason: 'provider-consent-required' })}\n\n`)
@@ -756,9 +776,24 @@ export class AumaLiveHttp {
     }
     const session = found.session
     // THE TURN RUNS AS THE SESSION IT ACTUALLY WENT THROUGH: her home, when the named one was not live.
-    const turn: PresenceRequest = { ...input, sessionId: session.id }
+    const voiceAuthorization: VoiceAuthorization | undefined = voiceAuthorized && voiceSession !== undefined
+      ? {
+        recipient: 'openrouter.ai', allowed: Object.freeze(['turn-text', 'history'] as const),
+        allows: endpoint => {
+          if (this.voiceSessions.get(token) !== voiceSession || voiceSession.expiresAt <= Date.now()
+              || voiceSession.sessionId !== session.id || this.dependencies.sessions.get(session.id) !== session
+              || (this.dependencies.disclosureRecipient ?? 'openrouter.ai') !== 'openrouter.ai') return false
+          try {
+            const url = new URL(endpoint)
+            return url.protocol === 'https:' && url.host === 'openrouter.ai' && url.username === '' && url.password === ''
+          } catch { return false }
+        },
+      }
+      : undefined
+    const turn: PresenceRequest = { ...input, sessionId: session.id, ...(voiceAuthorization === undefined ? {} : { voiceAuthorization }) }
     this.dependencies.crossLane.synchronizeChat(session.id, session.snapshotEvents())
     const abort = new AbortController()
+    if (voiceAuthorized) voiceSession?.active.add(abort)
     res.once('close', () => { abort.abort() })
     res.writeHead(200, {
       'content-type': 'text/event-stream; charset=utf-8',
@@ -809,9 +844,55 @@ export class AumaLiveHttp {
       await writeTurnFault(res, error)
     } finally {
       clearInterval(heartbeat)
+      voiceSession?.active.delete(abort)
       if (!res.writableEnded) res.end()
     }
   }
+  /** Explicit Start/Stop Voice commands. Authority is local, bounded, revocable and never persisted. */
+  private async voiceSessionAction(body: Record<string, unknown>, res: ServerResponse): Promise<void> {
+    const answer = (status: number, value: unknown) => {
+      res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' })
+      res.end(JSON.stringify(value))
+    }
+    if (body['action'] === 'stop-voice') {
+      const token = typeof body['voiceSessionToken'] === 'string' ? body['voiceSessionToken'] : ''
+      const grant = this.voiceSessions.get(token)
+      this.voiceSessions.delete(token)
+      grant?.active.forEach(controller => { controller.abort() })
+      answer(200, { stopped: true })
+      return
+    }
+    if (body['recipient'] !== 'openrouter.ai' || JSON.stringify(body['classes']) !== '["turn-text","history"]'
+        || (this.dependencies.disclosureRecipient ?? 'openrouter.ai') !== 'openrouter.ai') {
+      answer(400, { refusal: 'voice-scope-mismatch' })
+      return
+    }
+    const policy = this.dependencies.disclosurePolicy?.()
+    if (policy?.recipient !== 'openrouter.ai' || !policy.allowed.includes('turn-text') || !policy.allowed.includes('history')) {
+      answer(409, { refusal: 'disclosure-refused' })
+      return
+    }
+    const requested = typeof body['sessionId'] === 'string' ? body['sessionId'].trim() : ''
+    if (requested.length > 256) { answer(400, { refusal: 'invalid-session' }); return }
+    const found = await resolvePresenceSession(requested, {
+      homeSession: this.dependencies.homeSession ?? '', live: id => this.dependencies.sessions.get(id),
+      ...(this.dependencies.resumeSession === undefined ? {} : { resume: this.dependencies.resumeSession }),
+    })
+    if ('refusal' in found) { answer(found.refusal.status, { refusal: found.refusal.code }); return }
+    // Sweep expired grants and cap abandoned starts; no same-UID/browser-attendance claim is made here.
+    for (const [token, grant] of this.voiceSessions) {
+      if (grant.expiresAt <= Date.now()) {
+        this.voiceSessions.delete(token)
+        grant.active.forEach(controller => { controller.abort() })
+      }
+    }
+    if (this.voiceSessions.size >= 128) { answer(429, { refusal: 'voice-session-limit' }); return }
+    const token = randomBytes(24).toString('hex')
+    const expiresAt = Date.now() + 60 * 60 * 1000
+    this.voiceSessions.set(token, { sessionId: found.session.id, expiresAt, active: new Set() })
+    answer(200, { voiceSessionToken: token, sessionId: found.session.id, recipient: 'openrouter.ai', classes: ['turn-text', 'history'], expiresAt })
+  }
+
   /**
    * Resume the configured home without making the caller wait, reporting a failure either way.
    *

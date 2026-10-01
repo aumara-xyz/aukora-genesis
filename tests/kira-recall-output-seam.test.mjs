@@ -21,19 +21,25 @@
  * CI workflow does NOT build (`check.yml` runs `sh scripts/check.sh` on a fresh checkout). So the
  * binding arms above use no harness import, and the real validator is used as a CROSS-CHECK when it
  * exists — reported loudly when it does not, never silently skipped.
+ * Registration also checks every maintained tool factory and the definitions produced by actual
+ * Kira apply, including its inline remember tool. No tool or capture event is executed by that arm.
  */
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { recallTool } from '../plugins/aukora-kira/lib/tools.mjs'
+import * as kiraTools from '../plugins/aukora-kira/lib/tools.mjs'
+import { apply } from '../plugins/aukora-kira/lib/index.js'
 import {
   reconcileRecallAvailability, PARTIAL_FAILURE_ACTIONS, REMEMBERED_STATES, STORE_AVAILABILITY,
 } from '../plugins/aukora-kira/lib/partial-failure.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = dirname(HERE)
+const { recallTool } = kiraTools
 
 let failures = 0
 let passed = 0
@@ -124,6 +130,16 @@ await arm('the declared action enum is exactly the three the policy can return',
   assert.ok(returned.size > 1, 'the corpus of answers above should exercise more than one action')
 })
 
+await arm('runtime count validation still rejects values the schema subset cannot constrain', async () => {
+  for (const memory of [
+    { dropped: -1, reasons: {} }, { dropped: 0.5, reasons: {} },
+    { dropped: 0, reasons: { scope: -1 } }, { dropped: 0, reasons: { scope: 0.5 } },
+    { dropped: 0, reasons: { scope: '1' } }, { dropped: 0, reasons: [] },
+  ]) await assert.rejects(recallTool(async () => ({ memory })).execute({}, {}), /memory counts must be non-negative integers/u)
+  const memory = { dropped: 2, reasons: { scope: 2 } }
+  assert.deepEqual((await recallTool(async () => ({ memory })).execute({}, {})).memory, memory)
+})
+
 // ── the real validator, when the built harness is present ──────────────────────────────────────
 // `vendor/dsh` is gitignored, so it exists only where the build ran — the main checkout, not this
 // linked worktree. Resolve it the way tests/kira-memory-live-path.test.mjs does: an explicit
@@ -131,11 +147,16 @@ await arm('the declared action enum is exactly the three the policy can return',
 const commonDir = spawnSync('git', ['rev-parse', '--git-common-dir'], { cwd: HERE, encoding: 'utf8' }).stdout?.trim()
 const mainRoot = commonDir === undefined || commonDir === '' ? undefined : dirname(resolve(HERE, commonDir))
 const dshArg = process.argv.includes('--dsh') ? process.argv[process.argv.indexOf('--dsh') + 1] : undefined
-const candidates = [dshArg, process.env.AUKORA_DSH_SOURCE, join(ROOT, 'vendor', 'dsh'), mainRoot === undefined ? undefined : join(mainRoot, 'vendor', 'dsh')].filter(Boolean)
+assert.ok(!process.argv.includes('--dsh') || (dshArg && !dshArg.startsWith('--')), '--dsh requires a harness directory')
+// An explicit host path is authoritative, including an absent host; never silently use another.
+const candidates = dshArg === undefined
+  ? [process.env.AUKORA_DSH_SOURCE, join(ROOT, 'vendor', 'dsh'), mainRoot === undefined ? undefined : join(mainRoot, 'vendor', 'dsh')].filter(Boolean)
+  : [dshArg]
 const validatorPath = candidates.map(base => join(base, 'packages', 'core', 'tools', 'lib', 'types', 'json-schema.js')).find(existsSync)
 
 if (validatorPath === undefined) {
   process.stdout.write('  ----  NOT RUN: the host validator is absent (vendor/dsh is gitignored and CI does not build it).\n')
+  process.stdout.write('        Host registration/schema-support checks and original outage controls were NOT RUN.\n')
   process.stdout.write('        The binding arms above use the declared schema directly and do not need it.\n')
 } else {
   const { validateJsonSchemaValue } = await import(pathToFileURL(validatorPath).href)
@@ -154,6 +175,87 @@ if (validatorPath === undefined) {
     const violations = validateJsonSchemaValue(withoutIt, result)
     assert.ok(violations.some(one => String(one).includes('partialFailure') && String(one).includes('not a declared property')),
       `removing the declaration must be what the host rejects; got ${JSON.stringify(violations)}`)
+  })
+  const harness = resolve(dirname(validatorPath), '../../../../..')
+  const toolsPath = join(harness, 'packages/core/tools/lib/index.js')
+  const cordisPath = join(harness, 'vendor/cordis/lib/index.js')
+  if (!existsSync(toolsPath) || !existsSync(cordisPath)) {
+    process.stdout.write('  ----  NOT RUN: actual host ToolRuntime/Cordis is absent; registration checks and outage controls were NOT RUN.\n')
+  } else await arm('HOST REGISTRATION: every actual Kira tool input/output schema; original outage rejected', async () => {
+    const { ToolRuntime, JsonSchemaError, assertObjectJsonSchema, assertSupportedJsonSchema } = await import(pathToFileURL(toolsPath).href)
+    const { Context } = await import(pathToFileURL(cordisPath).href)
+    process.stdout.write(`        Host ToolRuntime: ${toolsPath}\n`)
+    process.stdout.write(`        Host SHA256: ${createHash('sha256').update(readFileSync(toolsPath)).digest('hex')}\n`)
+    const fixture = mkdtempSync(join(tmpdir(), 'kira-registration-seam-'))
+    const ctx = new Context(), previousHome = process.env.AUKORA_OPENVIKING_HOME, previousFetch = globalThis.fetch
+    try {
+      assert.equal(statSync(fixture).mode & 0o777, 0o700)
+      process.env.AUKORA_OPENVIKING_HOME = join(fixture, 'empty-openviking')
+      let providerCalls = 0
+      globalThis.fetch = () => { providerCalls += 1; throw Error('registration fixture prohibits network/provider calls') }
+      ctx.provide('systemPrompt', { tools: () => () => {}, section: () => () => {} })
+      const runtime = new ToolRuntime(ctx, { mode: 'native' })
+      ctx.provide('sessions', { flush: async () => true, get: () => undefined })
+      const warnings = []
+      const host = ctx.extend({ logger: { warn: message => warnings.push(message), info: () => {} } })
+      const stateDir = join(fixture, 'kira-memory'); mkdirSync(stateDir, { mode: 0o700 })
+      await apply(host, { memoryOwner: { stateDir, subject: `aukora:1:${'67'.repeat(32)}`, permittedPrivacy: ['local'] } })
+      const mounted = runtime.view(undefined).visible
+      assert.deepEqual([...mounted.keys()].sort(), ['kira_recall', 'kira_remember'])
+      const definitions = new Map()
+      // Discover exported factories so adding a maintained tool cannot silently omit it here.
+      for (const [name, factory] of Object.entries(kiraTools)) {
+        if (name.endsWith('Tool') && typeof factory === 'function') {
+          const definition = factory() // constructors only; callbacks/provers are never invoked
+          assert.ok(!definitions.has(definition.name), `duplicate factory for ${definition.name}`)
+          definitions.set(definition.name, definition)
+        }
+      }
+      assert.ok(definitions.size > 0, 'no maintained tool factories discovered')
+      // Prefer the actual mounted definition, including remember's inline schema and recall closure.
+      for (const [name, definition] of mounted) definitions.set(name, definition)
+      for (const [name, definition] of definitions) {
+        assertObjectJsonSchema(definition.parameters)
+        assertSupportedJsonSchema(definition.output.schema)
+        if (!mounted.has(name)) runtime.register(definition)
+        process.stdout.write(`        ${name}: input/output supported; actual registry contains definition\n`)
+      }
+      assert.deepEqual([...runtime.view(undefined).visible.keys()].sort(), [...definitions.keys()].sort())
+      assert.equal(runtime.sdkSchemas(undefined).length, definitions.size)
+      assert.deepEqual(warnings, [])
+      assert.equal(providerCalls, 0, 'registration must not call a provider')
+
+      const current = runtime.view(undefined).visible.get('kira_recall')
+      const original = structuredClone(current.output.schema)
+      original.properties.memory.properties.dropped.minimum = 0
+      original.properties.memory.properties.reasons.additionalProperties = { type: 'integer', minimum: 0 }
+      const expectRejected = (schema, paths) => {
+        let failure
+        try { runtime.register({ ...current, name: 'kira_outage_control', output: { ...current.output, schema } }) }
+        catch (error) { failure = error }
+        assert.ok(failure instanceof JsonSchemaError, 'actual registration must reject unsupported schema')
+        assert.deepEqual(failure.violations, paths)
+        assert.ok(!runtime.view(undefined).visible.has('kira_outage_control'))
+        process.stdout.write(`        Original outage control: ${failure.message}\n`)
+      }
+      expectRejected(original, [
+        'schema.properties.memory.properties.dropped.minimum is not a supported keyword (subset: type/oneOf/properties/required/additionalProperties/items/enum/const + annotations)',
+        'schema.properties.memory.properties.reasons.additionalProperties must be a boolean',
+      ])
+      const input = structuredClone(current.parameters)
+      input.properties.text.minimum = 0
+      assert.throws(() => assertObjectJsonSchema(input), error => error instanceof JsonSchemaError
+        && error.violations.some(path => path.startsWith('schema.properties.text.minimum ')))
+      process.stdout.write('        Unsupported input keyword rejected by the same host schema-support validator\n')
+    } finally {
+      try { await ctx.fiber._unload() }
+      finally {
+        globalThis.fetch = previousFetch
+        if (previousHome === undefined) delete process.env.AUKORA_OPENVIKING_HOME
+        else process.env.AUKORA_OPENVIKING_HOME = previousHome
+        rmSync(fixture, { recursive: true, force: true })
+      }
+    }
   })
 }
 

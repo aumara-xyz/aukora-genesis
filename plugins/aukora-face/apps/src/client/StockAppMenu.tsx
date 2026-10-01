@@ -2,9 +2,9 @@
 import type { StockAppMenuProps } from './contract.ts'
 import css from './StockApps.module.css'
 
-export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room' | 'human-graph' | 'media'
+export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'human-graph' | 'media'
 
-type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'room' | 'humanGraph' | 'media'
+type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'humanGraph' | 'media'
 
 interface MenuSpec {
   id: StockAppId
@@ -17,7 +17,6 @@ const AUMA_LANGUAGE_APP = { id: 'auma-language', copy: 'language', presentation:
 const AUMA_LIVE_APP = { id: 'auma-live', copy: 'live', presentation: 'full-bleed' } as const
 const ZETA_HARP_APP = { id: 'zeta-harp', copy: 'harp', presentation: 'full-bleed' } as const
 const AUMA_CANVAS_APP = { id: 'auma-canvas', copy: 'canvas', presentation: 'full-bleed' } as const
-const ROOM_APP = { id: 'room', copy: 'room', presentation: 'contained' } as const
 const HUMAN_GRAPH_APP = { id: 'human-graph', copy: 'humanGraph', presentation: 'full-bleed' } as const
 const MEDIA_APP = { id: 'media', copy: 'media', presentation: 'contained' } as const
 
@@ -26,7 +25,6 @@ export const STOCK_APPS = [
   AUMA_LIVE_APP,
   ZETA_HARP_APP,
   AUMA_CANVAS_APP,
-  ROOM_APP,
   HUMAN_GRAPH_APP,
   MEDIA_APP,
 ] as const satisfies readonly MenuSpec[]
@@ -42,7 +40,7 @@ function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps
     >
       <span className={css.menuCopy}>
         <strong>{t(`${spec.copy}.name`)}</strong>
-        {spec.copy !== 'room' && spec.copy !== 'humanGraph' && spec.copy !== 'media' && <span>{t(`${spec.copy}.menu`)}</span>}
+        {spec.copy !== 'humanGraph' && spec.copy !== 'media' && <span>{t(`${spec.copy}.menu`)}</span>}
       </span>
     </button>
   )
@@ -66,11 +64,6 @@ export function ZetaHarpMenu(props: StockAppMenuProps) {
 /** Render the Auma Canvas prototype launcher. */
 export function AumaCanvasMenu(props: StockAppMenuProps) {
   return <StockAppMenu {...props} spec={AUMA_CANVAS_APP} />
-}
-
-/** Render the Room launcher without a subtitle. */
-export function RoomMenu(props: StockAppMenuProps) {
-  return <StockAppMenu {...props} spec={ROOM_APP} />
 }
 
 export function HumanGraphMenu(props: StockAppMenuProps) {

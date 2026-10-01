@@ -153,6 +153,13 @@ const shellCall = (group, label, expect, command, workdir) => calls.push({
   arguments: { command, description: `Fixture: ${label}`, ...workdir === undefined ? {} : { workdir } },
 })
 const writers = [
+  ['rm', path => `rm -f ${quoted(path)}`],
+  ['chmod numeric', path => `chmod 600 ${quoted(path)}`],
+  ['chmod symbolic', path => `chmod -R u+w ${quoted(path)}`],
+  ['chmod negative symbolic', path => `chmod -w,go-rwx ${quoted(path)}`],
+  ['chmod multiple symbolic operations', path => `chmod -w+x,g=rx ${quoted(path)}`],
+  ['chmod reference', path => `chmod --reference=notes.txt ${quoted(path)}`],
+  ['chmod BSD remove ACL', path => `chmod -fN ${quoted(path)}`],
   ['sed -i', path => `sed -i 's/hello/updated/' ${quoted(path)}`],
   ['sed -i empty suffix', path => `sed -i '' 's/hello/updated/' ${quoted(path)}`],
   ['redirect >', path => `printf x >${quoted(path)}`],
@@ -167,6 +174,7 @@ const writers = [
   ['dd of=', path => `dd if=/dev/null of=${quoted(path)}`],
   ['truncate', path => `truncate -s 0 ${quoted(path)}`],
   ['python open', path => `python3 -c ${quoted(`open(${JSON.stringify(path)}, 'w').write('x')`)}`],
+  ['python glued -c', path => `python3 -c${quoted(`open(${JSON.stringify(path)}, 'w').write('x')`)}`],
   ['python pathlib', path => `python3 -c ${quoted(`from pathlib import Path; Path(${JSON.stringify(path)}).write_text('x')`)}`],
   ['python pathlib open', path => `python3 -c ${quoted(`from pathlib import Path; Path(${JSON.stringify(path)}).open('w').write('x')`)}`],
   ['node writeFileSync', path => `node -e ${quoted(`require('node:fs').writeFileSync(${JSON.stringify(path)}, 'x')`)}`],
@@ -176,6 +184,34 @@ for (const [label, command] of writers) {
   shellCall('protected literal shell targets', label, 'deny', command(protectedTarget))
   shellCall('workspace literal shell targets', label, 'allow', command('notes.txt'))
 }
+for (const [label, command] of [
+  ['rm option end', `rm -- ${quoted(protectedTarget)}`],
+  ['chmod option end before mode', `chmod -- -w ${quoted(protectedTarget)}`],
+  ['chmod option end before target', `chmod 600 -- ${quoted(protectedTarget)}`],
+  ['chmod separate reference', `chmod --reference notes.txt ${quoted(protectedTarget)}`],
+  ['chmod BSD ACL from stdin', `chmod -E ${quoted(protectedTarget)}`],
+  ['absolute executable rm', `/bin/rm ${quoted(protectedTarget)}`],
+  ['wrapped rm', `command -- rm ${quoted(protectedTarget)}`],
+  ['wrapped chmod', `sh -c ${quoted(`chmod 600 ${quoted(protectedTarget)}`)}`],
+  ['rm quoted spaces and metacharacters', 'rm "plugins/example space[1].mjs"'],
+  ['chmod quoted spaces and metacharacters', 'chmod 600 "plugins/example space[1].mjs"'],
+  ['python version alias', `python3.12 -I -c${quoted(`open(${JSON.stringify(protectedTarget)}, 'w')`)}`],
+  ['nodejs alias', `nodejs --eval=${quoted(`require('node:fs').writeFileSync(${JSON.stringify(protectedTarget)}, 'x')`)}`],
+]) shellCall('protected literal shell targets', label, 'deny', command)
+for (const [label, command] of [
+  ['rm option-shaped filename', 'rm -- -rf'],
+  ['chmod option-shaped filename', 'chmod -- 600 -R'],
+  ['chmod reference is read only', `chmod --reference=${quoted(protectedTarget)} notes.txt`],
+  ['chmod separate reference is read only', `chmod --reference ${quoted(protectedTarget)} notes.txt`],
+  ['quoted command is data', `printf '%s' ${quoted(`rm ${protectedTarget}`)}`],
+  ['command name is exact', `fixture-rm ${quoted(protectedTarget)}`],
+  ['rm dynamic target remains unseen', 'rm "$TARGET"'],
+  ['python option end', `python3 -- -c${quoted(`open(${JSON.stringify(protectedTarget)}, 'w')`)}`],
+  ['python script arguments', `python3 fixture.py -c${quoted(`open(${JSON.stringify(protectedTarget)}, 'w')`)}`],
+  ['python module arguments', `python3 -m fixture -c${quoted(`open(${JSON.stringify(protectedTarget)}, 'w')`)}`],
+  ['python warning argument', `python3 -W ${quoted(`-copen(${JSON.stringify(protectedTarget)}, 'w')`)} -c pass`],
+  ['node option end', `node -- -e ${quoted(`require('node:fs').writeFileSync(${JSON.stringify(protectedTarget)}, 'x')`)}`],
+]) shellCall('literal target false-positive controls', label, 'allow', command)
 for (const [label, command] of writers.filter(([name]) => ['cp', 'mv', 'install', 'ditto', 'rsync', 'ln'].includes(name))) {
   shellCall('directory destinations', `${label} to .`, 'allow', command('.'))
   shellCall('directory destinations', `${label} to repo root`, 'allow', command(repo))

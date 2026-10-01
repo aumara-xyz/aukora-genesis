@@ -686,7 +686,7 @@ record={'pid':child.pid,'gate':({'hook':bound_authority['hook'],'hookSha256':gat
                                 'policy':bound_authority['policyConfig'],
                                 'governed':governed,
                                 'config':str(base/'gate-state'/'gate-config.json')}
-                               if gate else None),'upstreamCommit':pin['commit'],'genesisCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'release':str(release),'stateRoot':str(base),'port':a.port,'entrySha256':hashlib.sha256(entry.read_bytes()).hexdigest(),'command':command,'patches':[{'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in patches],'startup':{'windowSeconds':startup_timeout,'readiness':readiness,'url':url},'status':'spawned; HTTP/browser readiness must be verified separately'}
+                               if gate else None),'upstreamCommit':pin['commit'],'genesisCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'release':str(release),'stateRoot':str(base),'port':a.port,'entrySha256':hashlib.sha256(entry.read_bytes()).hexdigest(),'command':command,'patches':[{'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in patches],'startup':{'windowSeconds':startup_timeout,'readiness':readiness,'url':redact_token(url) if url is not None else None},'status':'spawned; HTTP/browser readiness must be verified separately'}
 (base/'launch.json').write_text(json.dumps(record,indent=2)+'\n')
 if url:
     print(f'Spawned Genesis PID {child.pid}; it printed its URL inside the startup window: {url}')

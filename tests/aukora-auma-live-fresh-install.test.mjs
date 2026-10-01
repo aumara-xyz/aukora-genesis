@@ -52,6 +52,27 @@ const CLIENT = process.env.AUKORA_COURT_CLIENT ?? join(APPS, 'vendor/auma-live/r
 // ── the mutation mode: copy the sources, remove ONE protection, require the court to fail ────────────────────────────────────
 const MUTATIONS = [
   {
+    label: 'Start Voice grant widens to every release-policy class',
+    file: 'auma-live/presence.ts',
+    from: '.filter(cls => voiceAuthorization.allowed.includes(cls))',
+    to: '.filter(() => true)',
+    expect: 'J1',
+  },
+  {
+    label: 'Stop Voice leaves the bearer grant usable',
+    file: 'auma-live/http.ts',
+    from: '      this.voiceSessions.delete(token)\n      grant?.active',
+    to: '      // grant retained by mutation\n      grant?.active',
+    expect: 'J1',
+  },
+  {
+    label: 'Voice expiry checks at entry and transport are removed',
+    file: 'auma-live/http.ts',
+    from: 'voiceSession.expiresAt > Date.now() && ',
+    to: '',
+    expect: 'J1',
+  },
+  {
     label: 'setup status treats missing consent as enabled',
     file: 'auma-live/disclosure.ts',
     from: 'consentEnabled: consent === true,',
@@ -166,14 +187,14 @@ const MUTATIONS = [
   {
     label: 'consent is not checked at turn entry',
     file: 'auma-live/presence.ts',
-    from: "    if (this.dependencies.providerSendConsent !== true) {",
+    from: "    if (request.voiceAuthorization !== undefined ? request.voiceAuthorization.allows(this.minds[request.mind]?.endpoint ?? '') !== true : this.dependencies.providerSendConsent !== true) {",
     to: '    if (false) {',
     expect: 'B5',
   },
   {
     label: 'consent is not checked at the outbound boundary',
     file: 'auma-live/presence.ts',
-    from: '      if (this.dependencies.providerSendConsent !== true) return Promise.reject(new ProviderConsentRefusal())',
+    from: '      if (voiceAuthorization !== undefined ? voiceAuthorization.allows(endpoint) !== true : this.dependencies.providerSendConsent !== true) return Promise.reject(new ProviderConsentRefusal())',
     to: '',
     expect: 'B5',
   },
@@ -234,6 +255,7 @@ if (process.argv.includes('--mutate')) {
       const before = readFileSync(target, 'utf8')
       assert.ok(before.includes(mutation.from), `MUTATION INVALID: ${mutation.file} no longer contains ${JSON.stringify(mutation.from)}`)
       let changed = before.replace(mutation.from, () => mutation.to)
+      if (mutation.label === 'Voice expiry checks at entry and transport are removed') changed = changed.replace('voiceSession.expiresAt <= Date.now()', 'false')
       if (mutation.label === 'HTTP completion selects the newest session line again') changed = `import { readNewestModelRequestLine as __newestForMutation } from './model-request-store.ts'\n${changed}`
       writeFileSync(target, changed)
       const run = spawnSync(process.execPath, [HERE], {
@@ -610,9 +632,9 @@ await arm('B5 consent off keeps all preparation local; true permits both provide
   assert.deepEqual(done(revoked.res).map(frame => frame.reason), ['provider-consent-required'])
   const http = readFileSync(join(SRC, 'auma-live/http.ts'), 'utf8')
   const route = http.slice(http.indexOf('  async presence('))
-  const gate = route.match(/if \(this\.dependencies\.providerSendConsent !== true\) \{([\s\S]*?)\n    \}/u)?.[1]
+  const gate = route.match(/if \(!voiceAuthorized\) \{([\s\S]*?)\n    \}/u)?.[1]
   assert.ok(gate)
-  assert.ok(route.indexOf('providerSendConsent !== true') < route.indexOf('await resolvePresenceSession'))
+  assert.ok(route.indexOf('if (!voiceAuthorized)') < route.indexOf('await resolvePresenceSession'))
   const routeResponse = fakeResponse()
   routeResponse.writeHead = status => assert.equal(status, 200)
   routeResponse.end = chunk => routeResponse.write(chunk)
@@ -631,7 +653,7 @@ await arm('B5 consent off keeps all preparation local; true permits both provide
   // Exercise the actual renderer through endTurn and a later mode refresh: the refusal must remain visible.
   new Function('orb', `
     let presenceBlocked = false;
-    const field = { mode: 'thinking' }, channel = true, duplex = true;
+    const field = { mode: 'thinking' }, channel = true, duplex = true, canvasMode = false;
     const setOrb = () => { ${orbCode} };
     const endTurn = () => { field.mode = 'listening'; setOrb(); };
     (() => { ${branch} })();
@@ -879,9 +901,13 @@ await arm('I1 overlapping HTTP requests retain their own persisted receipt; miss
   const request = text => Object.assign(Readable.from([Buffer.from(JSON.stringify({ sessionId: session.id, text, mind: 'balanced' }))]), { method: 'POST', headers: { host: '127.0.0.1:1' }, socket: { remoteAddress: '127.0.0.1' } })
   const response = () => { const res = fakeResponse(); res.writeHead = code => { res.statusCode = code }; res.end = chunk => { if (chunk !== undefined) res.frames.push(String(chunk)); res.writableEnded = true }; return res }
   const a = response(), b = response()
-  const runningA = http.presence(request('synthetic A'), a)
+  const start = response()
+  await http.presence(Object.assign(Readable.from([Buffer.from(JSON.stringify({ action: 'start-voice', sessionId: session.id, recipient: 'openrouter.ai', classes: ['turn-text', 'history'] }))]), { method: 'POST', headers: { host: '127.0.0.1:1' }, socket: { remoteAddress: '127.0.0.1' } }), start)
+  const token = JSON.parse(start.text()).voiceSessionToken
+  const requestWithGrant = text => Object.assign(Readable.from([Buffer.from(JSON.stringify({ sessionId: session.id, text, mind: 'balanced', voiceSessionToken: token }))]), { method: 'POST', headers: { host: '127.0.0.1:1' }, socket: { remoteAddress: '127.0.0.1' } })
+  const runningA = http.presence(requestWithGrant('synthetic A'), a)
   await Promise.race([enteredA.promise, runningA.then(() => { throw Error(`A ended before fake dispatch: ${a.text()}`) })]) // A is durably appended before its fake provider waits.
-  const runningB = http.presence(request('synthetic B'), b)
+  const runningB = http.presence(requestWithGrant('synthetic B'), b)
   await Promise.race([enteredB.promise, runningB.then(() => { throw Error(`B ended before fake dispatch: ${b.text()}`) })]) // B appends to the same file before A completes.
   releaseB.resolve(); await runningB
   releaseA.resolve(); await runningA
@@ -964,7 +990,7 @@ await arm('H1 owner setup status is read-only; strict consent and every disclosu
   let setupNotice = ''
   new Function('providerState', 'toast', notice)(providerState, text => { setupNotice = text })
   assert.match(providerState.textContent, /requests are off/u)
-  assert.match(setupNotice, /settings for owner setup/u)
+  assert.match(setupNotice, /Start Voice/u)
   assert.equal(providerScope.textContent, previousScope, 'a consent refusal must not invent an absent policy')
   for (const empty of [undefined, { recipient: '', allowed: [] }]) {
     const setup = disclosure.providerSetupOf(true, empty)
@@ -980,6 +1006,142 @@ await arm('H1 owner setup status is read-only; strict consent and every disclosu
   assert.ok(on.sent.length > 0, 'explicit synthetic host opt-in and bounded policy must allow the fake provider')
   assert.deepEqual(done(on.res).map(frame => frame.reason), ['eos'])
   assert.ok(client.indexOf('renderProviderSetup(data?.providerSetup)') < client.indexOf('if (!Array.isArray(data.minds)'))
+})
+
+await arm('J1 Start Voice alone grants bounded session text/history; Stop, expiry and other contexts refuse', async () => {
+  const { AumaLiveHttp } = await load('auma-live/http.ts')
+  const home = join(scratch, 'voice-start-home'); mkdirSync(home)
+  const session = { id: 'start-voice-fixture', snapshotEvents: () => [] }
+  const other = { id: 'other-voice-fixture', snapshotEvents: () => [] }
+  const sessions = new Map([[session.id, session], [other.id, other]])
+  let policy = disclosure.readOwnerPolicy(readFileSync(join(APPS, 'disclosure-policy.json'), 'utf8'))
+  let prepared = 0, mode = 'answer', reads = 0
+  const sent = [], completed = []
+  let holdEntered, heldAbort = 0
+  const dependencies = {
+    providerSendConsent: false, modelRequestHome: home, homeSession: session.id,
+    apiKeyEnv: 'FIXTURE_ONLY', maxRequestBodyBytes: 16000,
+    crossLane: new CrossLaneMemory(), sessions: { get: id => sessions.get(id), list: () => [...sessions.values()] },
+    credentials: { resolve: async () => { throw Error('fixture cannot access credentials') } },
+    disclosurePolicy: () => policy,
+    resolveApiKey: async () => { prepared++; return 'synthetic-only' },
+    identityBlock: () => '', restoreRing: () => { prepared++; return [{ role: 'user', content: 'synthetic prior history' }] },
+    turnFinished: turn => completed.push(turn),
+    fetch: async (_url, init) => {
+      sent.push(JSON.parse(init.body))
+      if (mode === 'hold') {
+        holdEntered();
+        await new Promise((_resolve, reject) => {
+          init.signal.addEventListener('abort', () => { heldAbort++; reject(new DOMException('fixture cancelled', 'AbortError')) }, { once: true })
+        })
+      }
+      return new Response(sseBody(mode === 'repo' ? '[repo "README.md"]' : mode === 'memory' ? '[kira "fixture"]' : 'Synthetic voice reply.'), { status: 200 })
+    },
+  }
+  const http = new AumaLiveHttp(dependencies)
+  const installEngine = extra => { http.engine = new PresenceEngine(dependencies.crossLane, { ...dependencies, ...extra }) }
+  installEngine({}) // Real engine with an explicit fake transport, never a network fallback.
+  const post = async body => {
+    const req = Object.assign(Readable.from([Buffer.from(JSON.stringify(body))]), { method: 'POST', headers: { host: '127.0.0.1:1' }, socket: { remoteAddress: '127.0.0.1' } })
+    const res = fakeResponse(); res.writeHead = status => { res.statusCode = status }
+    res.end = chunk => { if (chunk !== undefined) res.frames.push(String(chunk)); res.writableEnded = true }
+    await http.presence(req, res)
+    return res
+  }
+  const startBody = { action: 'start-voice', sessionId: session.id, recipient: 'openrouter.ai', classes: ['turn-text', 'history'] }
+  const speechBody = token => ({ sessionId: session.id, mind: 'balanced', text: 'synthetic spoken turn', voiceSessionToken: token })
+  const before = await post({ ...speechBody(undefined), providerSendConsent: true })
+  assert.deepEqual(done(before).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(prepared, 0); assert.equal(sent.length, 0)
+  dependencies.providerSendConsent = true
+  assert.deepEqual(done(await post(speechBody(undefined))).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(prepared, 0); assert.equal(sent.length, 0)
+  dependencies.providerSendConsent = false
+  for (const extra of [{ recipient: 'other.example' }, { classes: ['turn-text', 'history', 'screen'] }]) {
+    assert.equal((await post({ ...startBody, ...extra })).statusCode, 400)
+  }
+  policy = disclosure.readOwnerPolicy(undefined)
+  assert.equal((await post(startBody)).statusCode, 409, 'Start must not repair missing policy')
+  policy = disclosure.readOwnerPolicy(OWNER_POLICY)
+  // Drive the real client Start authorization and Stop functions in a disposable VM; no microphone/DOM/host tools.
+  const client = readFileSync(CLIENT, 'utf8')
+  const scope = { canvasMode: false, PRESENCE_ENDPOINT: '/api/auma-live/presence', HOME_WAIT_MS: 1,
+    turnSessionNow: () => session.id, selectedSessionId: () => session.id, turnSessionId: id => id,
+    isCurrentMicAttempt: () => true, providerState: { textContent: '' }, toast: () => {}, setTimeout, clearTimeout, AbortController,
+    fetch: async (_url, init) => {
+      const response = await post(JSON.parse(init.body))
+      return { ok: response.statusCode === 200, json: async () => JSON.parse(response.text()) }
+    },
+  }
+  const controls = client.slice(client.indexOf('  let voiceSession = null;'), client.indexOf('  async function openChannel()'))
+  const ui = runInNewContext(`${controls}\n({ start: authorizeStartVoice, stop: revokeVoiceSession, grant: () => voiceSession })`, scope)
+  assert.equal(await ui.start(1), true)
+  assert.match(scope.providerState.textContent, /Start Voice authorized/u)
+  const grant = ui.grant(), token = grant.voiceSessionToken
+  assert.equal(sent.length, 0, 'Start itself must not send to a provider')
+  const response = await post(speechBody(token))
+  assert.deepEqual(done(response).map(value => value.reason), ['eos'])
+  assert.equal(sent.length, 1)
+  assert.ok(sent[0].messages.some(message => message.content === 'synthetic prior history'))
+  assert.equal(JSON.parse(completed[0].record.line).body.messages.at(-1).content, 'synthetic spoken turn')
+  const reflexBefore = sent.length
+  await post({ ...speechBody(token), mind: 'opus' })
+  assert.equal(sent.length, reflexBefore + 2, 'Start authorization must permit the guarded main and reflex transports')
+  const sentBefore = sent.length, preparedBefore = prepared
+  const wrongSession = await post({ ...speechBody(token), sessionId: other.id })
+  assert.deepEqual(done(wrongSession).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(prepared, preparedBefore)
+  sessions.delete(session.id)
+  assert.deepEqual(done(await post(speechBody(token))).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(prepared, preparedBefore, 'missing live session prepared a turn')
+  sessions.set(session.id, session)
+  const { PRESENCE_MINDS } = await load('auma-live/presence.ts')
+  installEngine({ minds: { ...PRESENCE_MINDS, balanced: { ...PRESENCE_MINDS.balanced, endpoint: 'https://other.example/chat/completions' } } })
+  assert.deepEqual(done(await post(speechBody(token))).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(prepared, preparedBefore, 'different recipient prepared a turn')
+  installEngine({})
+  // A broader release policy cannot expand Start Voice's explicitly disclosed classes.
+  policy = disclosure.readOwnerPolicy(JSON.stringify({ recipient: 'openrouter.ai', allowed: ['turn-text', 'history', 'screen', 'repo', 'memory'] }))
+  const screen = await post({ ...speechBody(token), context: 'synthetic screen bytes' })
+  assert.deepEqual(done(screen).map(value => value.reason), ['disclosure-refused'])
+  assert.equal(sent.length, sentBefore)
+  for (const kind of ['repo', 'memory']) {
+    mode = kind
+    installEngine(kind === 'repo' ? {
+      repoLens: { summary: async () => { throw Error('fixture has no initial repo') }, answer: async request => { reads++; return { request, text: 'synthetic repository bytes' } } }, repoLensLookups: 1,
+    } : { kiraLens: { ask: async () => { reads++; return { text: 'synthetic remembered bytes', injected: [{ handle: 'rem:fixture', tier: 'remembered' }] } } }, kiraLookups: 1 })
+    const oldCount = sent.length
+    const refusal = await post(speechBody(token))
+    assert.deepEqual(done(refusal).map(value => value.reason), ['disclosure-refused'])
+    assert.equal(sent.length, oldCount + 1, `${kind} continuation reached transport`)
+  }
+  assert.equal(reads, 2)
+  mode = 'answer'; installEngine({})
+  const entry = http.voiceSessions.get(token)
+  entry.expiresAt = Date.now() - 1 // Disposable server fixture only.
+  const expiryPrepared = prepared
+  assert.deepEqual(done(await post(speechBody(token))).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(prepared, expiryPrepared, 'expired authorization prepared a provider request')
+  entry.expiresAt = Date.now() + 10000
+  await post({ action: 'stop-voice', voiceSessionToken: token })
+  assert.deepEqual(done(await post(speechBody(token))).map(value => value.reason), ['provider-consent-required'])
+  assert.equal(http.voiceSessions.has(token), false)
+  const fresh = JSON.parse((await post(startBody)).text()).voiceSessionToken
+  // Stop cancels the actual in-flight fake transport and prevents another dispatch.
+  mode = 'hold'
+  const entered = new Promise(resolve => { holdEntered = resolve })
+  const inFlight = post(speechBody(fresh))
+  await entered
+  await post({ action: 'stop-voice', voiceSessionToken: fresh })
+  await inFlight
+  assert.equal(heldAbort, 1)
+  assert.equal(http.voiceSessions.has(fresh), false)
+  assert.equal(dependencies.providerSendConsent, false, 'Start changed the composition toggle')
+  assert.match(client, /Start Voice sends spoken text and conversation history to OpenRouter for this session/u)
+  assert.ok(client.indexOf('await authorizeStartVoice(attempt)') < client.indexOf('      channel = true;', client.indexOf('  async function openChannel()')))
+  assert.match(client, /spoken && channel && voiceSession/u)
+  assert.ok(client.includes('voiceStartAbort?.abort()'))
+  assert.ok(client.includes('revokeVoiceSession(voiceSession.voiceSessionToken)'))
 })
 
 console.log(failures === 0 ? 'ALL ARMS PASSED' : `${String(failures)} ARM(S) FAILED`)

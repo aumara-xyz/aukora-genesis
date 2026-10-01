@@ -711,11 +711,18 @@ export function mountAumaLive(root, options = {}) {
   if (canvasScene) app.append(canvasScene);
 
   // the one control: the orb
-  const orb = el('button', 'alv-orb'); orb.type = 'button'; orb.title = 'open the channel';
-  orb.setAttribute('aria-label', 'Open voice channel');
+  const orb = el('button', 'alv-orb'); orb.type = 'button'; orb.title = canvasMode ? 'open the channel' : 'Start Voice';
+  orb.setAttribute('aria-label', canvasMode ? 'Open voice channel' : 'Start Voice');
   orb.setAttribute('aria-pressed', 'false');
   orb.innerHTML = '<span class="alv-orb-halo"></span><span class="alv-orb-ring"></span><span class="alv-orb-core"></span>';
   app.append(orb);
+  if (!canvasMode) {
+    const voiceDisclosure = el('div', 'alv-note alv-voice-disclosure');
+    voiceDisclosure.id = 'auma-live-start-voice-disclosure';
+    voiceDisclosure.textContent = 'Start Voice sends spoken text and conversation history to OpenRouter for this session. Other context needs separate authorization. Stop Voice ends this authorization.';
+    orb.setAttribute('aria-describedby', voiceDisclosure.id);
+    app.append(voiceDisclosure);
+  }
 
   // status whisper — a brief, honest line above the orb when the channel's state
   // actually changes (voice blocked, fallback engaged, organ back online). It
@@ -767,7 +774,7 @@ export function mountAumaLive(root, options = {}) {
     providerState, providerScope, providerSteps, nativeSdkState);
   providerState.textContent = 'Consent status unavailable until the host answers.';
   providerScope.textContent = 'Provider prompts can include your turn, conversation history, and separately authorised context. Every data class remains checked.';
-  providerSteps.textContent = 'Owner setup: add providerSendConsent: true under the existing aukora-face-apps config in auma-live.patch.yml, preserving its other fields. Set false to disable. Apply through the normal owner-approved deployment/reload. This panel does not change configuration.';
+  providerSteps.textContent = 'Start Voice authorizes spoken text and conversation history to OpenRouter for this session, for up to one hour. Stop Voice ends it. Other data classes still need separate authorization. No settings toggle is required; this panel does not change configuration.';
   nativeSdkState.textContent = 'Native SDK provider availability is unknown until the host answers.';
   if (!canvasMode) {
     panel.append(providerGroup);
@@ -1149,8 +1156,8 @@ export function mountAumaLive(root, options = {}) {
       return;
     }
     providerState.textContent = setup.consentEnabled
-      ? 'Provider consent enabled by owner configuration; disclosure policy still applies.'
-      : 'Provider requests are off. Owner setup is required before Auma Live can answer.';
+      ? 'Provider consent enabled by owner configuration. Start Voice is required for each voice session; disclosure policy still applies.'
+      : 'Provider requests are off until Start Voice authorizes this session.';
     const recipient = typeof setup.recipient === 'string' && setup.recipient.length <= 253 ? setup.recipient : '';
     const allowed = Array.isArray(setup.allowed) ? setup.allowed.filter(value => typeof value === 'string').slice(0, 8) : [];
     providerScope.textContent = recipient && allowed.length
@@ -1199,8 +1206,8 @@ export function mountAumaLive(root, options = {}) {
       + (field.mode === 'speaking' ? ' speaking' : '')
       + (!duplex ? ' fb' : '')
       + (presenceBlocked ? ' presence-blocked' : '');
-    orb.title = channel ? 'close the channel' : 'open the channel';
-    orb.setAttribute('aria-label', channel ? 'Close voice channel' : 'Open voice channel');
+    orb.title = canvasMode ? (channel ? 'close the channel' : 'open the channel') : (channel ? 'Stop Voice' : 'Start Voice');
+    orb.setAttribute('aria-label', canvasMode ? (channel ? 'Close voice channel' : 'Open voice channel') : (channel ? 'Stop Voice' : 'Start Voice'));
     orb.setAttribute('aria-pressed', String(channel));
   };
   const setMode = (m) => { field.mode = m; setOrb(); };
@@ -1596,7 +1603,7 @@ export function mountAumaLive(root, options = {}) {
         duplexGate.selfEchoes = (duplexGate.selfEchoes || 0) + 1;
         return;
       }
-      requestTurn(text);
+      requestTurn(text, true);
     },
     tts_begin(m) {
       const request = ttsRequests.get(Number(m.id));
@@ -1901,7 +1908,7 @@ export function mountAumaLive(root, options = {}) {
     // finals settled → send soon; words still forming → give the recognizer room
     sendTimer = setTimeout(() => {
       const say = heard.trim(); heard = '';
-      if (channel && !duplex && !micMuted && say) requestTurn(say);      // !duplex: a stale final must not race the sidecar
+      if (channel && !duplex && !micMuted && say) requestTurn(say, true);      // !duplex: a stale final must not race the sidecar
     }, stillForming ? 1500 : 600);
   }
   function startRecog() {
@@ -1974,9 +1981,10 @@ export function mountAumaLive(root, options = {}) {
   // ---- turns (one clean streaming turn — no speculation, no filler) ----
   let pendingTurn = null;
   let pendingEntries = [];
+  let pendingSpoken = true;
   let canvasRequestSerial = 0;
 
-  function requestTurn(text) {
+  function requestTurn(text, spoken = false) {
     text = String(text || '').trim();
     if (!text) { if (streaming || herStillAudible()) bargeIn(); return; }
     // Recorded at once, in the transcript of the session this turn would go through NOW (a turn in flight keeps
@@ -1998,13 +2006,14 @@ export function mountAumaLive(root, options = {}) {
       }
       // two requests can land in the abort-propagation gap (typed + the STT
       // debounce): JOIN them — a logged turn must never silently vanish
+      pendingSpoken = pendingTurn ? pendingSpoken && spoken : spoken;
       pendingTurn = pendingTurn ? pendingTurn + '\n' + text : text;
       if (said) pendingEntries.push(said);
       bargeIn();
       return;
     }
     if (herStillAudible()) bargeIn();
-    transmit(text, said ? [said] : []);
+    transmit(text, said ? [said] : [], spoken);
   }
 
   function speakChunk(text, first) {
@@ -2054,7 +2063,7 @@ export function mountAumaLive(root, options = {}) {
     voiceChunks(text).forEach((chunk, index) => speakChunk(chunk, index === 0));
   }
 
-  async function transmit(text, entries = []) {
+  async function transmit(text, entries = [], spoken = false) {
     if (streaming) return;
     streaming = true;
     clearReplyWatchdog();
@@ -2109,6 +2118,14 @@ export function mountAumaLive(root, options = {}) {
       endTurn();
       return;
     }
+    if (spoken && voiceSession) {
+      if (turnSession !== voiceSession.requestedSession && turnSession !== voiceSession.sessionId) {
+        failTurn('Stop Voice and Start Voice again to authorize the newly selected session.');
+        endTurn();
+        return;
+      }
+      turnSession = voiceSession.sessionId;
+    }
     // Not answered yet: the turn goes to the host naming no session, and the host answers through its configured
     // home or refuses by name. She neither guesses a session nor claims a configuration she has not seen.
 
@@ -2161,7 +2178,8 @@ export function mountAumaLive(root, options = {}) {
       const res = await fetch(PRESENCE_ENDPOINT, {
         method: 'POST', signal: abortCtl.signal,
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sessionId: turnSession, text, mind: chosenMind }),
+        body: JSON.stringify({ sessionId: turnSession, text, mind: chosenMind,
+          ...(spoken && channel && voiceSession ? { voiceSessionToken: voiceSession.voiceSessionToken } : {}) }),
       });
       const contentType = res.headers.get('content-type') || '';
       // **THE TRANSCRIPT FOLLOWS THE SESSION THE TURN ACTUALLY WENT THROUGH**, which the host names: her home when
@@ -2224,8 +2242,8 @@ export function mountAumaLive(root, options = {}) {
       clearPresenceTimer();
       full += dirs.flush();
       if (doneReason === 'provider-consent-required') {
-        providerState.textContent = 'Provider requests are off. Owner setup is required before Auma Live can answer.';
-        toast('Provider requests are off. Open her mind & voice settings for owner setup.', 7000);
+        providerState.textContent = 'Provider requests are off until Start Voice authorizes this session.';
+        toast('Provider requests are off. Use Start Voice to authorize this session.', 7000);
       }
       if (doneReason === 'provider-consent-required' || doneReason === 'disclosure-refused') {
         presenceBlocked = true;
@@ -2276,9 +2294,9 @@ export function mountAumaLive(root, options = {}) {
       field.alien('[field reset]');
     }
     if (pendingTurn) {
-      const p = pendingTurn, e = pendingEntries;
-      pendingTurn = null; pendingEntries = [];
-      transmit(p, e);
+      const p = pendingTurn, e = pendingEntries, spoken = pendingSpoken;
+      pendingTurn = null; pendingEntries = []; pendingSpoken = true;
+      transmit(p, e, spoken);
       return;
     }
     if (how === 'cut') { cutHerVoice(); settleIfDone(); return; }
@@ -2317,6 +2335,48 @@ export function mountAumaLive(root, options = {}) {
     else if (prefix) toast(prefix + ' — browser voice engaged');
     else if (!fbToastShown) { fbToastShown = true; toast('local voice organ offline — browser voice engaged'); }
   }
+  let voiceSession = null;
+  let voiceStartAbort = null;
+  function revokeVoiceSession(token) {
+    if (!token || canvasMode) return;
+    void fetch(PRESENCE_ENDPOINT, { method: 'POST', keepalive: true,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ action: 'stop-voice', voiceSessionToken: token }),
+    }).catch(() => {}); // Local grant also expires; no retry can restart Voice.
+  }
+  async function authorizeStartVoice(attempt) {
+    if (canvasMode) return true;
+    let requestedSession = turnSessionNow();
+    if (!requestedSession) requestedSession = turnSessionId(selectedSessionId(), await home.waitForHome(HOME_WAIT_MS));
+    if (!isCurrentMicAttempt(attempt)) return false;
+    const controller = new AbortController(); voiceStartAbort = controller;
+    const timer = setTimeout(() => controller.abort(), 10_000);
+    try {
+      const response = await fetch(PRESENCE_ENDPOINT, { method: 'POST', signal: controller.signal,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action: 'start-voice', sessionId: requestedSession,
+          recipient: 'openrouter.ai', classes: ['turn-text', 'history'] }),
+      });
+      const grant = await response.json();
+      if (!response.ok || typeof grant.voiceSessionToken !== 'string' || !/^[0-9a-f]{48}$/.test(grant.voiceSessionToken)
+          || typeof grant.sessionId !== 'string' || !grant.sessionId || grant.recipient !== 'openrouter.ai'
+          || JSON.stringify(grant.classes) !== '["turn-text","history"]' || !Number.isFinite(grant.expiresAt) || grant.expiresAt <= Date.now()) {
+        toast('Voice could not be authorized: check the session and disclosure policy.', 7000);
+        return false;
+      }
+      if (!isCurrentMicAttempt(attempt)) { revokeVoiceSession(grant.voiceSessionToken); return false; }
+      voiceSession = { ...grant, requestedSession, attempt };
+      providerState.textContent = 'Start Voice authorized spoken text and history to OpenRouter for this session. Stop Voice ends this authorization.';
+      return true;
+    } catch {
+      if (isCurrentMicAttempt(attempt)) toast('Voice authorization did not finish. Use Start Voice to try again.', 7000);
+      return false;
+    } finally {
+      clearTimeout(timer);
+      if (voiceStartAbort === controller) voiceStartAbort = null;
+    }
+  }
+
   async function openChannel() {
     if (channel || channelOpeningAttempt !== 0) return;
     const attempt = ++micAttempt;
@@ -2342,6 +2402,7 @@ export function mountAumaLive(root, options = {}) {
         toast('microphone stopped before the channel opened — try again', 7000);
         return;
       }
+      if (!await authorizeStartVoice(attempt) || !isCurrentMicAttempt(attempt)) return;
       const owner = createVoiceClaim(attempt);
       if (!owner) return;
       channel = true;
@@ -2361,6 +2422,7 @@ export function mountAumaLive(root, options = {}) {
       beginMicSignalWatch();
     } finally {
       if (!channel && channelOpeningAttempt === attempt) {
+        if (voiceSession?.attempt === attempt) { revokeVoiceSession(voiceSession.voiceSessionToken); voiceSession = null; }
         releaseVoiceOwnership();
         stopMic();
         voice.disconnect();
@@ -2371,6 +2433,10 @@ export function mountAumaLive(root, options = {}) {
     }
   }
   function closeChannel() {
+    voiceStartAbort?.abort(); voiceStartAbort = null;
+    if (voiceSession) revokeVoiceSession(voiceSession.voiceSessionToken);
+    voiceSession = null;
+    if (!canvasMode) providerState.textContent = 'Provider requests are off until Start Voice authorizes this session.';
     releaseVoiceOwnership();
     micAttempt += 1;
     channelOpeningAttempt = 0;
@@ -2477,6 +2543,7 @@ function injectStyle() {
   .alv-canvas-document.active { opacity:1; transform:scale(1); }
   .alv-canvas-document.leaving { opacity:0; transform:scale(0.997); pointer-events:none; }
 
+  .alv-voice-disclosure { position:absolute; left:50%; bottom:106px; transform:translateX(-50%); z-index:4; width:min(540px,calc(100% - 40px)); text-align:center; }
   .alv-orb { position:absolute; left:50%; bottom:34px; transform:translateX(-50%); z-index:5;
     width:64px; height:64px; border-radius:50%; cursor:pointer; border:none; background:transparent; }
   .alv-orb-halo { position:absolute; inset:-22px; border-radius:50%; opacity:0; transition:opacity 0.6s ease;

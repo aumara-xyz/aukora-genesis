@@ -271,6 +271,13 @@ export const PRESENCE_MINDS = {
 /** One remembered spoken turn. */
 export type PresenceRingMessage = { role: 'user' | 'assistant'; content: string }
 
+/** Host-created session authority; never parsed from a client-supplied object. */
+export interface VoiceAuthorization {
+  readonly recipient: 'openrouter.ai'
+  readonly allowed: readonly DataClass[]
+  allows(endpoint: string): boolean
+}
+
 /** One validated Auma Live presence request. */
 export interface PresenceRequest {
   /** Harness session receiving the durable model-request record. */
@@ -281,6 +288,7 @@ export interface PresenceRequest {
   mind: string
   /** Optional page-authored view context. */
   context?: string
+  voiceAuthorization?: VoiceAuthorization
 }
 
 type SsePayload =
@@ -801,11 +809,7 @@ export class PresenceEngine {
     this.crossLane = crossLane
     this.dependencies = dependencies
     const transport = dependencies.fetch ?? fetch
-    // Every provider dispatch, including reflexes and continuations, rechecks explicit consent at the transport boundary.
-    this.fetchImpl = (input, init) => {
-      if (this.dependencies.providerSendConsent !== true) return Promise.reject(new ProviderConsentRefusal())
-      return transport(input, init)
-    }
+    this.fetchImpl = transport
     // THE MONEY GATE. Default-constructed when the deployment supplies none, so a composition that forgot to
     // wire it still refuses on an unknown price rather than spending without a ceiling.
     //
@@ -849,7 +853,7 @@ export class PresenceEngine {
       if (!response.write(`data: ${JSON.stringify(payload)}\n\n`)) await once(response, 'drain')
     }
     response.write(': open\n\n')
-    if (this.dependencies.providerSendConsent !== true) {
+    if (request.voiceAuthorization !== undefined ? request.voiceAuthorization.allows(this.minds[request.mind]?.endpoint ?? '') !== true : this.dependencies.providerSendConsent !== true) {
       this.dependencies.reportRecordFailure?.(new Error('auma-live turn refused: provider-consent-required'))
       await write({ t: 'done', reason: 'provider-consent-required' })
       return
@@ -1146,6 +1150,7 @@ export class PresenceEngine {
           request.mind, selected.endpoint, key, body, signal, write,
           lensLookups > 0 || webLookups > 0 || recallLookups > 0 || weightsVerbs > 0,
           [...new Set([...discloses, ...continuationClasses])],
+          request.voiceAuthorization,
         )
         // Memory holds what she actually said. A segment whose prose was
         // withheld and discarded contributed nothing to the room, and keeping
@@ -1427,6 +1432,7 @@ export class PresenceEngine {
     holdUntilRead: boolean,
     /** **WHAT THE CALLER ATTACHED, SO THE CHECKPOINT IS ASKED ABOUT THE TURN RATHER THAN ABOUT A BODY.** */
     discloses: readonly DataClass[] = ['turn-text'],
+    voiceAuthorization?: VoiceAuthorization,
   ): Promise<{
     full: string
     reason: string
@@ -1455,7 +1461,16 @@ export class PresenceEngine {
     // *One loop, one decision, one place to look.* **The classes are the caller's, taken from the blocks it built** — *so
     // this asks about the TURN rather than about a prompt it would have to re-read to understand.*
     const recipient = this.dependencies.disclosureRecipient ?? 'openrouter.ai'
-    const policy = this.dependencies.disclosurePolicy?.()
+    const loadedPolicy = this.dependencies.disclosurePolicy?.()
+    // Start Voice grants only the two disclosed classes; it cannot widen even a broader release policy.
+    const policy = voiceAuthorization !== undefined
+      ? { recipient: loadedPolicy?.recipient ?? '', allowed: (loadedPolicy?.allowed ?? []).filter(cls => voiceAuthorization.allowed.includes(cls)) }
+      : loadedPolicy
+    const fetchForTurn: typeof fetch = (input, init) => {
+      if (voiceAuthorization !== undefined ? voiceAuthorization.allows(endpoint) !== true : this.dependencies.providerSendConsent !== true) return Promise.reject(new ProviderConsentRefusal())
+      if (signal.aborted) return Promise.reject(new Error('auma-live: voice turn cancelled'))
+      return this.fetchImpl(input, init)
+    }
     for (const dataClass of discloses) {
       const disclosure: Disclosure = {
         recipient,
@@ -1500,7 +1515,7 @@ export class PresenceEngine {
       mind,
       endpoint,
       key,
-      fetchImpl: this.fetchImpl,
+      fetchImpl: fetchForTurn,
       signal,
       deepReady,
       speak: text => { void write({ t: 'tok', v: text }) },
@@ -1511,7 +1526,7 @@ export class PresenceEngine {
 
     let upstream: Response
     try {
-      upstream = await this.fetchImpl(endpoint, {
+      upstream = await fetchForTurn(endpoint, {
         method: 'POST',
         signal,
         headers: {

@@ -23,7 +23,6 @@ interface RouteGate {
 }
 import type {} from '@deepseek-ai/dsh-session-persistence'
 import { createEmbeddedAssetHandlers } from './embedded-assets.ts'
-import { RoomHttp } from './room.ts'
 import { AumaLiveHttp } from './auma-live/http.ts'
 import { checkHomeSessionConfig, CONTROLLER_UNMOUNTED, type HomeResume } from './auma-live/home-session.ts'
 import { CrossLaneMemory } from './auma-live/cross-lane.ts'
@@ -908,10 +907,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
         },
       }),
   })
-  const roomHttp = new RoomHttp(config.roomLogPath)
   const routes = [
-    { kind: 'exact', path: '/api/room/recent', handler: roomHttp.recent },
-    { kind: 'exact', path: '/api/room/message', handler: roomHttp.post },
     { kind: 'prefix', path: '/app', handler: assetHandlers.serveStockAppFile },
     { kind: 'exact', path: '/assets/aumara-icon-96.png', handler: assetHandlers.serveAukoraIcon },
     // The same bytes under the path the shell's own components ask for. Deep shipped

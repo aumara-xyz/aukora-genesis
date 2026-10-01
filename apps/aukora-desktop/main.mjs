@@ -435,6 +435,8 @@ app.whenReady().then(async () => {
     // next approval without a relaunch.
     nativeTheme,
     getWindow: () => win,
+    // An attached loopback page has no verified authority to use privileged shell IPC.
+    applicationOrigin: status.owned ? status.origin : null,
     getReleaseDir: () => composition.releaseDir ?? '',
     getPatchPaths: () => composition.patchPaths,
     // THE FIRST LINK'S TWO DESTINATIONS: the key folder defaults to `<state root>/aumlok` when no patch names
