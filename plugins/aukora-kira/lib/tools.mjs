@@ -621,7 +621,7 @@ export function recallTool(dispatch) {
           counters: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           remembered: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           memory: { type: 'object', additionalProperties: false, properties: {
-            dropped: { type: 'integer', minimum: 0 }, reasons: { type: 'object', additionalProperties: { type: 'integer', minimum: 0 } },
+            dropped: { type: 'integer' }, reasons: { type: 'object', additionalProperties: true },
           }, required: ['dropped', 'reasons'] },
           // *** DECLARED, NOT STRIPPED, AND THIS FIELD IS WHY. *** `reconcileRecallAvailability`
           // returns `partialFailure` on every reconciled answer, and this schema's
@@ -649,7 +649,14 @@ export function recallTool(dispatch) {
     },
     async execute(args, exec) {
       assertParameters(RECALL_PARAMETERS, args)
-      return dispatch(exec, /** @type {Record<string, unknown>} */ (args))
+      const answer = await dispatch(exec, /** @type {Record<string, unknown>} */ (args))
+      // The harness schema subset cannot express nonnegative counts or typed dictionary values.
+      const memory = answer?.memory, count = value => Number.isInteger(value) && value >= 0
+      if (memory !== undefined && (!memory || !count(memory.dropped) || !memory.reasons
+        || typeof memory.reasons !== 'object' || Array.isArray(memory.reasons) || !Object.values(memory.reasons).every(count))) {
+        throw new TypeError('kira_recall: memory counts must be non-negative integers')
+      }
+      return answer
     },
     presentCall(args) {
       const input = /** @type {Record<string, unknown>} */ (args)
