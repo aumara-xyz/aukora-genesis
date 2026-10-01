@@ -45,7 +45,7 @@ export function ComposerControls({ locked, selectMode, useProjection, sessionId,
   return <div className={css.controls} aria-busy={busy} data-composer-mode={state?.mode ?? 'unknown'}>
     <span className={css.mode} data-mode={index} data-disabled={disabled || undefined} data-error={error || undefined} title={hint}>
       <span className={css.slider}>
-        <span className={css.track} aria-hidden="true"><span className={css.dot} /><span className={css.unavailableStop} /></span>
+        <span className={css.track} aria-hidden="true"><span className={css.fill} /><span className={css.dot} /></span>
         {index >= 0 && <input className={css.range} type="range" min="0" max="2" step="1" value={index}
           aria-label={t('composer.mode')} aria-valuetext={label} aria-describedby={hintId} disabled={disabled}
           onChange={event => {
@@ -58,10 +58,10 @@ export function ComposerControls({ locked, selectMode, useProjection, sessionId,
       <span className={css.label} aria-hidden="true">{label}</span>
       <span id={hintId} className={css.srOnly}>{hint}</span>
     </span>
-    <span className={css.vision} role="group" aria-label={t('composer.visionUnavailable')} aria-disabled="true"
+    <span className={css.vision} data-vision="unavailable" role="group" aria-label={t('composer.visionUnavailable')} aria-disabled="true"
       aria-describedby={visionHintId} title={t('composer.visionReason')}>
       <span className={css.slider} aria-hidden="true"><span className={css.track}>
-        <span className={css.visionStop} /><span className={css.visionStop} />
+        <span className={css.fill} /><span className={css.dot} />
       </span></span>
       <span className={css.label} aria-hidden="true">{t('composer.vision')}</span>
       <span id={visionHintId} className={css.srOnly}>{t('composer.visionReason')}</span>

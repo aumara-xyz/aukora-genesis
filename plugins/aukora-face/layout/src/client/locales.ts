@@ -6,11 +6,11 @@ export const NS = 'layout'
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
   'composer.mode': '会话模式',
-  'composer.chat': 'Chat',
-  'composer.build': 'Build',
-  'composer.yolo': 'Yolo',
+  'composer.chat': 'CHAT',
+  'composer.build': 'BUILD',
+  'composer.yolo': 'YOLO',
   'composer.yoloReason': 'YOLO 不可用：必须保留原生隔离。',
-  'composer.vision': '视觉',
+  'composer.vision': 'VISION',
   'composer.visionUnavailable': '视觉不可用',
   'composer.visionReason': '视觉不可用：尚未接入真实能力和权限状态。',
   'composer.modeUnknown': '尚未收到主机模式。',
@@ -142,11 +142,11 @@ export type LayoutKey = keyof typeof zh
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
   'composer.mode': 'Session mode',
-  'composer.chat': 'Chat',
-  'composer.build': 'Build',
-  'composer.yolo': 'Yolo',
+  'composer.chat': 'CHAT',
+  'composer.build': 'BUILD',
+  'composer.yolo': 'YOLO',
   'composer.yoloReason': 'YOLO unavailable: native confinement is required.',
-  'composer.vision': 'Vision',
+  'composer.vision': 'VISION',
   'composer.visionUnavailable': 'Vision unavailable',
   'composer.visionReason': 'Vision unavailable: capability and permission state are not connected.',
   'composer.modeUnknown': 'Host mode has not been received.',
