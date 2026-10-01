@@ -55,6 +55,7 @@ import { connect, createServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { readOwnerDaemonConfig } from './aumlok-airlock-config.mjs'
 import { createAirlockSigner, requestOwnerSignature } from './aumlok-signer-airlock.mjs'
+import { OWNER_ONLY_MESSAGE } from '../../plugins/aukora-aumlok/lib/prototype-status.mjs'
 // THE REST OF THIS SIGNER LIVES IN TWO SIBLINGS, MOVED WHOLE (2026-09-27) so that no file of it passes the self-change
 // loop's 64 KiB limit (MAX_PATCH_BYTES, vendor/aukora-seed-app). No moved line was rewritten, every name this file
 // exported is still exported from here, and the code below that uses them is unchanged.
@@ -190,8 +191,8 @@ export async function startShellSigner(input) {
       const reason = 'aumlok:no-seed'
       say(`aukora-desktop: aumlok signer: not serving: ${reason}: no machine key is kept in ${directory}, so `
         + 'this laptop has nothing to sign an approval with. Binding this machine writes one; until then '
-        + 'nothing is signed.')
-      return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null } })
+        + `nothing is signed. ${OWNER_ONLY_MESSAGE}`)
+      return decide({ logDir, say, verdict: { serving: false, reason, socketPath: null, detail: OWNER_ONLY_MESSAGE } })
     }
 
     // THE MACHINE'S OWN KEY, DERIVED FROM THE SEED RATHER THAN TRUSTED FROM THE FILE. The file names both

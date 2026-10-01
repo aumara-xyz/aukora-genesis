@@ -1,7 +1,11 @@
 import { createPublicKey, verify } from 'node:crypto'
 import { connect } from 'node:net'
 import { peerUid } from '../../plugins/aukora-owner-daemon/lib/peer-uid.mjs'
+import { OWNER_ONLY_CODE, airlockFailureIsOwnerOnly } from '../../plugins/aukora-aumlok/lib/prototype-status.mjs'
+import { airlockOwnerReachable } from './aumlok-airlock-reach.mjs'
 import { withinWindow } from './aumlok-signer-review.mjs'
+
+export { airlockOwnerReachable } from './aumlok-airlock-reach.mjs'
 
 // Use the connected descriptor, never the socket file's owner or a UID in JSON.
 // The key pin authenticates the signed bytes independently of that kernel check.
@@ -66,6 +70,10 @@ export function createAirlockSigner({ config, library, review, stillListed }) {
       let signed = false
       try {
         if (!stillListed()) return no('aumlok:machine-signer-not-listed-by-the-record')
+        // BEFORE THE WINDOW. A missing Airlock or a peer that is not the owner uid used to
+        // fall through to review, the person clicked Approve, and the catch below answered
+        // `airlock:refused` after the window had already said the signature was being produced.
+        if (!await airlockOwnerReachable(config)) return no(OWNER_ONLY_CODE)
         const decision = await withinWindow(review({ request, operationContent: facts.operationContent }), request.expiresAt)
         if (decision?.expired || Math.floor(Date.now() / 1000) >= request.expiresAt) return no('signer:request-expired')
         if (decision?.approve !== true) return no(decision?.refusal ?? 'signer:declined')
@@ -75,7 +83,12 @@ export function createAirlockSigner({ config, library, review, stillListed }) {
         if (Math.floor(Date.now() / 1000) >= request.expiresAt || !stillListed()) return no('airlock:authority-changed')
         signed = true
         return response
-      } catch { return no('airlock:refused') }
+      } catch (error) {
+        // A missing daemon or the wrong uid is the owner-only sentence's code.
+        // A bad signature stays `airlock:refused` so the two facts are not one name.
+        if (airlockFailureIsOwnerOnly(error)) return no(OWNER_ONLY_CODE)
+        return no('airlock:refused')
+      }
       finally { if (!signed) seen.delete(request.challenge) }
     },
   }

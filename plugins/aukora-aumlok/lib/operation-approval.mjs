@@ -48,6 +48,10 @@
  *                                            machine (or restoring the seed it kept) is the fix, and
  *                                            a caller that shows "the owner declined" here is lying.
  *                                            The two names are defined in `signer-refusal.mjs`
+ *   aumlok:owner-only                        Airlock or the owner's second account (UID 602 on the
+ *                                            owner's Mac) is not here. Nothing was signed. Binding
+ *                                            this Mac does not fix it. The sentence is
+ *                                            `prototype-status.mjs`.
  *
  * WHY THE REQUEST IS BUILT HERE RATHER THAN BY `createOwnerApprovalSession`. The receipt has to name
  * the exact bytes that were signed, and those bytes derive from the request. A patched-together
@@ -95,6 +99,7 @@ import { controlFieldsOfRecordV3Projection } from './record-v3.mjs'
 import { loadLocalAumlokPublicControl } from './store.mjs'
 import { readDigest, readNonNegativeInteger } from './validation.mjs'
 import { SIGNER_REFUSE, isNotReadyRefusal } from './signer-refusal.mjs'
+import { OWNER_ONLY_CODE, ownerOnlyDetail } from './prototype-status.mjs'
 import { DEFAULT_SIGNER_TIMEOUT_MS, MAX_APPROVAL_LINE_BYTES, exchangeLine } from './signer-channel.mjs'
 
 /** Domain of the bytes an operation digest is taken over. Part of the digest definition. */
@@ -645,6 +650,8 @@ function verifyResponse({ projection, request, response, now }) {
     // green about a property the command did not have, and the person reading the terminal was told
     // their owner had declined an operation nobody had shown them. Both readers now ask
     // `isNotReadyRefusal`, defined once beside the names in `signer-refusal.mjs`.
+    const ownerOnly = ownerOnlyDetail(parsed.refusal)
+    if (ownerOnly !== null) return refuse(OWNER_ONLY_CODE, ownerOnly)
     if (isNotReadyRefusal(parsed.refusal)) {
       return refuse(parsed.refusal, `the signer is not ready: ${parsed.refusal} — binding this machine will fix it`)
     }
