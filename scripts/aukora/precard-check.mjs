@@ -107,6 +107,7 @@ export function checkSandboxProfile({ home = homedir(), support = join(home, 'Li
 // Only these audited runner bodies may execute on the host. Check registrations
 // can vary in a trusted base; every candidate check still goes through Seatbelt.
 const runnerBodies = new Set([
+  '9c7031b6b7a7462c90920430a14d87d27fca3ffbce29a9293861e73c822546be',
   'a2b8f7962867327c0d516ff9a8b720ce84dcfb83fd23488b84cbc36698ca5182',
   '67b97651f419ff1e8333906d6a5cbd998e085463e15b2588f91db1f818c78c88',
   'fbc28a032558fc2aa10397db3f5cd6a2f7bbf806fc2c11402e119d3f8e17dc20',

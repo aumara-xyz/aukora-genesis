@@ -71,6 +71,8 @@ TMPDIR="$work/tmp"
 PYTHONDONTWRITEBYTECODE=1
 export TMPDIR PYTHONDONTWRITEBYTECODE
 pids=
+active=0
+index=0
 count=0
 failed=0
 skipped=0
@@ -85,6 +87,20 @@ trap cleanup 0
 trap 'exit 130' INT
 trap 'exit 143' TERM
 trap 'exit 129' HUP
+
+collect_checks() {
+    for pid in $pids; do
+        index=$((index + 1))
+        if ! wait "$pid"; then failed=$((failed + 1)); fi
+        if [ -f "$work/$index.row" ]; then
+            cat "$work/$index.row"
+        else
+            printf 'FAIL      ?s | check %s | runner did not produce a result\n' "$index"
+        fi
+    done
+    pids=
+    active=0
+}
 
 run_check() {
     count=$((count + 1))
@@ -157,6 +173,9 @@ run_check() {
         exit($ok ? 0 : 1);
     ' "$work/$count" "$1" "$2" &
     pids="$pids $!"
+    active=$((active + 1))
+    # Bound fixture contention; each watchdog still starts only when its check launches.
+    if [ "$active" -eq 4 ]; then collect_checks; fi
 }
 # The precard caller supplies a private interpreter dispatcher from the base.
 # Standalone checks use their normal interpreters and make no confinement claim.
@@ -220,17 +239,7 @@ check_darwin 'node scripts/aukora/box-confinement-check.mjs'
 check_darwin 'node scripts/aukora/caged-worker.mjs'
 check_darwin 'node scripts/aukora/caged-broker-effect.mjs'
 
-index=0
-for pid in $pids; do
-    index=$((index + 1))
-    if ! wait "$pid"; then failed=$((failed + 1)); fi
-    if [ -f "$work/$index.row" ]; then
-        cat "$work/$index.row"
-    else
-        printf 'FAIL      ?s | check %s | runner did not produce a result\n' "$index"
-    fi
-done
-pids=
+collect_checks
 perl -MTime::HiRes=time -e '
     printf "TOTAL %.2fs | %d/%d passed", time - $ARGV[0], $ARGV[1] - $ARGV[2], $ARGV[1];
     print " | logs: $ARGV[3]" if $ARGV[2];
