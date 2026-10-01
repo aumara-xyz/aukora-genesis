@@ -1131,6 +1131,11 @@ export function mountAumaLive(root, options = {}) {
   window.addEventListener('message', onShellMessage);
   announceCanvasReady();
 
+  let voiceSession = null;
+  let voiceStartAbort = null;
+  let voiceExpiryTimer = 0;
+  let voiceExpired = false;
+
   // her mind, five public depths. Honest about the trade.
   const MINDS = [
     // **THIS NOTE USED TO SAY "Fable", WHICH IS NEITHER A MODEL NOR WHAT RUNS.** The Host answers `deep` with
@@ -1149,15 +1154,19 @@ export function mountAumaLive(root, options = {}) {
   let offeredMinds = ['deep', 'balanced', 'quick', 'muse'];
   let mindLabels = {};
   function renderProviderSetup(setup) {
+    if (voiceSession !== null && voiceSession.expiresAt <= Date.now()) expireVoiceSession(voiceSession.voiceSessionToken);
+    const voiceState = voiceSession !== null
+      ? 'Start Voice authorized spoken text and history to OpenRouter for this session. Stop Voice ends this authorization.'
+      : voiceExpired ? 'Voice session expired after one hour. Start Voice to continue.' : null;
     if (!setup || typeof setup !== 'object' || typeof setup.consentEnabled !== 'boolean') {
-      providerState.textContent = 'Consent status unavailable; the host still checks every request.';
+      providerState.textContent = voiceState ?? 'Consent status unavailable; the host still checks every request.';
       providerScope.textContent = 'Current disclosure policy scope is unavailable.';
       nativeSdkState.textContent = 'Native SDK provider availability is unknown.';
       return;
     }
-    providerState.textContent = setup.consentEnabled
+    providerState.textContent = voiceState ?? (setup.consentEnabled
       ? 'Provider consent enabled by owner configuration. Start Voice is required for each voice session; disclosure policy still applies.'
-      : 'Provider requests are off until Start Voice authorizes this session.';
+      : 'Provider requests are off until Start Voice authorizes this session.');
     const recipient = typeof setup.recipient === 'string' && setup.recipient.length <= 253 ? setup.recipient : '';
     const allowed = Array.isArray(setup.allowed) ? setup.allowed.filter(value => typeof value === 'string').slice(0, 8) : [];
     providerScope.textContent = recipient && allowed.length
@@ -2064,6 +2073,10 @@ export function mountAumaLive(root, options = {}) {
   }
 
   async function transmit(text, entries = [], spoken = false) {
+    if (!canvasMode && voiceSession !== null && voiceSession.expiresAt <= Date.now()) {
+      expireVoiceSession(voiceSession.voiceSessionToken);
+      return;
+    }
     if (streaming) return;
     streaming = true;
     clearReplyWatchdog();
@@ -2335,8 +2348,21 @@ export function mountAumaLive(root, options = {}) {
     else if (prefix) toast(prefix + ' — browser voice engaged');
     else if (!fbToastShown) { fbToastShown = true; toast('local voice organ offline — browser voice engaged'); }
   }
-  let voiceSession = null;
-  let voiceStartAbort = null;
+  function expireVoiceSession(token) {
+    if (voiceSession === null || token !== voiceSession.voiceSessionToken) return;
+    const remaining = voiceSession.expiresAt - Date.now();
+    if (remaining > 0) {
+      clearTimeout(voiceExpiryTimer);
+      voiceExpiryTimer = setTimeout(() => expireVoiceSession(token), remaining);
+      return;
+    }
+    closeChannel();
+    voiceExpired = true;
+    presenceBlocked = true;
+    providerState.textContent = 'Voice session expired after one hour. Start Voice to continue.';
+    toast(providerState.textContent, 7000);
+    setOrb();
+  }
   function revokeVoiceSession(token) {
     if (!token || canvasMode) return;
     void fetch(PRESENCE_ENDPOINT, { method: 'POST', keepalive: true,
@@ -2366,6 +2392,10 @@ export function mountAumaLive(root, options = {}) {
       }
       if (!isCurrentMicAttempt(attempt)) { revokeVoiceSession(grant.voiceSessionToken); return false; }
       voiceSession = { ...grant, requestedSession, attempt };
+      voiceExpired = false;
+      presenceBlocked = false;
+      clearTimeout(voiceExpiryTimer);
+      voiceExpiryTimer = setTimeout(() => expireVoiceSession(grant.voiceSessionToken), Math.max(0, grant.expiresAt - Date.now()));
       providerState.textContent = 'Start Voice authorized spoken text and history to OpenRouter for this session. Stop Voice ends this authorization.';
       return true;
     } catch {
@@ -2422,7 +2452,7 @@ export function mountAumaLive(root, options = {}) {
       beginMicSignalWatch();
     } finally {
       if (!channel && channelOpeningAttempt === attempt) {
-        if (voiceSession?.attempt === attempt) { revokeVoiceSession(voiceSession.voiceSessionToken); voiceSession = null; }
+        if (voiceSession?.attempt === attempt) { clearTimeout(voiceExpiryTimer); voiceExpiryTimer = 0; revokeVoiceSession(voiceSession.voiceSessionToken); voiceSession = null; }
         releaseVoiceOwnership();
         stopMic();
         voice.disconnect();
@@ -2433,6 +2463,9 @@ export function mountAumaLive(root, options = {}) {
     }
   }
   function closeChannel() {
+    clearTimeout(voiceExpiryTimer); voiceExpiryTimer = 0;
+    voiceExpired = false;
+    presenceBlocked = false;
     voiceStartAbort?.abort(); voiceStartAbort = null;
     if (voiceSession) revokeVoiceSession(voiceSession.voiceSessionToken);
     voiceSession = null;

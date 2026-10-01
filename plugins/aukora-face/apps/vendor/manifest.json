@@ -461,8 +461,8 @@
       "sha256": "7020369c50a06bdbc151ca36a334219ecbd1643ca0a30f01b65e8c2b7bbcf6a0"
     },
     "auma-live/runtime/app/aumalive.js": {
-      "bytes": 138654,
-      "sha256": "c342ba3e3f29790a0b250ecae842d24077c96783905c98cb46060caaba9d9e3a"
+      "bytes": 140269,
+      "sha256": "082d708bc096315e9cf5ccf15ac4c7d6b809ad434c70b962d8e23aca236d56e3"
     },
     "auma-live/runtime/app/aura-trace.js": {
       "bytes": 10213,

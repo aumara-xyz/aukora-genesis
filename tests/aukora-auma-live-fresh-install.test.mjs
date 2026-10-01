@@ -52,6 +52,20 @@ const CLIENT = process.env.AUKORA_COURT_CLIENT ?? join(APPS, 'vendor/auma-live/r
 // ── the mutation mode: copy the sources, remove ONE protection, require the court to fail ────────────────────────────────────
 const MUTATIONS = [
   {
+    label: 'voice expiry leaves the microphone/channel open',
+    client: true,
+    from: '    closeChannel();\n    voiceExpired = true;',
+    to: '    voiceExpired = true;',
+    expect: 'K1',
+  },
+  {
+    label: 'setup refresh ignores active Start Voice authorization',
+    client: true,
+    from: 'const voiceState = voiceSession !== null',
+    to: 'const voiceState = false',
+    expect: 'K1',
+  },
+  {
     label: 'Start Voice grant widens to every release-policy class',
     file: 'auma-live/presence.ts',
     from: '.filter(cls => voiceAuthorization.allowed.includes(cls))',
@@ -948,7 +962,7 @@ await arm('H1 owner setup status is read-only; strict consent and every disclosu
   const renderer = client.match(/  function renderProviderSetup\(setup\) \{([\s\S]*?)\n  \}\n  function applyRoster/u)?.[1]
   assert.ok(renderer)
   const providerState = { textContent: '' }, providerScope = { textContent: '' }, nativeSdkState = { textContent: '' }
-  const render = new Function('setup', 'providerState', 'providerScope', 'nativeSdkState', renderer)
+  const render = new Function('setup', 'providerState', 'providerScope', 'nativeSdkState', 'voiceSession = null', 'voiceExpired = false', renderer)
   const sdkPatch = JSON.parse(readFileSync(join(ROOT, 'patches/mandatory-agent-confinement.patch.json'), 'utf8'))
   for (const consent of [undefined, false, 'true', true]) {
     const dependencies = { providerSendConsent: consent, disclosurePolicy: () => policy,
@@ -1067,13 +1081,15 @@ await arm('J1 Start Voice alone grants bounded session text/history; Stop, expir
   const client = readFileSync(CLIENT, 'utf8')
   const scope = { canvasMode: false, PRESENCE_ENDPOINT: '/api/auma-live/presence', HOME_WAIT_MS: 1,
     turnSessionNow: () => session.id, selectedSessionId: () => session.id, turnSessionId: id => id,
-    isCurrentMicAttempt: () => true, providerState: { textContent: '' }, toast: () => {}, setTimeout, clearTimeout, AbortController,
+    isCurrentMicAttempt: () => true, presenceBlocked: false, providerState: { textContent: '' }, toast: () => {}, setTimeout: () => 1, clearTimeout: () => {}, AbortController,
     fetch: async (_url, init) => {
       const response = await post(JSON.parse(init.body))
       return { ok: response.statusCode === 200, json: async () => JSON.parse(response.text()) }
     },
   }
-  const controls = client.slice(client.indexOf('  let voiceSession = null;'), client.indexOf('  async function openChannel()'))
+  const declarations = client.match(/  let voiceSession = null;\n  let voiceStartAbort = null;\n  let voiceExpiryTimer = 0;\n  let voiceExpired = false;/u)?.[0]
+  assert.ok(declarations)
+  const controls = declarations + client.slice(client.indexOf('  function expireVoiceSession('), client.indexOf('  async function openChannel()'))
   const ui = runInNewContext(`${controls}\n({ start: authorizeStartVoice, stop: revokeVoiceSession, grant: () => voiceSession })`, scope)
   assert.equal(await ui.start(1), true)
   assert.match(scope.providerState.textContent, /Start Voice authorized/u)
@@ -1142,6 +1158,62 @@ await arm('J1 Start Voice alone grants bounded session text/history; Stop, expir
   assert.match(client, /spoken && channel && voiceSession/u)
   assert.ok(client.includes('voiceStartAbort?.abort()'))
   assert.ok(client.includes('revokeVoiceSession(voiceSession.voiceSessionToken)'))
+})
+
+await arm('K1 voice expiry closes idle/active channels, preserves visible reason and active panel status', async () => {
+  const client = readFileSync(CLIENT, 'utf8')
+  const declarations = client.match(/  let voiceSession = null;\n  let voiceStartAbort = null;\n  let voiceExpiryTimer = 0;\n  let voiceExpired = false;/u)?.[0]
+  const controls = client.slice(client.indexOf('  function expireVoiceSession('), client.indexOf('  async function openChannel()'))
+  const close = client.slice(client.indexOf('  function closeChannel()'), client.indexOf("  orb.addEventListener('click'", client.indexOf('  function closeChannel()')))
+  const renderer = client.slice(client.indexOf('  function renderProviderSetup('), client.indexOf('  function applyRoster('))
+  const orbCode = client.match(/const setOrb = \(\) => \{([\s\S]*?)\n  \};/u)?.[1]
+  assert.ok(declarations && orbCode)
+  let now = 1000, nextTimer = 0
+  const timers = new Map(), notices = [], stopped = [], posted = []
+  const orb = { className: '', setAttribute: (name, value) => { orb[name] = value } }
+  const scope = { canvasMode: false, Date: { now: () => now }, PRESENCE_ENDPOINT: '/fixture/presence', HOME_WAIT_MS: 1,
+    turnSessionNow: () => 'fixture-session', selectedSessionId: () => 'fixture-session', isCurrentMicAttempt: () => true,
+    providerState: { textContent: '' }, providerScope: { textContent: '' }, nativeSdkState: { textContent: '' },
+    channel: true, presenceBlocked: false, duplex: true, field: { mode: 'listening', alien: () => {} }, orb,
+    micAttempt: 1, channelOpeningAttempt: 0, pendingTurn: 'half-heard', pendingEntries: [], ttsPending: 1, playerNode: null,
+    releaseVoiceOwnership: () => stopped.push('ownership'), stopRecog: () => stopped.push('recognition'), stopMic: () => stopped.push('microphone'),
+    bargeIn: () => stopped.push('active turn aborted'), voice: { disconnect: () => stopped.push('sidecar') },
+    setMode: mode => { scope.field.mode = mode }, toast: text => notices.push(text), AbortController,
+    setTimeout: (callback, delay) => { timers.set(++nextTimer, { callback, delay }); return nextTimer }, clearTimeout: id => timers.delete(id),
+    fetch: async (_url, init) => {
+      const body = JSON.parse(init.body); posted.push(body)
+      return { ok: true, json: async () => ({ voiceSessionToken: 'a'.repeat(48), sessionId: 'fixture-session', recipient: 'openrouter.ai', classes: ['turn-text', 'history'], expiresAt: now + 3600000 }) }
+    },
+  }
+  const ui = runInNewContext(`${declarations}\n${controls}\n${close}\n${renderer}\nconst setOrb = () => { ${orbCode} };\n({ start: authorizeStartVoice, close: closeChannel, render: renderProviderSetup, timer: () => voiceExpiryTimer, grant: () => voiceSession })`, scope)
+  for (const active of [false, true]) {
+    scope.channel = true; scope.field.mode = active ? 'thinking' : 'listening'
+    scope.presenceBlocked = true // A new explicit successful Start clears a previous refusal indicator.
+    assert.equal(await ui.start(1), true)
+    assert.equal(scope.presenceBlocked, false)
+    for (const setup of [undefined, { consentEnabled: false, recipient: 'openrouter.ai', allowed: ['turn-text', 'history'] }]) {
+      ui.render(setup)
+      assert.match(scope.providerState.textContent, /Start Voice authorized/u, 'metadata refresh mislabeled an active authorization')
+      assert.ok(!scope.providerState.textContent.includes('requests are off'))
+    }
+    const timer = ui.timer(), pending = timers.get(timer)
+    assert.equal(pending.delay, 3600000)
+    now = ui.grant().expiresAt
+    pending.callback() // Disposable clock; never wait an hour or access a microphone.
+    assert.equal(scope.channel, false)
+    assert.equal(scope.field.mode, 'idle')
+    assert.equal(ui.grant(), null)
+    assert.equal(timers.has(timer), false)
+    assert.equal(orb['aria-label'], 'Start Voice')
+    assert.ok(orb.className.includes('presence-blocked'))
+    assert.match(notices.at(-1), /expired after one hour.*Start Voice/u)
+    assert.match(scope.providerState.textContent, /expired after one hour/u)
+    ui.render({ consentEnabled: false, recipient: 'openrouter.ai', allowed: ['turn-text', 'history'] })
+    assert.match(scope.providerState.textContent, /expired after one hour/u, 'status refresh erased the expiry reason')
+    assert.equal(posted.at(-1).action, 'stop-voice')
+  }
+  assert.equal(stopped.filter(value => value === 'microphone').length, 2)
+  assert.equal(stopped.filter(value => value === 'active turn aborted').length, 2)
 })
 
 console.log(failures === 0 ? 'ALL ARMS PASSED' : `${String(failures)} ARM(S) FAILED`)
