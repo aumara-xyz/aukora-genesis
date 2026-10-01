@@ -22,6 +22,7 @@ import { promisify } from 'node:util'
 import { join, dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { homedir } from 'node:os'
+import { setOperationContent } from '../../plugins/aukora-aumlok/lib/plugin-set-content.mjs'
 import { loopbackOnly } from './url-policy.mjs'
 import { INSTALL_SETTINGS_NAME, writeAumlokDirectoryPatch } from './install-settings.mjs'
 
@@ -63,37 +64,10 @@ async function isFile(path) {
   try { return (await stat(path)).isFile() } catch { return false }
 }
 
-// The installed Aumlok receipt stores operationDigest, not setDigest. Port the exact text from
-// the gate's setOperationContent; the focused test derives receipts with that original helper.
-// Keep the packaged shell independent of the gate's module tree. This only matches evidence:
-// the gate still validates the record's digests, pinned key and receipt signature itself.
+// Shape matching here grants no signature trust; the gate checks the pinned key and bytes.
 function pluginSetOperationDigest(record) {
-  const hex = value => typeof value === 'string' && /^[0-9a-f]{64}$/u.test(value)
-  const artifacts = record?.artifacts
-  if (record?.kind !== 'aukora-plugin-set/v1' || !hex(record.setDigest)
-    || artifacts === null || typeof artifacts !== 'object' || Array.isArray(artifacts)) {
-    throw new Error('malformed plugin set')
-  }
-  const ids = Object.keys(artifacts).sort()
-  if (record.count !== ids.length || ids.some(id => {
-    const artifact = artifacts[id]
-    return artifact?.id !== id || !hex(artifact.digest)
-      || artifact.files === null || typeof artifact.files !== 'object' || Array.isArray(artifact.files)
-      || !Object.hasOwn(artifact.files, artifact.entry) || !Object.values(artifact.files).every(hex)
-  })) throw new Error('malformed plugin set')
-  const files = new Set(Object.values(artifacts).flatMap(artifact => Object.keys(artifact.files)))
-  const width = Math.max(...ids.map(id => id.length))
-  const content = [
-    'AUKORA: ADMIT THESE PLUGINS',
-    'Approve lets exactly these plugin bytes load. A changed, added or',
-    'unrecorded file in them is refused when Node loads it.',
-    `set ${record.setDigest}`,
-    `${String(record.count)} plugins, ${String(files.size)} files, sha256 each:`,
-    ...ids.map(id => `${id.padEnd(width)} ${String(Object.keys(artifacts[id].files).length).padStart(4)} ${artifacts[id].digest.slice(0, 16)}`),
-    'Not covered: node_modules, the gate bootstrap, workers.',
-    '',
-  ].join('\n')
-  return createHash('sha256').update('aukora:operation-content:v1\0', 'utf8').update(content, 'utf8').digest('hex')
+  return createHash('sha256').update('aukora:operation-content:v1\0', 'utf8')
+    .update(setOperationContent(record), 'utf8').digest('hex')
 }
 
 async function installedPluginSet(release, stateRoot) {

@@ -11,9 +11,9 @@ import { canonicalJSONSafeInteger } from '../../plugins/aukora-kira/lib/record.m
 import { buildRepoAdvance, REPO_ADVANCE_KIND } from '../../plugins/aukora-aumlok/lib/repo-advance.mjs'
 import { buildReleaseActivate, RELEASE_ACTIVATE_KIND } from '../../plugins/aukora-aumlok/lib/release-activate.mjs'
 import { WITNESS_DISPLAY_LIMIT } from './aumlok-signer.mjs'
-import { decodeNpub } from '../../plugins/aukora-owner-daemon/lib/airlock-witness.mjs'
+import { decodeNpub, NOSTR_SAFETY_VERSION, assertWitnessFields } from '../../plugins/aukora-owner-daemon/lib/airlock-witness.mjs'
 export { SAS_CONFIRMATION_DOMAIN, SAS_CONFIRMATION_KEYS, sasConfirmationPreimage, NOSTR_BINDING_DOMAIN,
-  decodeNpub, nostrBindingPreimage } from '../../plugins/aukora-owner-daemon/lib/airlock-witness.mjs'
+  decodeNpub, nostrBindingPreimage, NOSTR_SAFETY_VERSION, assertWitnessFields } from '../../plugins/aukora-owner-daemon/lib/airlock-witness.mjs'
 
 // ── THE SECOND OPERATION: `sign-nostr-binding` (Y7) ────────────────────────────────────────────
 //
@@ -33,7 +33,7 @@ export { SAS_CONFIRMATION_DOMAIN, SAS_CONFIRMATION_KEYS, sasConfirmationPreimage
 export const NOSTR_BINDING_OPERATION = 'sign-nostr-binding'
 
 /**
- * THE THIRD OPERATION: `confirm-nostr-sas` — the owner's signature over the six digits a person compared.
+ * THE THIRD OPERATION: `confirm-nostr-sas` — the owner's signature over the safety digits a person compared.
  *
  * `plugins/aukora-nostr/lib/confirmation.mjs` makes VERIFIED reachable through exactly one thing: a
  * confirmation the OWNER signed over the values a person read aloud. That module says outright that it
@@ -88,10 +88,12 @@ export const HEX64 = /^[0-9a-f]{64}$/u
  * the hex key are one fact here by construction. `createdAt` is the request's own `issuedAt`, because
  * the binding's creation instant IS the instant the operation was issued; a second field carrying the
  * same fact would be a second thing to disagree about.
- * @param {{npub: string, subject: string, handle: string, issuedAt: string}} input - the four fields.
- * @returns {Readonly<Record<string, string>>} the statement.
+ * @param {{npub: string, subject: string, handle: string, issuedAt: string, safetyVersion: number}} input - the binding request fields.
+ * @returns {Readonly<Record<string, string|number>>} the statement.
  */
 export function nostrBindingStatement(input) {
+  assertWitnessFields(input)
+  if (input.safetyVersion !== NOSTR_SAFETY_VERSION) throw new TypeError('unsupported safety protocol')
   const nostrPubkeyHex = decodeNpub(input.npub)
   if (nostrPubkeyHex === null) throw new TypeError('npub: not a decodable npub')
   return Object.freeze({
@@ -100,6 +102,7 @@ export function nostrBindingStatement(input) {
     nostrPubkeyHex,
     handle: input.handle,
     createdAt: input.issuedAt,
+    safetyVersion: NOSTR_SAFETY_VERSION,
   })
 }
 

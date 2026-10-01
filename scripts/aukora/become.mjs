@@ -46,6 +46,7 @@ import { root, consistencyProof } from './aura-merkle.mjs'
 import { acquireHeavyRun } from '../lib/heavy-run.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 import { probeConfinement } from './guest-start.mjs'
+import { releaseBinding, sameBinding } from './release-digest.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -81,6 +82,16 @@ const run = (cmd, argv, options = {}) => {
 const git = (...argv) => run('/usr/bin/git', ['-C', REPO, ...argv])
 const memoryLevel = () => Number(run('/usr/sbin/sysctl', ['-n', 'kern.memorystatus_level']).text.trim()) || 0
 const readJson = (path) => JSON.parse(readFileSync(path, 'utf8'))
+
+export function shellCheckoutRefusal({ head, commit, dirty }) {
+  if (head !== commit) return `checkout not at commit: ${head} versus ${commit}`
+  if (dirty !== '') return `dirty shell sources (${dirty.split('\n').length} path(s))`
+  return null
+}
+export function requiredShellRefusal({ shellChanged, newShell, reason }) {
+  return shellChanged && newShell === null
+    ? `required shell rebuild unavailable: ${reason ?? 'no packed shell'}; nothing live changed` : null
+}
 const tail = (text, n = 12) => text.trim().split('\n').slice(-n).join('\n')
 
 let result = { commit: commitArg ?? null, why, startedAt: stamp(), outcome: 'running', steps: [] }
@@ -447,7 +458,13 @@ async function main() {
   if (!PLAN) git('fetch', '-q', 'origin', 'main')
   const commit = git('rev-parse', '--verify', `${commitArg}^{commit}`).text.trim()
   if (!/^[0-9a-f]{40}$/u.test(commit)) finish('refused', `${commitArg} is not a commit this checkout has`)
-  if (git('merge-base', '--is-ancestor', commit, 'origin/main').status !== 0) finish('refused', `${commit.slice(0, 9)} is not on GitHub main; only approved changes on main become live`)
+  if (git('merge-base', '--is-ancestor', commit, 'origin/main').status !== 0) finish('refused', `${commit.slice(0, 9)} is not on GitHub main; activation requires a target commit on main with a matching approval record`)
+  // ON MAIN IS NOT APPROVED: a direct push lands on main too. The commit must carry a matching approval record in the code
+  // Aura chain (witness.mjs auditCommits: record verdict, tree, base and trailers). Imported late: witness imports this file.
+  let audited
+  try { audited = (await import('./witness.mjs')).auditCommits({ repo: REPO, support: SUPPORT, commit }).rows[0] }
+  catch (error) { finish('refused', `the code Aura chain could not be audited (${error.message}); nothing live changed`) }
+  if (audited?.commit !== commit || audited.verdict !== 'MATCH') finish('refused', `${commit.slice(0, 9)} has no approval record in the code Aura chain (${audited?.reason ?? 'not audited'}); activation requires a matching approval record for this target commit. Nothing live changed`)
   result.commit = commit
   const sha9 = commit.slice(0, 9)
   const target = join(RELEASES, `aukora-release-${sha9}`)
@@ -500,6 +517,13 @@ async function main() {
   } catch { shellPaths.push('plugins') }
   const shellChanged = git('diff', '--quiet', shellFrom, commit, '--', ...shellPaths).status !== 0
 
+  // Refuse an unusable source checkout before planning or doing the release build.
+  if (shellChanged) {
+    const refusal = shellCheckoutRefusal({ head: git('rev-parse', 'HEAD').text.trim(), commit,
+      dirty: git('status', '--porcelain', '--', ...shellPaths).text.trim() })
+    if (refusal) finish('refused', `required shell rebuild unavailable: ${refusal}; nothing live changed`)
+  }
+
   if (PLAN) {
     step('plan', { note: `cut ${basename(target)} (parking only what the retention check names as free); keeps everything ${basename(live)} carries; shell ${shellChanged ? `rebuild (changed since ${shellFrom.slice(0, 9)})` : 'unchanged'}; memory level ${memoryLevel()}` })
     finish('planned', 'nothing was changed')
@@ -549,15 +573,15 @@ async function main() {
 
   // THE SHELL IS BUILT FROM THE MAIN CHECKOUT, so only when that checkout sits EXACTLY at <commit> with the shell's files
   // clean: a checkout ahead of GitHub main (local commits) or with uncommitted edits would pack bytes nobody approved into
-  // /Applications/AUKORA.app, whose signer signs every approval. When that does not hold the shell is not rebuilt and the
-  // marker keeps the old base, so the next become still sees the change.
-  let newShell = null
+  // /Applications/AUKORA.app, whose signer signs every approval. A required rebuild that cannot
+  // produce a complete packed shell refuses before any live effects.
+  let newShell = null, shellFailure = null
   if (shellChanged) {
     if (git('rev-parse', 'HEAD').text.trim() !== commit) git('merge', '--ff-only', '-q', commit)
     const head = git('rev-parse', 'HEAD').text.trim()
     const dirty = git('status', '--porcelain', '--', ...shellPaths).text.trim()
     if (head !== commit || dirty !== '') {
-      step('shell', { note: `the shell's sources changed, but the main checkout is ${head !== commit ? `at ${head.slice(0, 9)}, not ${sha9}` : `dirty (${dirty.split('\n').length} path(s))`}; the shell is NOT rebuilt this time` })
+      shellFailure = shellCheckoutRefusal({ head, commit, dirty })
     } else {
       const desk = join(REPO, 'apps', 'aukora-desktop')
       const npm = existsSync(join(dirname(process.execPath), 'npm')) ? join(dirname(process.execPath), 'npm') : 'npm'
@@ -565,10 +589,12 @@ async function main() {
       const candidate = join(desk, 'dist', 'mac-arm64', 'AUKORA.app')
       const missing = built.status === 0 ? shellImportsMissing(desk, candidate) : ['(build failed)']
       if (missing.length === 0) { newShell = candidate; step('shell', { note: 'rebuilt; every import it makes is packed' }) }
-      else step('shell', { note: `NOT swapped: ${missing.slice(0, 5).join(', ')}\n${tail(built.text, 5)}` })
+      else shellFailure = built.status !== 0 ? `shell build failed (exit ${built.status})` : `missing shell imports: ${missing.slice(0, 5).join(', ')}`
     }
   } else step('shell', { note: 'unchanged' })
   dropHeavy()
+  const shellRefusal = requiredShellRefusal({ shellChanged, newShell, reason: shellFailure })
+  if (shellRefusal) finish('refused', shellRefusal)
 
   guardMembrane()
 
@@ -614,9 +640,16 @@ async function main() {
   // the quit, just before apply (which verifies it).
   const approvalFiles = new Set(['plugin-set-approval.json', 'plugin-set-approver.json'].map((name) => join(STATE, 'gate-state', name)))
   let approvedCopies = []
-  const covered = run(process.execPath, [PLUGIN_SET, 'check', '--release', target, '--support', SUPPORT])
+  // THE WHOLE RELEASE GOES INTO THE ONE POPUP: the release tree and the shell that will run (the rebuilt one, else the
+  // installed one) are bound into the record, and the popup is skipped only when the bytes on disk match an approval of them.
+  const shellToRun = newShell ?? APP
+  const bound = run(process.execPath, [PLUGIN_SET, 'bind', '--release', target, '--commit', commit, '--shell', shellToRun, '--support', SUPPORT])
+  if (bound.status !== 0) await giveUp('failed', `the release could not be bound for approval; the running app is unchanged.\n${tail(bound.text)}`)
+  // Retain the binding the approval is about to cover. The record on disk can change during the live check.
+  const boundRelease = JSON.parse(readFileSync(join(target, '.dsh-build', 'plugin-set.json'), 'utf8')).release
+  const covered = run(process.execPath, [PLUGIN_SET, 'check', '--release', target, '--shell', shellToRun, '--support', SUPPORT])
   if (covered.status === 0 && /PLUGIN SET APPROVED/u.test(covered.text)) {
-    step('plugin-set', { note: 'the installed approval already covers these plugin bytes; no popup' })
+    step('plugin-set', { note: 'the installed approval already covers these release and shell bytes; no popup' })
   } else {
     step('plugin-set', { note: 'LOOK AT THE AUKORA APP: approve loading this release (one popup)' })
     const approved = run(process.execPath, [PLUGIN_SET, 'approve', '--release', target, '--support', SUPPORT])
@@ -637,7 +670,9 @@ async function main() {
   if (newShell !== null) {
     mkdirSync(APP_BACKUPS, { recursive: true })
     staged = join(APP_BACKUPS, `AUKORA-new-${sha9}-${Date.now()}.app`)
-    if (run('/usr/bin/ditto', [newShell, staged]).status !== 0) { say('the shell copy failed; the old shell stays'); staged = null }
+    if (run('/usr/bin/ditto', [newShell, staged]).status !== 0) {
+      await giveUp('failed', 'the approved shell could not be staged; the running app is unchanged')
+    }
   }
 
   // ── 4. REPOINT THE LIVE ROWS, THEN THE LIVE CHECK ────────────────────────────────────────────────────
@@ -670,6 +705,10 @@ async function main() {
     await giveUp('failed', `the app did not quit, so ${basename(target)} was not applied; every live file was restored. If the app is stuck, quit it by hand and reopen it`)
   }
   done.quit = true
+  // THE APPROVED BYTES ARE THE ONES APPLIED: the release tree and the shell about to run are recomputed once more.
+  let stillApproved = false
+  try { stillApproved = sameBinding(boundRelease, releaseBinding({ commit, release: target, shell: staged ?? APP })) } catch { stillApproved = false }
+  if (!stillApproved) await giveUp('failed', `${basename(target)} or its shell changed after approval; nothing was applied and every live file was restored`)
   for (const { path, copy } of approvedCopies) copyFileSync(copy, path)
   const applied = run(process.execPath, [CUTOVER, 'apply', target, '--support-root', SUPPORT])
   writeFileSync(join(HOME_DIR, `apply-${sha9}.log`), applied.text)
@@ -683,6 +722,7 @@ async function main() {
     } catch (error) {
       say(`the shell swap failed (${error.message}); the old shell stays`)
       if (done.shellBackup !== null && !existsSync(APP)) { renameSync(done.shellBackup, APP); done.shellBackup = null }
+      await giveUp('failed', 'the approved shell could not be installed; the release cutover was rolled back')
     }
   }
   if (done.applied) {

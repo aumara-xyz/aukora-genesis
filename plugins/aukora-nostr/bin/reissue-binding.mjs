@@ -87,7 +87,7 @@ async function loadSignerClient() {
 const { askSignerOperation } = await loadSignerClient()
 import { join, resolve } from 'node:path'
 
-import { verifyBinding, loadOrCreateNostrKey, NOSTR_BINDING_DOMAIN } from '../lib/identity.mjs'
+import { assertContactFields, verifyBinding, loadOrCreateNostrKey, NOSTR_BINDING_DOMAIN, NOSTR_SAFETY_VERSION } from '../lib/identity.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 
 /** Every way this tool refuses, by name. A caller routes on these; none of them is prose to parse. */
@@ -187,6 +187,7 @@ export function resolveSignerSocketPath(env, stateDir) {
  * @throws {Error} `nostr:reissue-signer-unreachable` or `nostr:reissue-signer-reply-malformed`.
  */
 function askTheSigner(request, socketPath) {
+  assertContactFields(request)
   // THE TRANSPORT IS SHARED NOW (`plugins/aukora-aumlok/lib/signer-client.mjs`), and this tool supplies its
   // OWN refusal names and limits, so nothing an operator or a court sees from here has changed. It was
   // extracted rather than copied because the Confirm path must speak the same wire: two copies of one
@@ -197,7 +198,7 @@ function askTheSigner(request, socketPath) {
     malformed: REISSUE_REFUSE.SIGNER_REPLY_MALFORMED,
     timeoutMs: SIGNER_REPLY_TIMEOUT_MS,
     maxBytes: MAX_SIGNER_LINE_BYTES,
-  })
+  }).then(reply => { assertContactFields(reply); return reply })
 }
 
 /**
@@ -214,6 +215,7 @@ function askTheSigner(request, socketPath) {
  * @returns {Readonly<Record<string, unknown>>} the binding document.
  */
 function bindingFromReply({ statement, signature }, signerKeyHex, label) {
+  assertContactFields({ statement, signature, signerKeyHex, label })
   return Object.freeze({
     domain: NOSTR_BINDING_DOMAIN,
     statement: Object.freeze(statement),
@@ -267,6 +269,7 @@ async function main(argv) {
   let args
   try {
     args = parseArgs(argv)
+    assertContactFields(args)
   } catch (cause) {
     console.error(cause.message)
     console.error(usage())
@@ -315,6 +318,7 @@ async function main(argv) {
     nostrPubkeyHex: nostr.xonlyHex,
     handle,
     createdAt: issuedAt,
+    safetyVersion: NOSTR_SAFETY_VERSION,
   }
   const request = {
     operation: OPERATION,
@@ -322,6 +326,7 @@ async function main(argv) {
     subject,
     handle,
     issuedAt,
+    safetyVersion: NOSTR_SAFETY_VERSION,
     // THE CHALLENGE IS THIS CALLER'S OWN ONE-USE VALUE, and the answer must carry it back: a reply that
     // does not is an answer to some other question, which is not an answer to this one.
     challenge: randomBytes(32).toString('hex'),

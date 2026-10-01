@@ -69,9 +69,13 @@
  * @module @aukora/dsh-plugin-nostr/contact
  */
 import { createHash } from 'node:crypto'
-import { verifySasConfirmationDetailed } from './confirmation.mjs'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { ownerController, verifySasConfirmationDetailed } from './confirmation.mjs'
+import { publicKeyOf } from './event.mjs'
 import {
   verifyBinding, verifyBindingWithKey, verifyBindingUnderItsSigner, signerKeyOf, NOSTR_BINDING_DOMAIN, NOSTR_REFUSE,
+  assertContactFields, npubDecode, npubEncode, NOSTR_SAFETY_VERSION,
 } from './identity.mjs'
 
 /** The four states. A caller routes on these; none of them is prose to parse. */
@@ -93,6 +97,8 @@ export const CONTACT_REFUSE = Object.freeze({
   NO_CONTROLLER: 'contact:no-controller-record-named',
   NO_PEER_KEY: 'contact:peer-controller-key-malformed',
   NO_TRUST_ANCHOR: 'contact:no-trust-anchor-named',
+  NO_LOCAL_BINDING: 'contact:local-identity-unbound',
+  SAFETY_VERSION: 'contact:safety-version-mismatch',
   // The two FOREIGN facts, kept apart on purpose: a caller may act differently on "someone else's key
   // signed this" than on "nobody signed this".
   SIGNED_BY_ANOTHER_CONTROLLER: 'contact:binding-signed-by-another-controller',
@@ -143,6 +149,11 @@ export function controllerKeyOf(binding) {
  * @throws {Error} `contact:npub-malformed` if the npub is not a string.
  */
 export function sasFingerprint({ controllerKeyHex, npub }) {
+  assertContactFields({ controllerKeyHex, npub })
+  npubDecode(npub)
+  if (typeof controllerKeyHex !== 'string' || !/^[0-9a-f]{64}$/iu.test(controllerKeyHex)) {
+    throw refuse(CONTACT_REFUSE.NO_PEER_KEY, 'a SAS needs a valid controller public key')
+  }
   if (typeof npub !== 'string' || npub.length === 0) {
     throw refuse(CONTACT_REFUSE.NO_NPUB, 'a SAS needs the npub it is binding')
   }
@@ -154,6 +165,64 @@ export function sasFingerprint({ controllerKeyHex, npub }) {
     spoken: `${digits.slice(0, 3)} ${digits.slice(3)}`,
     algorithm: 'sha256(aukora:nostr-sas:v1 ‖ controllerKey ‖ npub) mod 10^6',
   })
+}
+
+function boundParty({ npub, controllerKeyHex, binding }) {
+  assertContactFields({ npub, controllerKeyHex, binding })
+  npubDecode(npub)
+  if (typeof controllerKeyHex !== 'string' || !/^[0-9a-f]{64}$/iu.test(controllerKeyHex)) {
+    throw refuse(CONTACT_REFUSE.NO_PEER_KEY, 'a safety number needs a bound controller public key')
+  }
+  const key = controllerKeyHex.toLowerCase()
+  if (binding?.statement?.npub !== npub
+    || (binding.approvalKeyDid !== undefined && signerKeyOf(binding) !== key)
+    || verifyBindingWithKey(binding, { controllerKeyHex: key }).verdict !== 'verified') {
+    throw refuse(CONTACT_REFUSE.NO_SAS_UNBOUND, 'a safety number needs a verified binding for each identity')
+  }
+  return `${key}\n${npub}`
+}
+
+// Each identity has ~116 bits independently. Concatenation preserves that second-preimage
+// cost against a MITM choosing two keys; hashing the pair down would invite a birthday attack.
+function fingerprint(party) {
+  const digest = createHash('sha256').update(JSON.stringify(['aukora:nostr-identity-fingerprint:v2', party]), 'utf8').digest('hex')
+  const digits = (BigInt(`0x${digest}`) % (10n ** 35n)).toString().padStart(35, '0')
+  return Object.freeze({ digits, spoken: digits.match(/.{5}/gu).join(' ') })
+}
+
+/** A bound identity's own fingerprint, distinct from any pair's safety number. */
+export function identityFingerprint(identity) {
+  return fingerprint(boundParty(identity))
+}
+
+/** Read-only local roots: neither a caller-supplied local key nor an unsigned identity file is an anchor. */
+export function safetyNumber({ stateDir, controllerDir, npub, peerControllerKey, binding }) {
+  assertContactFields({ stateDir, controllerDir, npub, peerControllerKey, binding })
+  if (typeof stateDir !== 'string' || !stateDir || typeof controllerDir !== 'string' || !controllerDir) {
+    throw refuse(CONTACT_REFUSE.NO_CONTROLLER, 'a safety number needs the local identity and controller roots')
+  }
+  let local, localVersion
+  try {
+    const key = JSON.parse(readFileSync(join(stateDir, 'nostr', 'identity.json'), 'utf8'))
+    const localNpub = npubEncode(publicKeyOf(key.secretKeyHex))
+    const localBinding = JSON.parse(readFileSync(join(stateDir, 'nostr', 'binding.json'), 'utf8'))
+    local = boundParty({ npub: localNpub, controllerKeyHex: ownerController(controllerDir, signerKeyOf(localBinding)).publicHex, binding: localBinding })
+    localVersion = localBinding.statement.safetyVersion
+  } catch {
+    // Parser/crypto errors can quote the private identity file. Never forward those bytes.
+    throw refuse(CONTACT_REFUSE.NO_LOCAL_BINDING, 'the local identity has no usable controller binding')
+  }
+  const peer = boundParty({ npub, controllerKeyHex: peerControllerKey, binding })
+  // This capability is inside each signed binding, never read from unsigned contact metadata.
+  if (localVersion !== NOSTR_SAFETY_VERSION || binding.statement.safetyVersion !== NOSTR_SAFETY_VERSION) {
+    throw refuse(CONTACT_REFUSE.SAFETY_VERSION, 'both identity bindings must name the current safety protocol')
+  }
+  const localDigits = fingerprint(local).digits
+  const peerDigits = fingerprint(peer).digits
+  const digits = [localDigits, peerDigits].sort().join('')
+  return Object.freeze({ digits, spoken: digits.match(/.{5}/gu).join(' '),
+    // Hide one group from our own half during comparison. The other screen hides its other half.
+    comparisonGroupIndex: localDigits <= peerDigits ? 0 : 7 })
 }
 
 /**
@@ -192,7 +261,9 @@ export function sasFingerprint({ controllerKeyHex, npub }) {
  *   unread compatibility path is a second contract nobody tests. The face passes the flat fields.
  * @returns {Readonly<object>} `{state, reason, code, npub, subject, controllerKeyHex, sas, binding, verdict}`.
  */
-export function resolveContact({ npub, peerControllerKey, binding, expectSubject, controllerDir, confirmation, ownerControllerDir } = {}) {
+export function resolveContact({ npub, peerControllerKey, binding, expectSubject, controllerDir, confirmation, ownerControllerDir, ownerStateDir } = {}) {
+  assertContactFields({ npub, peerControllerKey, binding, expectSubject, confirmation })
+  npubDecode(npub)
   if (typeof npub !== 'string' || npub.length === 0) {
     throw refuse(CONTACT_REFUSE.NO_NPUB, 'a contact needs an npub')
   }
@@ -212,7 +283,7 @@ export function resolveContact({ npub, peerControllerKey, binding, expectSubject
     throw refuse(CONTACT_REFUSE.NO_TRUST_ANCHOR,
       "resolving a contact needs the key this node trusts for it: the contact's peerControllerKey (the peer's ed25519 public key, hex), or controllerDir for a binding this node issued itself")
   }
-  const base = { npub, subject: null, controllerKeyHex: null, sas: null, verdict: null }
+  const base = { npub, subject: null, controllerKeyHex: null, sas: null, safetyNumber: null, verdict: null }
 
   // (1) Nothing presented. We hold a key and no claim about whose it is.
   if (binding === undefined || binding === null) {
@@ -347,9 +418,16 @@ export function resolveContact({ npub, peerControllerKey, binding, expectSubject
   // binding verified under the contact's recorded key — the two are the same key by construction,
   // including for the self-issued path, where the controller record IS the anchor — and anchoring on
   // the recorded key keeps the string a statement about the contact both people agreed on.
-  const sas = peerKeyHex === null
-    ? (controllerKeyHex === null ? null : sasFingerprint({ controllerKeyHex, npub }))
-    : sasFingerprint({ controllerKeyHex: peerKeyHex, npub })
+  let safe = null
+  let safetyRefusal = CONTACT_REFUSE.NO_LOCAL_BINDING
+  if (ownerStateDir && ownerControllerDir) {
+    try {
+      safe = safetyNumber({ stateDir: ownerStateDir, controllerDir: ownerControllerDir,
+        npub, peerControllerKey: peerKeyHex ?? controllerKeyHex, binding })
+    } catch (error) {
+      if (error?.code === CONTACT_REFUSE.SAFETY_VERSION) safetyRefusal = CONTACT_REFUSE.SAFETY_VERSION
+    }
+  }
 
   // (6) VERIFIED IS A SIGNED ACT, NOT A LABEL. THIS IS THE ONLY SITE THAT DECIDES A TRUST OUTCOME,
   // and until now it decided it from a string that `identity.mjs` says outright is NOT SIGNED — so
@@ -359,7 +437,9 @@ export function resolveContact({ npub, peerControllerKey, binding, expectSubject
   const confirmed = verifySasConfirmationDetailed(confirmation, {
     npub,
     controllerKeyHex: peerKeyHex ?? controllerKeyHex,
-    sasDigits: sas === null ? null : sas.digits,
+    subject,
+    sasDigits: safe?.digits ?? null,
+    safetyVersion: safe ? NOSTR_SAFETY_VERSION : null,
     ownerControllerDir,
   })
   const state = confirmed.verdict === 'verified'
@@ -382,7 +462,8 @@ export function resolveContact({ npub, peerControllerKey, binding, expectSubject
     // above say `sas: null` explicitly; this one reaches FOREIGN through the confirmation check, and it
     // must say the same thing — a caller must never read a string off a contact whose confirmation did
     // not verify. Arm 22 found this by asserting it.
-    sas: state === CONTACT_STATE.FOREIGN ? null : sas,
+    sas: state === CONTACT_STATE.FOREIGN ? null : safe,
+    safetyNumber: state === CONTACT_STATE.FOREIGN ? null : safe,
     verdict,
     state,
     // THREE STATES REACH THIS RETURN AND EACH NEEDS ITS OWN SENTENCE. BOUND and VERIFIED both mean
@@ -393,8 +474,10 @@ export function resolveContact({ npub, peerControllerKey, binding, expectSubject
       ? 'the binding verifies under this contact’s recorded controller key and is TEST-labelled, so it is not yet a claim about a person'
       : state === CONTACT_STATE.BOUND
         ? 'the binding verifies under this contact’s recorded controller key, and NOBODY HAS CONFIRMED IT: the person has not compared the digits, so this is a key and not yet a person'
-        : 'the binding verifies under this contact’s recorded controller key and the owner SIGNED a confirmation over this npub, this controller key and these six digits',
-    code: null,
+        : state === CONTACT_STATE.FOREIGN
+          ? 'the binding verifies under this contact’s recorded controller key, but the supplied confirmation did not verify for this contact under the owner’s controller key'
+          : 'the binding verifies under this contact’s recorded controller key and the owner SIGNED a confirmation over this npub, this controller key and this two-party safety number',
+    code: safe ? null : safetyRefusal,
     binding: 'verified',
   })
 }

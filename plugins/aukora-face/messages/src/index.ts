@@ -496,6 +496,8 @@ export function messagesRefusalStatus(reason: MessagesRefusalReason): number {
     case 'messages:confirm-body-unreadable': return 400
     case 'messages:confirm-no-such-contact': return 404
     case 'messages:confirm-not-bound': return 409
+    case 'messages:confirm-safety-version-mismatch': return 409
+    case 'messages:confirm-comparison-required': return 409
     case 'messages:confirm-signer-unreachable': return 503
     case 'messages:confirm-signer-declined': return 409
     case 'messages:confirm-challenge-mismatch': return 409

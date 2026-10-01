@@ -7,6 +7,7 @@
   },
   "files": [
     "src/add-contact-route.ts",
+    "src/client/add-contact.ts",
     "src/confirm-contact-route.ts",
     "src/contacts-store.ts",
     "src/index.ts",

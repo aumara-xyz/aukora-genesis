@@ -20,9 +20,9 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { MESSAGES_CONFIRM_CONTACT_ENDPOINT, messagesRefusalBody } from './messages-route.ts'
+import { contactFieldsAreSafe, MESSAGES_CONFIRM_CONTACT_ENDPOINT, messagesRefusalBody } from './messages-route.ts'
 import type { MessagesRefusalReason } from './messages-route.ts'
-import { resolveContactModuleSpecifier } from './contacts-store.ts'
+import { parseStoredContact, resolveContactModuleSpecifier } from './contacts-store.ts'
 
 /**
  * WHERE THE SIGNER CLIENT IS, IN EITHER LAYOUT.
@@ -52,6 +52,8 @@ export const MESSAGES_CONFIRM_CONTACT_REFUSALS = Object.freeze({
   NO_SUCH_CONTACT: 'messages:confirm-no-such-contact',
   /** The row is not BOUND, so there is no verified key for a confirmation to be about. */
   NOT_BOUND: 'messages:confirm-not-bound',
+  SAFETY_VERSION: 'messages:confirm-safety-version-mismatch',
+  COMPARISON: 'messages:confirm-comparison-required',
   /** No signer is reachable, or it answered with something that is not a reply. */
   SIGNER_UNREACHABLE: 'messages:confirm-signer-unreachable',
   SIGNER_DECLINED: 'messages:confirm-signer-declined',
@@ -70,6 +72,12 @@ export const MESSAGES_CONFIRM_CONTACT_REFUSALS = Object.freeze({
 })
 
 /** How long to wait for the signer, which is a person deciding. */
+export function comparisonMatches(digits: string, groups: unknown): boolean {
+  return /^[0-9]{70}$/u.test(digits) && Array.isArray(groups) && groups.length === 2
+    && groups.every(group => typeof group === 'string' && /^[0-9]{5}$/u.test(group))
+    && groups[0] === digits.slice(0, 5) && groups[1] === digits.slice(35, 40)
+}
+
 const SIGNER_TIMEOUT_MS = 310_000
 
 /** The largest reply line this route will read. */
@@ -181,12 +189,15 @@ export function confirmContactRoute(
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.BODY_UNREADABLE, url)
         return
       }
-      if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+      if (body === null || typeof body !== 'object' || Array.isArray(body) || !contactFieldsAreSafe(body)
+        || Object.keys(body).sort().join(',') !== 'comparisonGroups,npub,safetyVersion,sasDigits') {
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.BODY_UNREADABLE, url)
         return
       }
       const npub = typeof (body as Record<string, unknown>).npub === 'string' ? String((body as Record<string, unknown>).npub) : ''
       if (npub === '') { refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NPUB_INVALID, url); return }
+      const comparison = body as Record<string, unknown>
+      if (comparison.safetyVersion !== 2) { refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.SAFETY_VERSION, url, 409); return }
 
       const roots = rootsOf()
       if (roots.controllerDir === undefined) {
@@ -215,12 +226,11 @@ export function confirmContactRoute(
       }
 
       // WHAT THE ROW SAYS NOW. The digits are read from the CURRENT binding through the same resolver
-      // the listing uses, so the six digits shown to the person and the six digits signed are the same
-      // six digits by construction rather than by agreement.
+      // the listing uses, and the submission must match that exact displayed safety number.
       const listed = (parts.readExistingContacts as (file: string) => readonly Record<string, unknown>[])(
         (parts.contactsPath as (dir: string) => string)(roots.stateDir),
       )
-      const stored = listed.find(entry => entry?.npub === npub)
+      const stored = listed.map(parseStoredContact).find(entry => entry?.npub === npub)
       if (stored === undefined) { refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NO_SUCH_CONTACT, url, 404); return }
       const resolved = (parts.resolveContact as (spec: Record<string, unknown>) => Record<string, unknown>)({
         npub,
@@ -228,17 +238,30 @@ export function confirmContactRoute(
         binding: stored.binding ?? null,
         confirmation: stored.confirmation,
         ownerControllerDir: roots.controllerDir,
+        ownerStateDir: roots.stateDir,
       })
       if (resolved.state !== 'BOUND') {
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_BOUND, url, 409)
         return
       }
-      const sas = resolved.sas as { digits?: string } | null
+      if (resolved.code === 'contact:safety-version-mismatch') {
+        refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.SAFETY_VERSION, url, 409)
+        return
+      }
+      const sas = resolved.sas as { digits?: string; comparisonGroupIndex?: number } | null
       const digits = typeof sas?.digits === 'string' ? sas.digits : ''
       const controllerKeyHex = typeof resolved.controllerKeyHex === 'string' ? resolved.controllerKeyHex : ''
       const subject = typeof resolved.subject === 'string' ? resolved.subject : ''
-      if (!/^\d{6}$/u.test(digits) || controllerKeyHex === '') {
-        refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_BOUND, url, 409)
+      if (!/^[0-9]{70}$/u.test(digits) || controllerKeyHex === '') {
+        refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409)
+        return
+      }
+      // Bind the submission to the exact screen and require the group hidden on this screen.
+      // Re-resolving also checks both authenticated protocol versions before asking any signer.
+      const groupIndex = sas?.comparisonGroupIndex
+      if ((groupIndex !== 0 && groupIndex !== 7) || comparison.sasDigits !== digits
+        || !comparisonMatches(digits, comparison.comparisonGroups)) {
+        refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.COMPARISON, url, 409)
         return
       }
 
@@ -254,7 +277,7 @@ export function confirmContactRoute(
         reply = (await (parts.askSignerOperation as (
           request: Record<string, unknown>, socket: string, names: Record<string, unknown>,
         ) => Promise<Record<string, unknown>>)(
-          { operation: 'confirm-nostr-sas', subject, npub, controllerKeyHex, sasDigits: digits, confirmedAt, challenge },
+          { operation: 'confirm-nostr-sas', subject, npub, controllerKeyHex, sasDigits: digits, confirmedAt, safetyVersion: 2, challenge },
           socketPath,
           { unreachable: MESSAGES_CONFIRM_CONTACT_REFUSALS.SIGNER_UNREACHABLE, malformed: MESSAGES_CONFIRM_CONTACT_REFUSALS.SIGNER_UNREACHABLE, timeoutMs: SIGNER_TIMEOUT_MS, maxBytes: MAX_REPLY_BYTES },
         ))
@@ -288,7 +311,7 @@ export function confirmContactRoute(
         // THE DOMAIN COMES FROM THE VERIFIER, not a literal here: the two must be the same string and
         // the only way to be sure is to read it from the module that will check it.
         domain: String(parts.SAS_CONFIRMATION_DOMAIN ?? ''),
-        statement: { subject, npub, controllerKeyHex, sasDigits: digits, confirmedAt },
+        statement: { subject, npub, controllerKeyHex, sasDigits: digits, confirmedAt, safetyVersion: 2 },
         signature: reply.signature,
         approvalKeyDid: `did:key:${machineHex}`,
       }
@@ -296,10 +319,10 @@ export function confirmContactRoute(
         ?? (parts.verifySasConfirmation as unknown as (doc: unknown, expectation: Record<string, unknown>) => { verdict: string })
       const outcome = typeof parts.verifySasConfirmationDetailed === 'function'
         ? (parts.verifySasConfirmationDetailed as (doc: unknown, e: Record<string, unknown>) => { verdict: string })(document, {
-            npub, controllerKeyHex, sasDigits: digits, ownerControllerDir: roots.controllerDir,
+            npub, subject, controllerKeyHex, sasDigits: digits, safetyVersion: 2, ownerControllerDir: roots.controllerDir,
           })
         : { verdict: (parts.verifySasConfirmation as (doc: unknown, e: Record<string, unknown>) => string)(document, {
-            npub, controllerKeyHex, sasDigits: digits, ownerControllerDir: roots.controllerDir,
+            npub, subject, controllerKeyHex, sasDigits: digits, safetyVersion: 2, ownerControllerDir: roots.controllerDir,
           }) }
       if (checked === undefined || outcome.verdict !== 'verified') {
         // THE SIGNATURE CAME BACK AND DID NOT VERIFY. Nothing is stored: a confirmation this route
@@ -313,6 +336,21 @@ export function confirmContactRoute(
         ;(parts.setContactConfirmation as (input: Record<string, unknown>) => unknown)({ stateDir: roots.stateDir, npub, confirmation: document })
       } catch {
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.WRITE_FAILED, url, 500)
+        return
+      }
+
+      // The signer may have taken minutes. Report VERIFIED only if the stored contact and both
+      // current identity bindings still resolve to the comparison it signed.
+      const current = (parts.readExistingContacts as (file: string) => readonly unknown[])(
+        (parts.contactsPath as (dir: string) => string)(roots.stateDir),
+      ).map(parseStoredContact).find(entry => entry?.npub === npub)
+      const final = current === undefined ? null
+        : (parts.resolveContact as (spec: Record<string, unknown>) => Record<string, unknown>)({
+            npub, peerControllerKey: current.peerControllerKey, binding: current.binding,
+            confirmation: current.confirmation, ownerControllerDir: roots.controllerDir, ownerStateDir: roots.stateDir,
+          })
+      if (final?.state !== 'VERIFIED') {
+        refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409)
         return
       }
 

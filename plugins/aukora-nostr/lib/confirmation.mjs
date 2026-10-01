@@ -32,6 +32,7 @@
  */
 import { createPrivateKey, createPublicKey, sign as edSign, verify as edVerify } from 'node:crypto'
 import { readFileSync } from 'node:fs'
+import { assertContactFields, npubDecode, NOSTR_SAFETY_VERSION } from './identity.mjs'
 /**
  * THE Aumlok RECORD MODULE, RESOLVED IN EITHER TREE.
  *
@@ -76,7 +77,7 @@ async function loadRecordV3() {
 }
 
 const {
-  approvalKeyDidOfRecordV3, isRecordV3, MACHINE_REVOKED_REFUSAL, MACHINE_REVOCATION_MALFORMED_REFUSAL,
+  approvalKeyDidOfRecordV3, isRecordV3, projectRecordV3Control, MACHINE_REVOKED_REFUSAL, MACHINE_REVOCATION_MALFORMED_REFUSAL,
 } = await loadRecordV3()
 import { join } from 'node:path'
 
@@ -93,7 +94,9 @@ export const SAS_CONFIRMATION_KEYS = Object.freeze([
   'controllerKeyHex',
   'sasDigits',
   'confirmedAt',
+  'safetyVersion',
 ])
+const LEGACY_CONFIRMATION_KEYS = SAS_CONFIRMATION_KEYS.filter(key => key !== 'safetyVersion')
 
 /** The signer key field, at the document level and enumerable, exactly as the binding carries it. */
 export const SAS_CONFIRMATION_SIGNER_FIELD = 'approvalKeyDid'
@@ -120,7 +123,14 @@ const DID_KEY_PREFIX = 'did:key:'
  * @returns {string} the preimage.
  */
 export function confirmationPreimage(statement) {
-  const lines = SAS_CONFIRMATION_KEYS.map(key => `${key}=${String(statement?.[key] ?? '')}`)
+  assertContactFields(statement)
+  if (statement?.safetyVersion !== NOSTR_SAFETY_VERSION
+    || Object.keys(statement).sort().join(',') !== [...SAS_CONFIRMATION_KEYS].sort().join(',')
+    || !/^[0-9]{70}$/u.test(statement.sasDigits)
+    || LEGACY_CONFIRMATION_KEYS.some(key => typeof statement?.[key] !== 'string' || !statement[key])) {
+    throw new Error('confirmation fields must be non-empty strings')
+  }
+  const lines = SAS_CONFIRMATION_KEYS.map(key => `${key}=${statement[key]}`)
   return `${SAS_CONFIRMATION_DOMAIN}\n${lines.join('\n')}`
 }
 
@@ -149,9 +159,10 @@ function rawPublicOf(privateKey) {
  * what it was before this change.
  *
  * @param {string} controllerDir - the controller record directory.
+ * @param {string|null} bindingSignerHex - an explicit local binding signer to validate for v3.
  * @returns {{publicHex: string, privateKey: object|null}} the halves that are available.
  */
-export function ownerController(controllerDir) {
+export function ownerController(controllerDir, bindingSignerHex = null) {
   const record = JSON.parse(readFileSync(join(controllerDir, 'local-control.json'), 'utf8'))
   const pem = record?.ed25519PrivateKeyPem
   if (typeof pem === 'string' && pem.length > 0) {
@@ -160,6 +171,10 @@ export function ownerController(controllerDir) {
   }
   // v3: ask the record's own selector, so every approver in this project is chosen in one place.
   if (isRecordV3(record)) {
+    if (typeof bindingSignerHex === 'string' && /^[0-9a-f]{64}$/u.test(bindingSignerHex)) {
+      projectRecordV3Control({ record, machinePublicKeyHex: bindingSignerHex })
+      return { publicHex: bindingSignerHex, privateKey: null }
+    }
     // THE SELECTOR DECIDES WHICH MACHINE, AND WHETHER IT MAY APPROVE AT ALL. It throws
     // `aumlok:machine-revoked` for a retired machine and answers `null` when the record names none or
     // several, and BOTH of those rules are the reason this is called rather than re-read here.
@@ -209,6 +224,7 @@ export function confirmationFor(owner, input) {
     controllerKeyHex: input.controllerKeyHex,
     sasDigits: input.sasDigits,
     confirmedAt: input.at,
+    safetyVersion: NOSTR_SAFETY_VERSION,
   })
   const signature = edSign(null, Buffer.from(confirmationPreimage(statement), 'utf8'), privateKey).toString('hex')
   return Object.freeze({
@@ -249,6 +265,10 @@ export function verifySasConfirmation(confirmation, expectation) {
  */
 export function verifySasConfirmationDetailed(confirmation, expectation) {
   if (confirmation === undefined || confirmation === null) return { verdict: 'absent' }
+  try {
+    assertContactFields(confirmation)
+    assertContactFields(expectation)
+  } catch { return { verdict: 'refused' } }
   if (typeof confirmation !== 'object' || Array.isArray(confirmation)) return { verdict: 'refused' }
   const document = /** @type {Record<string, unknown>} */ (confirmation)
   if (document.domain !== SAS_CONFIRMATION_DOMAIN) return { verdict: 'refused' }
@@ -258,9 +278,15 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
   // A CLOSED KEY SET, checked rather than assumed: a document carrying a field this lane does not rule
   // is not one it issued, and the extra field would sit outside the signature's meaning.
   const present = Object.keys(fields).sort()
-  if (present.length !== SAS_CONFIRMATION_KEYS.length) return { verdict: 'refused' }
-  for (let i = 0; i < present.length; i++) if (present[i] !== [...SAS_CONFIRMATION_KEYS].sort()[i]) return { verdict: 'refused' }
-  for (const key of SAS_CONFIRMATION_KEYS) if (typeof fields[key] !== 'string' || fields[key] === '') return { verdict: 'refused' }
+  const legacy = !Object.hasOwn(fields, 'safetyVersion')
+  const keys = legacy ? LEGACY_CONFIRMATION_KEYS : SAS_CONFIRMATION_KEYS
+  if (present.join(',') !== [...keys].sort().join(',')) return { verdict: 'refused' }
+  for (const key of LEGACY_CONFIRMATION_KEYS) if (typeof fields[key] !== 'string' || fields[key] === '') return { verdict: 'refused' }
+  if (!legacy && fields.safetyVersion !== NOSTR_SAFETY_VERSION) return { verdict: 'refused' }
+  try { npubDecode(fields.npub) } catch { return { verdict: 'refused' } }
+  if (!/^[0-9a-f]{64}$/u.test(fields.controllerKeyHex)
+    || !(legacy ? /^(?:[0-9]{6}|[0-9]{25})$/u : /^[0-9]{70}$/u).test(fields.sasDigits)
+    || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u.test(fields.confirmedAt)) return { verdict: 'refused' }
 
   // AND IT MUST BE SIGNED BY THE OWNER. The anchor is THIS machine's controller — the person doing the
   // comparing — never the peer's key, which is the whole difference between "I checked" and "they say".
@@ -296,7 +322,10 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
   if (!/^[0-9a-f]{128}$/u.test(String(document.signature))) return { verdict: 'refused' }
   const spki = Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(ownerHex, 'hex')])
   try {
-    const ok = edVerify(null, Buffer.from(confirmationPreimage(fields), 'utf8'), createPublicKey({ key: spki, format: 'der', type: 'spki' }), signature)
+    const preimage = legacy
+      ? `${SAS_CONFIRMATION_DOMAIN}\n${LEGACY_CONFIRMATION_KEYS.map(key => `${key}=${fields[key]}`).join('\n')}`
+      : confirmationPreimage(fields)
+    const ok = edVerify(null, Buffer.from(preimage, 'utf8'), createPublicKey({ key: spki, format: 'der', type: 'spki' }), signature)
     if (!ok) return { verdict: 'refused' }
 
     // THE DOCUMENT IS GENUINE. ONLY NOW IS IT WORTH ASKING WHAT IT IS ABOUT, because until the
@@ -310,6 +339,10 @@ export function verifySasConfirmationDetailed(confirmation, expectation) {
     // which is what "nobody has confirmed THIS key" means, rather than FOREIGN, which would call a
     // genuine signature a forgery.
     if (expectation.npub === undefined || fields.npub !== expectation.npub) return { verdict: 'refused' }
+    if (expectation.subject !== undefined && fields.subject !== expectation.subject) return { verdict: 'stale' }
+    // A genuine legacy record may remain on disk, but six digits can never confer VERIFIED.
+    if (legacy) return { verdict: 'stale', reason: 'contact:legacy-sas' }
+    if (expectation.safetyVersion !== NOSTR_SAFETY_VERSION) return { verdict: 'stale', reason: 'contact:safety-version-mismatch' }
     if (expectation.controllerKeyHex === null || fields.controllerKeyHex !== expectation.controllerKeyHex) {
       return { verdict: 'stale' }
     }

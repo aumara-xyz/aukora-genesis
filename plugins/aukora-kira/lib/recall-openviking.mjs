@@ -309,12 +309,28 @@ export function createOpenVikingRecall(input) {
       if (!byUri.has(uri)) byUri.set(uri, [])
       byUri.get(uri).push(note.id)
     }
-    const reads = await Promise.all([...(result?.memories ?? []), ...(result?.resources ?? [])].slice(0, config.candidates).map(async hit => {
+    // Rank the combined lists before spending the read budget. The first URI/ID
+    // occurrence must carry its strongest score, not whichever list came first.
+    const candidates = [...(result?.memories ?? []), ...(result?.resources ?? [])]
+      .map(hit => ({ hit, score: Number(hit?.score) }))
+      .sort((a, b) => {
+        if (!Number.isFinite(a.score)) return Number.isFinite(b.score) ? 1 : 0
+        if (!Number.isFinite(b.score)) return -1
+        return b.score - a.score
+      })
+    const seenUris = new Set()
+    const selected = candidates.filter(({ hit }) => {
+      const uri = String(hit?.uri ?? '')
+      if (seenUris.has(uri)) return false
+      seenUris.add(uri)
+      return true
+    }).slice(0, config.candidates)
+    const reads = await Promise.all(selected.map(async ({ hit, score }) => {
       const uri = String(hit?.uri ?? '')
       const named = idFromUri(config.user, uri)
       const ids = byUri.get(uri) ?? (named && live.entries.has(named) ? [named] : [])
       if (!uri.startsWith(`${root}/`) || !ids.length) return { uri, ids: [], unmapped: true }
-      try { return { uri, ids, score: Number(hit.score), bytes: await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`) } }
+      try { return { uri, ids, score, bytes: await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`) } }
       catch (error) { return { uri, ids, unreadable: true, unavailable: error.code !== 'kira.semantic:not-found' } }
     }))
     live = await ledgerNow(source)

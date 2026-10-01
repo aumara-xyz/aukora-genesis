@@ -1,13 +1,33 @@
 // Existing Nostr/SAS encoding and signing bytes, moved from the desktop witness.
 // Shared by the shell and daemon so a release carries one definition without importing the desktop.
 export const SAS_CONFIRMATION_DOMAIN = 'aukora:nostr-sas-confirmation:v1'
+export const NOSTR_SAFETY_VERSION = 2
 
 export const SAS_CONFIRMATION_KEYS = Object.freeze([
-  'subject', 'npub', 'controllerKeyHex', 'sasDigits', 'confirmedAt',
+  'subject', 'npub', 'controllerKeyHex', 'sasDigits', 'confirmedAt', 'safetyVersion',
 ])
 
+export function assertWitnessFields(value, depth = 0) {
+  if (depth > 32 || (typeof value === 'string' && /[\p{Cc}\u202a-\u202e\u2066-\u2069\p{Zl}\p{Zp}]/u.test(value))) {
+    throw new Error('witness fields must not contain control, bidi override/isolate or line separator characters')
+  }
+  if (value !== null && typeof value === 'object') {
+    for (const [key, field] of Object.entries(value)) {
+      assertWitnessFields(key, depth + 1)
+      assertWitnessFields(field, depth + 1)
+    }
+  }
+}
+
 export function sasConfirmationPreimage(statement) {
-  const lines = SAS_CONFIRMATION_KEYS.map(key => `${key}=${String(statement?.[key] ?? '')}`)
+  assertWitnessFields(statement)
+  if (!statement || Array.isArray(statement)
+    || Object.keys(statement).sort().join(',') !== [...SAS_CONFIRMATION_KEYS].sort().join(',')
+    || SAS_CONFIRMATION_KEYS.filter(key => key !== 'safetyVersion').some(key => typeof statement[key] !== 'string' || !statement[key])
+    || statement.safetyVersion !== NOSTR_SAFETY_VERSION || !/^[0-9]{70}$/u.test(statement.sasDigits)) {
+    throw new Error('confirmation must contain current safety protocol fields')
+  }
+  const lines = SAS_CONFIRMATION_KEYS.map(key => `${key}=${statement[key]}`)
   // NO TRAILING NEWLINE, matching the module: `${DOMAIN}\n${lines.join('\n')}`.
   return `${SAS_CONFIRMATION_DOMAIN}\n${lines.join('\n')}`
 }
@@ -65,6 +85,7 @@ export function decodeNpub(npub) {
 }
 
 export function nostrBindingPreimage(statement) {
+  assertWitnessFields(statement)
   const ordered = {}
   for (const key of Object.keys(statement).sort()) ordered[key] = statement[key]
   return Buffer.from(`${NOSTR_BINDING_DOMAIN}\n${JSON.stringify(ordered)}`, 'utf8')

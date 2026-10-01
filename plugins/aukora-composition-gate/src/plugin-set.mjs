@@ -18,14 +18,18 @@
  * that digest and the signature verifies under the pinned did:key. Nothing stored is trusted: every
  * artifact digest and the set digest are recomputed from the per-file digests.
  *
- * WHAT IT DOES NOT COVER (the digest scope, stated where it is decided):
- *   - installed dependencies (bare specifiers, `node_modules`, `packages/`): not followed, not recorded;
- *   - files Node imports BEFORE the hook exists (the gate's own bootstrap and what it imports);
- *   - bytes read with `fs` rather than imported (served client bundles, data, WASM from a buffer) are
- *     checked once, at rest, when the gate installs, and not at each later read;
- *   - workers and child processes, which have their own loaders;
+ * RECORDED BYTES ARE NOT LOADER ENFORCEMENT:
+ *   - the gate bootstrap, action-gate policy/kernel and caged-worker files are recorded,
+ *     but not import-gated in their own loaders;
+ *   - bare dependencies (`node_modules`, `packages/`), apps/cli and the shell are outside the plugin set
+ *     unless a release binding covers them;
+ *   - a release binding covers the release tree and shell at cutover, excluding .dsh-build/plugin-set.json
+ *     to avoid structural self-reference. External state/tools and symlink targets outside the tree are not covered;
+ *   - the release binding is not rechecked at every boot or later read. Plugin bytes are checked at gate
+ *     installation and imports through its hook; `fs` reads are not checked at each later read;
  *   - the same uid: the record, the approval and the pin all live in files this uid can write.
  */
+import { setOperationContent as renderSetOperationContent } from '../../aukora-aumlok/lib/plugin-set-content.mjs'
 import { createHash, createPublicKey, verify as cryptoVerify } from 'node:crypto'
 import { lstatSync, readdirSync, readFileSync, realpathSync } from 'node:fs'
 import { join, resolve } from 'node:path'
@@ -160,20 +164,8 @@ export function checkPluginSetRecord(record) {
  * at every boot, so the approval can only ever cover what the record says now.
  */
 export function setOperationContent(record) {
-  const { artifacts, setDigest, count } = checkPluginSetRecord(record)
-  const files = new Set(Object.values(artifacts).flatMap((artifact) => Object.keys(artifact.files)))
-  const ids = Object.keys(artifacts).sort()
-  const width = Math.max(...ids.map((id) => id.length))
-  return [
-    'AUKORA: ADMIT THESE PLUGINS',
-    'Approve lets exactly these plugin bytes load. A changed, added or',
-    'unrecorded file in them is refused when Node loads it.',
-    `set ${setDigest}`,
-    `${String(count)} plugins, ${String(files.size)} files, sha256 each:`,
-    ...ids.map((id) => `${id.padEnd(width)} ${String(Object.keys(artifacts[id].files).length).padStart(4)} ${artifacts[id].digest.slice(0, 16)}`),
-    'Not covered: node_modules, the gate bootstrap, workers.',
-    '',
-  ].join('\n')
+  checkPluginSetRecord(record)
+  return renderSetOperationContent(record)
 }
 
 const RECEIPT_FIELDS = ['domain', 'verdict', 'approvalKeyDid', 'subject', 'activeControlDigest', 'operationDigest',

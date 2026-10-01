@@ -92,10 +92,8 @@
  * the listing does: present only for a binding that verified.
  * ─────────────────────────────────────────────────────────────────────────────────────────────
  *
- * A MALFORMED ENTRY REFUSES THE WHOLE LIST rather than being skipped, which is the same rule
- * the rest of this project follows: a missing mandatory input fails, it never silently
- * skips. Dropping one contact would tell the person looking at the screen that their list is
- * complete when it is not.
+ * Malformed entries are omitted individually and named in `skipped`, with controls escaped.
+ * One broken or hostile record must not hide the remaining usable contacts.
  *
  * A BINDING THAT IS PRESENT BUT BROKEN IS NOT A REFUSAL. It is FOREIGN, the adversarial
  * state, and it is reported per contact with the underlying refusal kept in `reason` — that
@@ -109,6 +107,9 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { contactFieldsAreSafe, parseSafetyNumber, safeContactDiagnostic, skippedContact } from './messages-route.ts'
+import type { MessagesSkippedContact } from './messages-route.ts'
+import { checkNpub, MAX_ADD_NAME } from './client/add-contact.ts'
 
 /** The `domain` every contacts document must carry. A different one is a different format. */
 export const MESSAGES_CONTACTS_DOMAIN = 'aukora:nostr-contacts:v1'
@@ -187,10 +188,11 @@ export type MessagesContactBinding = 'absent' | 'verified' | 'refused'
 
 /** The short string two people compare out of band. Two leaf fields, nothing else. */
 export interface MessagesContactSas {
-  /** Six decimal digits. */
+  /** The current pair of independent identity fingerprints. */
   readonly digits: string
-  /** The same digits as two groups of three, which is what a person reads aloud. */
+  /** The same digits in groups of five. */
   readonly spoken: string
+  readonly comparisonGroupIndex: number
 }
 
 /** One contact in the list: seven leaf fields, and no reference to anything live. */
@@ -207,6 +209,7 @@ export interface MessagesContactEntry {
   readonly subject: string | null
   /** The string to compare out of band, or NULL when no binding verified. */
   readonly sas: MessagesContactSas | null
+  readonly safetyNumber?: MessagesContactSas | null
   /** What was presented: nothing, something that verified, or something that did not. */
   readonly binding: MessagesContactBinding
   /** The peer controller key this contact is verified against, as stored. */
@@ -217,6 +220,7 @@ export interface MessagesContactEntry {
 export interface MessagesContactsDocument {
   readonly domain: string
   readonly contacts: readonly MessagesContactDocumentEntry[]
+  readonly skipped?: readonly MessagesSkippedContact[]
 }
 
 /** One stored contact, before anything is resolved about it. */
@@ -281,7 +285,7 @@ export interface MessagesContactsRefusal {
 
 /** A list of contacts, or the named reason there is none to serve. */
 export type MessagesContactsAnswer =
-  | { readonly status: 'ok'; readonly root: string; readonly contacts: readonly MessagesContactEntry[] }
+  | { readonly status: 'ok'; readonly root: string; readonly contacts: readonly MessagesContactEntry[]; readonly skipped?: readonly MessagesSkippedContact[] }
   | MessagesContactsRefusal
 
 /** Where this face reads from and what it verifies against. */
@@ -325,6 +329,9 @@ export interface MessagesContactResolver {
     /** Our own controller record directory, for a binding this node issued itself. */
     readonly controllerDir?: string
     readonly expectSubject?: string
+    readonly ownerStateDir?: string
+    readonly ownerControllerDir?: string
+    readonly confirmation?: unknown
   }): unknown
 }
 
@@ -409,10 +416,13 @@ export function messagesContactsRoots(controllerDir: string | undefined): Messag
  * @returns the entry, or undefined when it is not a contact this face can resolve.
  */
 export function parseStoredContact(value: unknown): MessagesContactDocumentEntry | undefined {
-  if (!isRecord(value)) return undefined
-  if (typeof value.npub !== 'string' || value.npub === '') return undefined
-  if (typeof value.name !== 'string' || value.name === '') return undefined
+  if (!isRecord(value) || !contactFieldsAreSafe(value)) return undefined
+  const npub = checkNpub(value.npub)
+  if (!npub.ok || npub.npub !== value.npub) return undefined
+  if (typeof value.name !== 'string' || value.name.trim() === '' || value.name.length > MAX_ADD_NAME) return undefined
   if (typeof value.peerControllerKey !== 'string') return undefined
+  if (!/^[0-9a-f]{64}$/iu.test(value.peerControllerKey)
+    && !(value.peerControllerKey === '' && value.binding === null)) return undefined
   if (value.binding === undefined) return undefined
   return {
     npub: value.npub,
@@ -435,13 +445,17 @@ export function parseMessagesContactsDocument(value: unknown): MessagesContactsD
   if (!isRecord(value)) return undefined
   if (value.domain !== MESSAGES_CONTACTS_DOMAIN) return undefined
   if (!Array.isArray(value.contacts)) return undefined
+  // The document envelope remains strict; each contact has its own validation boundary.
+  if (!Object.entries(value).every(([key, field]) => contactFieldsAreSafe(key)
+    && (key === 'contacts' || contactFieldsAreSafe(field)))) return undefined
   const contacts: MessagesContactDocumentEntry[] = []
-  for (const raw of value.contacts) {
+  const skipped: MessagesSkippedContact[] = []
+  for (const [index, raw] of value.contacts.entries()) {
     const entry = parseStoredContact(raw)
-    if (entry === undefined) return undefined
-    contacts.push(entry)
+    if (entry === undefined) skipped.push(skippedContact(index, raw))
+    else contacts.push(entry)
   }
-  return { domain: MESSAGES_CONTACTS_DOMAIN, contacts }
+  return { domain: MESSAGES_CONTACTS_DOMAIN, contacts, ...(skipped.length === 0 ? {} : { skipped }) }
 }
 
 /**
@@ -455,7 +469,7 @@ export function parseMessagesContactsDocument(value: unknown): MessagesContactsD
  * @returns the stored contacts, or the named refusal.
  */
 export async function readContactsFile(stateDir: string): Promise<
-  { readonly kind: 'contacts'; readonly contacts: readonly MessagesContactDocumentEntry[] }
+  { readonly kind: 'contacts'; readonly contacts: readonly MessagesContactDocumentEntry[]; readonly skipped?: readonly MessagesSkippedContact[] }
   | { readonly kind: 'refused'; readonly refusal: MessagesContactsRefusal }
 > {
   const path = messagesContactsPath(stateDir)
@@ -482,35 +496,15 @@ export async function readContactsFile(stateDir: string): Promise<
   if (!isRecord(parsed) || parsed.domain !== MESSAGES_CONTACTS_DOMAIN) {
     // A document with the wrong domain is a different format, not a corrupt one: it parses,
     // and this face still cannot read it. The subject names what was found instead.
-    const found = isRecord(parsed) ? JSON.stringify(parsed.domain) : 'not-an-object'
+    const found = isRecord(parsed) ? safeContactDiagnostic(parsed.domain) : 'not-an-object'
     return { kind: 'refused', refusal: refused('messages:contacts-domain-unknown', `${path} (domain ${found})`) }
   }
   const document = parseMessagesContactsDocument(parsed)
   if (document === undefined) {
-    // The domain is right and at least one entry is not. Which one is named so the operator
-    // does not have to diff the file by eye.
-    const offender = offenderSubject(parsed)
-    return { kind: 'refused', refusal: refused('messages:contact-malformed', `${path} (${offender})`) }
+    return { kind: 'refused', refusal: refused('messages:contact-malformed', `${path} (document envelope is malformed)`) }
   }
-  return { kind: 'contacts', contacts: document.contacts }
-}
-
-/** The first entry a malformed document cannot account for, named for the refusal. */
-function offenderSubject(document: Record<string, unknown>): string {
-  const contacts = document.contacts
-  if (!Array.isArray(contacts)) return 'contacts is not an array'
-  for (const [index, raw] of contacts.entries()) {
-    if (parseStoredContact(raw) !== undefined) continue
-    if (!isRecord(raw)) return `entry ${index} is not an object`
-    if (typeof raw.npub !== 'string' || raw.npub === '') return `entry ${index} names no npub`
-    if (typeof raw.name !== 'string' || raw.name === '') return `entry ${index} (${raw.npub}) names no name`
-    if (raw.peerControllerKey === undefined) {
-      return `entry ${index} (${raw.npub}) records no peerControllerKey`
-    }
-    if (typeof raw.peerControllerKey !== 'string') return `entry ${index} (${raw.npub}) has a non-string peerControllerKey`
-    return `entry ${index} (${raw.npub}) carries no binding key`
-  }
-  return 'an entry is malformed'
+  return { kind: 'contacts', contacts: document.contacts,
+    ...(document.skipped === undefined ? {} : { skipped: document.skipped }) }
 }
 
 /** A reason as a string, whatever the resolver put there. */
@@ -542,12 +536,7 @@ function asBindingStatus(value: unknown): MessagesContactBinding | undefined {
  * @returns the two leaf fields, or null.
  */
 export function contactSas(value: unknown): MessagesContactSas | null {
-  if (!isRecord(value)) return null
-  const digits = value.digits
-  const spoken = value.spoken
-  if (typeof digits !== 'string' || digits === '') return null
-  if (typeof spoken !== 'string' || spoken === '') return null
-  return { digits, spoken }
+  return parseSafetyNumber(value) ?? null
 }
 
 /**
@@ -583,7 +572,7 @@ export function resolveStoredContact(
   const peer = contact.peerControllerKey
   if (peer === '' && contact.binding === null) {
     return { npub: contact.npub, name: contact.name, state: 'UNBOUND',
-      reason: 'contact:no-binding', subject: null, sas: null, binding: 'absent', peerControllerKey: '' }
+      reason: 'contact:no-binding', subject: null, sas: null, safetyNumber: null, binding: 'absent', peerControllerKey: '' }
   }
   if (typeof peer !== 'string' || !/^[0-9a-f]{64}$/iu.test(peer)) {
     // A mistyped or truncated key is a DIFFERENT FACT from a peer whose binding fails: reporting
@@ -596,6 +585,7 @@ export function resolveStoredContact(
       reason: 'messages:contact-peer-key-malformed: a contact records the peer controller key as 64 hex characters',
       subject: null,
       sas: null,
+      safetyNumber: null,
       binding: 'refused',
       peerControllerKey: typeof peer === 'string' ? peer : '',
     }
@@ -608,6 +598,7 @@ export function resolveStoredContact(
     expectSubject?: string
     confirmation?: unknown
     ownerControllerDir?: string
+    ownerStateDir?: string
   } = peer === ''
     ? {
         npub: contact.npub,
@@ -621,10 +612,9 @@ export function resolveStoredContact(
   // confirmation is verified AGAINST the owner's machine key, and a confirmation that cannot be checked
   // is worse than none — it would read as a claim nobody had tested. Both are passed only when the
   // contact actually carries one, so a contact with no confirmation resolves exactly as it did before.
-  if (contact.confirmation !== undefined && roots.controllerDir !== undefined) {
-    spec.confirmation = contact.confirmation
-    spec.ownerControllerDir = roots.controllerDir
-  }
+  spec.ownerStateDir = roots.stateDir
+  if (roots.controllerDir !== undefined) spec.ownerControllerDir = roots.controllerDir
+  if (contact.confirmation !== undefined && roots.controllerDir !== undefined) spec.confirmation = contact.confirmation
   if (typeof declared === 'string' && declared !== '') spec.expectSubject = declared
 
   let answer: unknown
@@ -640,6 +630,7 @@ export function resolveStoredContact(
       reason: reasonText(error instanceof Error ? error.message : error),
       subject: null,
       sas: null,
+      safetyNumber: null,
       binding: 'refused',
       peerControllerKey: peer,
     }
@@ -652,6 +643,7 @@ export function resolveStoredContact(
       reason: 'contact:resolution-returned-no-verdict',
       subject: null,
       sas: null,
+      safetyNumber: null,
       binding: 'refused',
       peerControllerKey: peer,
     }
@@ -675,6 +667,7 @@ export function resolveStoredContact(
     reason: reasonText(answer.reason),
     subject: typeof answer.subject === 'string' && answer.subject !== '' ? answer.subject : null,
     sas: verified ? contactSas(answer.sas) : null,
+    safetyNumber: verified ? parseSafetyNumber(answer.safetyNumber) ?? null : null,
     binding,
     peerControllerKey: peer,
   }
@@ -707,6 +700,7 @@ export interface MessagesThread {
   readonly contactState: MessagesThreadContactState
   /** The SAS to compare out of band, or null — the same rule the listing follows. */
   readonly sas: MessagesContactSas | null
+  readonly safetyNumber?: MessagesContactSas | null
   /** Oldest first, de-duplicated by the rumor's id. */
   readonly messages: readonly MessagesThreadMessage[]
 }
@@ -866,6 +860,8 @@ export function openedThreadWraps(
       // rather than trusting the decoder alone, so a caller that omits the expectation still
       // cannot get another sender's message into this thread.
       if (!isRecord(wrap) || typeof wrap.id !== 'string' || seen.has(wrap.id)) continue
+      if (typeof wrap.created_at !== 'number' || !Number.isSafeInteger(wrap.created_at)
+        || wrap.created_at < 0 || wrap.created_at > Math.floor(Date.now() / 1000)) continue
       const cacheKey = `${recipient}:${wrap.id}`
       const wire = JSON.stringify(wrap)
       const cached = openedCache.get(cacheKey)
@@ -895,7 +891,8 @@ export function openedThreadWraps(
     if (!recipients.includes(from === 'me' ? wanted : self)
       || recipients.some(recipient => recipient !== wanted && recipient !== self)) continue
     if (typeof rumor.id !== 'string' || typeof rumor.content !== 'string'
-      || !Number.isInteger(rumor.created_at) || Number(rumor.created_at) < 0) continue
+      || typeof rumor.created_at !== 'number' || !Number.isSafeInteger(rumor.created_at)
+      || rumor.created_at < 0 || rumor.created_at > Math.floor(Date.now() / 1000) + 900) continue
     const at = typeof rumor.created_at === 'number' && Number.isFinite(rumor.created_at) ? rumor.created_at : 0
     const id = typeof rumor.id === 'string' && rumor.id !== ''
       ? rumor.id
@@ -959,6 +956,7 @@ export function readMailThread(
       npub: spec.senderNpub,
       contactState: spec.contact?.state ?? 'UNKNOWN',
       sas: spec.contact?.sas ?? null,
+      safetyNumber: spec.contact?.safetyNumber ?? null,
       messages: [...byId.values()],
     },
     opened,
@@ -1180,5 +1178,6 @@ export async function listContacts(
   }
   if (read.kind === 'refused') return read.refusal
   const contacts = read.contacts.map(contact => resolveStoredContact(resolver, roots, contact))
-  return { status: 'ok', root: roots.stateDir, contacts }
+  return { status: 'ok', root: roots.stateDir, contacts,
+    ...(read.skipped === undefined ? {} : { skipped: read.skipped }) }
 }

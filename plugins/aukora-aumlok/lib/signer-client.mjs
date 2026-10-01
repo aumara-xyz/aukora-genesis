@@ -123,14 +123,18 @@ export function askSignerOperation(request, socketPath, names = {}) {
  * The request record for a `confirm-nostr-sas`, built here so two callers cannot disagree about its shape.
  *
  * THE FIELD NAMES ARE BETA'S, FROM `plugins/aukora-nostr/lib/confirmation.mjs` — `confirmedAt`, not
- * `issuedAt`. The signer re-derives the preimage from exactly these five fields, one line each in this
+ * `issuedAt`. The signer re-derives the preimage from exactly these six fields, one line each in this
  * order, so a caller that spells one differently gets `signer:request-malformed` rather than a signature
  * over different bytes.
  *
- * @param {{subject: string, npub: string, controllerKeyHex: string, sasDigits: string, confirmedAt: string, challenge?: string}} input
+ * @param {{subject: string, npub: string, controllerKeyHex: string, sasDigits: string, confirmedAt: string, safetyVersion: 2, challenge?: string}} input
  * @returns {Readonly<Record<string, unknown>>} the wire request.
  */
 export function confirmNostrSasRequest(input) {
+  // An old caller must migrate deliberately: never upgrade an unversioned comparison by adding a default.
+  if (!input || input.safetyVersion !== 2 || typeof input.sasDigits !== 'string' || !/^[0-9]{70}$/u.test(input.sasDigits)) {
+    throw namedRefusal('signer:request-malformed', 'the confirmation requires safety protocol 2 and 70 digits')
+  }
   return Object.freeze({
     operation: 'confirm-nostr-sas',
     subject: input.subject,
@@ -138,6 +142,7 @@ export function confirmNostrSasRequest(input) {
     controllerKeyHex: input.controllerKeyHex,
     sasDigits: input.sasDigits,
     confirmedAt: input.confirmedAt,
+    safetyVersion: input.safetyVersion,
     // THE CALLER'S CHALLENGE IS ADOPTED WHEN SENT, and the signer mints its own only when it is absent.
     // SENDING ONE IS WHAT MAKES A REPLAY DETECTABLE: the signer refuses a challenge it has already signed,
     // so a caller that lets the signer choose has nothing to detect a duplicate with.

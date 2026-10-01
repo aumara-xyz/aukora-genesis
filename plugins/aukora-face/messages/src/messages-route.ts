@@ -207,10 +207,11 @@ export type MessagesWireContactBinding = 'absent' | 'verified' | 'refused'
 
 /** The short string two people compare out of band. */
 export interface MessagesWireSas {
-  /** Six decimal digits. */
+  /** Two independent 35-digit identity fingerprints, sorted and concatenated. */
   readonly digits: string
-  /** The same digits as two groups of three. */
+  /** The same digits in groups of five. */
   readonly spoken: string
+  readonly comparisonGroupIndex: number
 }
 
 /**
@@ -235,6 +236,7 @@ export interface MessagesWireContactEntry {
   readonly subject: string | null
   /** The string to compare out of band, or NULL when no binding verified. */
   readonly sas: MessagesWireSas | null
+  readonly safetyNumber?: MessagesWireSas | null
   /** What was presented. */
   readonly binding: MessagesWireContactBinding
   /**
@@ -251,6 +253,14 @@ export interface MessagesContactsListBody {
   /** Absolute state directory the listing was built from, so the screen can name what it read. */
   readonly root: string
   readonly contacts: readonly MessagesWireContactEntry[]
+  /** Malformed rows omitted from this listing, identified without unsafe control characters. */
+  readonly skipped?: readonly MessagesSkippedContact[]
+}
+
+export interface MessagesSkippedContact {
+  readonly index: number
+  readonly reason: 'messages:contact-malformed'
+  readonly subject: string
 }
 
 /**
@@ -271,6 +281,8 @@ export type MessagesRefusalReason =
   | 'messages:confirm-body-unreadable'
   | 'messages:confirm-no-such-contact'
   | 'messages:confirm-not-bound'
+  | 'messages:confirm-safety-version-mismatch'
+  | 'messages:confirm-comparison-required'
   | 'messages:confirm-signer-unreachable'
   | 'messages:confirm-signer-declined'
   | 'messages:confirm-challenge-mismatch'
@@ -373,6 +385,20 @@ export const MESSAGES_REFUSAL_REASONS: readonly MessagesRefusalReason[] = [
   ...MESSAGES_STORE_REFUSALS,
   ...MESSAGES_WIRE_REFUSALS,
   'messages:add-binding-invalid',
+  'messages:confirm-npub-invalid',
+  'messages:confirm-body-unreadable',
+  'messages:confirm-no-such-contact',
+  'messages:confirm-not-bound',
+  'messages:confirm-safety-version-mismatch',
+  'messages:confirm-comparison-required',
+  'messages:confirm-signer-unreachable',
+  'messages:confirm-signer-declined',
+  'messages:confirm-challenge-mismatch',
+  'messages:confirm-not-verified',
+  'messages:confirm-write-failed',
+  'messages:confirm-writer-absent',
+  'messages:confirm-writer-unloadable',
+  'messages:confirm-writer-unusable',
 ]
 
 /**
@@ -551,10 +577,13 @@ export interface MessagesThreadBody {
   readonly contactState: 'VERIFIED' | 'BOUND' | 'TEST' | 'UNBOUND' | 'FOREIGN' | 'UNKNOWN'
   /** The SAS to compare out of band, or null — present only for a binding that verified. */
   readonly sas: MessagesWireSas | null
+  readonly safetyNumber?: MessagesWireSas | null
   /** Oldest first. */
   readonly messages: readonly MessagesWireMessage[]
   /** Which relays answered this read. An empty list means the refusal was not a read. */
   readonly answered: readonly string[]
+  /** False when bounded relay paging still has unfinished windows. */
+  readonly inboxComplete?: boolean
   /**
    * Whether every wrap this read OPENED AND ATTRIBUTED to the requested sender has an evidence
    * record. A wrap that failed to open, or that came from somebody else, is owed no record and is
@@ -715,6 +744,41 @@ function isText(value: unknown): value is string {
   return typeof value === 'string' && value !== ''
 }
 
+/** Validate contact data before trimming or projecting it, including nested unsigned metadata. */
+export function contactFieldsAreSafe(value: unknown, depth = 0): boolean {
+  if (depth > 32) return false
+  if (typeof value === 'string') return !/[\p{Cc}\u202a-\u202e\u2066-\u2069\p{Zl}\p{Zp}]/u.test(value)
+  if (value !== null && typeof value === 'object') {
+    return Object.entries(value).every(([key, field]) => contactFieldsAreSafe(key, depth + 1) && contactFieldsAreSafe(field, depth + 1))
+  }
+  return true
+}
+
+/** Escape controls before a rejected field is named in a diagnostic. Never echo raw JSON. */
+export function safeContactDiagnostic(value: unknown): string {
+  if (typeof value !== 'string') return 'unreadable'
+  return JSON.stringify(value.slice(0, 120)).replace(/[\p{Cc}\p{Bidi_Control}\p{Zl}\p{Zp}]/gu,
+    character => `\\u${character.charCodeAt(0).toString(16).padStart(4, '0')}`)
+}
+
+/** Keep usable contacts readable while explicitly accounting for each omitted row. */
+export function skippedContact(index: number, value: unknown): MessagesSkippedContact {
+  const fields = isRecord(value) ? value : {}
+  const name = typeof fields.name === 'string' ? ` name ${safeContactDiagnostic(fields.name)}` : ''
+  const npub = typeof fields.npub === 'string' ? ` npub ${safeContactDiagnostic(fields.npub)}` : ''
+  return { index, reason: 'messages:contact-malformed', subject: `entry ${index}${name}${npub}` }
+}
+
+/** The sole displayed/confirmed safety-number format; legacy six-digit SAS never reaches the UI. */
+export function parseSafetyNumber(value: unknown): MessagesWireSas | null | undefined {
+  if (value === null) return null
+  if (!isRecord(value) || !hasExactKeys(value, ['digits', 'spoken', 'comparisonGroupIndex']) || !contactFieldsAreSafe(value)) return undefined
+  if (typeof value.digits !== 'string' || !/^[0-9]{70}$/u.test(value.digits)) return undefined
+  if (value.spoken !== value.digits.match(/.{5}/gu)?.join(' ')) return undefined
+  if (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return undefined
+  return { digits: value.digits, spoken: String(value.spoken), comparisonGroupIndex: value.comparisonGroupIndex }
+}
+
 /** Whether a value is one of the four states. */
 export function isMessagesContactState(value: unknown): value is MessagesWireContactState {
   return MESSAGES_WIRE_CONTACT_STATES.some(state => state === value)
@@ -787,13 +851,7 @@ export function parseMessagesContactsRequest(pathname: string, search: string): 
 
 /** Parse one SAS off the wire, or undefined when it is not one this face serves. */
 function parseWireSas(value: unknown): MessagesWireSas | undefined {
-  if (!isRecord(value)) return undefined
-  if (!hasExactKeys(value, ['digits', 'spoken'])) return undefined
-  // Six digits, then the same six as two groups of three. Both are asserted rather than
-  // trusted, because this is the string a person reads aloud and compares.
-  if (typeof value.digits !== 'string' || !/^\d{6}$/u.test(value.digits)) return undefined
-  if (typeof value.spoken !== 'string' || !/^\d{3} \d{3}$/u.test(value.spoken)) return undefined
-  return { digits: value.digits, spoken: value.spoken }
+  return parseSafetyNumber(value) ?? undefined
 }
 
 /**
@@ -802,8 +860,9 @@ function parseWireSas(value: unknown): MessagesWireSas | undefined {
  * @returns the entry, or undefined when it is not what this face serves.
  */
 export function parseMessagesContactEntry(value: unknown): MessagesWireContactEntry | undefined {
-  if (!isRecord(value)) return undefined
+  if (!isRecord(value) || !contactFieldsAreSafe(value)) return undefined
   const keys = ['npub', 'name', 'state', 'reason', 'subject', 'sas', 'binding', 'peerControllerKey']
+  if (Object.hasOwn(value, 'safetyNumber')) keys.push('safetyNumber')
   if (!hasExactKeys(value, keys)) return undefined
   if (!isText(value.npub) || !isText(value.name)) return undefined
   if (!isMessagesContactState(value.state)) return undefined
@@ -818,8 +877,10 @@ export function parseMessagesContactEntry(value: unknown): MessagesWireContactEn
   if (value.subject !== null && !isText(value.subject)) return undefined
   const binding = value.binding
   if (!isMessagesContactBinding(binding)) return undefined
-  const sas = parseWireSasForBinding(value.sas, binding)
+  const sas = parseWireSasForBinding(value.sas, binding, value.state)
   if (sas === undefined) return undefined
+  const safetyNumber = value.safetyNumber === undefined ? null : parseSafetyNumber(value.safetyNumber)
+  if (safetyNumber === undefined || (safetyNumber !== null && (binding !== 'verified' || !['BOUND', 'TEST', 'VERIFIED'].includes(value.state)))) return undefined
   return {
     npub: value.npub,
     name: value.name,
@@ -827,6 +888,7 @@ export function parseMessagesContactEntry(value: unknown): MessagesWireContactEn
     reason: value.reason,
     subject: value.subject,
     sas,
+    ...(Object.hasOwn(value, 'safetyNumber') ? { safetyNumber } : {}),
     binding,
     peerControllerKey: value.peerControllerKey,
   }
@@ -835,11 +897,9 @@ export function parseMessagesContactEntry(value: unknown): MessagesWireContactEn
 /**
  * The SAS one entry may carry, given what vouched for it.
  *
- * THE WITHHOLDING IS RE-ASSERTED ON THE WIRE, IN BOTH DIRECTIONS. A body claiming a verified
- * binding and NO SAS is refused because that is the one case where the string exists and the
- * screen would have none to show; a body offering a SAS for anything other than a verified
- * binding is refused because that is the mistake this face exists to prevent. Either way the
- * pair is not a pair this face wrote.
+ * BOUND and TEST may lack a safety number when either identity cannot use the current
+ * protocol. VERIFIED requires a current number; other states or unverified bindings
+ * must not offer one.
  *
  * @param value - the entry's `sas` field.
  * @param binding - the entry's already-validated binding status.
@@ -848,12 +908,10 @@ export function parseMessagesContactEntry(value: unknown): MessagesWireContactEn
 function parseWireSasForBinding(
   value: unknown,
   binding: MessagesWireContactBinding,
+  state: MessagesWireContactState,
 ): MessagesWireSas | null | undefined {
-  if (binding === 'verified') {
-    const sas = parseWireSas(value)
-    return sas === undefined ? undefined : sas
-  }
-  return value === null ? null : undefined
+  if (binding === 'verified') return parseThreadSas(value, state)
+  return value === null && state !== 'VERIFIED' ? null : undefined
 }
 
 /**
@@ -863,15 +921,28 @@ function parseWireSasForBinding(
  */
 export function parseMessagesContactsBody(value: unknown): MessagesContactsListBody | undefined {
   if (!isRecord(value)) return undefined
-  if (!hasExactKeys(value, ['status', 'root', 'contacts'])) return undefined
+  const keys = ['status', 'root', 'contacts']
+  if (Object.hasOwn(value, 'skipped')) keys.push('skipped')
+  if (!hasExactKeys(value, keys)) return undefined
   if (value.status !== 'ok' || !isText(value.root) || !Array.isArray(value.contacts)) return undefined
-  const contacts: MessagesWireContactEntry[] = []
-  for (const raw of value.contacts) {
-    const entry = parseMessagesContactEntry(raw)
-    if (entry === undefined) return undefined
-    contacts.push(entry)
+  const skipped: MessagesSkippedContact[] = []
+  if (Object.hasOwn(value, 'skipped')) {
+    if (!Array.isArray(value.skipped)) return undefined
+    for (const raw of value.skipped) {
+      if (!isRecord(raw) || !hasExactKeys(raw, ['index', 'reason', 'subject'])) return undefined
+      if (typeof raw.index !== 'number' || !Number.isSafeInteger(raw.index) || raw.index < 0
+        || raw.reason !== 'messages:contact-malformed' || !isText(raw.subject)
+        || raw.subject.length > 2048 || !contactFieldsAreSafe(raw.subject)) return undefined
+      skipped.push({ index: raw.index, reason: raw.reason, subject: raw.subject })
+    }
   }
-  return { status: 'ok', root: value.root, contacts }
+  const contacts: MessagesWireContactEntry[] = []
+  for (const [index, raw] of value.contacts.entries()) {
+    const entry = parseMessagesContactEntry(raw)
+    if (entry === undefined) skipped.push(skippedContact(index, raw))
+    else contacts.push(entry)
+  }
+  return { status: 'ok', root: value.root, contacts, ...(skipped.length === 0 ? {} : { skipped }) }
 }
 
 /**
@@ -961,6 +1032,9 @@ export function parseMessagesWireMessage(value: unknown): MessagesWireMessage | 
 export function parseMessagesThreadBody(value: unknown): MessagesThreadBody | undefined {
   if (!isRecord(value)) return undefined
   const keys = ['status', 'npub', 'contactState', 'sas', 'messages', 'answered', 'evidence', 'evidenceRefusal']
+  if (Object.hasOwn(value, 'safetyNumber')) keys.push('safetyNumber')
+  if (Object.hasOwn(value, 'inboxComplete')) keys.push('inboxComplete')
+  if (value.inboxComplete !== undefined && typeof value.inboxComplete !== 'boolean') return undefined
   if (!hasExactKeys(value, keys)) return undefined
   if (value.status !== 'ok' || !isText(value.npub)) return undefined
   const state = value.contactState
@@ -974,6 +1048,9 @@ export function parseMessagesThreadBody(value: unknown): MessagesThreadBody | un
   const parsedSas = parseThreadSas(value.sas, state)
   if (parsedSas === undefined) return undefined
   const sas = parsedSas
+  const safetyNumber = value.safetyNumber === undefined ? null : parseSafetyNumber(value.safetyNumber)
+  if (!contactFieldsAreSafe(value.npub) || safetyNumber === undefined
+    || (safetyNumber !== null && !['BOUND', 'TEST', 'VERIFIED'].includes(state))) return undefined
   if (!Array.isArray(value.messages) || !Array.isArray(value.answered)) return undefined
   if (value.answered.some(relay => typeof relay !== 'string')) return undefined
   const evidence = parseEvidencePair(value)
@@ -997,8 +1074,10 @@ export function parseMessagesThreadBody(value: unknown): MessagesThreadBody | un
     npub: value.npub,
     contactState: state,
     sas,
+    ...(Object.hasOwn(value, 'safetyNumber') ? { safetyNumber } : {}),
     messages,
     answered: value.answered as string[],
+    ...(Object.hasOwn(value, 'inboxComplete') ? { inboxComplete: value.inboxComplete as boolean } : {}),
     ...evidence,
   }
 }
@@ -1007,7 +1086,7 @@ export function parseMessagesThreadBody(value: unknown): MessagesThreadBody | un
  * The SAS a thread may carry, given the contact state it reports.
  *
  * The same pairing rule as the listing, restated for the thread: a SAS exists only for a
- * binding that verified, so VERIFIED, BOUND and TEST may carry one, and those three must.
+ * binding that verified. BOUND and TEST may lack one; only VERIFIED requires one.
  *
  * @param value - the thread's `sas` field.
  * @param state - the thread's own contact state.
@@ -1017,7 +1096,7 @@ function parseThreadSas(
   value: unknown,
   state: MessagesThreadBody['contactState'],
 ): MessagesWireSas | null | undefined {
-  if (value === null) return state === 'VERIFIED' || state === 'BOUND' || state === 'TEST' ? undefined : null
+  if (value === null) return state === 'VERIFIED' ? undefined : null
   if (state !== 'VERIFIED' && state !== 'BOUND' && state !== 'TEST') return undefined
   return parseWireSas(value)
 }

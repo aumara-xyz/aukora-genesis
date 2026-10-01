@@ -151,6 +151,7 @@ interface SasSeatProps {
   readonly state: MessagesWireContactState
   /** The string to read aloud, or null when no binding verified. */
   readonly sas: WireSas | null
+  readonly hideComparisonGroup?: boolean
   readonly t: PropsLocale<'messages'>['t']
 }
 
@@ -160,8 +161,11 @@ interface SasSeatProps {
  * @param props - the state, the SAS or its absence, and the translate function.
  * @returns the SAS row or the honest alternative to it.
  */
-function SasSeat({ state, sas, t }: SasSeatProps) {
+function SasSeat({ state, sas, t, hideComparisonGroup = false }: SasSeatProps) {
   if (sas !== null) {
+    const spoken = hideComparisonGroup
+      ? sas.spoken.split(' ').map((group, index) => index === sas.comparisonGroupIndex ? '•••••' : group).join(' ')
+      : sas.spoken
     return (
       <span className={css.sas} data-sas="present" data-state={state}>
         <span className={css.sasGlyph}><SasIcon /></span>
@@ -170,7 +174,7 @@ function SasSeat({ state, sas, t }: SasSeatProps) {
             {t('sas.label')}
             <span className={css.visuallyHidden}>{`: ${t('sas.spoken')}`}</span>
           </span>
-          <span className={css.sasDigits} data-sas-spoken={sas.spoken}>{sas.spoken}</span>
+          <span className={css.sasDigits} data-sas-spoken={spoken}>{spoken}</span>
           <span className={css.sasHint}>{t('sas.hint')}</span>
         </span>
       </span>
@@ -302,14 +306,19 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
   // disabled — unreachable is a decision about rendering, not an attribute, and there is nothing here for a
   // reader or a script to reach before the six digits are on screen.
   const [refusal, setRefusal] = useState<string | null>(null)
+  const [comparisonGroups, setComparisonGroups] = useState<[string, string]>(['', ''])
+  const matched = state === 'BOUND' && sas !== null
+    && comparisonGroups.every(group => /^[0-9]{5}$/u.test(group))
+    && comparisonGroups[0] === sas.digits.slice(0, 5) && comparisonGroups[1] === sas.digits.slice(35, 40)
   // THE WAIT IS REAL AND IT IS LONG: the button asks the host, the host asks the shell signer, and the
   // signer opens a window for a person to decide in. So the button disables itself while that is
   // happening — a second press would raise a second request and a second challenge.
   const [asking, setAsking] = useState(false)
   const ask = async (): Promise<void> => {
+    if (!matched || sas === null) return
     setAsking(true)
     setRefusal(null)
-    const answer = await confirmSas(npub)
+    const answer = await confirmSas(npub, { sasDigits: sas.digits, safetyVersion: 2, comparisonGroups })
     setAsking(false)
     // A REFUSAL IS SHOWN UNDER ITS OWN NAME, never softened into a success and never paraphrased: the
     // signer's decline, a reply that did not carry the challenge back, and a signature that did not
@@ -330,14 +339,28 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
         <StateBadge state={state} t={t} />
       </div>
       <p className={css.sheetSentence} data-verify-state={state}>{t(CONTACT_STATE[state].title)}</p>
-      <SasSeat state={state} sas={sas} t={t} />
+      <SasSeat state={state} sas={sas} t={t} hideComparisonGroup />
       {sas !== null && (
         <div className={css.verifyConfirm}>
+          {comparisonGroups.map((group, index) => (
+            <input
+              key={index}
+              data-verify-comparison-group={index === 0 ? 0 : 7}
+              aria-label={`${t('sas.label')} ${index + 1}`}
+              inputMode="numeric" autoComplete="off" maxLength={5}
+              value={group} disabled={asking || state !== 'BOUND'}
+              onChange={event => setComparisonGroups(previous => {
+                const next: [string, string] = [...previous]
+                next[index] = event.target.value.replace(/[^0-9]/gu, '').slice(0, 5)
+                return next
+              })}
+            />
+          ))}
           <ActionButton
             type="button"
             variant="green" className={css.verifyConfirmButton}
             data-verify-confirm="available"
-            disabled={asking}
+            disabled={asking || !matched}
             onClick={() => { void ask() }}
           >
             {t('verify.confirm.button', { contact })}

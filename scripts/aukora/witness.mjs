@@ -12,7 +12,7 @@ import { readTextStrict } from '../../plugins/aukora-kira/lib/strict-read.mjs'
 
 // Detection only: no fetch, reconciliation, approval consumption or retained-head write.
 // A same-UID rewrite of both histories is outside this audit; hashes do not attest signatures.
-export function auditCommits({ repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..'), support }) {
+export function auditCommits({ repo = resolve(dirname(fileURLToPath(import.meta.url)), '../..'), support, commit: only }) {
   const git = (args, input) => execFileSync('/usr/bin/git', ['--no-replace-objects', '-c', 'core.hooksPath=/dev/null',
     '-c', 'core.fsmonitor=false', ...args], { cwd: repo, input, encoding: 'utf8', timeout: 10000,
     maxBuffer: 64 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'], env: {
@@ -41,7 +41,10 @@ export function auditCommits({ repo = resolve(dirname(fileURLToPath(import.meta.
   const records = entries.filter(e => e.operation === 'code.change' || e.operation === 'main.advance')
   const hex = /^[0-9a-f]{64}$/u
   const roots = []
-  const rows = git(['rev-list', '--reverse', '--topo-order', main]).split('\n').map(commit => {
+  // One commit (become): it must still be on main; the chain above is verified in full either way.
+  const onMain = git(['rev-list', '--reverse', '--topo-order', main]).split('\n')
+  if (only !== undefined && !onMain.includes(only)) throw new Error('commit_not_on_main')
+  const rows = (only !== undefined ? [only] : onMain).map(commit => {
     const [tree, parents, message] = git(['show', '-s', '--format=%T%x00%P%x00%B', commit]).split('\0')
     if (!parents) roots.push(commit)
     const trailers = git(['interpret-trailers', '--parse'], message).split('\n').filter(Boolean)

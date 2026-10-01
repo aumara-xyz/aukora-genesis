@@ -394,11 +394,12 @@ export async function sendMessage(
  */
 export async function confirmSas(
   npub: string,
+  comparison: { readonly sasDigits: string; readonly safetyVersion: 2; readonly comparisonGroups: readonly [string, string] },
   fetchImpl: ContactsFetch = sameOriginFetch,
 ): Promise<ConfirmRead> {
   const read = await readJson(
     MESSAGES_CONFIRM_CONTACT_ENDPOINT,
-    { method: 'POST', body: JSON.stringify({ npub }) },
+    { method: 'POST', body: JSON.stringify({ npub, ...comparison }) },
     fetchImpl,
   )
   if (read.kind === 'failed') return read

@@ -2,7 +2,8 @@
 import { randomBytes } from 'node:crypto'
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, relative, resolve } from 'node:path'
-import { loadOrCreateNostrKey, NOSTR_BINDING_DOMAIN, signerKeyOf, verifyBindingWithKey } from './identity.mjs'
+import { assertContactFields, loadOrCreateNostrKey, NOSTR_BINDING_DOMAIN, NOSTR_SAFETY_VERSION, NOSTR_STATEMENT_KEYS, signerKeyOf, verifyBindingWithKey } from './identity.mjs'
+import { identityFingerprint } from './contact.mjs'
 
 const pending = new Map()
 const attempts = new Map()
@@ -66,14 +67,17 @@ async function controllerAt(controllerDir) {
       }
     }
     if (!signerKeys.length) throw new Error('The Aumlok record has no active machine signer')
-    return { subject: publicRecord.subject, handle: publicRecord.handle || 'TEST', signerKeys }
+    const controller = { subject: publicRecord.subject, handle: publicRecord.handle || 'TEST', signerKeys }
+    assertContactFields(controller)
+    return controller
   } catch (cause) {
     throw refuse('nostr:identity-controller-unreadable', cause.message)
   }
 }
 
 function validBinding(binding, nostr, controller) {
-  if (!controller || binding?.statement?.npub !== nostr.npub || binding?.statement?.handle !== controller.handle) return false
+  if (!controller || binding?.statement?.npub !== nostr.npub || binding?.statement?.handle !== controller.handle
+    || binding?.statement?.safetyVersion !== NOSTR_SAFETY_VERSION) return false
   const signer = signerKeyOf(binding)
   return controller.signerKeys.includes(signer)
     && verifyBindingWithKey(binding, { controllerKeyHex: signer, expectSubject: controller.subject }).verdict === 'verified'
@@ -98,10 +102,11 @@ const publicIdentity = ({ nostr, controller, binding }) => Object.freeze({
   subject: controller?.subject ?? null,
   label: controller?.handle ?? '',
   peerControllerKey: binding ? signerKeyOf(binding) : null,
+  identityFingerprint: binding ? identityFingerprint({ npub: nostr.npub, controllerKeyHex: signerKeyOf(binding), binding }) : null,
   // Stored documents may carry unrelated fields; only the public binding crosses the host boundary.
   binding: binding ? {
     domain: binding.domain,
-    statement: Object.fromEntries(['subject', 'npub', 'nostrPubkeyHex', 'handle', 'createdAt']
+    statement: Object.fromEntries(NOSTR_STATEMENT_KEYS
       .map(key => [key, binding.statement[key]])),
     signature: binding.signature,
     approvalKeyDid: binding.approvalKeyDid,
@@ -157,11 +162,12 @@ async function requestBinding(options, { paths, nostr, controller }) {
   const createdAt = new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z')
   const challenge = randomBytes(32).toString('hex')
   const statement = { subject: controller.subject, npub: nostr.npub, nostrPubkeyHex: nostr.xonlyHex,
-    handle: controller.handle, createdAt }
+    handle: controller.handle, createdAt, safetyVersion: NOSTR_SAFETY_VERSION }
   const reply = await askSignerOperation({ operation: 'sign-nostr-binding', npub: nostr.npub,
-    subject: controller.subject, handle: controller.handle, issuedAt: createdAt, challenge }, socketPath, {
+    subject: controller.subject, handle: controller.handle, issuedAt: createdAt, safetyVersion: NOSTR_SAFETY_VERSION, challenge }, socketPath, {
     unreachable: 'nostr:identity-signer-unreachable', malformed: 'nostr:identity-signer-reply-malformed',
   })
+  assertContactFields(reply)
   if (typeof reply.refusal === 'string' && reply.refusal) throw refuse(reply.refusal, 'The Aumlok signer refused the Messages binding')
   if (reply.domain !== 'aukora:owner-approval-response:v1' || reply.challenge !== challenge || !/^[0-9a-f]{128}$/u.test(reply.signature || '')) {
     throw refuse('nostr:identity-signer-reply-malformed', 'The signer did not return the requested binding signature')

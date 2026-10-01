@@ -78,7 +78,8 @@
         "to": "plugins/aukora-aumlok/lib",
         "filter": [
           "repo-advance.mjs",
-          "release-activate.mjs"
+          "release-activate.mjs",
+          "plugin-set-content.mjs"
         ]
       },
       {

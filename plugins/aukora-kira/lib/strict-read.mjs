@@ -30,7 +30,7 @@
  *
  * @module @aukora/dsh-plugin-kira/strict-read
  */
-import { closeSync, existsSync, fstatSync, fsyncSync, linkSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, renameSync, unlinkSync, writeSync } from 'node:fs'
+import { chmodSync, closeSync, existsSync, fstatSync, fsyncSync, linkSync, lstatSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, renameSync, unlinkSync, writeSync } from 'node:fs'
 import { randomBytes } from 'node:crypto'
 import { createZstdDecompress, zstdDecompressSync } from 'node:zlib'
 import { constants as FS } from 'node:fs'
@@ -91,7 +91,8 @@ import { constants as FS } from 'node:fs'
  * @returns {void}
  */
 export function ensureDirectory(dir) {
-  mkdirSync(dir, { recursive: true })
+  mkdirSync(dir, { recursive: true, mode: 0o700 })
+  chmodSync(dir, 0o700)
 }
 
 export function readLinesIfPresent(file) {

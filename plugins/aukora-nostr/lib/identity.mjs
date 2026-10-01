@@ -37,8 +37,9 @@ import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'n
 import { join } from 'node:path'
 import { schnorr } from './vendor/noble-curves/curves/secp256k1.js'
 
-/** The binding document's domain. Changing the shape of the statement means changing this. */
+/** The binding document's domain. The signed safetyVersion negotiates the comparison protocol. */
 export const NOSTR_BINDING_DOMAIN = 'aukora:nostr-identity-binding:v1'
+export const NOSTR_SAFETY_VERSION = 2
 
 /** Named refusals. Every one is a stable code, never prose a caller has to parse. */
 export const NOSTR_REFUSE = Object.freeze({
@@ -49,7 +50,7 @@ export const NOSTR_REFUSE = Object.freeze({
   SUBJECT_MISMATCH: 'nostr:binding-subject-mismatch',
   CONTROLLER_UNREADABLE: 'nostr:controller-unreadable',
   KEY_UNREADABLE: 'nostr:key-unreadable',
-  // THE RULED STATEMENT'S TWO SHAPE REFUSALS. A statement is EXACTLY the five keys below: a ruled key
+  // THE RULED STATEMENT'S TWO SHAPE REFUSALS. Both legacy and current statements have closed key sets: a ruled key
   // that is absent and a key outside the ruling are different facts with different names, so an
   // operator is told which one they have rather than "invalid statement".
   STATEMENT_KEY_MISSING: 'nostr:binding-statement-key-missing',
@@ -57,7 +58,8 @@ export const NOSTR_REFUSE = Object.freeze({
 })
 
 /**
- * THE RULED STATEMENT'S KEY SET, AND IT IS EXACTLY THIS — no more and no fewer.
+ * THE RULED STATEMENT'S KEY SET. Legacy identity statements have five fields; current statements
+ * also sign safetyVersion so comparison support cannot be asserted in unsigned contact metadata.
  *
  * This is not a local convention: it is the statement the Aumlok signer's `sign-nostr-binding`
  * operation builds (`apps/aukora-desktop/aumlok-signer.mjs`, `nostrBindingStatement`), and the signer
@@ -70,8 +72,10 @@ export const NOSTR_REFUSE = Object.freeze({
  *   nostrPubkeyHex  DERIVED by decoding the npub — never trusted as a separate claim
  *   handle          the NIP-05 local part
  *   createdAt       canonical seconds-precision UTC
+ *   safetyVersion   the comparison protocol supported by this identity (absent on legacy bindings)
  */
-export const NOSTR_STATEMENT_KEYS = Object.freeze(['createdAt', 'handle', 'nostrPubkeyHex', 'npub', 'subject'])
+const LEGACY_NOSTR_STATEMENT_KEYS = Object.freeze(['createdAt', 'handle', 'nostrPubkeyHex', 'npub', 'subject'])
+export const NOSTR_STATEMENT_KEYS = Object.freeze([...LEGACY_NOSTR_STATEMENT_KEYS, 'safetyVersion'].sort())
 
 /**
  * THE DOCUMENT-LEVEL FIELD THAT NAMES THE BINDING'S SIGNER — `did:key:<64 hex of the ed25519 key>`.
@@ -111,6 +115,20 @@ export const NOSTR_CEILINGS = Object.freeze([
 
 const HEX64 = /^[0-9a-f]{64}$/
 const CREATED_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/
+
+/** Reject hidden/line controls in every JSON field, including unsigned metadata and field names. */
+export function assertContactFields(value, depth = 0) {
+  const bad = () => { throw Object.assign(new Error('contact fields must not contain control, bidi override/isolate or line-separator characters'), { code: NOSTR_REFUSE.MALFORMED }) }
+  if (depth > 32) bad()
+  if (typeof value === 'string') {
+    if (/[\p{Cc}\u202a-\u202e\u2066-\u2069\p{Zl}\p{Zp}]/u.test(value)) bad()
+  } else if (value !== null && typeof value === 'object') {
+    for (const [key, field] of Object.entries(value)) {
+      assertContactFields(key, depth + 1)
+      assertContactFields(field, depth + 1)
+    }
+  }
+}
 
 // ── the controller record, in the generations it has on disk ────────────────────────────────────────
 /**
@@ -233,12 +251,13 @@ export function npubEncode(xonlyHex) {
  */
 export function npubDecode(npub) {
   const bad = () => Object.assign(new Error(`not a valid npub: ${String(npub).slice(0, 20)}`), { code: NOSTR_REFUSE.MALFORMED })
-  if (typeof npub !== 'string' || !npub.startsWith('npub1')) throw bad()
+  if (typeof npub !== 'string' || npub.length !== 63 || !npub.startsWith('npub1')) throw bad()
   const data = [...npub.slice(5)].map(c => CHARSET.indexOf(c))
   if (data.some(v => v === -1)) throw bad()
   if (polymod([...hrpExpand('npub'), ...data]) !== 1) throw bad()
   const bytes = Buffer.from(convertBits(data.slice(0, -6), 5, 8, false))
   if (bytes.length !== 32) throw bad()
+  if (npubEncode(bytes.toString('hex')) !== npub) throw bad()
   return bytes.toString('hex')
 }
 
@@ -319,6 +338,7 @@ function resolveHandle(requested, control) {
  * @returns {Buffer} the signing preimage.
  */
 export function bindingPreimage(statement) {
+  assertContactFields(statement)
   const ordered = {}
   for (const key of Object.keys(statement).sort()) ordered[key] = statement[key]
   return Buffer.from(`${NOSTR_BINDING_DOMAIN}\n${JSON.stringify(ordered)}`, 'utf8')
@@ -330,7 +350,7 @@ export function bindingPreimage(statement) {
  * The Nostr key is the SUBJECT of the statement; the Aumlok key is its SIGNER. Swapping those two is
  * the mistake this function's shape exists to prevent.
  *
- * THE STATEMENT IS THE RULED FIVE KEYS AND NOTHING ELSE ({@link NOSTR_STATEMENT_KEYS}). The signer key
+ * New statements bind the safety protocol version alongside the identity ({@link NOSTR_STATEMENT_KEYS}). The signer key
  * and the label are NOT signed — they ride on the DOCUMENT, as enumerable own properties, which is
  * what makes them survive `JSON.stringify` on the wire (see {@link SIGNER_KEY_DID_FIELD}). A signer
  * name inside the signed bytes would make the classification in `contact.mjs` unreachable, because a
@@ -346,6 +366,7 @@ export function bindingPreimage(statement) {
  * @returns {Readonly<Record<string, unknown>>} the signed binding document.
  */
 export function createBinding(input) {
+  assertContactFields({ subject: input.subject, nostr: input.nostr, handle: input.handle, label: input.label, createdAt: input.createdAt })
   const resolved = resolveControllerRecord(input.controllerDir)
   // SIGNING IS A v2-ONLY PATH, AND THAT IS DELIBERATE. A v3 controller keeps its private half in a
   // seed file this module does not open, so there is nothing here to sign with — and the binding that
@@ -376,6 +397,7 @@ export function createBinding(input) {
     nostrPubkeyHex: input.nostr.xonlyHex,
     handle: resolveHandle(input.handle, resolved.control),
     createdAt: input.createdAt,
+    safetyVersion: NOSTR_SAFETY_VERSION,
   }
   const signature = edSign(null, bindingPreimage(statement), privateKey).toString('hex')
   return Object.freeze({
@@ -426,6 +448,9 @@ export function createBinding(input) {
 function evaluateBinding(document, rawHex) {
   /** The refusal shared by every entry point, so a caller routes on one vocabulary. */
   const refuse = (code, detail) => Object.freeze({ verdict: 'refused', code, detail, ceilings: NOSTR_CEILINGS })
+  try { assertContactFields(document) } catch {
+    return { refused: refuse(NOSTR_REFUSE.MALFORMED, 'binding fields contain control, bidi override/isolate or line separator characters') }
+  }
   // A key this function cannot even build is a key that cannot verify anything, and that is the
   // signature fact rather than a malformed document: the document may be perfect. Reporting it any
   // other way would tell a caller to look at the binding when the anchor is what is unusable.
@@ -448,7 +473,7 @@ function evaluateBinding(document, rawHex) {
   if (!HEX64.test(statement.nostrPubkeyHex ?? '')) {
     return { refused: refuse(NOSTR_REFUSE.MALFORMED, 'nostrPubkeyHex is not 32 bytes of hex') }
   }
-  if (typeof statement.npub !== 'string' || typeof statement.subject !== 'string') {
+  if (typeof statement.npub !== 'string' || typeof statement.subject !== 'string' || !statement.subject) {
     return { refused: refuse(NOSTR_REFUSE.MALFORMED, 'the statement is missing npub or subject') }
   }
   if (!CREATED_AT.test(statement.createdAt ?? '')) {
@@ -470,15 +495,25 @@ function evaluateBinding(document, rawHex) {
 
   // ── 2. AND ONLY NOW THE RULED KEY SET. ──────────────────────────────────────────────────────────
   const present = Object.keys(statement)
-  const missing = NOSTR_STATEMENT_KEYS.filter(key => !present.includes(key))
+  // Legacy bindings remain useful identity evidence, but cannot negotiate a current safety comparison.
+  // Future positive versions authenticate as identity statements; the comparison layer rejects mismatches.
+  const keys = Object.hasOwn(statement, 'safetyVersion') ? NOSTR_STATEMENT_KEYS : LEGACY_NOSTR_STATEMENT_KEYS
+  const missing = keys.filter(key => !present.includes(key))
   if (missing.length > 0) {
     return { refused: refuse(NOSTR_REFUSE.STATEMENT_KEY_MISSING,
-      `the statement is missing the ruled ${missing.length === 1 ? 'key' : 'keys'} ${missing.join(', ')}: a binding statement is exactly {${NOSTR_STATEMENT_KEYS.join(', ')}}`) }
+      `the statement is missing the ruled ${missing.length === 1 ? 'key' : 'keys'} ${missing.join(', ')}: a binding statement is exactly {${keys.join(', ')}}`) }
   }
-  const unknown = present.filter(key => !NOSTR_STATEMENT_KEYS.includes(key))
+  const unknown = present.filter(key => !keys.includes(key))
   if (unknown.length > 0) {
     return { refused: refuse(NOSTR_REFUSE.STATEMENT_KEY_UNKNOWN,
-      `the statement carries ${unknown.length === 1 ? 'a key' : 'keys'} outside the ruled set: ${unknown.join(', ')} — this verifier reads exactly {${NOSTR_STATEMENT_KEYS.join(', ')}}, so a document with anything else is not a binding statement`) }
+      `the statement carries ${unknown.length === 1 ? 'a key' : 'keys'} outside the ruled set: ${unknown.join(', ')} — this verifier reads exactly {${keys.join(', ')}}, so a document with anything else is not a binding statement`) }
+  }
+  if (Object.hasOwn(statement, 'safetyVersion')
+    && (!Number.isSafeInteger(statement.safetyVersion) || statement.safetyVersion < 1)) {
+    return { refused: refuse(NOSTR_REFUSE.MALFORMED, 'safetyVersion must be a positive safe integer') }
+  }
+  if (typeof statement.handle !== 'string' || !statement.handle) {
+    return { refused: refuse(NOSTR_REFUSE.MALFORMED, 'handle must be a non-empty string') }
   }
 
   // ── 3. THE NPUB MUST BE THE KEY. A binding whose npub does not encode its own nostrPubkeyHex is two
@@ -513,6 +548,7 @@ const verifiedVerdict = (document, preimage) => Object.freeze({
   npub: document.statement.npub,
   nostrPubkeyHex: document.statement.nostrPubkeyHex,
   handle: document.statement.handle,
+  safetyVersion: document.statement.safetyVersion ?? null,
   label: typeof document.label === 'string' ? document.label : undefined,
   bindingDigest: createHash('sha256').update(preimage).digest('hex'),
   ceilings: NOSTR_CEILINGS,
@@ -579,6 +615,7 @@ export function verifyBindingUnderItsSigner(document) {
  */
 export function verifyBindingWithKey(document, expectation) {
   const refuse = (code, detail) => Object.freeze({ verdict: 'refused', code, detail, ceilings: NOSTR_CEILINGS })
+  try { assertContactFields(expectation) } catch { return refuse(NOSTR_REFUSE.MALFORMED, 'invalid binding expectation') }
   const rawHex = expectation?.controllerKeyHex
   if (typeof rawHex !== 'string' || !HEX64.test(rawHex)) {
     return refuse(NOSTR_REFUSE.CONTROLLER_UNREADABLE, 'the expected controller key is not 64 hex characters')
@@ -610,6 +647,7 @@ export function verifyBindingWithKey(document, expectation) {
  */
 export function verifyBinding(document, expectation) {
   const refuse = (code, detail) => Object.freeze({ verdict: 'refused', code, detail, ceilings: NOSTR_CEILINGS })
+  try { assertContactFields(expectation) } catch { return refuse(NOSTR_REFUSE.MALFORMED, 'invalid binding expectation') }
   // THE SAME RESOLUTION createBinding USES, so a binding is checked against exactly the key the
   // record nominates whichever generation wrote it. Verification needs only the PUBLIC half, which
   // is precisely the half a v3 record keeps — so v3 verifies even though this module cannot sign v3.

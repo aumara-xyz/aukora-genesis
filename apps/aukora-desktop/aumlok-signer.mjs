@@ -71,6 +71,7 @@ import {
   CANONICAL_INSTANT, CONFIRM_NOSTR_SAS_OPERATION, HEX64, NOSTR_BINDING_OPERATION, NOSTR_BINDING_WINDOW_SECONDS,
   NOSTR_SIGNER_REFUSE, OPERATION_CONTENT_ABSENT, SAS_CONFIRMATION_WINDOW_SECONDS, nostrBindingPreimage,
   nostrBindingStatement, readOperationContent, sasConfirmationPreimage, sha256Hex,
+  NOSTR_SAFETY_VERSION, assertWitnessFields, decodeNpub,
 } from './aumlok-signer-witness.mjs'
 export {
   SIGNER_SOCKET_ENV, DEFAULT_SIGNER_SOCKET_NAME, SIGNER_DECISION_LOG_NAME, SIGNER_LOG_SOURCE, MAX_SIGNER_LINE_BYTES,
@@ -355,11 +356,11 @@ export async function startShellSigner(input) {
       return encodeRefusal({ challenge, refusal })
     }
 
-    const { npub, subject, handle, issuedAt, challenge: callerChallenge } = request
+    const { npub, subject, handle, issuedAt, safetyVersion, challenge: callerChallenge } = request
     if (typeof subject !== 'string' || subject.length === 0 || subject.length > 256) return refuse(MALFORMED)
     if (typeof handle !== 'string' || handle.length === 0 || handle.length > 128) return refuse(MALFORMED)
     if (typeof issuedAt !== 'string' || !CANONICAL_INSTANT.test(issuedAt)) return refuse(MALFORMED)
-    if (typeof npub !== 'string') return refuse(MALFORMED)
+    if (typeof npub !== 'string' || safetyVersion !== NOSTR_SAFETY_VERSION) return refuse(MALFORMED)
 
     // THE CALLER'S CHALLENGE, ADOPTED. `reissue-binding` mints a 64-hex one-use value, sends it as
     // `request.challenge` (plugins/aukora-nostr/bin/reissue-binding.mjs:334) and REFUSES a reply that
@@ -367,20 +368,21 @@ export async function startShellSigner(input) {
     // question. The refusal path above already echoed it; the SUCCESS path minted its own instead,
     // which is the asymmetry this fixes. Validated exactly as `npub` and `issuedAt` are, and refused
     // with the same name, so an ill-formed challenge is MALFORMED rather than silently replaced.
-    if (callerChallenge !== undefined && !/^([0-9a-f]{2}){32}$/u.test(String(callerChallenge))) {
+    if (callerChallenge !== undefined && (typeof callerChallenge !== 'string' || !HEX64.test(callerChallenge))) {
       return refuse(MALFORMED)
     }
     let statement
     try {
-      statement = nostrBindingStatement({ npub, subject, handle, issuedAt })
+      statement = nostrBindingStatement({ npub, subject, handle, issuedAt, safetyVersion })
     } catch {
       return refuse(MALFORMED)
     }
     const issuedAtMs = Date.parse(issuedAt)
-    if (!Number.isFinite(issuedAtMs)) return refuse(MALFORMED)
+    if (!Number.isFinite(issuedAtMs) || new Date(issuedAtMs).toISOString().replace('.000Z', 'Z') !== issuedAt) return refuse(MALFORMED)
     const issuedAtSeconds = Math.floor(issuedAtMs / 1000)
     const expiresAt = issuedAtSeconds + NOSTR_BINDING_WINDOW_SECONDS
     const now = Math.floor(Date.now() / 1000)
+    if (issuedAtSeconds > now + 30) return refuse(MALFORMED)
     if (now >= expiresAt) return refuse(EXPIRED)
 
     // THE RECORD HAS TO LIST THIS MACHINE, asked again here rather than assumed from startup.
@@ -497,23 +499,21 @@ export async function startShellSigner(input) {
       return encodeRefusal({ challenge, refusal })
     }
 
-    const { subject, npub, controllerKeyHex, sasDigits, confirmedAt, challenge: callerChallenge } = request
+    const { subject, npub, controllerKeyHex, sasDigits, confirmedAt, safetyVersion, challenge: callerChallenge } = request
     if (typeof subject !== 'string' || subject.length === 0 || subject.length > 256) return refuse(MALFORMED)
-    // AN NPUB IS `npub1` AND FIFTY-EIGHT BECH32 CHARACTERS, checked as a shape before anything is signed
-    // about it. This is narrower than the binding's `typeof npub === 'string'` on purpose: a confirmation
-    // names a CONTACT, and a contact whose npub is not an npub is not one a person can compare with.
-    if (typeof npub !== 'string' || !/^npub1[02-9ac-hj-np-z]{58}$/u.test(npub)) return refuse(MALFORMED)
+    // Validate the bech32 checksum and the 32-byte key before signing a comparison about this contact.
+    if (decodeNpub(npub) === null) return refuse(MALFORMED)
     if (typeof controllerKeyHex !== 'string' || !HEX64.test(controllerKeyHex)) return refuse(MALFORMED)
-    // THE SIX DIGITS, AND EXACTLY SIX OF THEM. A sheet showing "42891" while the signature covers "42891"
-    // is a confirmation of a comparison nobody made.
-    if (typeof sasDigits !== 'string' || !/^[0-9]{6}$/u.test(sasDigits)) return refuse(MALFORMED)
+    // Two independently derived identity fingerprints, with the protocol version inside the signed bytes.
+    if (safetyVersion !== NOSTR_SAFETY_VERSION || typeof sasDigits !== 'string' || !/^[0-9]{70}$/u.test(sasDigits)) return refuse(MALFORMED)
     if (typeof confirmedAt !== 'string' || !CANONICAL_INSTANT.test(confirmedAt)) return refuse(MALFORMED)
-    if (callerChallenge !== undefined && !/^([0-9a-f]{2}){32}$/u.test(String(callerChallenge))) {
+    if (callerChallenge !== undefined && (typeof callerChallenge !== 'string' || !HEX64.test(callerChallenge))) {
       return refuse(MALFORMED)
     }
     const confirmedAtMs = Date.parse(confirmedAt)
-    if (!Number.isFinite(confirmedAtMs)) return refuse(MALFORMED)
+    if (!Number.isFinite(confirmedAtMs) || new Date(confirmedAtMs).toISOString().replace('.000Z', 'Z') !== confirmedAt) return refuse(MALFORMED)
     const confirmedAtSeconds = Math.floor(confirmedAtMs / 1000)
+    if (confirmedAtSeconds > Math.floor(Date.now() / 1000) + 30) return refuse(MALFORMED)
     const expiresAt = confirmedAtSeconds + SAS_CONFIRMATION_WINDOW_SECONDS
     if (Math.floor(Date.now() / 1000) >= expiresAt) return refuse(EXPIRED)
 
@@ -521,7 +521,7 @@ export async function startShellSigner(input) {
     // again after the window, below, for the reason the binding's own comment gives at length.
     if (!stillListedByTheRecord()) return refuse(NOSTR_SIGNER_REFUSE.MACHINE_NOT_LISTED)
 
-    const statement = { subject, npub, controllerKeyHex, sasDigits, confirmedAt }
+    const statement = { subject, npub, controllerKeyHex, sasDigits, confirmedAt, safetyVersion }
     const preimage = Buffer.from(sasConfirmationPreimage(statement), 'utf8')
     const challenge = typeof callerChallenge === 'string' ? callerChallenge : randomBytes(32).toString('hex')
 
@@ -650,12 +650,19 @@ export async function startShellSigner(input) {
       // approval wire this server has always spoken, so the existing protocol is untouched.
       const operationName = request !== null && typeof request === 'object'
         && typeof request.operation === 'string' ? request.operation : null
+      if (operationName === NOSTR_BINDING_OPERATION || operationName === CONFIRM_NOSTR_SAS_OPERATION) {
+        // Reject unsafe fields before logging them or deriving anything displayed by the approval window.
+        try { assertWitnessFields(request) } catch {
+          answer(encodeRefusal({ challenge: readableChallenge(request?.challenge), refusal: MALFORMED }))
+          return
+        }
+      }
       if (operationName === NOSTR_BINDING_OPERATION) {
         say(`aukora-desktop: aumlok signer: asked to sign a Nostr binding for ${String(request.subject)} `
           + `(handle ${String(request.handle)})`)
       } else if (operationName === CONFIRM_NOSTR_SAS_OPERATION) {
         // THE LOG NEVER CARRIES THE DIGITS. A SAS is only worth anything while it is not written down, and
-        // a signer that logged the six digits would be publishing the comparison it exists to protect.
+        // a signer that logged the digits would be publishing the comparison it exists to protect.
         say(`aukora-desktop: aumlok signer: asked to confirm a Nostr SAS for ${String(request.subject)} `
           + `(npub ${String(request.npub)})`)
       } else if (operationName !== null) {

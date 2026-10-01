@@ -3,7 +3,7 @@
  * THE AUKORA PLUGIN SET: record it, show it, have the owner approve it in ONE Aumlok popup, install it.
  *
  *   node scripts/aukora/plugin-set.mjs record  --release <dir>
- *   node scripts/aukora/plugin-set.mjs prepare --release <dir> --out <dir> [--support <dir>]
+ *   node scripts/aukora/plugin-set.mjs prepare --release <dir> --out <dir> [--support <dir>] [--commit <full sha> --shell <app>]
  *   node scripts/aukora/plugin-set.mjs approve --release <dir> [--support <dir>] [--approval-class <class>]
  *   node scripts/aukora/plugin-set.mjs check   --release <dir> [--state-root <dir>]
  *
@@ -11,13 +11,16 @@
  *            release root mounts (`name: ./plugins/…`), except demo-governed. The materializer runs this
  *            after the release record.
  *   prepare  renders the exact operation content the owner will approve, writes it to <out>/operation.txt,
- *            and prints it, its digest and the approve command. It raises nothing.
+ *            and prints it and its digest. It raises nothing.
+ *            With both --commit and --shell, previews a release binding in memory; the release stays read-only.
  *   approve  prepare, then `scripts/aumlok/approve-operation` against the app's signer socket, which raises
  *            ONE popup showing that content. Approve signs; Refuse signs nothing. A returned receipt is
  *            checked by `scripts/aumlok/verify-approval` and by the gate's own verifier, then installed in
  *            <support>/state/gate-state/ with the pinned approver (the live Kira overlay's approverDid,
  *            subject and activeControlDigest, the same pin self-change uses).
  *   check    verifies the installed approval against the release's record, as the gate will at boot.
+ *   bind     (become) writes the release binding into the record: --commit <sha> --shell <AUKORA.app>.
+ *            check --shell <app> then also recomputes the release tree and the shell on disk and refuses a mismatch.
  *
  * WHAT THIS IS NOT, said where it is done: the approving key is a software key on this Mac (key class B),
  * attendance is reported, not proven, and the record, the approval and the pin all live in files this uid
@@ -35,6 +38,7 @@ import { operationDigestOf as aumlokOperationDigestOf } from '../../plugins/auko
 import { ed25519PublicKeyFromDidKey } from '../../plugins/aukora-aumlok/lib/did-key.mjs'
 import { deriveApprovalWitness } from '../../apps/aukora-desktop/aumlok-signer.mjs'
 import { shownLimit } from './shown-limit.mjs'
+import { releaseBinding, sameBinding } from './release-digest.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const CLIENT = join(REPO, 'scripts', 'aumlok', 'approve-operation')
@@ -97,8 +101,9 @@ function pinFrom(support) {
     activeControlDigest: setting('activeControlDigest'), pinnedFrom: overlayPath }
 }
 
-function prepare(release, out) {
+function prepare(release, out, binding) {
   const record = readRecord(release)
+  if (binding !== undefined) record.release = releaseBinding({ ...binding, release })
   const content = setOperationContent(record)
   const digest = operationDigestOf(content)
   // ONE CONVENTION, CHECKED: the gate spells the digest itself (it runs before the hook, and importing
@@ -190,12 +195,30 @@ function main() {
     return
   }
 
+  if (command === 'bind') {
+    const release = releaseOf()
+    const commit = option('--commit') ?? fail('bind needs --commit <sha>')
+    const shell = option('--shell') ?? fail('bind needs --shell <AUKORA.app>')
+    const record = readRecord(release)
+    record.release = releaseBinding({ commit, release, shell })
+    writePrivate(join(release, PLUGIN_SET_FILE), `${JSON.stringify(record, null, 2)}\n`)
+    process.stdout.write(`RELEASE BOUND commit ${commit} tree ${record.release.tree} (${String(record.release.files)} files) shell ${record.release.shell}\n`)
+    return
+  }
+
   if (command === 'check') {
     const release = releaseOf()
     const stateRoot = resolve(option('--state-root') ?? join(support, 'state'))
     const gateState = join(stateRoot, 'gate-state')
     const read = (name) => (existsSync(join(gateState, name)) ? JSON.parse(readFileSync(join(gateState, name), 'utf8')) : null)
-    const verified = verifySetApproval({ record: readRecord(release), receipt: read(APPROVAL_FILE), pin: read(PIN_FILE) })
+    const record = readRecord(release)
+    // THE BYTES ON DISK, NOT THE RECORD'S WORD FOR THEM: with --shell the release tree and the shell are recomputed.
+    const shell = option('--shell')
+    if (shell !== undefined && !record.release) fail('the record binds no release (run bind first)')
+    if (shell !== undefined && !sameBinding(record.release, releaseBinding({ commit: record.release?.commit ?? '', release, shell }))) {
+      fail('the release tree or the shell on disk is not the one the record binds')
+    }
+    const verified = verifySetApproval({ record, receipt: read(APPROVAL_FILE), pin: read(PIN_FILE) })
     process.stdout.write(`PLUGIN SET APPROVED: set ${verified.setDigest}, ${String(verified.count)} plugins, operation `
       + `${verified.operationDigest}, signed by pinned ${verified.approverDid}\n`)
     return
@@ -203,17 +226,30 @@ function main() {
 
   if (command === 'prepare' || command === 'approve') {
     const release = releaseOf()
+    let binding
+    if (command === 'prepare' && (process.argv.includes('--commit') || process.argv.includes('--shell'))) {
+      const commit = option('--commit'), shell = option('--shell')
+      if (!commit || !shell || commit.startsWith('--') || shell.startsWith('--')) {
+        fail('prepare needs both --commit <full sha> and --shell <AUKORA.app>')
+      }
+      binding = { commit, shell }
+    }
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/gu, '')
     const out = resolve(option('--out') ?? join(support, 'state', 'home', 'code-evidence', `${stamp}-plugin-set`))
-    const prepared = prepare(release, out)
-    const pin = pinFrom(support)
-    const controller = join(support, 'state', 'aumlok')
-    const socket = join(support, 'state', 'aumlok-signer.sock')
-    const artifact = join(out, 'approval.json')
+    const prepared = prepare(release, out, binding)
     process.stdout.write(`${'─'.repeat(78)}\n${prepared.content}${'─'.repeat(78)}\n`)
     process.stdout.write(`OPERATION_FILE   ${prepared.operationFile}\n`)
     process.stdout.write(`OPERATION_DIGEST ${prepared.digest}  (sha256("aukora:operation-content:v1" ‖ 0x00 ‖ content))\n`)
     process.stdout.write(`SHOWN            ${String(prepared.shown)} of ${String(MAX_SHOWN_CHARS)} characters\n`)
+    if (binding !== undefined) {
+      process.stdout.write('IN-MEMORY BINDING: release record unchanged; approval requires this binding in a writable release.\n')
+      process.stdout.write('PREPARED ONLY: no popup was raised and nothing was signed or installed.\n')
+      return
+    }
+    const pin = pinFrom(support)
+    const controller = join(support, 'state', 'aumlok')
+    const socket = join(support, 'state', 'aumlok-signer.sock')
+    const artifact = join(out, 'approval.json')
     process.stdout.write(`PINNED APPROVER  ${pin.approverDid} (from ${pin.pinnedFrom})\n`)
     process.stdout.write(`THE ONE COMMAND  node scripts/aukora/plugin-set.mjs approve --release ${release}\n`)
     process.stdout.write(`  which runs     ${CLIENT} --controller ${controller} --expect-subject ${pin.subject} `
@@ -246,7 +282,7 @@ function main() {
     process.stdout.write(`  evidence       ${out}\n`)
     return
   }
-  fail('usage: plugin-set.mjs record|prepare|approve|check --release <dir> [--support <dir>] [--out <dir>] [--state-root <dir>]')
+  fail('usage: plugin-set.mjs record|bind|prepare|approve|check --release <dir> [--support <dir>] [--out <dir>] [--state-root <dir>]')
 }
 
-main()
+try { main() } catch (error) { fail(error.message) }

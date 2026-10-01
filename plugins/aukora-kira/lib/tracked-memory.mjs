@@ -28,7 +28,7 @@ const decode = file => readLinesIfPresent(file).map((line, damagedAt) => {
 })
 export const contentHash = text => sha256Hex(String(text))
 export const MAX_NOTE_CHARS = 16_000
-export const validExternalOrigin = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value) && !/^owner/iu.test(value)
+export const validExternalOrigin = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value) && !/^(owner|peter|kira)/iu.test(value)
 
 function journalSnapshot(stateDir) {
   const lines = readLinesIfPresent(journalFile(stateDir)), verdict = verifyJournal(lines)

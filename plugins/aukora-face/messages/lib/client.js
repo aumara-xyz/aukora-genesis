@@ -46,7 +46,7 @@ window.__ModuleLoader__.load({
 		}
 		//#endregion
 		//#region \0dsh-css:Messages.module.css.mjs
-		const css = ".iut9La_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--aukora-text);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.iut9La_surface[hidden]{display:none}.iut9La_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.iut9La_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.iut9La_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.iut9La_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.iut9La_actions{align-items:center;gap:2px;display:inline-flex}.iut9La_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.iut9La_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.iut9La_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.iut9La_posture[data-posture=connected]{color:var(--aukora-green)}.iut9La_posture[data-posture=connected]:before{background:var(--aukora-green)}.iut9La_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.iut9La_noticeTitle{font-weight:600}.iut9La_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.iut9La_contactRow{align-items:center;min-height:64px}.iut9La_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.iut9La_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.iut9La_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.iut9La_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.iut9La_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.iut9La_trustMark[data-state=TEST]{color:var(--aukora-gold)}.iut9La_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.iut9La_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.iut9La_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.iut9La_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.iut9La_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.iut9La_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.iut9La_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.iut9La_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.iut9La_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.iut9La_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.iut9La_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.iut9La_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.iut9La_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.iut9La_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.iut9La_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.iut9La_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.iut9La_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.iut9La_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.iut9La_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.iut9La_sasHint,.iut9La_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.iut9La_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.iut9La_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.iut9La_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.iut9La_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.iut9La_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.iut9La_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.iut9La_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.iut9La_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.iut9La_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.iut9La_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.iut9La_personRow:hover{transform:translate(3px)}.iut9La_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.iut9La_rowActions{flex:none;align-items:center;gap:2px;display:none}.iut9La_personRow:hover .iut9La_rowActions,.iut9La_personRow:focus-within .iut9La_rowActions{display:inline-flex}.iut9La_personRow:hover .iut9La_time,.iut9La_personRow:focus-within .iut9La_time{display:none}.iut9La_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.iut9La_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.iut9La_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.iut9La_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.iut9La_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.iut9La_threadHeader{padding-inline:74px}}.iut9La_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.iut9La_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.iut9La_chip[data-trust-chip=FOREIGN]{border-style:dashed}.iut9La_chip[data-trust-chip=UNBOUND]{border-style:dotted}.iut9La_chipWord{display:inline-block}.iut9La_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.iut9La_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.iut9La_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.iut9La_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.iut9La_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.iut9La_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.iut9La_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.iut9La_composerRow{justify-content:flex-end;display:flex}.iut9La_sendCircle{flex:none;width:34px;height:34px;padding:0}.iut9La_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.iut9La_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.iut9La_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.iut9La_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.iut9La_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.iut9La_sheetBadgeRow{align-items:center;gap:8px;display:flex}.iut9La_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.iut9La_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.iut9La_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.iut9La_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.iut9La_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.iut9La_menuItem,.iut9La_menuItemActive{width:100%}.iut9La_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.iut9La_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.iut9La_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.iut9La_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.iut9La_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.iut9La_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.iut9La_threadTitle{text-align:left}.iut9La_headerTail{flex:100%;justify-content:flex-end}}.iut9La_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.iut9La_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.iut9La_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.iut9La_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.iut9La_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.iut9La_addField{flex-direction:column;gap:4px;display:flex}.iut9La_addLabel{color:var(--aukora-text-secondary)}.iut9La_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.iut9La_addSubmit{padding:9px 12px;font-weight:600}.iut9La_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.iut9La_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.iut9La_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.iut9La_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.iut9La_addTools .iut9La_addRefusal{margin:0 0 0 auto}.iut9La_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.iut9La_searchInput:focus-visible,.iut9La_addInput:focus-visible,.iut9La_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
+		const css = ".RBzk7q_surface{width:100%;min-width:0;height:100%;min-height:0;padding:6px var(--dsh-messages-inline-padding);box-sizing:border-box;color:var(--aukora-text);background:0 0;flex-direction:column;display:flex;position:relative;overflow:hidden;container-type:inline-size}.RBzk7q_surface[hidden]{display:none}.RBzk7q_lane{box-sizing:border-box;flex-direction:column;flex:1;width:100%;min-height:0;display:flex}.RBzk7q_brandRow{height:60px;padding:8px 0 8px 4px;padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));box-sizing:border-box;flex:none;align-items:center;gap:8px;margin-bottom:8px;display:flex;overflow:hidden}.RBzk7q_brandMark{color:var(--aukora-blue);flex:none;justify-content:center;align-items:center;display:inline-flex}.RBzk7q_brandName{letter-spacing:.04em;text-transform:uppercase;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:18px;font-weight:600;line-height:24px;overflow:hidden}.RBzk7q_actions{align-items:center;gap:2px;display:inline-flex}.RBzk7q_iconButton{flex:none;width:28px;height:28px;min-height:28px;padding:0}.RBzk7q_posture{color:var(--aukora-gold);flex:none;align-items:center;gap:7px;margin:0 0 4px;padding:0 4px;font-size:12px;line-height:17px;display:flex}.RBzk7q_posture:before{content:\"\";background:var(--aukora-gold);border-radius:999px;flex:none;width:6px;height:6px}.RBzk7q_posture[data-posture=connected]{color:var(--aukora-green)}.RBzk7q_posture[data-posture=connected]:before{background:var(--aukora-green)}.RBzk7q_notice{border:1px solid color-mix(in srgb, var(--aukora-gold) 42%, transparent);color:var(--aukora-text);border-radius:12px;flex-direction:column;flex:none;gap:4px;margin:0 0 8px;padding:8px 12px;font-size:12px;line-height:17px;display:flex}.RBzk7q_noticeTitle{font-weight:600}.RBzk7q_noticeReason{color:var(--aukora-gold);overflow-wrap:anywhere;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);font-size:11px}.RBzk7q_contactRow{align-items:center;min-height:64px}.RBzk7q_rowMain{flex-direction:column;flex:1;gap:2px;min-width:0;display:flex}.RBzk7q_rowTop{align-items:center;gap:6px;min-width:0;display:flex}.RBzk7q_rowTitleInMain{text-overflow:ellipsis;white-space:nowrap;flex:0 auto;min-width:0;max-width:100%;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.RBzk7q_trustMark{color:var(--aukora-text-muted);flex:none;align-items:center;display:inline-flex}.RBzk7q_trustMark[data-state=VERIFIED]{color:var(--aukora-green)}.RBzk7q_trustMark[data-state=TEST]{color:var(--aukora-gold)}.RBzk7q_trustMark[data-state=UNBOUND]{color:var(--aukora-blue)}.RBzk7q_trustMark[data-state=FOREIGN]{color:var(--aukora-red-warning)}.RBzk7q_unreadDot{background:var(--aukora-green);border-radius:999px;flex:none;width:7px;height:7px}.RBzk7q_pinMark{color:var(--aukora-purple);flex:none;align-items:center;display:inline-flex}.RBzk7q_time{color:var(--aukora-text-muted);flex:none;margin-left:auto;font-size:12px;line-height:20px}.RBzk7q_rowPreview{text-overflow:ellipsis;white-space:nowrap;min-width:0;color:var(--aukora-text-secondary);font-size:13px;line-height:18px;overflow:hidden}.RBzk7q_badge{letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid;flex:0 auto;align-items:center;gap:3px;min-width:0;height:18px;padding:0 6px;font-size:10px;font-weight:600;line-height:1;display:inline-flex}.RBzk7q_badge[data-state=VERIFIED]{color:var(--aukora-green);background:color-mix(in srgb, var(--aukora-green) 16%, transparent);border-radius:9px}.RBzk7q_badge[data-state=TEST]{color:var(--aukora-gold);background:color-mix(in srgb, var(--aukora-gold) 12%, transparent);border-style:dashed;border-radius:4px}.RBzk7q_badge[data-state=UNBOUND]{color:var(--aukora-blue);background:color-mix(in srgb, var(--aukora-blue) 10%, transparent);border-style:dotted;border-radius:9px}.RBzk7q_badge[data-state=FOREIGN]{color:var(--aukora-red-warning);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--aukora-red-warning) 22%, transparent) 0 4px, transparent 4px 8px);border-radius:2px}.RBzk7q_badgeWord{text-overflow:ellipsis;white-space:nowrap;min-width:0;display:inline-block;overflow:hidden}.RBzk7q_sas{border:1px solid color-mix(in srgb, var(--aukora-purple) 40%, transparent);background:color-mix(in srgb, var(--aukora-purple) 10%, transparent);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.RBzk7q_sasAbsent{border:1px dashed var(--aukora-border);border-radius:10px;align-items:flex-start;gap:6px;max-width:100%;margin-top:4px;padding:5px 8px;display:flex}.RBzk7q_sasGlyph{color:var(--aukora-purple);flex:none;margin-top:2px;display:inline-flex}.RBzk7q_sasAbsentGlyph{color:var(--aukora-text-muted);flex:none;margin-top:2px;display:inline-flex}.RBzk7q_sasBody{flex-direction:column;gap:1px;min-width:0;display:flex}.RBzk7q_sasLabel{letter-spacing:.05em;text-transform:uppercase;color:var(--aukora-purple);font-size:10px;line-height:14px}.RBzk7q_sasDigits{letter-spacing:.12em;color:var(--aukora-text);font-variant-numeric:tabular-nums;font-size:17px;font-weight:650;line-height:22px}.RBzk7q_sasHint,.RBzk7q_sasAbsentText{color:var(--aukora-text-secondary);font-size:11px;line-height:15px}.RBzk7q_receiptMark{color:var(--aukora-text-muted);align-items:center;margin-top:2px;display:inline-flex}.RBzk7q_receiptMark[data-receipt=pending]{color:var(--aukora-text-muted)}.RBzk7q_receiptMark[data-receipt=delivered]{color:var(--aukora-green)}.RBzk7q_receiptMark[data-receipt=partial]{color:var(--aukora-gold)}.RBzk7q_receiptMark[data-receipt=refused]{color:var(--aukora-red-warning)}.RBzk7q_threadNotice{color:var(--aukora-text-muted);margin:0;padding:6px 8px;font-size:12px;line-height:17px}.RBzk7q_searchRow{flex:none;justify-content:flex-end;align-items:center;gap:6px;margin-bottom:6px;padding:0 4px;display:flex}.RBzk7q_searchInput{box-sizing:border-box;border:1px solid var(--aukora-border);min-width:0;height:28px;color:var(--aukora-text);font:inherit;background:0 0;border-radius:9px;flex:1;padding:0 10px;font-size:13px}.RBzk7q_rows{scrollbar-gutter:stable;flex-direction:column;flex:1;gap:8px;min-height:0;padding-bottom:12px;display:flex;overflow-y:auto}.RBzk7q_personRow{box-sizing:border-box;border:1px solid color-mix(in srgb, var(--aukora-blue) 32%, transparent);width:calc(100% - 4px);min-height:64px;color:var(--aukora-text);cursor:pointer;user-select:none;transition:transform .2s var(--ds-ease-in-out), border-color .25s var(--ds-ease-in-out), box-shadow .25s var(--ds-ease-in-out);align-items:center;gap:10px;margin-inline:2px;padding:10px 16px;display:flex}.RBzk7q_personRow:hover{transform:translate(3px)}.RBzk7q_personRow:focus-visible{border-color:color-mix(in srgb, var(--aukora-blue) 58%, transparent);box-shadow:0 0 14px color-mix(in srgb, var(--aukora-blue) 14%, transparent)}.RBzk7q_rowActions{flex:none;align-items:center;gap:2px;display:none}.RBzk7q_personRow:hover .RBzk7q_rowActions,.RBzk7q_personRow:focus-within .RBzk7q_rowActions{display:inline-flex}.RBzk7q_personRow:hover .RBzk7q_time,.RBzk7q_personRow:focus-within .RBzk7q_time{display:none}.RBzk7q_avatar{background:color-mix(in srgb, var(--aukora-blue) 24%, transparent);width:26px;height:26px;color:var(--aukora-text);border-radius:999px;flex:none;place-items:center;font-size:12px;font-weight:600;display:grid}.RBzk7q_listEmpty{color:var(--aukora-text-muted);margin:0;padding:8px;font-size:13px;line-height:19px}.RBzk7q_visuallyHidden{clip:rect(0 0 0 0);white-space:nowrap;width:1px;height:1px;position:absolute;overflow:hidden}.RBzk7q_thread{box-sizing:border-box;width:min(100%,720px);min-height:0;padding-top:calc(var(--dsh-hot-corner-size,74px) * .4);flex-direction:column;flex:1;gap:12px;margin:0 auto;display:flex}.RBzk7q_threadHeader{border:1px solid var(--aukora-border);border-radius:var(--aukora-radius);background:var(--aukora-surface);box-sizing:border-box;flex:none;align-items:center;gap:8px;min-height:50px;padding:8px 12px;display:flex}@container (width<=868px){.RBzk7q_threadHeader{padding-inline:74px}}.RBzk7q_headerTail{flex:0 auto;align-items:center;gap:8px;min-width:0;display:inline-flex}.RBzk7q_chip{white-space:nowrap;flex:none;gap:4px;height:28px;min-height:28px;padding:0 9px;font-size:11px;font-weight:600;line-height:1}.RBzk7q_chip[data-trust-chip=FOREIGN]{border-style:dashed}.RBzk7q_chip[data-trust-chip=UNBOUND]{border-style:dotted}.RBzk7q_chipWord{display:inline-block}.RBzk7q_threadTitle{text-align:center;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;font-size:14px;font-weight:600;line-height:20px;overflow:hidden}.RBzk7q_messages{flex-direction:column;flex:1;gap:12px;min-height:0;padding:4px 8px;display:flex;overflow-y:auto}.RBzk7q_msgThem{align-self:flex-start;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.RBzk7q_msgMe{border-color:color-mix(in srgb, var(--aukora-blue) 38%, transparent);align-self:flex-end;max-width:min(525px,82%);margin:0;padding:10px 16px;font-size:16px;line-height:24px}.RBzk7q_bubbleText{white-space:pre-wrap;overflow-wrap:anywhere;display:block}.RBzk7q_composerCard{box-sizing:border-box;flex-direction:column;flex:none;gap:10px;width:100%;padding:12px 12px 10px;display:flex}.RBzk7q_composerCard textarea{min-height:24px;max-height:120px;color:var(--aukora-text);font:inherit;resize:none;background:0 0;border:0;padding:0 4px;font-size:16px;line-height:24px}.RBzk7q_composerRow{justify-content:flex-end;display:flex}.RBzk7q_sendCircle{flex:none;width:34px;height:34px;padding:0}.RBzk7q_sheetBackdrop{z-index:2;box-sizing:border-box;background:var(--aukora-backdrop);justify-content:center;align-items:flex-end;padding:10px;display:flex;position:absolute;inset:0}.RBzk7q_sheet{box-sizing:border-box;width:min(100%,520px);min-width:0;max-height:100%;color:var(--aukora-text);flex-direction:column;padding:12px 14px 14px;display:flex}.RBzk7q_sheetHeader{flex:none;align-items:center;gap:8px;min-width:0;margin-bottom:8px;display:flex}.RBzk7q_sheetTitle{text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;margin:0;font-size:15px;font-weight:600;line-height:21px;overflow:hidden}.RBzk7q_sheetBody{flex-direction:column;gap:8px;min-height:0;display:flex;overflow-y:auto}.RBzk7q_sheetBadgeRow{align-items:center;gap:8px;display:flex}.RBzk7q_sheetSentence{color:var(--aukora-text-secondary);margin:0;font-size:12px;line-height:17px}.RBzk7q_sheetRow{flex-direction:column;gap:2px;min-width:0;display:flex}.RBzk7q_sheetLabel{color:var(--aukora-text-muted);letter-spacing:.05em;text-transform:uppercase;font-size:10px;line-height:14px}.RBzk7q_sheetValue{color:var(--aukora-text);overflow-wrap:anywhere;font-size:13px;line-height:18px}.RBzk7q_npub{color:var(--aukora-text);font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);overflow-wrap:anywhere;font-size:11px;line-height:16px}.RBzk7q_menuItem,.RBzk7q_menuItemActive{width:100%}.RBzk7q_menuCopy{text-align:right;flex-direction:column;gap:2px;min-width:0;display:flex}.RBzk7q_menuCopy strong{text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:570;line-height:20px;overflow:hidden}.RBzk7q_menuCopy span{color:var(--aukora-text-muted);text-overflow:ellipsis;white-space:nowrap;font-size:12px;line-height:17px;overflow:hidden}@container (width<=560px){.RBzk7q_brandRow{flex-wrap:wrap;row-gap:4px;height:auto;min-height:60px;padding-right:4px}.RBzk7q_brandActions{padding-right:calc(var(--dsh-hot-corner-size,74px) + var(--dsh-hot-corner-gutter,10px) - var(--dsh-messages-inline-padding));flex:100%;justify-content:flex-end}.RBzk7q_threadHeader{flex-wrap:wrap;row-gap:6px;padding-inline:4px 74px}.RBzk7q_threadTitle{text-align:left}.RBzk7q_headerTail{flex:100%;justify-content:flex-end}}.RBzk7q_verifyConfirm{gap:var(--dsh-spatial-gap,6px);margin-top:var(--dsh-spatial-gap,6px);flex-direction:column;display:flex}.RBzk7q_verifyConfirmButton{text-align:start;justify-content:flex-start;padding:10px 12px;font-weight:600}.RBzk7q_verifyConfirmNote{color:var(--aukora-text-secondary);margin:0;line-height:17px}.RBzk7q_addHint{margin:0 0 var(--dsh-spatial-gap,8px);color:var(--aukora-text-secondary);line-height:18px}.RBzk7q_addForm{gap:var(--dsh-spatial-gap,8px);flex-direction:column;display:flex}.RBzk7q_addField{flex-direction:column;gap:4px;display:flex}.RBzk7q_addLabel{color:var(--aukora-text-secondary)}.RBzk7q_addInput{font:inherit;font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace);border:1px solid var(--aukora-border);background:var(--aukora-surface);color:var(--aukora-text);border-radius:8px;padding:8px 10px}.RBzk7q_addSubmit{padding:9px 12px;font-weight:600}.RBzk7q_addRefusal{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-red-warning);line-height:18px}.RBzk7q_addReason{font-family:var(--dsw-font-family-mono,ui-monospace, SFMono-Regular, Menlo, monospace)}.RBzk7q_addAdded{margin:var(--dsh-spatial-gap,8px) 0 0;color:var(--aukora-text-secondary);line-height:18px}.RBzk7q_addTools{align-items:center;gap:var(--dsh-spatial-gap,8px);display:flex}.RBzk7q_addTools .RBzk7q_addRefusal{margin:0 0 0 auto}.RBzk7q_addVideo{object-fit:cover;border-radius:8px;width:100%;max-height:240px;display:block}.RBzk7q_searchInput:focus-visible,.RBzk7q_addInput:focus-visible,.RBzk7q_composerCard textarea:focus-visible{outline:2px solid var(--aukora-blue);outline-offset:2px}";
 		const tagId = "@aukora/face-messages/Messages.module.css";
 		if (typeof document !== "undefined" && document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]") === null) {
 			const tag = document.createElement("style");
@@ -56,89 +56,89 @@ window.__ModuleLoader__.load({
 			document.head.appendChild(tag);
 		}
 		var Messages_module_css_default = {
-			"actions": "iut9La_actions",
-			"addAdded": "iut9La_addAdded",
-			"addField": "iut9La_addField",
-			"addForm": "iut9La_addForm",
-			"addHint": "iut9La_addHint",
-			"addInput": "iut9La_addInput",
-			"addLabel": "iut9La_addLabel",
-			"addReason": "iut9La_addReason",
-			"addRefusal": "iut9La_addRefusal",
-			"addSubmit": "iut9La_addSubmit",
-			"addTools": "iut9La_addTools",
-			"addVideo": "iut9La_addVideo",
-			"avatar": "iut9La_avatar",
-			"badge": "iut9La_badge",
-			"badgeWord": "iut9La_badgeWord",
-			"brandActions": "iut9La_brandActions",
-			"brandMark": "iut9La_brandMark",
-			"brandName": "iut9La_brandName",
-			"brandRow": "iut9La_brandRow",
-			"bubbleText": "iut9La_bubbleText",
-			"chip": "iut9La_chip",
-			"chipWord": "iut9La_chipWord",
-			"composerCard": "iut9La_composerCard",
-			"composerRow": "iut9La_composerRow",
-			"contactRow": "iut9La_contactRow",
-			"headerTail": "iut9La_headerTail",
-			"iconButton": "iut9La_iconButton",
-			"lane": "iut9La_lane",
-			"listEmpty": "iut9La_listEmpty",
-			"menuCopy": "iut9La_menuCopy",
-			"menuItem": "iut9La_menuItem",
-			"menuItemActive": "iut9La_menuItemActive",
-			"messages": "iut9La_messages",
-			"msgMe": "iut9La_msgMe",
-			"msgThem": "iut9La_msgThem",
-			"notice": "iut9La_notice",
-			"noticeReason": "iut9La_noticeReason",
-			"noticeTitle": "iut9La_noticeTitle",
-			"npub": "iut9La_npub",
-			"personRow": "iut9La_personRow",
-			"pinMark": "iut9La_pinMark",
-			"posture": "iut9La_posture",
-			"receiptMark": "iut9La_receiptMark",
-			"rowActions": "iut9La_rowActions",
-			"rowMain": "iut9La_rowMain",
-			"rowPreview": "iut9La_rowPreview",
-			"rowTitleInMain": "iut9La_rowTitleInMain",
-			"rowTop": "iut9La_rowTop",
-			"rows": "iut9La_rows",
-			"sas": "iut9La_sas",
-			"sasAbsent": "iut9La_sasAbsent",
-			"sasAbsentGlyph": "iut9La_sasAbsentGlyph",
-			"sasAbsentText": "iut9La_sasAbsentText",
-			"sasBody": "iut9La_sasBody",
-			"sasDigits": "iut9La_sasDigits",
-			"sasGlyph": "iut9La_sasGlyph",
-			"sasHint": "iut9La_sasHint",
-			"sasLabel": "iut9La_sasLabel",
-			"searchInput": "iut9La_searchInput",
-			"searchRow": "iut9La_searchRow",
-			"sendCircle": "iut9La_sendCircle",
-			"sheet": "iut9La_sheet",
-			"sheetBackdrop": "iut9La_sheetBackdrop",
-			"sheetBadgeRow": "iut9La_sheetBadgeRow",
-			"sheetBody": "iut9La_sheetBody",
-			"sheetHeader": "iut9La_sheetHeader",
-			"sheetLabel": "iut9La_sheetLabel",
-			"sheetRow": "iut9La_sheetRow",
-			"sheetSentence": "iut9La_sheetSentence",
-			"sheetTitle": "iut9La_sheetTitle",
-			"sheetValue": "iut9La_sheetValue",
-			"surface": "iut9La_surface",
-			"thread": "iut9La_thread",
-			"threadHeader": "iut9La_threadHeader",
-			"threadNotice": "iut9La_threadNotice",
-			"threadTitle": "iut9La_threadTitle",
-			"time": "iut9La_time",
-			"trustMark": "iut9La_trustMark",
-			"unreadDot": "iut9La_unreadDot",
-			"verifyConfirm": "iut9La_verifyConfirm",
-			"verifyConfirmButton": "iut9La_verifyConfirmButton",
-			"verifyConfirmNote": "iut9La_verifyConfirmNote",
-			"visuallyHidden": "iut9La_visuallyHidden"
+			"actions": "RBzk7q_actions",
+			"addAdded": "RBzk7q_addAdded",
+			"addField": "RBzk7q_addField",
+			"addForm": "RBzk7q_addForm",
+			"addHint": "RBzk7q_addHint",
+			"addInput": "RBzk7q_addInput",
+			"addLabel": "RBzk7q_addLabel",
+			"addReason": "RBzk7q_addReason",
+			"addRefusal": "RBzk7q_addRefusal",
+			"addSubmit": "RBzk7q_addSubmit",
+			"addTools": "RBzk7q_addTools",
+			"addVideo": "RBzk7q_addVideo",
+			"avatar": "RBzk7q_avatar",
+			"badge": "RBzk7q_badge",
+			"badgeWord": "RBzk7q_badgeWord",
+			"brandActions": "RBzk7q_brandActions",
+			"brandMark": "RBzk7q_brandMark",
+			"brandName": "RBzk7q_brandName",
+			"brandRow": "RBzk7q_brandRow",
+			"bubbleText": "RBzk7q_bubbleText",
+			"chip": "RBzk7q_chip",
+			"chipWord": "RBzk7q_chipWord",
+			"composerCard": "RBzk7q_composerCard",
+			"composerRow": "RBzk7q_composerRow",
+			"contactRow": "RBzk7q_contactRow",
+			"headerTail": "RBzk7q_headerTail",
+			"iconButton": "RBzk7q_iconButton",
+			"lane": "RBzk7q_lane",
+			"listEmpty": "RBzk7q_listEmpty",
+			"menuCopy": "RBzk7q_menuCopy",
+			"menuItem": "RBzk7q_menuItem",
+			"menuItemActive": "RBzk7q_menuItemActive",
+			"messages": "RBzk7q_messages",
+			"msgMe": "RBzk7q_msgMe",
+			"msgThem": "RBzk7q_msgThem",
+			"notice": "RBzk7q_notice",
+			"noticeReason": "RBzk7q_noticeReason",
+			"noticeTitle": "RBzk7q_noticeTitle",
+			"npub": "RBzk7q_npub",
+			"personRow": "RBzk7q_personRow",
+			"pinMark": "RBzk7q_pinMark",
+			"posture": "RBzk7q_posture",
+			"receiptMark": "RBzk7q_receiptMark",
+			"rowActions": "RBzk7q_rowActions",
+			"rowMain": "RBzk7q_rowMain",
+			"rowPreview": "RBzk7q_rowPreview",
+			"rowTitleInMain": "RBzk7q_rowTitleInMain",
+			"rowTop": "RBzk7q_rowTop",
+			"rows": "RBzk7q_rows",
+			"sas": "RBzk7q_sas",
+			"sasAbsent": "RBzk7q_sasAbsent",
+			"sasAbsentGlyph": "RBzk7q_sasAbsentGlyph",
+			"sasAbsentText": "RBzk7q_sasAbsentText",
+			"sasBody": "RBzk7q_sasBody",
+			"sasDigits": "RBzk7q_sasDigits",
+			"sasGlyph": "RBzk7q_sasGlyph",
+			"sasHint": "RBzk7q_sasHint",
+			"sasLabel": "RBzk7q_sasLabel",
+			"searchInput": "RBzk7q_searchInput",
+			"searchRow": "RBzk7q_searchRow",
+			"sendCircle": "RBzk7q_sendCircle",
+			"sheet": "RBzk7q_sheet",
+			"sheetBackdrop": "RBzk7q_sheetBackdrop",
+			"sheetBadgeRow": "RBzk7q_sheetBadgeRow",
+			"sheetBody": "RBzk7q_sheetBody",
+			"sheetHeader": "RBzk7q_sheetHeader",
+			"sheetLabel": "RBzk7q_sheetLabel",
+			"sheetRow": "RBzk7q_sheetRow",
+			"sheetSentence": "RBzk7q_sheetSentence",
+			"sheetTitle": "RBzk7q_sheetTitle",
+			"sheetValue": "RBzk7q_sheetValue",
+			"surface": "RBzk7q_surface",
+			"thread": "RBzk7q_thread",
+			"threadHeader": "RBzk7q_threadHeader",
+			"threadNotice": "RBzk7q_threadNotice",
+			"threadTitle": "RBzk7q_threadTitle",
+			"time": "RBzk7q_time",
+			"trustMark": "RBzk7q_trustMark",
+			"unreadDot": "RBzk7q_unreadDot",
+			"verifyConfirm": "RBzk7q_verifyConfirm",
+			"verifyConfirmButton": "RBzk7q_verifyConfirmButton",
+			"verifyConfirmNote": "RBzk7q_verifyConfirmNote",
+			"visuallyHidden": "RBzk7q_visuallyHidden"
 		};
 		//#endregion
 		//#region src/client/MessagesMenu.tsx
@@ -11377,7 +11377,21 @@ window.__ModuleLoader__.load({
 		const MESSAGES_REFUSAL_REASONS = [
 			...MESSAGES_STORE_REFUSALS,
 			...MESSAGES_WIRE_REFUSALS,
-			"messages:add-binding-invalid"
+			"messages:add-binding-invalid",
+			"messages:confirm-npub-invalid",
+			"messages:confirm-body-unreadable",
+			"messages:confirm-no-such-contact",
+			"messages:confirm-not-bound",
+			"messages:confirm-safety-version-mismatch",
+			"messages:confirm-comparison-required",
+			"messages:confirm-signer-unreachable",
+			"messages:confirm-signer-declined",
+			"messages:confirm-challenge-mismatch",
+			"messages:confirm-not-verified",
+			"messages:confirm-write-failed",
+			"messages:confirm-writer-absent",
+			"messages:confirm-writer-unloadable",
+			"messages:confirm-writer-unusable"
 		];
 		/** All three outcomes, so a parser and a caller can assert the set is closed. */
 		const MESSAGES_EVIDENCE_OUTCOMES = [
@@ -11441,6 +11455,44 @@ window.__ModuleLoader__.load({
 		function isText(value) {
 			return typeof value === "string" && value !== "";
 		}
+		/** Validate contact data before trimming or projecting it, including nested unsigned metadata. */
+		function contactFieldsAreSafe(value, depth = 0) {
+			if (depth > 32) return false;
+			if (typeof value === "string") return !/[\p{Cc}\u202a-\u202e\u2066-\u2069\p{Zl}\p{Zp}]/u.test(value);
+			if (value !== null && typeof value === "object") return Object.entries(value).every(([key, field]) => contactFieldsAreSafe(key, depth + 1) && contactFieldsAreSafe(field, depth + 1));
+			return true;
+		}
+		/** Escape controls before a rejected field is named in a diagnostic. Never echo raw JSON. */
+		function safeContactDiagnostic(value) {
+			if (typeof value !== "string") return "unreadable";
+			return JSON.stringify(value.slice(0, 120)).replace(/[\p{Cc}\p{Bidi_Control}\p{Zl}\p{Zp}]/gu, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+		}
+		/** Keep usable contacts readable while explicitly accounting for each omitted row. */
+		function skippedContact(index, value) {
+			const fields = isRecord(value) ? value : {};
+			return {
+				index,
+				reason: "messages:contact-malformed",
+				subject: `entry ${index}${typeof fields.name === "string" ? ` name ${safeContactDiagnostic(fields.name)}` : ""}${typeof fields.npub === "string" ? ` npub ${safeContactDiagnostic(fields.npub)}` : ""}`
+			};
+		}
+		/** The sole displayed/confirmed safety-number format; legacy six-digit SAS never reaches the UI. */
+		function parseSafetyNumber(value) {
+			if (value === null) return null;
+			if (!isRecord(value) || !hasExactKeys(value, [
+				"digits",
+				"spoken",
+				"comparisonGroupIndex"
+			]) || !contactFieldsAreSafe(value)) return void 0;
+			if (typeof value.digits !== "string" || !/^[0-9]{70}$/u.test(value.digits)) return void 0;
+			if (value.spoken !== value.digits.match(/.{5}/gu)?.join(" ")) return void 0;
+			if (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return void 0;
+			return {
+				digits: value.digits,
+				spoken: String(value.spoken),
+				comparisonGroupIndex: value.comparisonGroupIndex
+			};
+		}
 		/** Whether a value is one of the four states. */
 		function isMessagesContactState(value) {
 			return MESSAGES_WIRE_CONTACT_STATES.some((state) => state === value);
@@ -11459,14 +11511,7 @@ window.__ModuleLoader__.load({
 		}
 		/** Parse one SAS off the wire, or undefined when it is not one this face serves. */
 		function parseWireSas(value) {
-			if (!isRecord(value)) return void 0;
-			if (!hasExactKeys(value, ["digits", "spoken"])) return void 0;
-			if (typeof value.digits !== "string" || !/^\d{6}$/u.test(value.digits)) return void 0;
-			if (typeof value.spoken !== "string" || !/^\d{3} \d{3}$/u.test(value.spoken)) return void 0;
-			return {
-				digits: value.digits,
-				spoken: value.spoken
-			};
+			return parseSafetyNumber(value) ?? void 0;
 		}
 		/**
 		* Parse one contact entry off the wire.
@@ -11474,8 +11519,8 @@ window.__ModuleLoader__.load({
 		* @returns the entry, or undefined when it is not what this face serves.
 		*/
 		function parseMessagesContactEntry(value) {
-			if (!isRecord(value)) return void 0;
-			if (!hasExactKeys(value, [
+			if (!isRecord(value) || !contactFieldsAreSafe(value)) return void 0;
+			const keys = [
 				"npub",
 				"name",
 				"state",
@@ -11484,7 +11529,9 @@ window.__ModuleLoader__.load({
 				"sas",
 				"binding",
 				"peerControllerKey"
-			])) return void 0;
+			];
+			if (Object.hasOwn(value, "safetyNumber")) keys.push("safetyNumber");
+			if (!hasExactKeys(value, keys)) return void 0;
 			if (!isText(value.npub) || !isText(value.name)) return void 0;
 			if (!isMessagesContactState(value.state)) return void 0;
 			if (typeof value.peerControllerKey !== "string") return void 0;
@@ -11493,8 +11540,14 @@ window.__ModuleLoader__.load({
 			if (value.subject !== null && !isText(value.subject)) return void 0;
 			const binding = value.binding;
 			if (!isMessagesContactBinding(binding)) return void 0;
-			const sas = parseWireSasForBinding(value.sas, binding);
+			const sas = parseWireSasForBinding(value.sas, binding, value.state);
 			if (sas === void 0) return void 0;
+			const safetyNumber = value.safetyNumber === void 0 ? null : parseSafetyNumber(value.safetyNumber);
+			if (safetyNumber === void 0 || safetyNumber !== null && (binding !== "verified" || ![
+				"BOUND",
+				"TEST",
+				"VERIFIED"
+			].includes(value.state))) return void 0;
 			return {
 				npub: value.npub,
 				name: value.name,
@@ -11502,6 +11555,7 @@ window.__ModuleLoader__.load({
 				reason: value.reason,
 				subject: value.subject,
 				sas,
+				...Object.hasOwn(value, "safetyNumber") ? { safetyNumber } : {},
 				binding,
 				peerControllerKey: value.peerControllerKey
 			};
@@ -11509,22 +11563,17 @@ window.__ModuleLoader__.load({
 		/**
 		* The SAS one entry may carry, given what vouched for it.
 		*
-		* THE WITHHOLDING IS RE-ASSERTED ON THE WIRE, IN BOTH DIRECTIONS. A body claiming a verified
-		* binding and NO SAS is refused because that is the one case where the string exists and the
-		* screen would have none to show; a body offering a SAS for anything other than a verified
-		* binding is refused because that is the mistake this face exists to prevent. Either way the
-		* pair is not a pair this face wrote.
+		* BOUND and TEST may lack a safety number when either identity cannot use the current
+		* protocol. VERIFIED requires a current number; other states or unverified bindings
+		* must not offer one.
 		*
 		* @param value - the entry's `sas` field.
 		* @param binding - the entry's already-validated binding status.
 		* @returns the SAS or null, or undefined when the pair is not one this face serves.
 		*/
-		function parseWireSasForBinding(value, binding) {
-			if (binding === "verified") {
-				const sas = parseWireSas(value);
-				return sas === void 0 ? void 0 : sas;
-			}
-			return value === null ? null : void 0;
+		function parseWireSasForBinding(value, binding, state) {
+			if (binding === "verified") return parseThreadSas(value, state);
+			return value === null && state !== "VERIFIED" ? null : void 0;
 		}
 		/**
 		* Validate a listing body off the wire.
@@ -11533,22 +11582,42 @@ window.__ModuleLoader__.load({
 		*/
 		function parseMessagesContactsBody(value) {
 			if (!isRecord(value)) return void 0;
-			if (!hasExactKeys(value, [
+			const keys = [
 				"status",
 				"root",
 				"contacts"
-			])) return void 0;
+			];
+			if (Object.hasOwn(value, "skipped")) keys.push("skipped");
+			if (!hasExactKeys(value, keys)) return void 0;
 			if (value.status !== "ok" || !isText(value.root) || !Array.isArray(value.contacts)) return void 0;
+			const skipped = [];
+			if (Object.hasOwn(value, "skipped")) {
+				if (!Array.isArray(value.skipped)) return void 0;
+				for (const raw of value.skipped) {
+					if (!isRecord(raw) || !hasExactKeys(raw, [
+						"index",
+						"reason",
+						"subject"
+					])) return void 0;
+					if (typeof raw.index !== "number" || !Number.isSafeInteger(raw.index) || raw.index < 0 || raw.reason !== "messages:contact-malformed" || !isText(raw.subject) || raw.subject.length > 2048 || !contactFieldsAreSafe(raw.subject)) return void 0;
+					skipped.push({
+						index: raw.index,
+						reason: raw.reason,
+						subject: raw.subject
+					});
+				}
+			}
 			const contacts = [];
-			for (const raw of value.contacts) {
+			for (const [index, raw] of value.contacts.entries()) {
 				const entry = parseMessagesContactEntry(raw);
-				if (entry === void 0) return void 0;
-				contacts.push(entry);
+				if (entry === void 0) skipped.push(skippedContact(index, raw));
+				else contacts.push(entry);
 			}
 			return {
 				status: "ok",
 				root: value.root,
-				contacts
+				contacts,
+				...skipped.length === 0 ? {} : { skipped }
 			};
 		}
 		/**
@@ -11610,7 +11679,7 @@ window.__ModuleLoader__.load({
 		*/
 		function parseMessagesThreadBody(value) {
 			if (!isRecord(value)) return void 0;
-			if (!hasExactKeys(value, [
+			const keys = [
 				"status",
 				"npub",
 				"contactState",
@@ -11619,13 +11688,23 @@ window.__ModuleLoader__.load({
 				"answered",
 				"evidence",
 				"evidenceRefusal"
-			])) return void 0;
+			];
+			if (Object.hasOwn(value, "safetyNumber")) keys.push("safetyNumber");
+			if (Object.hasOwn(value, "inboxComplete")) keys.push("inboxComplete");
+			if (value.inboxComplete !== void 0 && typeof value.inboxComplete !== "boolean") return void 0;
+			if (!hasExactKeys(value, keys)) return void 0;
 			if (value.status !== "ok" || !isText(value.npub)) return void 0;
 			const state = value.contactState;
 			if (state !== "VERIFIED" && state !== "BOUND" && state !== "TEST" && state !== "UNBOUND" && state !== "FOREIGN" && state !== "UNKNOWN") return;
 			const parsedSas = parseThreadSas(value.sas, state);
 			if (parsedSas === void 0) return void 0;
 			const sas = parsedSas;
+			const safetyNumber = value.safetyNumber === void 0 ? null : parseSafetyNumber(value.safetyNumber);
+			if (!contactFieldsAreSafe(value.npub) || safetyNumber === void 0 || safetyNumber !== null && ![
+				"BOUND",
+				"TEST",
+				"VERIFIED"
+			].includes(state)) return void 0;
 			if (!Array.isArray(value.messages) || !Array.isArray(value.answered)) return void 0;
 			if (value.answered.some((relay) => typeof relay !== "string")) return void 0;
 			const evidence = parseEvidencePair(value);
@@ -11643,8 +11722,10 @@ window.__ModuleLoader__.load({
 				npub: value.npub,
 				contactState: state,
 				sas,
+				...Object.hasOwn(value, "safetyNumber") ? { safetyNumber } : {},
 				messages,
 				answered: value.answered,
+				...Object.hasOwn(value, "inboxComplete") ? { inboxComplete: value.inboxComplete } : {},
 				...evidence
 			};
 		}
@@ -11652,14 +11733,14 @@ window.__ModuleLoader__.load({
 		* The SAS a thread may carry, given the contact state it reports.
 		*
 		* The same pairing rule as the listing, restated for the thread: a SAS exists only for a
-		* binding that verified, so VERIFIED, BOUND and TEST may carry one, and those three must.
+		* binding that verified. BOUND and TEST may lack one; only VERIFIED requires one.
 		*
 		* @param value - the thread's `sas` field.
 		* @param state - the thread's own contact state.
 		* @returns the SAS or null, or undefined when the pair is not one this face serves.
 		*/
 		function parseThreadSas(value, state) {
-			if (value === null) return state === "VERIFIED" || state === "BOUND" || state === "TEST" ? void 0 : null;
+			if (value === null) return state === "VERIFIED" ? void 0 : null;
 			if (state !== "VERIFIED" && state !== "BOUND" && state !== "TEST") return void 0;
 			return parseWireSas(value);
 		}
@@ -12128,10 +12209,13 @@ window.__ModuleLoader__.load({
 		* @param fetchImpl - the fetch to use; defaults to the page's own.
 		* @returns whether the host confirmed it, or why it did not.
 		*/
-		async function confirmSas(npub, fetchImpl = sameOriginFetch) {
+		async function confirmSas(npub, comparison, fetchImpl = sameOriginFetch) {
 			const read = await readJson(MESSAGES_CONFIRM_CONTACT_ENDPOINT, {
 				method: "POST",
-				body: JSON.stringify({ npub })
+				body: JSON.stringify({
+					npub,
+					...comparison
+				})
 			}, fetchImpl);
 			if (read.kind === "failed") return read;
 			const { status, value } = read.value;
@@ -12889,36 +12973,39 @@ window.__ModuleLoader__.load({
 		* @param props - the state, the SAS or its absence, and the translate function.
 		* @returns the SAS row or the honest alternative to it.
 		*/
-		function SasSeat({ state, sas, t }) {
-			if (sas !== null) return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-				className: Messages_module_css_default.sas,
-				"data-sas": "present",
-				"data-state": state,
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-					className: Messages_module_css_default.sasGlyph,
-					children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SasIcon, {})
-				}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-					className: Messages_module_css_default.sasBody,
-					children: [
-						/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
-							className: Messages_module_css_default.sasLabel,
-							children: [t("sas.label"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-								className: Messages_module_css_default.visuallyHidden,
-								children: `: ${t("sas.spoken")}`
-							})]
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: Messages_module_css_default.sasDigits,
-							"data-sas-spoken": sas.spoken,
-							children: sas.spoken
-						}),
-						/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
-							className: Messages_module_css_default.sasHint,
-							children: t("sas.hint")
-						})
-					]
-				})]
-			});
+		function SasSeat({ state, sas, t, hideComparisonGroup = false }) {
+			if (sas !== null) {
+				const spoken = hideComparisonGroup ? sas.spoken.split(" ").map((group, index) => index === sas.comparisonGroupIndex ? "•••••" : group).join(" ") : sas.spoken;
+				return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+					className: Messages_module_css_default.sas,
+					"data-sas": "present",
+					"data-state": state,
+					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+						className: Messages_module_css_default.sasGlyph,
+						children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(SasIcon, {})
+					}), /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+						className: Messages_module_css_default.sasBody,
+						children: [
+							/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
+								className: Messages_module_css_default.sasLabel,
+								children: [t("sas.label"), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+									className: Messages_module_css_default.visuallyHidden,
+									children: `: ${t("sas.spoken")}`
+								})]
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: Messages_module_css_default.sasDigits,
+								"data-sas-spoken": spoken,
+								children: spoken
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", {
+								className: Messages_module_css_default.sasHint,
+								children: t("sas.hint")
+							})
+						]
+					})]
+				});
+			}
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("span", {
 				className: Messages_module_css_default.sasAbsent,
 				"data-sas": "absent",
@@ -13035,11 +13122,18 @@ window.__ModuleLoader__.load({
 		*/
 		function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }) {
 			const [refusal, setRefusal] = (0, react.useState)(null);
+			const [comparisonGroups, setComparisonGroups] = (0, react.useState)(["", ""]);
+			const matched = state === "BOUND" && sas !== null && comparisonGroups.every((group) => /^[0-9]{5}$/u.test(group)) && comparisonGroups[0] === sas.digits.slice(0, 5) && comparisonGroups[1] === sas.digits.slice(35, 40);
 			const [asking, setAsking] = (0, react.useState)(false);
 			const ask = async () => {
+				if (!matched || sas === null) return;
 				setAsking(true);
 				setRefusal(null);
-				const answer = await confirmSas(npub);
+				const answer = await confirmSas(npub, {
+					sasDigits: sas.digits,
+					safetyVersion: 2,
+					comparisonGroups
+				});
 				setAsking(false);
 				if (answer.kind === "failed") {
 					setRefusal(answer.failure.kind === "refused" ? answer.failure.reason : answer.failure.detail);
@@ -13069,25 +13163,43 @@ window.__ModuleLoader__.load({
 					/* @__PURE__ */ (0, react_jsx_runtime.jsx)(SasSeat, {
 						state,
 						sas,
-						t
+						t,
+						hideComparisonGroup: true
 					}),
 					sas !== null && /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: Messages_module_css_default.verifyConfirm,
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
-							type: "button",
-							variant: "green",
-							className: Messages_module_css_default.verifyConfirmButton,
-							"data-verify-confirm": "available",
-							disabled: asking,
-							onClick: () => {
-								ask();
-							},
-							children: t("verify.confirm.button", { contact })
-						}), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
-							className: Messages_module_css_default.verifyConfirmNote,
-							"data-verify-confirm-note": refusal === null ? asking ? "asking" : "ready" : "refused",
-							children: refusal ?? t("verify.confirm.ready")
-						})]
+						children: [
+							comparisonGroups.map((group, index) => /* @__PURE__ */ (0, react_jsx_runtime.jsx)("input", {
+								"data-verify-comparison-group": index === 0 ? 0 : 7,
+								"aria-label": `${t("sas.label")} ${index + 1}`,
+								inputMode: "numeric",
+								autoComplete: "off",
+								maxLength: 5,
+								value: group,
+								disabled: asking || state !== "BOUND",
+								onChange: (event) => setComparisonGroups((previous) => {
+									const next = [...previous];
+									next[index] = event.target.value.replace(/[^0-9]/gu, "").slice(0, 5);
+									return next;
+								})
+							}, index)),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)(_aukora_face_layout_client.ActionButton, {
+								type: "button",
+								variant: "green",
+								className: Messages_module_css_default.verifyConfirmButton,
+								"data-verify-confirm": "available",
+								disabled: asking || !matched,
+								onClick: () => {
+									ask();
+								},
+								children: t("verify.confirm.button", { contact })
+							}),
+							/* @__PURE__ */ (0, react_jsx_runtime.jsx)("p", {
+								className: Messages_module_css_default.verifyConfirmNote,
+								"data-verify-confirm-note": refusal === null ? asking ? "asking" : "ready" : "refused",
+								children: refusal ?? t("verify.confirm.ready")
+							})
+						]
 					})
 				]
 			});

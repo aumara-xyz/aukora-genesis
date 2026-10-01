@@ -257,7 +257,21 @@ const MESSAGES_RELAY_REFUSALS = [
 const MESSAGES_REFUSAL_REASONS = [
 	...MESSAGES_STORE_REFUSALS,
 	...MESSAGES_WIRE_REFUSALS,
-	"messages:add-binding-invalid"
+	"messages:add-binding-invalid",
+	"messages:confirm-npub-invalid",
+	"messages:confirm-body-unreadable",
+	"messages:confirm-no-such-contact",
+	"messages:confirm-not-bound",
+	"messages:confirm-safety-version-mismatch",
+	"messages:confirm-comparison-required",
+	"messages:confirm-signer-unreachable",
+	"messages:confirm-signer-declined",
+	"messages:confirm-challenge-mismatch",
+	"messages:confirm-not-verified",
+	"messages:confirm-write-failed",
+	"messages:confirm-writer-absent",
+	"messages:confirm-writer-unloadable",
+	"messages:confirm-writer-unusable"
 ];
 /** All three outcomes, so a parser and a caller can assert the set is closed. */
 const MESSAGES_EVIDENCE_OUTCOMES = [
@@ -363,6 +377,44 @@ function hasExactKeys(value, keys) {
 function isText(value) {
 	return typeof value === "string" && value !== "";
 }
+/** Validate contact data before trimming or projecting it, including nested unsigned metadata. */
+function contactFieldsAreSafe(value, depth = 0) {
+	if (depth > 32) return false;
+	if (typeof value === "string") return !/[\p{Cc}\u202a-\u202e\u2066-\u2069\p{Zl}\p{Zp}]/u.test(value);
+	if (value !== null && typeof value === "object") return Object.entries(value).every(([key, field]) => contactFieldsAreSafe(key, depth + 1) && contactFieldsAreSafe(field, depth + 1));
+	return true;
+}
+/** Escape controls before a rejected field is named in a diagnostic. Never echo raw JSON. */
+function safeContactDiagnostic(value) {
+	if (typeof value !== "string") return "unreadable";
+	return JSON.stringify(value.slice(0, 120)).replace(/[\p{Cc}\p{Bidi_Control}\p{Zl}\p{Zp}]/gu, (character) => `\\u${character.charCodeAt(0).toString(16).padStart(4, "0")}`);
+}
+/** Keep usable contacts readable while explicitly accounting for each omitted row. */
+function skippedContact(index, value) {
+	const fields = isRecord$3(value) ? value : {};
+	return {
+		index,
+		reason: "messages:contact-malformed",
+		subject: `entry ${index}${typeof fields.name === "string" ? ` name ${safeContactDiagnostic(fields.name)}` : ""}${typeof fields.npub === "string" ? ` npub ${safeContactDiagnostic(fields.npub)}` : ""}`
+	};
+}
+/** The sole displayed/confirmed safety-number format; legacy six-digit SAS never reaches the UI. */
+function parseSafetyNumber(value) {
+	if (value === null) return null;
+	if (!isRecord$3(value) || !hasExactKeys(value, [
+		"digits",
+		"spoken",
+		"comparisonGroupIndex"
+	]) || !contactFieldsAreSafe(value)) return void 0;
+	if (typeof value.digits !== "string" || !/^[0-9]{70}$/u.test(value.digits)) return void 0;
+	if (value.spoken !== value.digits.match(/.{5}/gu)?.join(" ")) return void 0;
+	if (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return void 0;
+	return {
+		digits: value.digits,
+		spoken: String(value.spoken),
+		comparisonGroupIndex: value.comparisonGroupIndex
+	};
+}
 /** Whether a value is one of the four states. */
 function isMessagesContactState(value) {
 	return MESSAGES_WIRE_CONTACT_STATES.some((state) => state === value);
@@ -431,14 +483,7 @@ function parseMessagesContactsRequest(pathname, search) {
 }
 /** Parse one SAS off the wire, or undefined when it is not one this face serves. */
 function parseWireSas(value) {
-	if (!isRecord$3(value)) return void 0;
-	if (!hasExactKeys(value, ["digits", "spoken"])) return void 0;
-	if (typeof value.digits !== "string" || !/^\d{6}$/u.test(value.digits)) return void 0;
-	if (typeof value.spoken !== "string" || !/^\d{3} \d{3}$/u.test(value.spoken)) return void 0;
-	return {
-		digits: value.digits,
-		spoken: value.spoken
-	};
+	return parseSafetyNumber(value) ?? void 0;
 }
 /**
 * Parse one contact entry off the wire.
@@ -446,8 +491,8 @@ function parseWireSas(value) {
 * @returns the entry, or undefined when it is not what this face serves.
 */
 function parseMessagesContactEntry(value) {
-	if (!isRecord$3(value)) return void 0;
-	if (!hasExactKeys(value, [
+	if (!isRecord$3(value) || !contactFieldsAreSafe(value)) return void 0;
+	const keys = [
 		"npub",
 		"name",
 		"state",
@@ -456,7 +501,9 @@ function parseMessagesContactEntry(value) {
 		"sas",
 		"binding",
 		"peerControllerKey"
-	])) return void 0;
+	];
+	if (Object.hasOwn(value, "safetyNumber")) keys.push("safetyNumber");
+	if (!hasExactKeys(value, keys)) return void 0;
 	if (!isText(value.npub) || !isText(value.name)) return void 0;
 	if (!isMessagesContactState(value.state)) return void 0;
 	if (typeof value.peerControllerKey !== "string") return void 0;
@@ -465,8 +512,14 @@ function parseMessagesContactEntry(value) {
 	if (value.subject !== null && !isText(value.subject)) return void 0;
 	const binding = value.binding;
 	if (!isMessagesContactBinding(binding)) return void 0;
-	const sas = parseWireSasForBinding(value.sas, binding);
+	const sas = parseWireSasForBinding(value.sas, binding, value.state);
 	if (sas === void 0) return void 0;
+	const safetyNumber = value.safetyNumber === void 0 ? null : parseSafetyNumber(value.safetyNumber);
+	if (safetyNumber === void 0 || safetyNumber !== null && (binding !== "verified" || ![
+		"BOUND",
+		"TEST",
+		"VERIFIED"
+	].includes(value.state))) return void 0;
 	return {
 		npub: value.npub,
 		name: value.name,
@@ -474,6 +527,7 @@ function parseMessagesContactEntry(value) {
 		reason: value.reason,
 		subject: value.subject,
 		sas,
+		...Object.hasOwn(value, "safetyNumber") ? { safetyNumber } : {},
 		binding,
 		peerControllerKey: value.peerControllerKey
 	};
@@ -481,22 +535,17 @@ function parseMessagesContactEntry(value) {
 /**
 * The SAS one entry may carry, given what vouched for it.
 *
-* THE WITHHOLDING IS RE-ASSERTED ON THE WIRE, IN BOTH DIRECTIONS. A body claiming a verified
-* binding and NO SAS is refused because that is the one case where the string exists and the
-* screen would have none to show; a body offering a SAS for anything other than a verified
-* binding is refused because that is the mistake this face exists to prevent. Either way the
-* pair is not a pair this face wrote.
+* BOUND and TEST may lack a safety number when either identity cannot use the current
+* protocol. VERIFIED requires a current number; other states or unverified bindings
+* must not offer one.
 *
 * @param value - the entry's `sas` field.
 * @param binding - the entry's already-validated binding status.
 * @returns the SAS or null, or undefined when the pair is not one this face serves.
 */
-function parseWireSasForBinding(value, binding) {
-	if (binding === "verified") {
-		const sas = parseWireSas(value);
-		return sas === void 0 ? void 0 : sas;
-	}
-	return value === null ? null : void 0;
+function parseWireSasForBinding(value, binding, state) {
+	if (binding === "verified") return parseThreadSas(value, state);
+	return value === null && state !== "VERIFIED" ? null : void 0;
 }
 /**
 * Validate a listing body off the wire.
@@ -505,22 +554,42 @@ function parseWireSasForBinding(value, binding) {
 */
 function parseMessagesContactsBody(value) {
 	if (!isRecord$3(value)) return void 0;
-	if (!hasExactKeys(value, [
+	const keys = [
 		"status",
 		"root",
 		"contacts"
-	])) return void 0;
+	];
+	if (Object.hasOwn(value, "skipped")) keys.push("skipped");
+	if (!hasExactKeys(value, keys)) return void 0;
 	if (value.status !== "ok" || !isText(value.root) || !Array.isArray(value.contacts)) return void 0;
+	const skipped = [];
+	if (Object.hasOwn(value, "skipped")) {
+		if (!Array.isArray(value.skipped)) return void 0;
+		for (const raw of value.skipped) {
+			if (!isRecord$3(raw) || !hasExactKeys(raw, [
+				"index",
+				"reason",
+				"subject"
+			])) return void 0;
+			if (typeof raw.index !== "number" || !Number.isSafeInteger(raw.index) || raw.index < 0 || raw.reason !== "messages:contact-malformed" || !isText(raw.subject) || raw.subject.length > 2048 || !contactFieldsAreSafe(raw.subject)) return void 0;
+			skipped.push({
+				index: raw.index,
+				reason: raw.reason,
+				subject: raw.subject
+			});
+		}
+	}
 	const contacts = [];
-	for (const raw of value.contacts) {
+	for (const [index, raw] of value.contacts.entries()) {
 		const entry = parseMessagesContactEntry(raw);
-		if (entry === void 0) return void 0;
-		contacts.push(entry);
+		if (entry === void 0) skipped.push(skippedContact(index, raw));
+		else contacts.push(entry);
 	}
 	return {
 		status: "ok",
 		root: value.root,
-		contacts
+		contacts,
+		...skipped.length === 0 ? {} : { skipped }
 	};
 }
 /**
@@ -625,7 +694,7 @@ function parseMessagesWireMessage(value) {
 */
 function parseMessagesThreadBody(value) {
 	if (!isRecord$3(value)) return void 0;
-	if (!hasExactKeys(value, [
+	const keys = [
 		"status",
 		"npub",
 		"contactState",
@@ -634,13 +703,23 @@ function parseMessagesThreadBody(value) {
 		"answered",
 		"evidence",
 		"evidenceRefusal"
-	])) return void 0;
+	];
+	if (Object.hasOwn(value, "safetyNumber")) keys.push("safetyNumber");
+	if (Object.hasOwn(value, "inboxComplete")) keys.push("inboxComplete");
+	if (value.inboxComplete !== void 0 && typeof value.inboxComplete !== "boolean") return void 0;
+	if (!hasExactKeys(value, keys)) return void 0;
 	if (value.status !== "ok" || !isText(value.npub)) return void 0;
 	const state = value.contactState;
 	if (state !== "VERIFIED" && state !== "BOUND" && state !== "TEST" && state !== "UNBOUND" && state !== "FOREIGN" && state !== "UNKNOWN") return;
 	const parsedSas = parseThreadSas(value.sas, state);
 	if (parsedSas === void 0) return void 0;
 	const sas = parsedSas;
+	const safetyNumber = value.safetyNumber === void 0 ? null : parseSafetyNumber(value.safetyNumber);
+	if (!contactFieldsAreSafe(value.npub) || safetyNumber === void 0 || safetyNumber !== null && ![
+		"BOUND",
+		"TEST",
+		"VERIFIED"
+	].includes(state)) return void 0;
 	if (!Array.isArray(value.messages) || !Array.isArray(value.answered)) return void 0;
 	if (value.answered.some((relay) => typeof relay !== "string")) return void 0;
 	const evidence = parseEvidencePair(value);
@@ -658,8 +737,10 @@ function parseMessagesThreadBody(value) {
 		npub: value.npub,
 		contactState: state,
 		sas,
+		...Object.hasOwn(value, "safetyNumber") ? { safetyNumber } : {},
 		messages,
 		answered: value.answered,
+		...Object.hasOwn(value, "inboxComplete") ? { inboxComplete: value.inboxComplete } : {},
 		...evidence
 	};
 }
@@ -667,14 +748,14 @@ function parseMessagesThreadBody(value) {
 * The SAS a thread may carry, given the contact state it reports.
 *
 * The same pairing rule as the listing, restated for the thread: a SAS exists only for a
-* binding that verified, so VERIFIED, BOUND and TEST may carry one, and those three must.
+* binding that verified. BOUND and TEST may lack one; only VERIFIED requires one.
 *
 * @param value - the thread's `sas` field.
 * @param state - the thread's own contact state.
 * @returns the SAS or null, or undefined when the pair is not one this face serves.
 */
 function parseThreadSas(value, state) {
-	if (value === null) return state === "VERIFIED" || state === "BOUND" || state === "TEST" ? void 0 : null;
+	if (value === null) return state === "VERIFIED" ? void 0 : null;
 	if (state !== "VERIFIED" && state !== "BOUND" && state !== "TEST") return void 0;
 	return parseWireSas(value);
 }
@@ -801,6 +882,75 @@ function parseMessagesSendBody(value) {
 	};
 }
 //#endregion
+//#region lib/types/client/add-contact.js
+const CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+const GENERATOR = [
+	996825010,
+	642813549,
+	513874426,
+	1027748829,
+	705979059
+];
+const ADD_REFUSE = Object.freeze({
+	NPUB: "messages:add-npub-invalid",
+	CONTROLLER: "messages:add-controller-invalid",
+	NAME: "messages:add-name-invalid",
+	QR: "messages:add-qr-invalid",
+	BINDING: "messages:add-binding-invalid"
+});
+function refuse$2(reason, detail) {
+	return {
+		ok: false,
+		reason,
+		detail
+	};
+}
+function polymod(values) {
+	let checksum = 1;
+	for (const value of values) {
+		const top = checksum >> 25;
+		checksum = (checksum & 33554431) << 5 ^ value;
+		for (let bit = 0; bit < 5; bit += 1) if ((top >> bit & 1) === 1) checksum ^= GENERATOR[bit] ?? 0;
+	}
+	return checksum;
+}
+function checkNpub(value) {
+	const raw = typeof value === "string" ? value.trim().replace(/^nostr:/iu, "") : "";
+	if (!raw) return refuse$2(ADD_REFUSE.NPUB, "no npub was given");
+	const lower = raw.toLowerCase();
+	if (raw !== lower && raw !== raw.toUpperCase()) return refuse$2(ADD_REFUSE.NPUB, "mixed case is not valid bech32");
+	if (lower.length !== 63 || !lower.startsWith("npub1")) return refuse$2(ADD_REFUSE.NPUB, "an npub must be 63 characters starting with npub1");
+	const values = [];
+	for (const character of lower.slice(5)) {
+		const index = CHARSET.indexOf(character);
+		if (index === -1) return refuse$2(ADD_REFUSE.NPUB, "invalid bech32 character");
+		values.push(index);
+	}
+	const hrp = [..."npub"].map((character) => character.charCodeAt(0));
+	if (polymod([
+		...hrp.map((code) => code >> 5),
+		0,
+		...hrp.map((code) => code & 31),
+		...values
+	]) !== 1) return refuse$2(ADD_REFUSE.NPUB, "the npub checksum does not match");
+	let accumulator = 0;
+	let bits = 0;
+	let bytes = 0;
+	for (const value of values.slice(0, -6)) {
+		accumulator = (accumulator << 5 | value) & 4095;
+		bits += 5;
+		while (bits >= 8) {
+			bits -= 8;
+			bytes += 1;
+		}
+	}
+	if (bytes !== 32 || bits >= 5 || (accumulator << 8 - bits & 255) !== 0) return refuse$2(ADD_REFUSE.NPUB, "an npub must encode 32 bytes with zero padding");
+	return {
+		ok: true,
+		npub: lower
+	};
+}
+//#endregion
 //#region lib/types/contacts-store.js
 /**
 * The reader behind the Messages face: this node's contacts, each in ONE of four states.
@@ -896,10 +1046,8 @@ function parseMessagesSendBody(value) {
 * the listing does: present only for a binding that verified.
 * ─────────────────────────────────────────────────────────────────────────────────────────────
 *
-* A MALFORMED ENTRY REFUSES THE WHOLE LIST rather than being skipped, which is the same rule
-* the rest of this project follows: a missing mandatory input fails, it never silently
-* skips. Dropping one contact would tell the person looking at the screen that their list is
-* complete when it is not.
+* Malformed entries are omitted individually and named in `skipped`, with controls escaped.
+* One broken or hostile record must not hide the remaining usable contacts.
 *
 * A BINDING THAT IS PRESENT BUT BROKEN IS NOT A REFUSAL. It is FOREIGN, the adversarial
 * state, and it is reported per contact with the underlying refusal kept in `reason` — that
@@ -1065,10 +1213,12 @@ function messagesContactsRoots(controllerDir) {
 * @returns the entry, or undefined when it is not a contact this face can resolve.
 */
 function parseStoredContact(value) {
-	if (!isRecord$2(value)) return void 0;
-	if (typeof value.npub !== "string" || value.npub === "") return void 0;
-	if (typeof value.name !== "string" || value.name === "") return void 0;
+	if (!isRecord$2(value) || !contactFieldsAreSafe(value)) return void 0;
+	const npub = checkNpub(value.npub);
+	if (!npub.ok || npub.npub !== value.npub) return void 0;
+	if (typeof value.name !== "string" || value.name.trim() === "" || value.name.length > 120) return void 0;
 	if (typeof value.peerControllerKey !== "string") return void 0;
+	if (!/^[0-9a-f]{64}$/iu.test(value.peerControllerKey) && !(value.peerControllerKey === "" && value.binding === null)) return void 0;
 	if (value.binding === void 0) return void 0;
 	return {
 		npub: value.npub,
@@ -1087,15 +1237,18 @@ function parseMessagesContactsDocument(value) {
 	if (!isRecord$2(value)) return void 0;
 	if (value.domain !== "aukora:nostr-contacts:v1") return void 0;
 	if (!Array.isArray(value.contacts)) return void 0;
+	if (!Object.entries(value).every(([key, field]) => contactFieldsAreSafe(key) && (key === "contacts" || contactFieldsAreSafe(field)))) return void 0;
 	const contacts = [];
-	for (const raw of value.contacts) {
+	const skipped = [];
+	for (const [index, raw] of value.contacts.entries()) {
 		const entry = parseStoredContact(raw);
-		if (entry === void 0) return void 0;
-		contacts.push(entry);
+		if (entry === void 0) skipped.push(skippedContact(index, raw));
+		else contacts.push(entry);
 	}
 	return {
 		domain: MESSAGES_CONTACTS_DOMAIN,
-		contacts
+		contacts,
+		...skipped.length === 0 ? {} : { skipped }
 	};
 }
 /**
@@ -1130,32 +1283,18 @@ async function readContactsFile(stateDir) {
 	}
 	if (!isRecord$2(parsed) || parsed.domain !== "aukora:nostr-contacts:v1") return {
 		kind: "refused",
-		refusal: refused("messages:contacts-domain-unknown", `${path} (domain ${isRecord$2(parsed) ? JSON.stringify(parsed.domain) : "not-an-object"})`)
+		refusal: refused("messages:contacts-domain-unknown", `${path} (domain ${isRecord$2(parsed) ? safeContactDiagnostic(parsed.domain) : "not-an-object"})`)
 	};
 	const document = parseMessagesContactsDocument(parsed);
 	if (document === void 0) return {
 		kind: "refused",
-		refusal: refused("messages:contact-malformed", `${path} (${offenderSubject(parsed)})`)
+		refusal: refused("messages:contact-malformed", `${path} (document envelope is malformed)`)
 	};
 	return {
 		kind: "contacts",
-		contacts: document.contacts
+		contacts: document.contacts,
+		...document.skipped === void 0 ? {} : { skipped: document.skipped }
 	};
-}
-/** The first entry a malformed document cannot account for, named for the refusal. */
-function offenderSubject(document) {
-	const contacts = document.contacts;
-	if (!Array.isArray(contacts)) return "contacts is not an array";
-	for (const [index, raw] of contacts.entries()) {
-		if (parseStoredContact(raw) !== void 0) continue;
-		if (!isRecord$2(raw)) return `entry ${index} is not an object`;
-		if (typeof raw.npub !== "string" || raw.npub === "") return `entry ${index} names no npub`;
-		if (typeof raw.name !== "string" || raw.name === "") return `entry ${index} (${raw.npub}) names no name`;
-		if (raw.peerControllerKey === void 0) return `entry ${index} (${raw.npub}) records no peerControllerKey`;
-		if (typeof raw.peerControllerKey !== "string") return `entry ${index} (${raw.npub}) has a non-string peerControllerKey`;
-		return `entry ${index} (${raw.npub}) carries no binding key`;
-	}
-	return "an entry is malformed";
 }
 /** A reason as a string, whatever the resolver put there. */
 function reasonText(value) {
@@ -1181,15 +1320,7 @@ function asBindingStatus(value) {
 * @returns the two leaf fields, or null.
 */
 function contactSas(value) {
-	if (!isRecord$2(value)) return null;
-	const digits = value.digits;
-	const spoken = value.spoken;
-	if (typeof digits !== "string" || digits === "") return null;
-	if (typeof spoken !== "string" || spoken === "") return null;
-	return {
-		digits,
-		spoken
-	};
+	return parseSafetyNumber(value) ?? null;
 }
 /**
 * Resolve one stored contact into the seven leaf fields this face serves.
@@ -1214,6 +1345,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 		reason: "contact:no-binding",
 		subject: null,
 		sas: null,
+		safetyNumber: null,
 		binding: "absent",
 		peerControllerKey: ""
 	};
@@ -1224,6 +1356,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 		reason: "messages:contact-peer-key-malformed: a contact records the peer controller key as 64 hex characters",
 		subject: null,
 		sas: null,
+		safetyNumber: null,
 		binding: "refused",
 		peerControllerKey: typeof peer === "string" ? peer : ""
 	};
@@ -1236,10 +1369,9 @@ function resolveStoredContact(resolveContact, roots, contact) {
 		binding: contact.binding ?? null,
 		peerControllerKey: peer
 	};
-	if (contact.confirmation !== void 0 && roots.controllerDir !== void 0) {
-		spec.confirmation = contact.confirmation;
-		spec.ownerControllerDir = roots.controllerDir;
-	}
+	spec.ownerStateDir = roots.stateDir;
+	if (roots.controllerDir !== void 0) spec.ownerControllerDir = roots.controllerDir;
+	if (contact.confirmation !== void 0 && roots.controllerDir !== void 0) spec.confirmation = contact.confirmation;
 	if (typeof declared === "string" && declared !== "") spec.expectSubject = declared;
 	let answer;
 	try {
@@ -1252,6 +1384,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 			reason: reasonText(error instanceof Error ? error.message : error),
 			subject: null,
 			sas: null,
+			safetyNumber: null,
 			binding: "refused",
 			peerControllerKey: peer
 		};
@@ -1263,6 +1396,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 		reason: "contact:resolution-returned-no-verdict",
 		subject: null,
 		sas: null,
+		safetyNumber: null,
 		binding: "refused",
 		peerControllerKey: peer
 	};
@@ -1276,6 +1410,7 @@ function resolveStoredContact(resolveContact, roots, contact) {
 		reason: reasonText(answer.reason),
 		subject: typeof answer.subject === "string" && answer.subject !== "" ? answer.subject : null,
 		sas: verified ? contactSas(answer.sas) : null,
+		safetyNumber: verified ? parseSafetyNumber(answer.safetyNumber) ?? null : null,
 		binding,
 		peerControllerKey: peer
 	};
@@ -1387,6 +1522,7 @@ function openedThreadWraps(wraps, openGiftWrap, spec) {
 		let decoded;
 		try {
 			if (!isRecord$2(wrap) || typeof wrap.id !== "string" || seen.has(wrap.id)) continue;
+			if (typeof wrap.created_at !== "number" || !Number.isSafeInteger(wrap.created_at) || wrap.created_at < 0 || wrap.created_at > Math.floor(Date.now() / 1e3)) continue;
 			const cacheKey = `${recipient}:${wrap.id}`;
 			const wire = JSON.stringify(wrap);
 			const cached = openedCache.get(cacheKey);
@@ -1411,7 +1547,7 @@ function openedThreadWraps(wraps, openGiftWrap, spec) {
 		if (rumor.kind !== 14 || !Array.isArray(rumor.tags)) continue;
 		const recipients = rumor.tags.filter((tag) => Array.isArray(tag) && tag[0] === "p" && typeof tag[1] === "string").map((tag) => tag[1]?.toLowerCase());
 		if (!recipients.includes(from === "me" ? wanted : self) || recipients.some((recipient) => recipient !== wanted && recipient !== self)) continue;
-		if (typeof rumor.id !== "string" || typeof rumor.content !== "string" || !Number.isInteger(rumor.created_at) || Number(rumor.created_at) < 0) continue;
+		if (typeof rumor.id !== "string" || typeof rumor.content !== "string" || typeof rumor.created_at !== "number" || !Number.isSafeInteger(rumor.created_at) || rumor.created_at < 0 || rumor.created_at > Math.floor(Date.now() / 1e3) + 900) continue;
 		const at = typeof rumor.created_at === "number" && Number.isFinite(rumor.created_at) ? rumor.created_at : 0;
 		const id = typeof rumor.id === "string" && rumor.id !== "" ? rumor.id : `${sender}:${String(at)}:${typeof rumor.content === "string" ? rumor.content : ""}`;
 		opened.push({
@@ -1452,6 +1588,7 @@ function readMailThread(wraps, openGiftWrap, spec) {
 			npub: spec.senderNpub,
 			contactState: spec.contact?.state ?? "UNKNOWN",
 			sas: spec.contact?.sas ?? null,
+			safetyNumber: spec.contact?.safetyNumber ?? null,
 			messages: [...byId.values()]
 		},
 		opened
@@ -1625,7 +1762,8 @@ async function listContacts(resolver, roots) {
 	return {
 		status: "ok",
 		root: roots.stateDir,
-		contacts
+		contacts,
+		...read.skipped === void 0 ? {} : { skipped: read.skipped }
 	};
 }
 //#endregion
@@ -1830,6 +1968,8 @@ const MESSAGES_CONFIRM_CONTACT_REFUSALS = Object.freeze({
 	NO_SUCH_CONTACT: "messages:confirm-no-such-contact",
 	/** The row is not BOUND, so there is no verified key for a confirmation to be about. */
 	NOT_BOUND: "messages:confirm-not-bound",
+	SAFETY_VERSION: "messages:confirm-safety-version-mismatch",
+	COMPARISON: "messages:confirm-comparison-required",
 	/** No signer is reachable, or it answered with something that is not a reply. */
 	SIGNER_UNREACHABLE: "messages:confirm-signer-unreachable",
 	SIGNER_DECLINED: "messages:confirm-signer-declined",
@@ -1843,6 +1983,9 @@ const MESSAGES_CONFIRM_CONTACT_REFUSALS = Object.freeze({
 	WRITER_UNUSABLE: "messages:confirm-writer-unusable"
 });
 /** How long to wait for the signer, which is a person deciding. */
+function comparisonMatches(digits, groups) {
+	return /^[0-9]{70}$/u.test(digits) && Array.isArray(groups) && groups.length === 2 && groups.every((group) => typeof group === "string" && /^[0-9]{5}$/u.test(group)) && groups[0] === digits.slice(0, 5) && groups[1] === digits.slice(35, 40);
+}
 const SIGNER_TIMEOUT_MS = 31e4;
 /** The largest reply line this route will read. */
 const MAX_REPLY_BYTES = 64 * 1024;
@@ -1915,13 +2058,18 @@ function confirmContactRoute(admitted, rootsOf) {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.BODY_UNREADABLE, url);
 				return;
 			}
-			if (body === null || typeof body !== "object" || Array.isArray(body)) {
+			if (body === null || typeof body !== "object" || Array.isArray(body) || !contactFieldsAreSafe(body) || Object.keys(body).sort().join(",") !== "comparisonGroups,npub,safetyVersion,sasDigits") {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.BODY_UNREADABLE, url);
 				return;
 			}
 			const npub = typeof body.npub === "string" ? String(body.npub) : "";
 			if (npub === "") {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NPUB_INVALID, url);
+				return;
+			}
+			const comparison = body;
+			if (comparison.safetyVersion !== 2) {
+				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.SAFETY_VERSION, url, 409);
 				return;
 			}
 			const roots = rootsOf();
@@ -1948,7 +2096,7 @@ function confirmContactRoute(admitted, rootsOf) {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.WRITER_UNUSABLE, url, 500);
 				return;
 			}
-			const stored = parts.readExistingContacts(parts.contactsPath(roots.stateDir)).find((entry) => entry?.npub === npub);
+			const stored = parts.readExistingContacts(parts.contactsPath(roots.stateDir)).map(parseStoredContact).find((entry) => entry?.npub === npub);
 			if (stored === void 0) {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NO_SUCH_CONTACT, url, 404);
 				return;
@@ -1958,18 +2106,28 @@ function confirmContactRoute(admitted, rootsOf) {
 				peerControllerKey: stored.peerControllerKey,
 				binding: stored.binding ?? null,
 				confirmation: stored.confirmation,
-				ownerControllerDir: roots.controllerDir
+				ownerControllerDir: roots.controllerDir,
+				ownerStateDir: roots.stateDir
 			});
 			if (resolved.state !== "BOUND") {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_BOUND, url, 409);
+				return;
+			}
+			if (resolved.code === "contact:safety-version-mismatch") {
+				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.SAFETY_VERSION, url, 409);
 				return;
 			}
 			const sas = resolved.sas;
 			const digits = typeof sas?.digits === "string" ? sas.digits : "";
 			const controllerKeyHex = typeof resolved.controllerKeyHex === "string" ? resolved.controllerKeyHex : "";
 			const subject = typeof resolved.subject === "string" ? resolved.subject : "";
-			if (!/^\d{6}$/u.test(digits) || controllerKeyHex === "") {
-				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_BOUND, url, 409);
+			if (!/^[0-9]{70}$/u.test(digits) || controllerKeyHex === "") {
+				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409);
+				return;
+			}
+			const groupIndex = sas?.comparisonGroupIndex;
+			if (groupIndex !== 0 && groupIndex !== 7 || comparison.sasDigits !== digits || !comparisonMatches(digits, comparison.comparisonGroups)) {
+				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.COMPARISON, url, 409);
 				return;
 			}
 			const challenge = randomBytes(32).toString("hex");
@@ -1984,6 +2142,7 @@ function confirmContactRoute(admitted, rootsOf) {
 					controllerKeyHex,
 					sasDigits: digits,
 					confirmedAt,
+					safetyVersion: 2,
 					challenge
 				}, socketPath, {
 					unreachable: MESSAGES_CONFIRM_CONTACT_REFUSALS.SIGNER_UNREACHABLE,
@@ -2015,7 +2174,8 @@ function confirmContactRoute(admitted, rootsOf) {
 					npub,
 					controllerKeyHex,
 					sasDigits: digits,
-					confirmedAt
+					confirmedAt,
+					safetyVersion: 2
 				},
 				signature: reply.signature,
 				approvalKeyDid: `did:key:${machineHex}`
@@ -2023,13 +2183,17 @@ function confirmContactRoute(admitted, rootsOf) {
 			const checked = parts.verifySasConfirmationDetailed ?? parts.verifySasConfirmation;
 			const outcome = typeof parts.verifySasConfirmationDetailed === "function" ? parts.verifySasConfirmationDetailed(document, {
 				npub,
+				subject,
 				controllerKeyHex,
 				sasDigits: digits,
+				safetyVersion: 2,
 				ownerControllerDir: roots.controllerDir
 			}) : { verdict: parts.verifySasConfirmation(document, {
 				npub,
+				subject,
 				controllerKeyHex,
 				sasDigits: digits,
+				safetyVersion: 2,
 				ownerControllerDir: roots.controllerDir
 			}) };
 			if (checked === void 0 || outcome.verdict !== "verified") {
@@ -2044,6 +2208,18 @@ function confirmContactRoute(admitted, rootsOf) {
 				});
 			} catch {
 				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.WRITE_FAILED, url, 500);
+				return;
+			}
+			const current = parts.readExistingContacts(parts.contactsPath(roots.stateDir)).map(parseStoredContact).find((entry) => entry?.npub === npub);
+			if ((current === void 0 ? null : parts.resolveContact({
+				npub,
+				peerControllerKey: current.peerControllerKey,
+				binding: current.binding,
+				confirmation: current.confirmation,
+				ownerControllerDir: roots.controllerDir,
+				ownerStateDir: roots.stateDir
+			}))?.state !== "VERIFIED") {
+				refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409);
 				return;
 			}
 			res.statusCode = 200;
@@ -2213,6 +2389,8 @@ function messagesRefusalStatus(reason) {
 		case "messages:confirm-body-unreadable": return 400;
 		case "messages:confirm-no-such-contact": return 404;
 		case "messages:confirm-not-bound": return 409;
+		case "messages:confirm-safety-version-mismatch": return 409;
+		case "messages:confirm-comparison-required": return 409;
 		case "messages:confirm-signer-unreachable": return 503;
 		case "messages:confirm-signer-declined": return 409;
 		case "messages:confirm-challenge-mismatch": return 409;

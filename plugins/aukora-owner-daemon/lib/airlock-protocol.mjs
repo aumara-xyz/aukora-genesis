@@ -4,7 +4,7 @@ import {
   createRefusedApprovalResponse,
 } from '../../aukora-aumlok/lib/owner-approval.mjs'
 import {
-  nostrBindingPreimage, sasConfirmationPreimage, decodeNpub,
+  nostrBindingPreimage, sasConfirmationPreimage, decodeNpub, NOSTR_SAFETY_VERSION, assertWitnessFields,
 } from './airlock-witness.mjs'
 
 const HEX = /^[0-9a-f]{64}$/u
@@ -17,6 +17,7 @@ function closed(value, keys) {
 }
 function text(value, max) {
   if (typeof value !== 'string' || value.length === 0 || value.length > max || /[\r\n]/u.test(value)) malformed()
+  try { assertWitnessFields(value) } catch { malformed() }
 }
 
 /** Reuse the product's signing bytes; never accept a caller-supplied preimage. */
@@ -33,23 +34,24 @@ export function airlockSigningInput(message) {
   const statement = message.request
   let bytes, instant
   if (message.kind === 'nostr-binding') {
-    closed(statement, ['subject', 'npub', 'nostrPubkeyHex', 'handle', 'createdAt'])
+    closed(statement, ['subject', 'npub', 'nostrPubkeyHex', 'handle', 'createdAt', 'safetyVersion'])
+    if (statement.safetyVersion !== NOSTR_SAFETY_VERSION) malformed()
     text(statement.handle, 128)
     if (decodeNpub(statement.npub) !== statement.nostrPubkeyHex || !HEX.test(statement.nostrPubkeyHex)) malformed()
     bytes = nostrBindingPreimage(statement)
     instant = statement.createdAt
   } else if (message.kind === 'nostr-sas') {
-    closed(statement, ['subject', 'npub', 'controllerKeyHex', 'sasDigits', 'confirmedAt'])
+    closed(statement, ['subject', 'npub', 'controllerKeyHex', 'sasDigits', 'confirmedAt', 'safetyVersion'])
     if (typeof statement.controllerKeyHex !== 'string' || !HEX.test(statement.controllerKeyHex)
-      || typeof statement.sasDigits !== 'string' || !/^[0-9]{6}$/u.test(statement.sasDigits)
-      || typeof statement.npub !== 'string' || !/^npub1[02-9ac-hj-np-z]{58}$/u.test(statement.npub)) malformed()
+      || typeof statement.sasDigits !== 'string' || !/^[0-9]{70}$/u.test(statement.sasDigits)
+      || statement.safetyVersion !== NOSTR_SAFETY_VERSION || decodeNpub(statement.npub) === null) malformed()
     bytes = Buffer.from(sasConfirmationPreimage(statement), 'utf8')
     instant = statement.confirmedAt
   } else malformed()
   text(statement.subject, 256)
   if (typeof instant !== 'string' || !INSTANT.test(instant)) malformed()
   const issuedAt = Date.parse(instant) / 1000
-  if (!Number.isSafeInteger(issuedAt)) malformed()
+  if (!Number.isSafeInteger(issuedAt) || new Date(issuedAt * 1000).toISOString().replace('.000Z', 'Z') !== instant) malformed()
   if (createHash('sha256').update(bytes).digest('hex') !== message.operationDigest) {
     fail('airlock:digest-mismatch')
   }

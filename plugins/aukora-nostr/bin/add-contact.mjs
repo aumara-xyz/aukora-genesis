@@ -3,7 +3,7 @@
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { randomBytes } from 'node:crypto'
 import { dirname, join, resolve } from 'node:path'
-import { npubDecode, npubEncode } from '../lib/identity.mjs'
+import { assertContactFields, npubDecode, npubEncode } from '../lib/identity.mjs'
 import { controllerKeyOf, resolveContact } from '../lib/contact.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 
@@ -17,6 +17,7 @@ export const ADD_CONTACT_REFUSE = Object.freeze({
   BAD_CONTROLLER: 'nostr:add-contact-bad-controller',
   EXISTING_UNREADABLE: 'nostr:add-contact-existing-unreadable',
   BAD_BINDING: 'nostr:add-contact-bad-binding',
+  BAD_NAME: 'nostr:add-contact-bad-name',
   /** Another writer holds the lock and its hold is not stale. A RETRY LATER is the answer. */
   LOCKED: 'nostr:add-contact-locked',
   /** `mode: 'insert'` found an entry for this npub. THE ANTI-OVERWRITE REFUSAL, held under the lock. */
@@ -138,22 +139,46 @@ export function contactsPath(stateDir) {
  * as a contacts document IS an error, and it is one this command will not resolve by overwriting.
  *
  * @param {string} file - the contacts document path.
- * @returns {readonly object[]} the existing contacts.
+ * @returns {readonly unknown[]} the existing records, including malformed rows left for repair.
  */
 export function readExistingContacts(file) {
   if (!existsSync(file)) return Object.freeze([])
   let parsed
   try {
     parsed = JSON.parse(readFileSync(file, 'utf8'))
-  } catch (cause) {
+  } catch {
+    // JSON parser errors can quote hostile or private contact bytes.
     throw refuse(ADD_CONTACT_REFUSE.EXISTING_UNREADABLE,
-      `${file} exists but is not JSON (${cause?.message ?? cause}); refusing to overwrite a contacts list this tool cannot read`)
+      `${file} exists but is not readable JSON; refusing to overwrite a contacts list this tool cannot read`)
   }
   if (parsed?.domain !== CONTACTS_DOMAIN || !Array.isArray(parsed.contacts)) {
     throw refuse(ADD_CONTACT_REFUSE.EXISTING_UNREADABLE,
       `${file} exists but is not a ${CONTACTS_DOMAIN} document; refusing to overwrite it`)
   }
+  try {
+    // Validate the envelope only. Malformed sibling rows remain unchanged as JSON values
+    // when another contact is added or confirmed; the listing reports them independently.
+    for (const [key, value] of Object.entries(parsed)) {
+      assertContactFields(key)
+      if (key !== 'contacts') assertContactFields(value)
+    }
+  } catch {
+    throw refuse(ADD_CONTACT_REFUSE.EXISTING_UNREADABLE, 'the contacts document envelope contains invalid fields')
+  }
   return Object.freeze(parsed.contacts)
+}
+
+/** A malformed stored row must never be silently overwritten while updating a valid contact. */
+function isWritableContact(value) {
+  if (!isRecord(value)) return false
+  try {
+    assertContactFields(value)
+    if (canonicalNpub(value.npub) !== value.npub) return false
+  } catch { return false }
+  return typeof value.name === 'string' && value.name.trim() !== '' && value.name.length <= 120
+    && typeof value.peerControllerKey === 'string'
+    && (HEX64.test(value.peerControllerKey) || (value.peerControllerKey === '' && value.binding === null))
+    && value.binding !== undefined
 }
 
 /**
@@ -163,6 +188,14 @@ export function readExistingContacts(file) {
  * @returns {Readonly<Record<string, unknown>>} what was written.
  */
 export function addContact(input) {
+  const name = input.name ?? (typeof input.npub === 'string' ? input.npub.slice(0, 16) : '')
+  try {
+    assertContactFields(name)
+    if (typeof name !== 'string' || !name.trim() || name.length > 120) throw new Error('invalid name')
+  } catch { throw refuse(ADD_CONTACT_REFUSE.BAD_NAME, 'contact name is invalid') }
+  try { assertContactFields(input) } catch {
+    throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, 'contact fields contain control or format characters')
+  }
   const stateDir = resolve(input.stateDir)
   let npub
   try {
@@ -186,6 +219,7 @@ export function addContact(input) {
         binding = JSON.parse(readFileSync(resolve(input.bindingPath), 'utf8'))
       }
       if (!isRecord(binding)) throw new Error('binding must be a JSON record')
+      assertContactFields(binding)
       // Validate the same JSON bytes that will be stored, including serialization failures.
       binding = JSON.parse(JSON.stringify(binding))
       if (!isRecord(binding) || !isRecord(binding.statement)
@@ -194,8 +228,8 @@ export function addContact(input) {
         || (Object.hasOwn(binding, 'label') && typeof binding.label !== 'string')) {
         throw new Error('binding has malformed fields')
       }
-    } catch (cause) {
-      throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, `binding is invalid: ${cause?.message ?? cause}`)
+    } catch {
+      throw refuse(ADD_CONTACT_REFUSE.BAD_BINDING, 'binding is unreadable or has malformed fields')
     }
   }
 
@@ -214,7 +248,6 @@ export function addContact(input) {
   }
 
   const file = contactsPath(stateDir)
-  const name = input.name ?? npub.slice(0, 16)
 
   // INSERT-ONLY IS THE DEFAULT FOR A CALLER THAT SAYS SO, AND UPSERT REMAINS FOR THE COMMAND LINE.
   // A person running this by hand to fix a key means to replace it; a BUTTON must not be able to
@@ -238,7 +271,8 @@ export function addContact(input) {
 
     // UPSERT BY Npub: re-adding somebody updates them in place. Appending would produce two entries for
     // one person, and the face resolves by npub, so which one won would depend on document order.
-    const others = existing.filter(current => !sameContact(current))
+    // A malformed duplicate is retained for repair, rather than silently erased by an upsert.
+    const others = existing.filter(current => !sameContact(current) || !isWritableContact(current))
     const contacts = [...others, entry]
 
     mkdirSync(dirname(file), { recursive: true, mode: 0o700 })
@@ -274,10 +308,12 @@ export function addContact(input) {
  * @returns {Readonly<{path: string, total: number, entry: object}>} what was written.
  */
 export function setContactConfirmation(input) {
+  assertContactFields(input)
+  npubDecode(input.npub)
   const file = contactsPath(resolve(input.stateDir))
   return withContactsLock(file, () => {
     const existing = readExistingContacts(file)
-    const index = existing.findIndex(current => current?.npub === input.npub)
+    const index = existing.findIndex(current => current?.npub === input.npub && isWritableContact(current))
     if (index === -1) {
       throw refuse(ADD_CONTACT_REFUSE.NO_SUCH_CONTACT,
         `${input.npub} is not in ${file}; a confirmation is a statement about a contact, so there must be one.`)
