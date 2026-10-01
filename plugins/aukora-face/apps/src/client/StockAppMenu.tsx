@@ -2,9 +2,9 @@
 import type { StockAppMenuProps } from './contract.ts'
 import css from './StockApps.module.css'
 
-export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room' | 'human-graph'
+export type StockAppId = 'auma-language' | 'auma-live' | 'zeta-harp' | 'auma-canvas' | 'room' | 'human-graph' | 'media'
 
-type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'room' | 'humanGraph'
+type MenuCopyPrefix = 'language' | 'live' | 'harp' | 'canvas' | 'room' | 'humanGraph' | 'media'
 
 interface MenuSpec {
   id: StockAppId
@@ -19,6 +19,7 @@ const ZETA_HARP_APP = { id: 'zeta-harp', copy: 'harp', presentation: 'full-bleed
 const AUMA_CANVAS_APP = { id: 'auma-canvas', copy: 'canvas', presentation: 'full-bleed' } as const
 const ROOM_APP = { id: 'room', copy: 'room', presentation: 'contained' } as const
 const HUMAN_GRAPH_APP = { id: 'human-graph', copy: 'humanGraph', presentation: 'full-bleed' } as const
+const MEDIA_APP = { id: 'media', copy: 'media', presentation: 'contained' } as const
 
 export const STOCK_APPS = [
   AUMA_LANGUAGE_APP,
@@ -27,6 +28,7 @@ export const STOCK_APPS = [
   AUMA_CANVAS_APP,
   ROOM_APP,
   HUMAN_GRAPH_APP,
+  MEDIA_APP,
 ] as const satisfies readonly MenuSpec[]
 
 function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps & { spec: MenuSpec }) {
@@ -40,7 +42,7 @@ function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps
     >
       <span className={css.menuCopy}>
         <strong>{t(`${spec.copy}.name`)}</strong>
-        {spec.copy !== 'room' && spec.copy !== 'humanGraph' && <span>{t(`${spec.copy}.menu`)}</span>}
+        {spec.copy !== 'room' && spec.copy !== 'humanGraph' && spec.copy !== 'media' && <span>{t(`${spec.copy}.menu`)}</span>}
       </span>
     </button>
   )
@@ -73,4 +75,8 @@ export function RoomMenu(props: StockAppMenuProps) {
 
 export function HumanGraphMenu(props: StockAppMenuProps) {
   return <StockAppMenu {...props} spec={HUMAN_GRAPH_APP} />
+}
+
+export function MediaMenu(props: StockAppMenuProps) {
+  return <StockAppMenu {...props} spec={MEDIA_APP} />
 }

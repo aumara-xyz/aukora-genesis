@@ -9,6 +9,7 @@ import { AumaLiveSurface } from './AumaLiveSurface.tsx'
 import { ZetaHarpSurface } from './ZetaHarpSurface.tsx'
 import { RoomSurface } from './RoomSurface.tsx'
 import { HumanGraphSurface } from './HumanGraphSurface.tsx'
+import { MediaSurface } from './MediaSurface.tsx'
 import { DakiniCodeMenu, DakiniCodeSurface } from './DakiniCode.tsx'
 import {
   AumaLanguageMenu,
@@ -17,6 +18,7 @@ import {
   ZetaHarpMenu,
   RoomMenu,
   HumanGraphMenu,
+  MediaMenu,
 } from './StockAppMenu.tsx'
 import { en, zh, type StockAppsKey } from './locales.ts'
 
@@ -66,6 +68,7 @@ export function apply(ctx: ClientContext): void {
     { app: STOCK_APPS[2], Menu: ZetaHarpMenu, Surface: ZetaHarpSurface },
     { app: STOCK_APPS[4], Menu: RoomMenu, Surface: RoomSurface },
     { app: STOCK_APPS[5], Menu: HumanGraphMenu, Surface: HumanGraphSurface },
+    { app: STOCK_APPS[6], Menu: MediaMenu, Surface: MediaSurface },
   ] as const
   registrations.forEach(({ app, Menu, Surface }, index) => {
     ctx.slots.inject('shell.menu.apps', () => ctx.slots.register({

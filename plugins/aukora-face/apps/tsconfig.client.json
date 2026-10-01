@@ -9,6 +9,7 @@
     "src/room-types.ts",
     "src/client/RoomSurface.tsx",
     "src/client/HumanGraphSurface.tsx",
+    "src/client/MediaSurface.tsx",
     "src/auma-canvas/types.ts",
     "src/css-modules.d.ts",
     "src/client/AumaLanguageSurface.tsx",
