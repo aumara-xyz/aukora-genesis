@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type { ComposerMode } from '../composer-mode-types.ts'
-import { ActionButton } from './primitives.tsx'
 import { NS } from './locales.ts'
 import css from './ComposerControls.module.css'
 
@@ -14,12 +13,14 @@ type Props = PropsRuntime<'conversation.input.permission'> & InjectFace<Controls
 const modes = ['read-only', 'workspace-write', 'danger-full-access'] as const
 const copy = ['composer.chat', 'composer.build', 'composer.yolo'] as const
 
-/** Current selection always comes from the host. Neither YOLO nor Vision has an activation path. */
+/** The dot and single label follow the host projection; unavailable controls never invent a selection. */
 export function ComposerControls({ locked, selectMode, useProjection, sessionId, t }: Props) {
   const state = useProjection('aukoraComposerMode')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
   const generation = useRef(0)
+  const hintId = useId()
+  const visionHintId = useId()
   useEffect(() => {
     generation.current++
     setBusy(false)
@@ -35,28 +36,37 @@ export function ComposerControls({ locked, selectMode, useProjection, sessionId,
     catch { if (generation.current === submittedGeneration) setError(true) }
     finally { if (generation.current === submittedGeneration) setBusy(false) }
   }
-  const unavailable = state === undefined || !state.available
+  const index = state === undefined ? -1 : modes.indexOf(state.mode)
+  const label = index < 0 ? '—' : t(copy[index] ?? 'composer.mode')
+  const disabled = state === undefined || !state.available || locked || busy
+  const hint = [t('composer.yoloReason'), state === undefined ? t('composer.modeUnknown')
+    : !state.available ? t('composer.modeUnavailable') : state.mode === 'danger-full-access' ? t('composer.currentYolo') : '']
+    .filter(Boolean).join(' ')
   return <div className={css.controls} aria-busy={busy} data-composer-mode={state?.mode ?? 'unknown'}>
-    <div className={css.actions}>
-      <div className={css.modes} role="group" aria-label={t('composer.mode')}>
-        {modes.map((mode, index) => <ActionButton key={mode} variant={index === 0 ? 'green' : index === 1 ? 'blue' : 'gold'}
-          className={css.mode} disabled={index === 2 || unavailable || locked || busy}
-          aria-pressed={state === undefined ? undefined : state.mode === mode}
-          title={index === 2 ? t('composer.yoloReason') : unavailable ? t('composer.modeUnavailable') : undefined}
-          onClick={() => { void choose(mode) }}>{t(copy[index] ?? 'composer.mode')}</ActionButton>)}
-      </div>
-      <ActionButton variant="purple" className={css.vision} disabled title={t('composer.visionReason')}
-        aria-label={t('composer.visionReason')}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /><path d="m4 3 16 18" />
-        </svg>{t('composer.visionUnavailable')}
-      </ActionButton>
-    </div>
-    <span className={css.reason}>{t('composer.yoloReason')}</span>
-    {state === undefined && <span className={css.state}>{t('composer.modeUnknown')}</span>}
-    {state !== undefined && !state.available && <span className={css.state}>{t('composer.modeUnavailable')}</span>}
-    {state?.mode === 'danger-full-access' && <span className={css.state}>{t('composer.currentYolo')}</span>}
-    {error && <span className={css.error} role="alert">{t('composer.failed')}</span>}
+    <span className={css.mode} data-mode={index} data-disabled={disabled || undefined} data-error={error || undefined} title={hint}>
+      <span className={css.slider}>
+        <span className={css.track} aria-hidden="true"><span className={css.dot} /><span className={css.unavailableStop} /></span>
+        {index >= 0 && <input className={css.range} type="range" min="0" max="2" step="1" value={index}
+          aria-label={t('composer.mode')} aria-valuetext={label} aria-describedby={hintId} disabled={disabled}
+          onChange={event => {
+            const requested = modes[Number(event.currentTarget.value)]
+            // Native drag/key feedback must not move the visual dot ahead of the host.
+            event.currentTarget.value = String(index)
+            if (requested !== undefined) void choose(requested)
+          }} />}
+      </span>
+      <span className={css.label} aria-hidden="true">{label}</span>
+      <span id={hintId} className={css.srOnly}>{hint}</span>
+    </span>
+    <span className={css.vision} role="group" aria-label={t('composer.visionUnavailable')} aria-disabled="true"
+      aria-describedby={visionHintId} title={t('composer.visionReason')}>
+      <span className={css.slider} aria-hidden="true"><span className={css.track}>
+        <span className={css.visionStop} /><span className={css.visionStop} />
+      </span></span>
+      <span className={css.label} aria-hidden="true">{t('composer.vision')}</span>
+      <span id={visionHintId} className={css.srOnly}>{t('composer.visionReason')}</span>
+    </span>
+    <span className={css.srOnly} role="alert">{error ? t('composer.failed') : ''}</span>
   </div>
 }
 
