@@ -1,6 +1,6 @@
 {
   "face": "layout",
-  "srcDigest": "01f61cba2b6a0aa76df735318c05b2b390a1ea9a5015f70abbd60b96748d3ad3",
+  "srcDigest": "11593a21cae80dc405ea7ed6cfa495f86be1391e7340d7a860fa49c55eafedf0",
   "files": [
     "package.json",
     "src/approvals-log.ts",
@@ -51,5 +51,5 @@
     "src/why-store.ts",
     "tsdown.config.ts"
   ],
-  "builtAt": "2026-10-01T04:59:09Z"
+  "builtAt": "2026-10-01T05:24:50Z"
 }
