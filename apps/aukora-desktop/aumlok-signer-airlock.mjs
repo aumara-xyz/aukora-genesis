@@ -1,7 +1,32 @@
-import { createPublicKey, verify } from 'node:crypto'
+import { createPublicKey, randomBytes, verify } from 'node:crypto'
 import { connect } from 'node:net'
 import { peerUid } from '../../plugins/aukora-owner-daemon/lib/peer-uid.mjs'
 import { withinWindow } from './aumlok-signer-review.mjs'
+import { airlockProtocolRequest, airlockProtocolPreimage } from '../../plugins/aukora-owner-daemon/lib/airlock-rollout.mjs'
+
+// Config presence keeps daemon custody even when compatibility cannot be proved. Never fall back to a local seed.
+export async function assertOwnerDaemonProtocol(config, library, request = requestOwnerSignature) {
+  const challenge = randomBytes(32).toString('hex')
+  try {
+    const preimage = airlockProtocolPreimage(challenge)
+    const raw = await request(config, airlockProtocolRequest(challenge), preimage, challenge, library)
+    verifyOwnerResponse(config, raw, preimage, challenge, library)
+  } catch (error) {
+    const reason = error?.message === 'signer:request-malformed'
+      ? 'airlock:protocol-incompatible' : 'airlock:protocol-unverified'
+    throw Object.assign(new Error(`${reason}: ${error?.message ?? String(error)}`), { code: reason })
+  }
+}
+
+function verifyOwnerResponse(config, raw, preimage, challenge, library) {
+  const response = library.parseApprovalResponse(raw)
+  if (response.kind !== 'signed') throw new Error(response.refusal)
+  if (response.challenge !== challenge) throw new Error('airlock:challenge')
+  const publicKey = createPublicKey({ key: Buffer.concat([
+    Buffer.from('302a300506032b6570032100', 'hex'), Buffer.from(config.ownerPublicKeyHex, 'hex'),
+  ]), format: 'der', type: 'spki' })
+  if (!verify(null, preimage, publicKey, Buffer.from(response.signature, 'hex'))) throw new Error('airlock:signature')
+}
 
 // Use the connected descriptor, never the socket file's owner or a UID in JSON.
 // The key pin authenticates the signed bytes independently of that kernel check.
@@ -33,16 +58,7 @@ export function requestOwnerSignature(config, wire, preimage, challenge, library
         if (newline < 0) return
         if (newline !== received.length - 1) throw new Error('airlock:trailing-response')
         const raw = JSON.parse(received.subarray(0, newline).toString('utf8'))
-        const response = library.parseApprovalResponse(raw)
-        if (response.kind !== 'signed') throw new Error(response.refusal)
-        if (response.challenge !== challenge) throw new Error('airlock:challenge')
-        const publicKey = createPublicKey({ key: Buffer.concat([
-          Buffer.from('302a300506032b6570032100', 'hex'),
-          Buffer.from(config.ownerPublicKeyHex, 'hex'),
-        ]), format: 'der', type: 'spki' })
-        if (!verify(null, preimage, publicKey, Buffer.from(response.signature, 'hex'))) {
-          throw new Error('airlock:signature')
-        }
+        verifyOwnerResponse(config, raw, preimage, challenge, library)
         finish(null, raw)
       } catch (error) { finish(error) }
     })

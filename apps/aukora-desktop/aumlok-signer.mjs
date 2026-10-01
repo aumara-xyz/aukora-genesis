@@ -54,7 +54,7 @@ import { appendFileSync, chmodSync, existsSync, lstatSync, mkdirSync, readFileSy
 import { connect, createServer } from 'node:net'
 import { dirname, join, resolve } from 'node:path'
 import { readOwnerDaemonConfig } from './aumlok-airlock-config.mjs'
-import { createAirlockSigner, requestOwnerSignature } from './aumlok-signer-airlock.mjs'
+import { assertOwnerDaemonProtocol, createAirlockSigner, requestOwnerSignature } from './aumlok-signer-airlock.mjs'
 // THE REST OF THIS SIGNER LIVES IN TWO SIBLINGS, MOVED WHOLE (2026-09-27) so that no file of it passes the self-change
 // loop's 64 KiB limit (MAX_PATCH_BYTES, vendor/aukora-seed-app). No moved line was rewritten, every name this file
 // exported is still exported from here, and the code below that uses them is unchanged.
@@ -179,6 +179,13 @@ export async function startShellSigner(input) {
   // ── the machine key, read rather than asked for ────────────────────────────────────────────────
   // A BOUND MACHINE KEEPS THIS KEY, AND THAT IS WHY A SHELL CAN SIGN AT ALL. A machine that has never
   // been bound holds none — a different fact from a refused approval, and reported as one.
+  if (ownerConfig !== null) {
+    try { await assertOwnerDaemonProtocol(ownerConfig, library.library) }
+    catch (error) {
+      return decide({ logDir, say, verdict: { serving: false,
+        reason: error.code ?? 'airlock:protocol-unverified', detail: error.message, socketPath: null } })
+    }
+  }
   let privateKey
   let machinePublicKeyHex = ownerConfig?.ownerPublicKeyHex
   // AIRLOCK: configured custody must never enter the local seed reader, even on daemon failure.

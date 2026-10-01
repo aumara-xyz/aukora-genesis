@@ -47,6 +47,9 @@ import { acquireHeavyRun } from '../lib/heavy-run.mjs'
 import { isMainModule } from '../lib/is-main.mjs'
 import { probeConfinement } from './guest-start.mjs'
 import { releaseBinding, sameBinding } from './release-digest.mjs'
+import { readOwnerDaemonConfig } from '../../apps/aukora-desktop/aumlok-airlock-config.mjs'
+import { assertOwnerDaemonProtocol } from '../../apps/aukora-desktop/aumlok-signer-airlock.mjs'
+import * as ownerApproval from '../../plugins/aukora-aumlok/lib/owner-approval.mjs'
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const SUPPORT = process.env.AUKORA_SUPPORT_ROOT ?? join(homedir(), 'Library', 'Application Support', 'AUKORA')
@@ -91,6 +94,42 @@ export function shellCheckoutRefusal({ head, commit, dirty }) {
 export function requiredShellRefusal({ shellChanged, newShell, reason }) {
   return shellChanged && newShell === null
     ? `required shell rebuild unavailable: ${reason ?? 'no packed shell'}; nothing live changed` : null
+}
+
+export function shellSourcePaths(git, commit) {
+  const paths = ['apps/aukora-desktop']
+  try {
+    const shown = git('show', `${commit}:apps/aukora-desktop/package.json`)
+    if (shown.status !== 0) throw new Error('shell package unavailable')
+    for (const extra of JSON.parse(shown.text).build?.extraFiles ?? []) {
+      const from = posix.normalize(posix.join('apps/aukora-desktop', extra.from))
+      for (const name of extra.filter ?? ['']) paths.push(posix.join(from, name))
+    }
+  } catch { paths.push('plugins') }
+  return paths
+}
+
+// Called only after target ancestry and exact Aura MATCH. No checkout writes in plan mode.
+export function advanceApprovedCheckout({ git, commit, paths, plan = false }) {
+  const head = () => git('rev-parse', '--verify', 'HEAD')
+  const dirty = () => git('--no-optional-locks', 'status', '--porcelain', '-uall', '--', ...paths)
+  const before = head(), edited = dirty()
+  if (before.status !== 0 || edited.status !== 0) return { refusal: 'checkout state could not be verified', advanced: false }
+  if (plan) return { refusal: shellCheckoutRefusal({ head: before.text.trim(), commit, dirty: edited.text.trim() }), advanced: false }
+  if (edited.text.trim()) return { refusal: `dirty approved sources (${edited.text.trim().split('\n').length} path(s))`, advanced: false }
+  if (before.text.trim() !== commit) {
+    if (git('merge-base', '--is-ancestor', before.text.trim(), commit).status !== 0) {
+      return { refusal: `checkout ${before.text.trim()} cannot fast-forward to approved target ${commit}`, advanced: false }
+    }
+    // Disable executable hooks: the only permitted checkout mutation is this verified fast-forward.
+    if (git('-c', 'core.hooksPath=/dev/null', 'merge', '--ff-only', '-q', commit).status !== 0) {
+      return { refusal: `fast-forward to approved target ${commit} failed`, advanced: false }
+    }
+  }
+  const after = head(), finalDirty = dirty()
+  if (after.status !== 0 || finalDirty.status !== 0) return { refusal: 'advanced checkout state could not be verified', advanced: false }
+  return { refusal: shellCheckoutRefusal({ head: after.text.trim(), commit, dirty: finalDirty.text.trim() }),
+    advanced: before.text.trim() !== after.text.trim() }
 }
 const tail = (text, n = 12) => text.trim().split('\n').slice(-n).join('\n')
 
@@ -476,14 +515,24 @@ async function main() {
   result.previousRelease = live
   step('start', { note: `commit ${sha9}${why ? ` (${why})` : ''}; live ${basename(live)}; target ${basename(target)}` })
   // ONLY THE APPROVED MACHINERY RUNS: this checkout at <commit> (fast-forward, re-run), nothing it imports edited.
-  const head = () => git('rev-parse', 'HEAD').text.trim()
-  if (!PLAN && head() !== commit && git('merge', '--ff-only', '-q', commit).status === 0 && head() === commit) {
+  const shellPaths = shellSourcePaths(git, commit)
+  const machineryPaths = ['scripts', 'upstream-dsh.json', ...shellPaths,
+    ...['aumlok', 'composition-gate', 'owner-daemon', ...'approval memory-owner queue record strict-read'.split(' ').map(n => `kira/lib/${n}.mjs`)].map(p => `plugins/aukora-${p}`)]
+  const checkout = advanceApprovedCheckout({ git, commit, paths: machineryPaths, plan: PLAN })
+  if (checkout.refusal) {
+    const off = `NOT the approved machinery: ${checkout.refusal}`
+    PLAN ? step('machinery', { note: off }) : finish('refused', `${off}; nothing live changed`)
+  }
+  if (checkout.advanced) {
     releaseLock(); process.exit(spawnSync(process.execPath, process.argv.slice(1), { stdio: 'inherit' }).status ?? 1)
   }
-  const dirty = git('status', '--porcelain', '-uall', '--', 'scripts', 'apps/aukora-desktop', 'upstream-dsh.json', ...['aumlok', 'composition-gate', 'owner-daemon', ...'approval memory-owner queue record strict-read'.split(' ').map((n) => `kira/lib/${n}.mjs`)].map((p) => `plugins/aukora-${p}`)).text.trim()
-  if (head() !== commit || dirty) {
-    const off = `NOT the approved machinery: ${REPO} is at ${head().slice(0, 9)}, edited: ${dirty.split('\n').slice(0, 5).join(' ')}`
-    PLAN ? step('machinery', { note: off }) : finish('refused', `${off}; nothing live changed`)
+
+  // The privileged daemon is a separate installation: rebuilding this shell never upgrades its protocol.
+  if (!PLAN) {
+    try {
+      const ownerConfig = readOwnerDaemonConfig()
+      if (ownerConfig !== null) await assertOwnerDaemonProtocol(ownerConfig, ownerApproval)
+    } catch (error) { finish('refused', `${error.message}; owner daemon rollout must be completed explicitly; nothing live changed`) }
   }
   const seen = live === target ? await observe(basename(live)) : null
   if (seen) { result.observed = seen; finish(seen.pid ? 'live' : 'not-running', `${basename(live)} is the configured release; ${seen.pid ? `pid ${seen.pid} answers on ${seen.port}` : seen}`) }
@@ -507,21 +556,16 @@ async function main() {
   // them is a shell change. The base is what the installed shell was built from: the marker, else the running release.
   const shellMarker = join(HOME_DIR, 'shell-commit')
   const shellFrom = existsSync(shellMarker) ? readFileSync(shellMarker, 'utf8').trim() : liveTip
-  const shellPaths = ['apps/aukora-desktop']
-  try {
-    const pkg = JSON.parse(git('show', `${commit}:apps/aukora-desktop/package.json`).text)
-    for (const extra of pkg.build?.extraFiles ?? []) {
-      const from = posix.normalize(posix.join('apps/aukora-desktop', extra.from))
-      for (const name of extra.filter ?? ['']) shellPaths.push(posix.join(from, name))
-    }
-  } catch { shellPaths.push('plugins') }
   const shellChanged = git('diff', '--quiet', shellFrom, commit, '--', ...shellPaths).status !== 0
 
   // Refuse an unusable source checkout before planning or doing the release build.
   if (shellChanged) {
     const refusal = shellCheckoutRefusal({ head: git('rev-parse', 'HEAD').text.trim(), commit,
-      dirty: git('status', '--porcelain', '--', ...shellPaths).text.trim() })
-    if (refusal) finish('refused', `required shell rebuild unavailable: ${refusal}; nothing live changed`)
+      dirty: git('--no-optional-locks', 'status', '--porcelain', '--', ...shellPaths).text.trim() })
+    if (refusal) {
+      const note = `required shell rebuild unavailable: ${refusal}; nothing live changed`
+      PLAN ? step('shell', { note }) : finish('refused', note)
+    }
   }
 
   if (PLAN) {
@@ -577,7 +621,6 @@ async function main() {
   // produce a complete packed shell refuses before any live effects.
   let newShell = null, shellFailure = null
   if (shellChanged) {
-    if (git('rev-parse', 'HEAD').text.trim() !== commit) git('merge', '--ff-only', '-q', commit)
     const head = git('rev-parse', 'HEAD').text.trim()
     const dirty = git('status', '--porcelain', '--', ...shellPaths).text.trim()
     if (head !== commit || dirty !== '') {

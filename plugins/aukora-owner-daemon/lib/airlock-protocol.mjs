@@ -6,6 +6,7 @@ import {
 import {
   nostrBindingPreimage, sasConfirmationPreimage, decodeNpub, NOSTR_SAFETY_VERSION, assertWitnessFields,
 } from './airlock-witness.mjs'
+import { airlockProtocolRequest, airlockProtocolPreimage } from './airlock-rollout.mjs'
 
 const HEX = /^[0-9a-f]{64}$/u
 const INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/u
@@ -65,6 +66,15 @@ export function createAirlockHandler(privateKey, now = () => Math.floor(Date.now
   return message => {
     let challenge = null
     try {
+      if (message?.kind === 'protocol') {
+        closed(message, ['kind', 'protocolVersion', 'safetyVersion', 'confirmationDomain', 'challenge'])
+        const expected = airlockProtocolRequest(message.challenge)
+        if (message.protocolVersion !== expected.protocolVersion || message.safetyVersion !== expected.safetyVersion
+          || message.confirmationDomain !== expected.confirmationDomain) malformed()
+        const bytes = airlockProtocolPreimage(message.challenge)
+        return createSignedApprovalResponse({ challenge: message.challenge,
+          signature: sign(null, bytes, privateKey).toString('hex') })
+      }
       const input = airlockSigningInput(message)
       challenge = input.challenge
       const current = now()

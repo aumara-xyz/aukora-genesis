@@ -40,6 +40,8 @@ try {
   shell = await startShellSigner(shellInput)
   assert.equal(seedReads, 0, 'config present: local seed reader MUST NOT be reached')
   assert.notEqual(shell.reason, 'aumlok:no-seed', 'daemon mode must not depend on a local seed')
+  assert.equal(shell.serving, false, 'configured but unreachable daemon must close the signer')
+  assert.equal(shell.reason, 'airlock:protocol-unverified')
   console.log('VERIFIED config present: local seed reader refused')
 
   const absent = await startShellSigner({ ...shellInput, ownerDaemonConfigPath: join(scratch, 'absent.json') })
@@ -55,7 +57,6 @@ try {
   chmodSync(configPath, 0o600)
   console.log('VERIFIED absent config keeps legacy path; broken config refuses fallback')
   if (!process.argv.includes('--seed-only')) {
-    assert.equal(shell.serving, true, `shell socket unavailable: ${shell.reason} (${shell.detail ?? ''})`)
     execFileSync('/usr/bin/cc', ['-O2', '-Wall', '-Wextra', '-Werror',
       new URL('../plugins/aukora-owner-daemon/native/peer-uid.c', import.meta.url).pathname,
       '-o', config.peerHelperPath])
@@ -76,6 +77,10 @@ try {
       })
     })
     await new Promise((resolve, reject) => { server.once('error', reject); server.listen(config.socketPath, resolve) })
+    shell = await startShellSigner(shellInput)
+    assert.equal(shell.serving, true, `shell socket unavailable: ${shell.reason} (${shell.detail ?? ''})`)
+    assert.equal(received[0].kind, 'protocol', 'compatibility proved before shell serves')
+    received = []
     const now = Math.floor(Date.now() / 1000)
     const request = { domain: wire.APPROVAL_REQUEST_DOMAIN, subject: `aukora:1:${'11'.repeat(32)}`,
       activeControlDigest: '22'.repeat(32), operationDigest: '33'.repeat(32),
