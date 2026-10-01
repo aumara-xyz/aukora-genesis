@@ -256,8 +256,8 @@ export function confirmContactRoute(
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.NOT_VERIFIED, url, 409)
         return
       }
-      // Re-resolve the bound identities and require every digit from the peer's comparison.
-      // The submitted screen value alone is not evidence of an out-of-band comparison.
+      // Re-resolve both bindings and check the complete pair. Honest clients display only their own half.
+      // Public values can be computed by a malicious client; this check does not attest a human comparison.
       if (comparison.sasDigits !== digits
         || !comparisonMatches(digits, comparison.comparisonGroups)) {
         refuse(res, MESSAGES_CONFIRM_CONTACT_REFUSALS.COMPARISON, url, 409)

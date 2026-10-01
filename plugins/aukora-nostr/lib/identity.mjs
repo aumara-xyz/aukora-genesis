@@ -271,7 +271,8 @@ export function npubDecode(npub) {
  * @param {string} stateDir - the app state directory this node owns.
  * @returns {Readonly<{secretKeyHex: string, xonlyHex: string, npub: string, created: boolean}>} the identity.
  */
-export function loadOrCreateNostrKey(stateDir) {
+export function loadOrCreateNostrKey(stateDir, { create = true } = {}) {
+  if (create !== true && create !== false) throw Object.assign(new Error('invalid Nostr key creation option'), { code: NOSTR_REFUSE.KEY_UNREADABLE })
   const dir = join(stateDir, 'nostr')
   const file = join(dir, 'identity.json')
   const readExisting = (attempts = 1) => {
@@ -289,7 +290,7 @@ export function loadOrCreateNostrKey(stateDir) {
     // JSON parser messages can quote the secret-bearing file; never include them in a refusal.
     throw Object.assign(new Error(`the Nostr identity at ${file} is unreadable; retry after its writer finishes`), { code: NOSTR_REFUSE.KEY_UNREADABLE })
   }
-  if (existsSync(file)) return readExisting(6)
+  if (!create || existsSync(file)) return readExisting(6)
   mkdirSync(dir, { recursive: true, mode: 0o700 })
   try { chmodSync(dir, 0o700) } catch { /* a mode we cannot set is reported by the courts, not hidden */ }
   const secretKeyHex = randomBytes(32).toString('hex')

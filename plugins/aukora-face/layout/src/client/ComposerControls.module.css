@@ -1,0 +1,7 @@
+.controls { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 4px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.modes { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.mode { min-height: 28px; padding: 4px 9px; font-size: 11px; line-height: 16px; background: transparent; }
+.vision { min-height: 28px; padding: 4px 8px; gap: 6px; font-size: 11px; line-height: 16px; background: transparent; }
+.reason, .state { max-width: 100%; color: var(--aukora-text-muted); font-size: 10px; line-height: 15px; overflow-wrap: anywhere; }
+.error { max-width: 100%; color: var(--aukora-red-warning); font-size: 11px; line-height: 16px; overflow-wrap: anywhere; }

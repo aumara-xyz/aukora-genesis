@@ -15,6 +15,7 @@ import type {
   MenuItemOwnerProps, RightbarOwnerProps, SidebarOwnerProps, SurfaceOwnerProps,
 } from './types.ts'
 import { AppFrame } from './AppFrame.tsx'
+import { installComposerControls } from './ComposerControls.tsx'
 import { en, NS, zh, type LayoutKey } from './locales.ts'
 import { LayoutController } from './service.ts'
 import { createLayoutStore } from './stores.ts'
@@ -119,6 +120,7 @@ export const inject = ['slots', 'theme', 'locale', 'sessions']
  * @param ctx - client root context.
  */
 export function apply(ctx: ClientContext): void {
+  installComposerControls(ctx)
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-layout: dictionaries')
 
   const layout = new LayoutController()

@@ -6,7 +6,7 @@ import { decodeQrFrame, decodeQrImage } from './qr-scanner.ts'
 import type { PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { MessagesKey } from './locales.ts'
 import {
-  readContacts, readThread, sendMessage, readIdentity,
+  readContacts, readThread, sendMessage, readIdentity, reissueIdentity,
   postContact,
   type ContactsFailure, type WireContact, type WireCopyOutcome, type WireSas, confirmSas,
 } from './contacts-client.ts'
@@ -298,24 +298,22 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
   readonly t: PropsLocale<'messages'>['t']
   readonly onClose: () => void
 }) {
-  // THE CONFIRMATION IS NOT RENDERED UNTIL THE DIGITS ARE. A button that says "I compared these digits" on a
-  // sheet showing no digits is a button that confirms nothing, so the whole block is absent rather than
-  // disabled — unreachable is a decision about rendering, not an attribute, and there is nothing here for a
-  // reader or a script to reach before the complete safety number is on screen.
+  // Show this device's own half. The peer half must be entered from the authenticated channel;
+  // this screen does not receive the expected peer value or decide that it matches.
   const [refusal, setRefusal] = useState<string | null>(null)
-  const [comparisonGroups, setComparisonGroups] = useState<[string, string]>(['', ''])
-  const matched = state === 'BOUND' && sas !== null
-    && comparisonGroups.every(group => /^[0-9]{35}$/u.test(group))
-    && comparisonGroups.join('') === sas.digits
+  const [peerHalf, setPeerHalf] = useState('')
+  const ready = state === 'BOUND' && sas !== null && /^[0-9]{35}$/u.test(sas.digits)
+    && /^[0-9]{35}$/u.test(peerHalf)
   // THE WAIT IS REAL AND IT IS LONG: the button asks the host, the host asks the shell signer, and the
   // signer opens a window for a person to decide in. So the button disables itself while that is
   // happening — a second press would raise a second request and a second challenge.
   const [asking, setAsking] = useState(false)
   const ask = async (): Promise<void> => {
-    if (!matched || sas === null) return
+    if (!ready || sas === null) return
     setAsking(true)
     setRefusal(null)
-    const answer = await confirmSas(npub, { sasDigits: sas.digits, safetyVersion: 2, comparisonGroups })
+    const comparisonGroups: [string, string] = sas.comparisonGroupIndex === 0 ? [sas.digits, peerHalf] : [peerHalf, sas.digits]
+    const answer = await confirmSas(npub, { sasDigits: comparisonGroups.join(''), safetyVersion: 2, comparisonGroups })
     setAsking(false)
     // A REFUSAL IS SHOWN UNDER ITS OWN NAME, never softened into a success and never paraphrased: the
     // signer's decline, a reply that did not carry the challenge back, and a signature that did not
@@ -339,25 +337,18 @@ function VerifySheet({ state, sas, contact, npub, onConfirmed, t, onClose }: {
       <SasSeat state={state} sas={sas} t={t} />
       {sas !== null && (
         <div className={css.verifyConfirm}>
-          {comparisonGroups.map((group, index) => (
             <input
-              key={index}
-              data-verify-comparison-half={index}
-              aria-label={`${t('sas.label')} ${index + 1}`}
+              data-verify-comparison-half="peer"
+              aria-label={t('verify.peer-half')}
               inputMode="numeric" autoComplete="off" maxLength={41}
-              value={group} disabled={asking || state !== 'BOUND'}
-              onChange={event => setComparisonGroups(previous => {
-                const next: [string, string] = [...previous]
-                next[index] = event.target.value.replace(/\s/gu, '').slice(0, 35)
-                return next
-              })}
+              value={peerHalf} disabled={asking || state !== 'BOUND'}
+              onChange={event => setPeerHalf(event.target.value.replace(/\s/gu, '').slice(0, 35))}
             />
-          ))}
           <ActionButton
             type="button"
             variant="green" className={css.verifyConfirmButton}
             data-verify-confirm="available"
-            disabled={asking || !matched}
+            disabled={asking || !ready}
             onClick={() => { void ask() }}
           >
             {t('verify.confirm.button', { contact })}
@@ -1140,6 +1131,9 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
   const identityGeneration = useRef(0)
   const clipboardGeneration = useRef(0)
   const [publicNpub, setPublicNpub] = useState<string | null>(null)
+  const [identitySubject, setIdentitySubject] = useState<string | null>(null)
+  const [identityReady, setIdentityReady] = useState(false)
+  const [reissuing, setReissuing] = useState(false)
   const [threadProblem, setThreadProblem] = useState<{ npub: string; failure: ContactsFailure } | null>(null)
   const threadFailure = threadProblem !== null && threadProblem.npub === openId ? threadProblem.failure : null
 
@@ -1235,9 +1229,13 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
       if (!activeRef.current || mine !== identityGeneration.current) return
       if (read.kind === 'ready') {
         setPublicNpub(read.value.npub)
+        setIdentitySubject(read.value.subject)
+        setIdentityReady(read.value.bindingReady)
         setIdentityFailure(null)
       } else {
         setPublicNpub(null)
+        setIdentitySubject(null)
+        setIdentityReady(false)
         setIdentityFailure(read.failure)
       }
     })
@@ -1269,6 +1267,24 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
         setClipboardFailure(false)
       }, failed)
     } catch { failed() }
+  }
+
+  const reissue = async (): Promise<void> => {
+    if (reissuing || identityReady || publicNpub === null || identitySubject === null) return
+    const mine = ++identityGeneration.current
+    setReissuing(true)
+    const result = await reissueIdentity(publicNpub, identitySubject)
+    setReissuing(false)
+    if (!activeRef.current || mine !== identityGeneration.current) return
+    if (result.kind === 'failed') {
+      setIdentityFailure(result.failure)
+      openSheet('warning', null)
+      return
+    }
+    setIdentityReady(result.value.bindingReady)
+    setIdentityFailure(null)
+    loadContacts()
+    loadIdentity()
   }
 
   useEffect(() => {
@@ -1504,6 +1520,12 @@ export function MessagesSurface({ activeSurface, closeSurface, t }: MessagesSurf
               <span className={css.brandMark}><ChatMarkIcon /></span>
               <h2 className={css.brandName} data-fit="name">{t('title')}</h2>
               <span className={clsx(css.actions, css.brandActions)}>
+                {!identityReady && identitySubject !== null && publicNpub !== null && (
+                  <ActionButton type="button" className={css.iconButton} data-reissue-identity={reissuing ? 'asking' : 'ready'}
+                    aria-label={t('identity.reissue')} disabled={reissuing} onClick={() => { void reissue() }}>
+                    <KeyIcon />
+                  </ActionButton>
+                )}
                 <ActionButton type="button" className={css.iconButton} data-copy-identity={copyState}
                   aria-label={t(copyState === 'copied' ? 'identity.copied' : 'identity.copy')}
                   disabled={copyState === 'pending'} onClick={copyIdentity}>

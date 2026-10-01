@@ -151,6 +151,7 @@ export const MESSAGES_SEND_ENDPOINT = '/aukora-messages/send'
 
 /** Where the Confirm button POSTs: the backend asks the signer, verifies, and stores. */
 export const MESSAGES_CONFIRM_CONTACT_ENDPOINT = '/aukora-messages/confirm-contact'
+export const MESSAGES_REISSUE_IDENTITY_ENDPOINT = '/aukora-messages/reissue-identity'
 
 /**
  * How long a SEND may take before this route answers, whatever the relays are doing.
@@ -207,7 +208,7 @@ export type MessagesWireContactBinding = 'absent' | 'verified' | 'refused'
 
 /** The short string two people compare out of band. */
 export interface MessagesWireSas {
-  /** Two independent 35-digit identity fingerprints, sorted and concatenated. */
+  /** This device's own 35-digit fingerprint; the expected peer half stays host-side. */
   readonly digits: string
   /** The same digits in groups of five. */
   readonly spoken: string
@@ -299,6 +300,8 @@ export type MessagesRefusalReason =
   // union that excludes it. **One omission, two symptoms, and neither symptom is where the fix goes.**
   | 'messages:confirm-writer-unloadable'
   | 'messages:confirm-writer-unusable'
+  | 'messages:identity-reissue-failed'
+  | 'messages:identity-changed'
   | 'messages:add-npub-invalid'
   | 'messages:add-controller-invalid'
   | 'messages:add-binding-invalid'
@@ -349,6 +352,8 @@ export const MESSAGES_STORE_REFUSALS: readonly MessagesRefusalReason[] = [
 
 /** The wire's own refusals: the ones a caller can earn without any file being involved. */
 export const MESSAGES_WIRE_REFUSALS: readonly MessagesRefusalReason[] = [
+  'messages:identity-reissue-failed',
+  'messages:identity-changed',
   'messages:malformed-request',
   'messages:request-body-unreadable',
   'messages:no-such-route',
@@ -773,11 +778,11 @@ export function skippedContact(index: number, value: unknown): MessagesSkippedCo
   return { index, reason: 'messages:contact-malformed', subject: `entry ${index}${name}${npub}` }
 }
 
-/** The sole displayed/confirmed safety-number format; legacy six-digit SAS never reaches the UI. */
+/** The displayed own half; the backend independently verifies the complete submitted pair. */
 export function parseSafetyNumber(value: unknown): MessagesWireSas | null | undefined {
   if (value === null) return null
   if (!isRecord(value) || !hasExactKeys(value, ['digits', 'spoken', 'comparisonGroupIndex']) || !contactFieldsAreSafe(value)) return undefined
-  if (typeof value.digits !== 'string' || !/^[0-9]{70}$/u.test(value.digits)) return undefined
+  if (typeof value.digits !== 'string' || !/^[0-9]{35}$/u.test(value.digits)) return undefined
   if (value.spoken !== value.digits.match(/.{5}/gu)?.join(' ')) return undefined
   if (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7) return undefined
   return { digits: value.digits, spoken: String(value.spoken), comparisonGroupIndex: value.comparisonGroupIndex }

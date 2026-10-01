@@ -6,7 +6,6 @@ import { assertContactFields, loadOrCreateNostrKey, NOSTR_BINDING_DOMAIN, NOSTR_
 import { identityFingerprint } from './contact.mjs'
 
 const pending = new Map()
-const attempts = new Map()
 const refuse = (code, detail) => Object.assign(new Error(detail), { code })
 
 function roots(options = {}) {
@@ -86,15 +85,17 @@ function validBinding(binding, nostr, controller) {
 async function snapshot(options) {
   const paths = roots(options)
   // Key creation happens before the first await and preserves an existing npub on every retry.
-  const nostr = loadOrCreateNostrKey(paths.stateDir)
+  const nostr = loadOrCreateNostrKey(paths.stateDir, { create: options.createKey !== false })
   const controller = await controllerAt(paths.controllerDir)
-  let binding = null
+  let binding = null, bindingText = null
   const file = join(paths.stateDir, 'nostr', 'binding.json')
   if (existsSync(file)) {
-    try { binding = JSON.parse(readFileSync(file, 'utf8')) } catch { /* a newly approved binding can replace an unreadable one */ }
+    bindingText = readFileSync(file, 'utf8')
+    try { binding = JSON.parse(bindingText) } catch { /* explicit reissue refuses an unverifiable prior anchor */ }
   }
+  const storedBinding = binding
   if (!validBinding(binding, nostr, controller)) binding = null
-  return { paths, nostr, controller, binding }
+  return { paths, nostr, controller, binding, storedBinding, bindingText }
 }
 
 const publicIdentity = ({ nostr, controller, binding }) => Object.freeze({
@@ -120,37 +121,42 @@ export async function readMessagesIdentity(options = {}) {
 }
 
 /**
- * Return a verified binding or request one through sign-nostr-binding. The existing signer owns
- * the approval window; this module never signs, reads a seed, or supplies an approval decision.
- * Concurrent faces share one request. Declined or expired requests stay quiet for this host session.
+ * Background callers read public identity only. Rendering never requests a signature.
+ * Binding issuance and migration require the explicit Messages action below.
  */
 export function ensureMessagesIdentity(options = {}) {
-  const paths = roots(options)
+  return readMessagesIdentity(options)
+}
+
+/** Explicitly approve a current binding while preserving the existing Nostr and signer anchors. */
+export async function reissueMessagesIdentity(options = {}) {
+  const current = await snapshot({ ...options, createKey: false })
+  const { paths, nostr, controller } = current
+  if (!controller) throw refuse('nostr:identity-controller-unbound', 'Link an Aumlok ID before binding Messages')
+  if (options.expectedNpub !== nostr.npub || options.expectedSubject !== controller.subject) {
+    throw refuse('nostr:identity-changed', 'The displayed Messages identity changed; read it again before requesting approval')
+  }
+  if (current.binding) return publicIdentity(current)
+  let previousSigner = null
+  if (current.bindingText !== null) {
+    const version = current.storedBinding?.statement?.safetyVersion
+    if (version !== undefined && version !== NOSTR_SAFETY_VERSION) {
+      throw refuse('nostr:identity-safety-version-mismatch', 'Reissue cannot downgrade an unknown binding protocol')
+    }
+    previousSigner = signerKeyOf(current.storedBinding)
+    if (!controller.signerKeys.includes(previousSigner) || current.storedBinding?.statement?.npub !== nostr.npub
+      || verifyBindingWithKey(current.storedBinding, { controllerKeyHex: previousSigner, expectSubject: controller.subject }).verdict !== 'verified') {
+      throw refuse('nostr:identity-anchor-mismatch', 'Reissue requires the existing binding to verify under the same active machine and identity')
+    }
+  }
   const slot = `${paths.stateDir}\n${paths.controllerDir}`
   if (pending.has(slot)) return pending.get(slot)
-  const operation = bindIdentity(options).finally(() => pending.delete(slot))
+  const operation = requestBinding(options, current, previousSigner).finally(() => pending.delete(slot))
   pending.set(slot, operation)
   return operation
 }
 
-async function bindIdentity(options) {
-  const current = await snapshot(options)
-  if (current.binding) return publicIdentity(current)
-  const { paths, nostr, controller } = current
-  if (!controller) throw refuse('nostr:identity-controller-unbound', 'Link an Aumlok ID before binding Messages')
-  const attempt = JSON.stringify([paths.stateDir, paths.controllerDir, nostr.npub, controller])
-  const previous = attempts.get(attempt)
-  if (previous && Date.now() < previous.after) throw previous.error
-  try {
-    return await requestBinding(options, current)
-  } catch (error) {
-    const quiet = error?.code === 'signer:declined' || error?.code === 'signer:request-expired'
-    attempts.set(attempt, { error, after: quiet ? Infinity : Date.now() + 30_000 })
-    throw error
-  }
-}
-
-async function requestBinding(options, { paths, nostr, controller }) {
+async function requestBinding(options, { paths, nostr, controller, bindingText }, previousSigner) {
   const socketPath = resolve(options.socketPath || process.env.AUKORA_SIGNER_SOCKET || join(paths.shellState, 'aumlok-signer.sock'))
   if (paths.supportRoot) {
     const within = relative(resolve(paths.supportRoot), socketPath)
@@ -178,13 +184,17 @@ async function requestBinding(options, { paths, nostr, controller }) {
     throw refuse('nostr:identity-controller-changed', 'The Aumlok identity changed during Messages binding')
   }
   let binding = null
-  for (const key of latest.signerKeys) {
+  for (const key of previousSigner === null ? latest.signerKeys : [previousSigner]) {
     const candidate = { domain: NOSTR_BINDING_DOMAIN, statement, signature: reply.signature,
       approvalKeyDid: `did:key:${key}`, label: latest.handle }
     if (validBinding(candidate, nostr, latest)) { binding = candidate; break }
   }
   if (!binding) throw refuse('nostr:identity-binding-unverified', 'The returned binding does not verify under an active Aumlok machine')
   const file = join(paths.stateDir, 'nostr', 'binding.json')
+  const latestNostr = loadOrCreateNostrKey(paths.stateDir, { create: false })
+  if (latestNostr.npub !== nostr.npub || (existsSync(file) ? readFileSync(file, 'utf8') : null) !== bindingText) {
+    throw refuse('nostr:identity-changed', 'The local key or binding changed during approval; nothing was replaced')
+  }
   const temporary = `${file}.${process.pid}.${randomBytes(8).toString('hex')}.tmp`
   try {
     writeFileSync(temporary, `${JSON.stringify(binding, null, 2)}\n`, { mode: 0o600, flag: 'wx' })

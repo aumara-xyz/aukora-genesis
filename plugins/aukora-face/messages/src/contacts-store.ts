@@ -188,7 +188,7 @@ export type MessagesContactBinding = 'absent' | 'verified' | 'refused'
 
 /** The short string two people compare out of band. Two leaf fields, nothing else. */
 export interface MessagesContactSas {
-  /** The current pair of independent identity fingerprints. */
+  /** This device's own half of the current pair. */
   readonly digits: string
   /** The same digits in groups of five. */
   readonly spoken: string
@@ -536,7 +536,11 @@ function asBindingStatus(value: unknown): MessagesContactBinding | undefined {
  * @returns the two leaf fields, or null.
  */
 export function contactSas(value: unknown): MessagesContactSas | null {
-  return parseSafetyNumber(value) ?? null
+  if (!isRecord(value) || typeof value.digits !== 'string' || !/^[0-9]{70}$/u.test(value.digits)
+    || value.spoken !== value.digits.match(/.{5}/gu)?.join(' ')
+    || (value.comparisonGroupIndex !== 0 && value.comparisonGroupIndex !== 7)) return null
+  const digits = value.digits.slice(value.comparisonGroupIndex * 5, value.comparisonGroupIndex * 5 + 35)
+  return parseSafetyNumber({ digits, spoken: digits.match(/.{5}/gu)?.join(' '), comparisonGroupIndex: value.comparisonGroupIndex }) ?? null
 }
 
 /**
@@ -667,7 +671,7 @@ export function resolveStoredContact(
     reason: reasonText(answer.reason),
     subject: typeof answer.subject === 'string' && answer.subject !== '' ? answer.subject : null,
     sas: verified ? contactSas(answer.sas) : null,
-    safetyNumber: verified ? parseSafetyNumber(answer.safetyNumber) ?? null : null,
+    safetyNumber: verified ? contactSas(answer.safetyNumber) : null,
     binding,
     peerControllerKey: peer,
   }

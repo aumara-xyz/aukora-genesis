@@ -24,6 +24,7 @@
  */
 
 import type { Context } from '@deepseek-ai/cordis'
+import { installComposerMode } from './composer-mode.ts'
 // **THE SIDE-EFFECT IMPORT THAT LOADS THE AUGMENTATION.** `ctx.inject(['webServer', …])` types its callback
 // from a registry that `@deepseek-ai/dsh-host-webserver` augments — **and an augmentation only exists if its package
 // is imported.** `apps/src/index.ts:11` has this exact line; without it, `webCtx.webServer` is
@@ -115,6 +116,7 @@ function send(res: ServerResponse, status: number, body: unknown): void {
 }
 
 export function apply(ctx: Context): void {
+  installComposerMode(ctx)
   // Optional on purpose, exactly as the settings face does it: a composition with no web server still gets the face's
   // client half rather than losing the whole face over four routes.
   // **THE EXPLICIT `: Context` ANNOTATION WAS THROWING AWAY WHAT `inject` HAD JUST PROVIDED.**

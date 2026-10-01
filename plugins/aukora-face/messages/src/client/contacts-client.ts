@@ -1,5 +1,6 @@
 import {
   MESSAGES_CONFIRM_CONTACT_ENDPOINT,
+  MESSAGES_REISSUE_IDENTITY_ENDPOINT,
   MESSAGES_CONTACTS_ENDPOINT,
   MESSAGES_SEND_ENDPOINT,
   MESSAGES_THREAD_ENDPOINT,
@@ -78,11 +79,11 @@ function messageOf(error: unknown): string {
  * A missing timeout degrades to the runtime's own request behaviour; it never throws here.
  * @returns the signal, or undefined.
  */
-function timeoutSignal(): AbortSignal | undefined {
+function timeoutSignal(timeoutMs = CONTACTS_REQUEST_TIMEOUT_MS): AbortSignal | undefined {
   const factory = (globalThis as { AbortSignal?: { timeout?: (ms: number) => AbortSignal } }).AbortSignal
   if (factory?.timeout === undefined) return undefined
   try {
-    return factory.timeout(CONTACTS_REQUEST_TIMEOUT_MS)
+    return factory.timeout(timeoutMs)
   } catch {
     return undefined
   }
@@ -397,9 +398,10 @@ export async function confirmSas(
   comparison: { readonly sasDigits: string; readonly safetyVersion: 2; readonly comparisonGroups: readonly [string, string] },
   fetchImpl: ContactsFetch = sameOriginFetch,
 ): Promise<ConfirmRead> {
+  const signal = timeoutSignal(315_000) // Existing owner approval window plus its transport budget.
   const read = await readJson(
     MESSAGES_CONFIRM_CONTACT_ENDPOINT,
-    { method: 'POST', body: JSON.stringify({ npub, ...comparison }) },
+    { method: 'POST', body: JSON.stringify({ npub, ...comparison }), ...(signal === undefined ? {} : { signal }) },
     fetchImpl,
   )
   if (read.kind === 'failed') return read
@@ -422,20 +424,37 @@ export async function confirmSas(
     : { kind: 'failed', failure: refusalOf(status, value) }
 }
 
-/** Read only the shareable public identity; the host never returns the secret key. */
+export interface MessagesPublicIdentity {
+  readonly npub: string
+  readonly subject: string | null
+  readonly bindingReady: boolean
+}
+
+/** Read only the shareable public identity; reading never requests a signature. */
 export async function readIdentity(
   fetchImpl: ContactsFetch = sameOriginFetch,
-): Promise<ContactsRead<{ readonly npub: string; readonly subject: string | null }>> {
+): Promise<ContactsRead<MessagesPublicIdentity>> {
   const read = await readJson('/aukora-messages/identity', { method: 'GET' }, fetchImpl)
+  return identityAnswer(read)
+}
+
+/** User-initiated binding issuance/migration; the body pins the identity already shown. */
+export async function reissueIdentity(npub: string, subject: string, fetchImpl: ContactsFetch = sameOriginFetch): Promise<ContactsRead<MessagesPublicIdentity>> {
+  const signal = timeoutSignal(315_000)
+  return identityAnswer(await readJson(MESSAGES_REISSUE_IDENTITY_ENDPOINT,
+    { method: 'POST', body: JSON.stringify({ npub, subject }), ...(signal === undefined ? {} : { signal }) }, fetchImpl))
+}
+
+function identityAnswer(read: ContactsRead<{ readonly status: number; readonly value: unknown }>): ContactsRead<MessagesPublicIdentity> {
   if (read.kind === 'failed') return read
   const { status, value } = read.value
   const refusal = parseMessagesRefusalBody(value)
   if (refusal !== undefined) return { kind: 'failed', failure: { kind: 'refused', reason: refusal.reason, subject: refusal.subject } }
   if (status !== 200) return { kind: 'failed', failure: refusalOf(status, value) }
-  const body = value as { status?: unknown; npub?: unknown; subject?: unknown } | null
+  const body = value as { status?: unknown; npub?: unknown; subject?: unknown; binding?: { statement?: { safetyVersion?: unknown } } | null } | null
   const npub = checkNpub(body?.npub)
   if (body?.status !== 'ok' || !npub.ok || (body.subject !== null && typeof body.subject !== 'string')) {
     return { kind: 'failed', failure: { kind: 'malformed', detail: 'The host did not return a public identity' } }
   }
-  return { kind: 'ready', value: { npub: npub.npub, subject: body.subject } }
+  return { kind: 'ready', value: { npub: npub.npub, subject: body.subject, bindingReady: body.binding?.statement?.safetyVersion === 2 } }
 }

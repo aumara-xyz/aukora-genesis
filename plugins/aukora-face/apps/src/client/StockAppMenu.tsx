@@ -34,7 +34,7 @@ export const STOCK_APPS = [
 function StockAppMenu({ spec, activeSurface, openSurface, t }: StockAppMenuProps & { spec: MenuSpec }) {
   const active = activeSurface === spec.id
   return (
-    <button
+    <button aria-label={t(`${spec.copy}.name`)}
       type="button"
       data-stock-app-launcher={spec.id}
       aria-current={active ? 'page' : undefined}

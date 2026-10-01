@@ -6,6 +6,8 @@
     "tsBuildInfoFile": "lib/tsconfig.host.tsbuildinfo"
   },
   "files": [
+    "src/composer-mode-types.ts",
+    "src/composer-mode.ts",
     "src/approvals-log.ts",
     "src/client/health-model.ts",
     "src/client/why-model.ts",
@@ -17,6 +19,11 @@
     "src/why-store.ts"
   ],
   "references": [
+    { "path": "../../core/agent" },
+    { "path": "../../interaction/commands" },
+    { "path": "../../session/session-projection" },
+    { "path": "../../sandbox/sandbox" },
+    { "path": "../../sandbox/sandbox-policy" },
     {
       "path": "../ui-session"
     },

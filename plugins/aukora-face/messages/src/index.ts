@@ -116,6 +116,7 @@ import {
   MESSAGES_EVIDENCE_UNWRITABLE,
   MESSAGES_SEND_BUDGET_MS,
   MESSAGES_SEND_ENDPOINT,
+  MESSAGES_REISSUE_IDENTITY_ENDPOINT,
   MESSAGES_TEXT_MAX_BYTES,
   MESSAGES_THREAD_BUDGET_MS,
   MESSAGES_THREAD_ENDPOINT,
@@ -128,6 +129,7 @@ import {
   messagesHostOwnedQueryField,
   messagesRefusalBody,
   messagesTextBytes,
+  contactFieldsAreSafe,
   parseMessagesContactsRequest,
   parseMessagesSendRequest,
   parseMessagesThreadRequest,
@@ -506,6 +508,8 @@ export function messagesRefusalStatus(reason: MessagesRefusalReason): number {
     case 'messages:confirm-writer-absent': return 500
     case 'messages:confirm-writer-unloadable': return 500
     case 'messages:confirm-writer-unusable': return 500
+    case 'messages:identity-reissue-failed': return 409
+    case 'messages:identity-changed': return 409
     case 'messages:add-npub-invalid': return 400
     case 'messages:add-controller-invalid': return 400
     case 'messages:add-binding-invalid': return 400
@@ -790,26 +794,18 @@ function roots(ctx: Context): MessagesContactsRoots {
   return messagesContactsRoots(controllerDirectory(ctx))
 }
 
-const identityAttempts = new Map<string, number>()
 const inboxAnnouncements = new Map<string, number>()
-async function prepareIdentity(stateRoots: MessagesContactsRoots): Promise<Record<string, unknown>> {
+interface MessagesIdentityBootstrap {
+  readMessagesIdentity(roots: MessagesContactsRoots): Promise<Record<string, unknown>>
+  reissueMessagesIdentity(options: MessagesContactsRoots & { expectedNpub: string; expectedSubject: string }): Promise<Record<string, unknown>>
+}
+async function identityBootstrap(): Promise<MessagesIdentityBootstrap> {
   const directory = resolveContactModuleSpecifier().replace(/contact\.mjs$/u, '')
-  const bootstrap = await import(`${directory}bootstrap.mjs`)
+  return await import(`${directory}bootstrap.mjs`) as MessagesIdentityBootstrap
+}
+async function prepareIdentity(stateRoots: MessagesContactsRoots): Promise<Record<string, unknown>> {
+  const bootstrap = await identityBootstrap()
   const identity = await bootstrap.readMessagesIdentity(stateRoots)
-  const attempt = `${stateRoots.stateDir}:${identity.subject}`
-  if (identity.subject && !identity.binding && Date.now() >= (identityAttempts.get(attempt) ?? 0)) {
-    identityAttempts.set(attempt, Infinity)
-    // The existing owner popup may take minutes; the chat never waits on that UI.
-    void bootstrap.ensureMessagesIdentity(stateRoots).then(() => {
-      identityAttempts.set(attempt, Date.now() + 30_000)
-    }).catch((error: { code?: string }) => {
-      // The shell signer can start after the host. Retry transport failures on
-      // the next request, but never reopen a popup after an explicit refusal.
-      if (error?.code !== 'signer:declined' && error?.code !== 'signer:request-expired') {
-        identityAttempts.set(attempt, Date.now() + 30_000)
-      }
-    })
-  }
   if (Date.now() >= (inboxAnnouncements.get(stateRoots.stateDir) ?? 0)) {
     inboxAnnouncements.set(stateRoots.stateDir, Date.now() + 30_000)
     // Contacts and local history do not depend on a relay announcement succeeding.
@@ -831,6 +827,32 @@ function identityRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoo
     if (!admitted(gate, 'GET', req, res)) return
     try { json(res, 200, { status: 'ok', ...await prepareIdentity(rootsOf()) }) }
     catch (error) { answer(res, messagesRefusalBody('messages:unreadable-state', causeMessage(error))) }
+  } }
+}
+
+/** Only an explicit POST can request a Messages binding; paths and signer anchors stay host-owned. */
+export function reissueIdentityRoute(gate: () => RouteGate, rootsOf: () => MessagesContactsRoots): WebRoute {
+  return { kind: 'exact', path: MESSAGES_REISSUE_IDENTITY_ENDPOINT, handler: async (req, res) => {
+    if (!admitted(gate, 'POST', req, res)) return
+    const named = hostOwnedRefusal(new URL(req.url ?? '/', 'http://x').search, req)
+    if (named !== undefined) { answer(res, named); return }
+    const read = await readRequestBody(req)
+    if (read.kind === 'refused') { answer(res, read.refusal); return }
+    let body: unknown
+    try { body = JSON.parse(read.text) } catch { /* malformed body refused below */ }
+    if (!isRecord(body) || Object.keys(body).sort().join(',') !== 'npub,subject' || !contactFieldsAreSafe(body)
+      || typeof body.npub !== 'string' || typeof body.subject !== 'string' || body.subject === '') {
+      answer(res, messagesRefusalBody('messages:malformed-request', MESSAGES_REISSUE_IDENTITY_ENDPOINT)); return
+    }
+    try {
+      const bootstrap = await identityBootstrap()
+      const identity = await bootstrap.reissueMessagesIdentity({ ...rootsOf(), expectedNpub: body.npub, expectedSubject: body.subject })
+      json(res, 200, { status: 'ok', ...identity })
+    } catch (error) {
+      const code = typeof (error as { code?: unknown })?.code === 'string' ? String((error as { code: string }).code) : 'nostr:identity-runtime-unavailable'
+      json(res, code === 'nostr:identity-signer-unreachable' ? 503 : 409,
+        messagesRefusalBody(code === 'nostr:identity-changed' ? 'messages:identity-changed' : 'messages:identity-reissue-failed', code))
+    }
   } }
 }
 
@@ -1509,6 +1531,7 @@ export function apply(ctx: Context): void {
   // be pinned to whatever the composition happened to hold at that instant.
   const rootsOf = (): MessagesContactsRoots => roots(ctx)
   ctx.effect(() => register(identityRoute(gate, rootsOf)), 'ui-messages: identity route')
+  ctx.effect(() => register(reissueIdentityRoute(gate, rootsOf)), 'ui-messages: explicit identity reissue route')
   ctx.effect(() => register(contactsRoute(gate, rootsOf)), 'ui-messages: contacts route')
   ctx.effect(() => register(requestRoute(gate)), 'ui-messages: contacts request route')
   ctx.effect(() => register(threadRoute(gate, rootsOf)), 'ui-messages: thread route')

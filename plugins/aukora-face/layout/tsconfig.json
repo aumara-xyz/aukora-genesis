@@ -6,6 +6,8 @@
     "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
   },
   "files": [
+    "src/composer-mode-types.ts",
+    "src/client/ComposerControls.tsx",
     "src/invariant.ts",
     "src/client/AppFrame.tsx",
     "src/client/ApprovalsMenu.tsx",
@@ -37,6 +39,15 @@
     "src/css-modules.d.ts"
   ],
   "references": [
+    {
+      "path": "../../api/remotes/tsconfig.client.json"
+    },
+    {
+      "path": "../ui-conversation"
+    },
+    {
+      "path": "../../session/session-projection"
+    },
     {
       "path": "../ui-session"
     },

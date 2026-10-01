@@ -5,6 +5,17 @@ export const NS = 'layout'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
+  'composer.mode': '会话模式',
+  'composer.chat': 'Chat',
+  'composer.build': 'Build',
+  'composer.yolo': 'YOLO',
+  'composer.yoloReason': 'YOLO 不可用：必须保留原生隔离。',
+  'composer.visionUnavailable': '视觉不可用',
+  'composer.visionReason': '视觉不可用：尚未接入真实能力和权限状态。',
+  'composer.modeUnknown': '尚未收到主机模式。',
+  'composer.modeUnavailable': '原生隔离不可用，不能切换模式。',
+  'composer.currentYolo': '主机模式为 YOLO；完全访问不可用。',
+  'composer.failed': '模式更改未确认，请查看主机状态。',
   'why.receipt.empty': '这份回执是空的——它没有记下任何当时在她提示里的东西。',
   'why.title': '她为什么这么说',
   'why.lead': '这是她回答你的时候，手里握着的东西。',
@@ -129,6 +140,17 @@ export type LayoutKey = keyof typeof zh
 
 /** English dictionary, checked complete against the Chinese key set. */
 export const en = {
+  'composer.mode': 'Session mode',
+  'composer.chat': 'Chat',
+  'composer.build': 'Build',
+  'composer.yolo': 'YOLO',
+  'composer.yoloReason': 'YOLO unavailable: native confinement is required.',
+  'composer.visionUnavailable': 'Vision unavailable',
+  'composer.visionReason': 'Vision unavailable: capability and permission state are not connected.',
+  'composer.modeUnknown': 'Host mode has not been received.',
+  'composer.modeUnavailable': 'Native confinement unavailable; mode changes are disabled.',
+  'composer.currentYolo': 'Host mode is YOLO; full access is unavailable.',
+  'composer.failed': 'Mode change was not confirmed. Check the host state.',
   'why.receipt.empty': 'This receipt is empty — it records nothing that was in her prompt.',
   'why.title': 'Why she said that',
   'why.lead': 'This is what she was holding when she answered you.',
