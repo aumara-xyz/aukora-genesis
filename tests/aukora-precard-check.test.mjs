@@ -107,9 +107,9 @@ finally:
 const helper = fs.readFileSync(new URL('../scripts/aukora/precard-check.mjs', import.meta.url), 'utf8')
 const fixtureSpawn = (command, args, options) => command === '/usr/bin/sandbox-exec'
   ? spawn(args[2], args.slice(3), options) : spawn(command, args, options)
-const { precardCheck } = runInNewContext(`(() => {
+const { precardCheck, measureCard } = runInNewContext(`(() => {
 ${helper.slice(helper.indexOf('const gitEnvironment')).replace(/^export /gmu, '')}
-return { precardCheck }
+return { precardCheck, measureCard }
 })()`, { ...fs, ...os, spawn: fixtureSpawn, spawnSync, createHash,
   dirname, join, resolve, process, Buffer, setTimeout, clearTimeout })
 console.log('PRECARD FIXTURES: VM sandbox-launch mock; OS enforcement is NOT TESTED here')
@@ -174,6 +174,20 @@ async function directRepairCheck() {
         assert.equal(result.passed, passed, `${name}: ${result.failure || result.summary}`)
       })
     }
+    for (const [count, content, failure] of [
+      [2, '', 'REFUSED: new test-file count 2 exceeds maximum 1.'],
+      [1, '// proof\n'.repeat(3), 'REFUSED: proof lines 3 exceed product lines 2.'],
+    ]) await expect(`composition diagnostic: ${failure}`, () => {
+      git(['read-tree', baseTree])
+      writeFixture('#!/bin/sh\n# candidate\n')
+      fs.mkdirSync(join(repo, 'tests'), { recursive: true })
+      const files = Array.from({ length: count }, (_, i) => `tests/diagnostic-${count}-${i}.mjs`)
+      for (const file of files) fs.writeFileSync(join(repo, file), content)
+      git(['add', ...files])
+      const result = measureCard({ repo, tree: git(['write-tree']), base })
+      assert.equal(result.passed, false)
+      assert.equal(result.failure, failure)
+    })
     console.log('NOT TESTED direct repair: real Seatbelt admission (VM fixtures only)')
     assert.equal(failures, 0, `${failures} direct repair case(s) failed`)
     console.log('PASS precard direct repair focused test; synthetic evidence only')

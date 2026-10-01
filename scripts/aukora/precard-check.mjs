@@ -71,9 +71,14 @@ export function measureCard({ repo, tree, base, timeoutMs = 180_000 }) {
     const newTests = records(git([...diff, '--name-only', '--diff-filter=A', '-z', exactBase, exactTree, '--'], isolated))
       .filter(path => path.startsWith('tests/')).length
     const passed = proof <= product && newTests <= 1 && product > 0
+    const reasons = [
+      newTests > 1 && `new test-file count ${newTests} exceeds maximum 1`,
+      proof > product && `proof lines ${proof} exceed product lines ${product}`,
+      product === 0 && `product lines ${product} must be greater than 0`,
+    ].filter(Boolean)
     return { tree: exactTree, base: exactBase, object, product, proof, newTests, passed,
       composition: `product ${product} lines, proof ${proof} lines`,
-      failure: passed ? '' : `REFUSED: this card is mostly proof (${proof} proof lines, ${product} product lines). Ship working code.` }
+      failure: passed ? '' : `REFUSED: ${reasons.join('; ')}.` }
   } finally {
     rmSync(temporary, { recursive: true, force: true })
   }
