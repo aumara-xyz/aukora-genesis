@@ -10,7 +10,7 @@ import type { KiraLens } from './kira-lens.ts'
 import type { CoreLens } from './core-lens.ts'
 import { replayableTurns } from './machine-frame.ts'
 import {
-  isLegacyModelRequest, readNewestModelRequest, readNewestModelRequestLine, recordOrRefuse, type LegacyEventLike,
+  isLegacyModelRequest, readNewestModelRequest, readRecordedModelRequest, recordOrRefuse, type ModelRequestReceipt, type LegacyEventLike,
 } from './model-request-store.ts'
 import { replyIdOf } from './reply-manifest.ts'
 import { priorTurnsFromLive } from './carry-over.ts'
@@ -150,6 +150,7 @@ export interface AumaLiveHttpDependencies {
     readonly ownerText: string
     readonly text: string
     readonly startedAt: number
+    readonly record: ModelRequestReceipt
     /**
      * **EVERY LENS ANSWER THIS TURN RECEIVED, WITH THE FRAME IT WAS SHOWN UNDER AND — WHERE A LENS ANSWERED — A DIGEST
      * OVER ITS TEXT.** The reply manifest is built from this: what she was shown, and the digest that makes the view
@@ -492,23 +493,21 @@ export class AumaLiveHttp {
   /**
    * Record one model request in HER OWN store, and never in a lane's session log.
    *
-   * **A FAILURE HERE MUST NOT FAIL THE TURN.** The request has already been dispatched by the time this runs, so
-   * throwing would abort a reply that is on its way. It is reported instead, through the same channel a
-   * record-failure has always used, so a person asking "why does she not remember" has an answer somewhere.
+   * Recording completes durably before dispatch and returns that append's receipt. Failures refuse dispatch.
    *
    * **THE SESSION ID IS PASSED IN, NOT REMEMBERED.** A field holding "the session being served" would be wrong
    * the moment two turns overlap, and this is the one record that must name the right file.
    * @param sessionId - The session this turn belongs to.
    * @param request - The request about to be sent to the model.
    */
-  private recordModelRequest(sessionId: PresenceRequest['sessionId'], request: unknown): void {
+  private recordModelRequest(sessionId: PresenceRequest['sessionId'], request: unknown): ModelRequestReceipt {
     const dshHome = this.dependencies.modelRequestHome
     // **IT THROWS, AND THAT IS THE WHOLE POINT.** The engine awaits this before the provider call and treats a
     // rejection as "do not dispatch". Returning early with no home, or catching an append failure, meant the
     // callback ALWAYS resolved — so the engine dispatched every turn believing it had been recorded, and the
     // fail-closed boundary it advertises could not be exercised by its only implementation.
     try {
-      recordOrRefuse({ dshHome: typeof dshHome === 'string' ? dshHome : '', sessionId, request })
+      return recordOrRefuse({ dshHome: typeof dshHome === 'string' ? dshHome : '', sessionId, request })
     } catch (error: unknown) {
       // Reported AND rethrown: reported so a person has an answer, rethrown so the turn does not reach the wire.
       this.dependencies.reportRecordFailure?.(error)
@@ -786,34 +785,19 @@ export class AumaLiveHttp {
     // `unref` so a heartbeat never holds the process open on its own; the stream is what owns this timer's life.
     heartbeat.unref?.()
     try {
-      await this.engine.stream(turn, abort.signal, res, async (request) => {
+      const receipt = await this.engine.stream(turn, abort.signal, res, async (request) => {
         // **HER OWN FILE, NEVER THE LANE'S LOG.** This line used to be
         // `session.append('auma-live/model-request', request)` followed by a flush into the bound lane's session.
         // That type is not in `KNOWN_SESSION_EVENT_TYPES`, and `append` cannot set `ignorable: true`, so the
         // harness refused to load that thread after ANY restart — the outage this item exists to end. Writing it
         // anywhere else was never the fix; not writing it there is.
-        this.recordModelRequest(turn.sessionId, request)
+        return this.recordModelRequest(turn.sessionId, request)
       })
-      // **THE REPLY'S OWN ID, DELIVERED WITH THE REPLY — auma-53 item (4)'s "why?" link.**
-      //
-      // **THE ENGINE CANNOT SEND THIS AND THE ROUTE REFUSES TO GUESS IT.** `PresenceDependencies.turnFinished` is given
-      // only what the engine has, and the `done` frame is written before `recordOrRefuse`'s callback has run — so at
-      // the moment the engine finishes speaking, **the turn number does not exist yet.** And `WHY_ROUTE` answers `400`
-      // rather than picking a reply: *"a route that returned the newest manifest whatever was asked would attribute one
-      // reply's prompt to another."*
-      //
-      // **THE HANDLER CAN DO WHAT NEITHER OF THEM CAN, AND THE ORDERING IS WHY.** `engine.stream` resolves only AFTER
-      // its `finally` has called `turnFinished` (`presence.ts:1178`), so by the time this line runs **the request line
-      // is on disk and the manifest has been written under the id computed from it.** Reading it here is therefore not
-      // a guess: it is the SAME `readNewestModelRequestLine` call the wiring makes, on a session that has just
-      // finished speaking and cannot be speaking again.
-      //
-      // **AND NO FRAME IS SENT WHEN THERE IS NO LINE.** A turn whose record failed has no manifest, and a `replyId`
-      // that resolves to nothing would give the reader a link that opens onto emptiness — **worse than no link, because
-      // it looks like an answer.**
+      // Completion carries this turn's persisted request receipt, even if another request appended meanwhile.
+      // Missing or changed bindings emit no manifestation; no session-wide fallback is allowed.
       const home = this.dependencies.modelRequestHome
       if (typeof home === 'string' && home !== '' && !res.writableEnded) {
-        const record = readNewestModelRequestLine({ dshHome: home, sessionId: turn.sessionId })
+        const record = readRecordedModelRequest({ dshHome: home, sessionId: turn.sessionId, receipt })
         if (record !== undefined) {
           res.write(`data: ${JSON.stringify({ t: 'manifested', replyId: replyIdOf(turn.sessionId, record.turn) })}\n\n`)
         }

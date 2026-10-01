@@ -21,6 +21,7 @@ import type { RecallLens } from './recall-lens.ts'
 import type { WebLens } from './web-lens.ts'
 import type { WeightsControl } from './weights-control.ts'
 import type { AumaLiveModelRequest, AumaLiveRequestMessage } from './types.ts'
+import { modelRequestReceiptMatches, type ModelRequestReceipt } from './model-request-store.ts'
 
 const RING_TURNS = 40
 const RING_CHARS = 20_000
@@ -437,12 +438,8 @@ export interface PresenceDependencies {
    * face emitted what it listens for** — so Auma Live's conversations reached the ring, the cross-lane notes and the
    * session log, **and never reached memory.**
    *
-   * **THIS ENGINE PASSES WHAT IT HAS AND NOT ONE FIELD MORE.** It knows the session, the owner's words and what she
-   * said; **it does NOT know the session's event `seq`, its `turn` index, or the canonical event `line`** — those
-   * belong to the session record, and the wiring that owns `ctx.sessions` adds them. **Inventing them here is exactly
-   * the failure this exists to fix**: a payload whose identity does not match the store produces a receipt that reads
-   * CHANGED the first time anyone verifies it, **and a receipt that reads CHANGED looks like tampering rather than a
-   * mismatch.**
+   * The recorder supplies the exact persisted line and position before dispatch. The engine carries the last
+   * request receipt from this turn (including continuations), rather than asking for the session's newest line.
    *
    * **CALLED ONLY WHEN A TURN WAS HEARD** — see `presenceTurnHeard`. An aborted turn that barely began, or one that
    * produced no words at all, is not a conversation and must not become a memory.
@@ -455,6 +452,7 @@ export interface PresenceDependencies {
     readonly text: string
     /** When the turn began, as the engine's own clock saw it. */
     readonly startedAt: number
+    readonly record: ModelRequestReceipt
     /**
      * **EVERY LENS ANSWER THIS TURN RECEIVED, WITH THE FRAME IT WAS SHOWN UNDER AND — WHERE A LENS ANSWERED — A DIGEST
      * OVER ITS TEXT.** The reply manifest is built from this.
@@ -844,8 +842,8 @@ export class PresenceEngine {
     request: PresenceRequest,
     signal: AbortSignal,
     response: ServerResponse,
-    recordRequest: (request: AumaLiveModelRequest) => Promise<void>,
-  ): Promise<void> {
+    recordRequest: (request: AumaLiveModelRequest) => Promise<ModelRequestReceipt>,
+  ): Promise<ModelRequestReceipt | undefined> {
     const write = async (payload: SsePayload): Promise<void> => {
       if (payload.t === 'done') DONE_SENT.add(response)
       if (!response.write(`data: ${JSON.stringify(payload)}\n\n`)) await once(response, 'drain')
@@ -1054,6 +1052,8 @@ export class PresenceEngine {
     let spoken = ''
     let spokeAloud = false
     let completionReason = 'eos'
+    let record: ModelRequestReceipt | undefined
+    const completedRecord = () => presenceTurnHeard(completionReason, this.now() - startedAt, spoken) ? record : undefined
     try {
       let pending = messages
       const continuationClasses = new Set<DataClass>()
@@ -1115,17 +1115,19 @@ export class PresenceEngine {
           )
           await write({ t: 'tok', v: spend.message })
           await write({ t: 'done', reason: spend.reason })
-          return
+          return completedRecord()
         }
         // Every dispatch is recorded fail-closed, lens continuations included:
         // the lens result becomes model-visible, so it must be reconstructable
         // from the session log before the provider may see it.
         try {
-          await recordRequest({
-            sessionId: request.sessionId,
-            endpoint: selected.endpoint,
-            body,
-          })
+          record = undefined
+          const outgoing = { sessionId: request.sessionId, endpoint: selected.endpoint, body }
+          const receipt = await recordRequest(outgoing)
+          if (!modelRequestReceiptMatches(receipt, outgoing)) {
+            throw new Error('auma-live: recorder returned no valid request binding; dispatch refused')
+          }
+          record = Object.freeze({ ...receipt })
         } catch (error: unknown) {
           this.dependencies.reportRecordFailure?.(error)
           completionReason = 'record-failed'
@@ -1136,7 +1138,7 @@ export class PresenceEngine {
             })
           }
           await write({ t: 'done', reason: completionReason })
-          return
+          return completedRecord()
         }
         // Only the lens-bearing turns are held: a lane with no lens attached
         // has nothing to look up, so its speech is never uninformed.
@@ -1161,7 +1163,7 @@ export class PresenceEngine {
         spoken += segment.spokeAloud ? segment.full : ''
         spokeAloud ||= segment.spokeAloud
         completionReason = segment.reason
-        if (segment.doneWritten) return
+        if (segment.doneWritten) return completedRecord()
         if (signal.aborted) break
         const repoAsked = lens === undefined ? [] : segment.lensRequests
           .filter(entry => entry.kind === 'repo').slice(0, lookupsRemaining)
@@ -1357,7 +1359,8 @@ export class PresenceEngine {
       this.dependencies.reportRecordFailure?.(new Error(`auma-live turn ended (${completionReason}): ${String((error as { message?: unknown })?.message ?? error)}`))
       await writeTurnFault(response, error)
     } finally {
-      if (presenceTurnHeard(completionReason, this.now() - startedAt, spoken)) {
+      const completed = completedRecord()
+      if (completed !== undefined) {
         // **THE TURN IS OFFERED TO MEMORY HERE, AND ONLY HERE.** The gate above is the whole condition: heard means
         // not aborted-short and not empty. **The four other `done` writes in this file are not turns** — `no-mind`,
         // `no-key` and the spend refusal never started one, **and the `record-failed` path is the one case where the
@@ -1371,6 +1374,7 @@ export class PresenceEngine {
           ownerText: request.text,
           text: spoken,
           startedAt,
+          record: completed,
           // **THE ATTENTION THE TURN ACTUALLY HAD, CARRIED OUT RATHER THAN RE-DERIVED.**
           lensAnswers: [...lensAnswers],
           memoryInjected: [...memoryInjected],
@@ -1386,6 +1390,7 @@ export class PresenceEngine {
         this.crossLane.noteVoiceTurn(request.sessionId, 'auma', spoken, this.now())
       }
     }
+    return completedRecord()
   }
 
   /**

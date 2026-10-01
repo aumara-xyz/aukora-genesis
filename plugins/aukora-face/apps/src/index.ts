@@ -30,9 +30,7 @@ import { CrossLaneMemory } from './auma-live/cross-lane.ts'
 import { isGitWorkTree, RepoLens } from './auma-live/repo-lens.ts'
 import { readClaimsPacket } from './auma-live/claims-packet.ts'
 import { lensCache } from './auma-live/lens-cache.ts'
-// **THE LINE READER, NAMED WHERE IT IS USED.** `readNewestModelRequestLine` is the whole of the turn-finished payload:
-// the canonical bytes, their position in the file, and the instant they carry — see the `turnFinished` wiring below.
-import { readNewestModelRequestLine } from './auma-live/model-request-store.ts'
+import { readRecordedModelRequest } from './auma-live/model-request-store.ts'
 import { appendReplyManifest, replyIdOf } from './auma-live/reply-manifest.ts'
 // **THE OWNER'S CONTROL PHRASES, CHECKED ON THE OWNER'S OWN WORDS.** auma-53 item (2): the module existed, was
 // courted, and had no caller — so "off the record" changed nothing about whether a turn was remembered.
@@ -682,20 +680,9 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
      * key finding: her conversations reached the ring, the cross-lane notes and her own request file, and never
      * reached memory.** KIRA built the consumer; nothing emitted.
      *
-     * **THE PAYLOAD IS READ FROM THE REQUEST FILE, NOT FROM A SESSION LOG.** A voice turn deliberately writes no
-     * session event — `http.ts:725-729` records why: the type was not in `KNOWN_SESSION_EVENT_TYPES` and `append`
-     * cannot set `ignorable`, so the harness refused to load the thread after any restart. **The canonical record of a
-     * voice turn is therefore the line `appendModelRequest` wrote, and `readNewestModelRequestLine` returns it with
-     * the position a later verifier will use to find it.**
-     *
-     * **EVERY FIELD COMES FROM THAT ONE READ, WHICH IS WHY THE RECEIPT CAN VERIFY.** `line` is the bytes as written
-     * rather than a re-serialisation; `turn` is the line's own position in the file; `at` is the `spokenAt` that same
-     * line already carries — **so the instant and the line cannot describe different moments, and a line counted by a
-     * verifier long afterwards lands on the same number.**
-     *
-     * A turn whose record is missing or unreadable emits nothing. **The engine's `presenceTurnHeard` gate has already
-     * decided the turn was heard; if its record cannot be produced there is no receipt to mint, and a capture without
-     * a line is the failure `memory-verify.mjs` answers MISSING for.**
+     * The engine carries the exact append receipt from this turn. Rechecking that physical line binds capture and
+     * the reply manifest to its own request, including when another request in the same session finishes first.
+     * A missing or changed binding emits nothing; the newest session line is never a substitute.
      */
     turnFinished: (turn) => {
       // **THE OWNER'S OWN WORDS DECIDE WHETHER THIS TURN IS OFFERED AT ALL, AND THEY ARE CHECKED BEFORE THE STORE IS
@@ -713,7 +700,7 @@ export async function apply(ctx: Context, config: Config): Promise<void> {
       // test which intents suppress was to read this file — and the module had no caller AND no provable decision.
       if (suppressesCapture(memoryControlIn(turn.ownerText))) return
       if (stateHome === null) return
-      const record = readNewestModelRequestLine({ dshHome: stateHome, sessionId: turn.sessionId })
+      const record = readRecordedModelRequest({ dshHome: stateHome, sessionId: turn.sessionId, receipt: turn.record })
       if (record === undefined) return
       // **THE CONSUMER REFUSES `at` UNLESS IT IS SECONDS-PRECISION UTC WITH A `Z`.** `toISOString` gives
       // milliseconds, and `spokenAt` is the instant the LINE carries, so the two agree by construction.

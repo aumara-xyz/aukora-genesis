@@ -37,6 +37,8 @@ import { spawnSync } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { registerHooks, stripTypeScriptTypes } from 'node:module'
+import { runInNewContext } from 'node:vm'
+import { Readable } from 'node:stream'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -55,6 +57,27 @@ const MUTATIONS = [
     from: 'consentEnabled: consent === true,',
     to: 'consentEnabled: consent !== false,',
     expect: 'H1',
+  },
+  {
+    label: 'HTTP completion selects the newest session line again',
+    file: 'auma-live/http.ts',
+    from: 'const record = readRecordedModelRequest({ dshHome: home, sessionId: turn.sessionId, receipt })',
+    to: 'const record = __newestForMutation({ dshHome: home, sessionId: turn.sessionId })',
+    expect: 'I1',
+  },
+  {
+    label: 'capture selects the newest session line again',
+    file: 'index.ts',
+    from: 'const record = readRecordedModelRequest({ dshHome: stateHome, sessionId: turn.sessionId, receipt: turn.record })',
+    to: 'const record = readNewestModelRequestLine({ dshHome: stateHome, sessionId: turn.sessionId })',
+    expect: 'I1',
+  },
+  {
+    label: 'engine accepts a recorder without a request binding',
+    file: 'auma-live/presence.ts',
+    from: 'if (!modelRequestReceiptMatches(receipt, outgoing)) {',
+    to: 'if (false) {',
+    expect: 'I1',
   },
   {
     label: 'remembered citation accepts the settled Aura namespace',
@@ -210,7 +233,9 @@ if (process.argv.includes('--mutate')) {
       const target = mutation.client ? join(scratch, 'client.js') : join(scratch, 'src', mutation.file)
       const before = readFileSync(target, 'utf8')
       assert.ok(before.includes(mutation.from), `MUTATION INVALID: ${mutation.file} no longer contains ${JSON.stringify(mutation.from)}`)
-      writeFileSync(target, before.replace(mutation.from, () => mutation.to))
+      let changed = before.replace(mutation.from, () => mutation.to)
+      if (mutation.label === 'HTTP completion selects the newest session line again') changed = `import { readNewestModelRequestLine as __newestForMutation } from './model-request-store.ts'\n${changed}`
+      writeFileSync(target, changed)
       const run = spawnSync(process.execPath, [HERE], {
         encoding: 'utf8',
         env: { ...process.env, AUKORA_COURT_SRC: join(scratch, 'src'), AUKORA_COURT_CLIENT: join(scratch, 'client.js') },
@@ -248,7 +273,7 @@ registerHooks({
       return { url: 'data:text/javascript,export const credentialRef = name => ({ name })', shortCircuit: true }
     }
     if (specifier === '@deepseek-ai/dsh-session') {
-      return { url: 'data:text/javascript,export const SessionId = {}', shortCircuit: true }
+      return { url: 'data:text/javascript,export const SessionId = value => value', shortCircuit: true }
     }
     if (specifier === '@deepseek-ai/dsh-session-query') {
       return { url: 'data:text/javascript,export const extractSessionEventText = () => ""', shortCircuit: true }
@@ -261,6 +286,7 @@ const { PresenceEngine } = await load('auma-live/presence.ts')
 const { RepoLens, isGitWorkTree } = await load('auma-live/repo-lens.ts').catch(() => ({}))
 const { CrossLaneMemory } = await load('auma-live/cross-lane.ts')
 const disclosure = await load('auma-live/disclosure.ts')
+const modelStore = await load('auma-live/model-request-store.ts')
 
 let failures = 0
 const arm = async (name, body) => {
@@ -321,7 +347,7 @@ const fakeResponse = () => {
 const done = res => [...res.text().matchAll(/^data: (\{"t":"done".*\})$/gmu)].map(m => JSON.parse(m[1]))
 const spoken = res => [...res.text().matchAll(/^data: (\{"t":"tok".*\})$/gmu)].map(m => JSON.parse(m[1]).v).join('')
 const OWNER_POLICY = JSON.stringify({ recipient: 'openrouter.ai', allowed: ['turn-text', 'history'] })
-const turn = async ({ request = {}, Engine = PresenceEngine, recordRequest = async () => {}, ...dependencies } = {}) => {
+const turn = async ({ request = {}, Engine = PresenceEngine, recordRequest, ...dependencies } = {}) => {
   const sent = []
   const reports = []
   const settings = {
@@ -339,7 +365,7 @@ const turn = async ({ request = {}, Engine = PresenceEngine, recordRequest = asy
   const res = fakeResponse()
   let rejected
   try {
-    await engine.stream({ sessionId: 's1', text: 'hi', mind: 'balanced', ...request }, new AbortController().signal, res, req => recordRequest(req, settings))
+    await engine.stream({ sessionId: 's1', text: 'hi', mind: 'balanced', ...request }, new AbortController().signal, res, req => recordRequest === undefined ? Promise.resolve(modelStore.recordOrRefuse({ dshHome: scratch, sessionId: req.sessionId, request: req })) : recordRequest(req, settings))
   } catch (error) {
     rejected = error
   }
@@ -577,7 +603,7 @@ await arm('B5 consent off keeps all preparation local; true permits both provide
   assert.equal(allowed.sent.length, 2, 'explicit consent must permit main and reflex requests')
   assert.deepEqual(done(allowed.res).map(frame => frame.reason), ['eos'])
   const revoked = await turn({ providerSendConsent: true, request: { mind: 'opus' }, disclosurePolicy: policy,
-    recordRequest: async (_request, settings) => { settings.providerSendConsent = false },
+    recordRequest: async (request, settings) => { settings.providerSendConsent = false; return modelStore.recordOrRefuse({ dshHome: scratch, sessionId: request.sessionId, request }) },
   })
   assert.equal(revoked.sent.length, 0, 'a late revocation reached a provider')
   assert.equal(spoken(revoked.res), '')
@@ -807,6 +833,86 @@ await arm('G3 remembered citations require a fresh checked namespace and matchin
   assert.ok(!/Aura #\d+, verified/u.test(result.text))
   delete service.citeRemembered
   assert.ok((await lens.ask('telescope', 'fixture-nonce', session.id)).text.includes('UNVERIFIED: remembered-chain citation is not available on this Host'))
+})
+
+await arm('I1 overlapping HTTP requests retain their own persisted receipt; missing/changed bindings refuse', async () => {
+  const { AumaLiveHttp } = await load('auma-live/http.ts')
+  const { replyIdOf } = await load('auma-live/reply-manifest.ts')
+  const control = await load('auma-live/memory-control.ts')
+  const memorySpeech = await load('auma-live/memory-speech.ts')
+  const home = join(scratch, 'interleaved-home')
+  mkdirSync(home)
+  const session = { id: 'receipt-fixture', snapshotEvents: () => [] }
+  const captures = [], manifests = [], completions = []
+  // Run the actual capture callback in an isolated scope; never mount the plugin or call a host tool.
+  const index = readFileSync(join(SRC, 'index.ts'), 'utf8')
+  const callback = index.slice(index.indexOf('turnFinished: (turn) => {') + 'turnFinished: '.length,
+    index.indexOf('\n    reportRecordFailure:', index.indexOf('turnFinished: (turn) => {'))).replace(/,\s*$/u, '')
+  const capture = runInNewContext(`(${callback})`, {
+    stateHome: home, ctx: { emit: (name, payload) => captures.push({ name, payload }) },
+    ...control, ...memorySpeech, ...modelStore, replyIdOf,
+    appendReplyManifest: ({ manifest }) => manifests.push(manifest),
+  })
+  const deferred = () => { let resolve; const promise = new Promise(r => { resolve = r }); return { promise, resolve } }
+  const enteredA = deferred(), enteredB = deferred(), releaseA = deferred(), releaseB = deferred()
+  const policyText = readFileSync(join(APPS, 'disclosure-policy.json'), 'utf8')
+  const fixtureDependencies = {
+    modelRequestHome: home, homeSession: session.id, crossLane: new CrossLaneMemory(),
+    sessions: { get: id => id === session.id ? session : undefined, list: () => [session] },
+    authenticate: () => true, providerSendConsent: true, // Fixture-only explicit consent.
+    disclosurePolicy: () => disclosure.readOwnerPolicy(policyText), credentials: { resolve: async () => ({ value: 'synthetic-fixture-key' }) },
+    identityBlock: () => '', turnFinished: turn => { completions.push(turn); capture(turn) },
+    fetch: async (_url, init) => {
+      const text = JSON.parse(init.body).messages.at(-1).content
+      if (text === 'synthetic A') { enteredA.resolve(); await releaseA.promise }
+      else if (text === 'synthetic B') { enteredB.resolve(); await releaseB.promise }
+      else throw Error('fixture transport refuses unknown request; no network fallback')
+      return new Response(sseBody(`Reply to ${text}`), { status: 200 })
+    },
+  }
+  const http = new AumaLiveHttp(fixtureDependencies)
+  // The HTTP constructor has no transport injection seam. Supply the real engine with only disposable
+  // dependencies, so this fixture exercises the route/recorder/completion path with no global fetch fallback.
+  http.engine = new PresenceEngine(fixtureDependencies.crossLane, {
+    ...fixtureDependencies, resolveApiKey: async () => 'synthetic-fixture-key', restoreRing: () => [],
+  })
+  const request = text => Object.assign(Readable.from([Buffer.from(JSON.stringify({ sessionId: session.id, text, mind: 'balanced' }))]), { method: 'POST', headers: { host: '127.0.0.1:1' }, socket: { remoteAddress: '127.0.0.1' } })
+  const response = () => { const res = fakeResponse(); res.writeHead = code => { res.statusCode = code }; res.end = chunk => { if (chunk !== undefined) res.frames.push(String(chunk)); res.writableEnded = true }; return res }
+  const a = response(), b = response()
+  const runningA = http.presence(request('synthetic A'), a)
+  await Promise.race([enteredA.promise, runningA.then(() => { throw Error(`A ended before fake dispatch: ${a.text()}`) })]) // A is durably appended before its fake provider waits.
+  const runningB = http.presence(request('synthetic B'), b)
+  await Promise.race([enteredB.promise, runningB.then(() => { throw Error(`B ended before fake dispatch: ${b.text()}`) })]) // B appends to the same file before A completes.
+  releaseB.resolve(); await runningB
+  releaseA.resolve(); await runningA
+  assert.deepEqual(completions.map(turn => turn.ownerText), ['synthetic B', 'synthetic A'])
+  assert.deepEqual(captures.map(({ payload }) => payload.seq), [2, 1], 'capture attributed A to the later B append')
+  for (const [text, seq, res] of [['synthetic A', 1, a], ['synthetic B', 2, b]]) {
+    const receipt = completions.find(turn => turn.ownerText === text).record
+    const payload = captures.find(({ payload }) => payload.ownerText === text).payload
+    assert.equal(receipt.turn, seq)
+    assert.equal(payload.line, receipt.line)
+    assert.equal(JSON.parse(payload.line).body.messages.at(-1).content, text)
+    assert.equal(payload.turn, seq)
+    assert.equal(modelStore.readRecordedModelRequest({ dshHome: home, sessionId: session.id, receipt }), receipt)
+    assert.ok(res.text().includes(JSON.stringify({ t: 'manifested', replyId: replyIdOf(session.id, seq) })), 'HTTP manifested a different request')
+  }
+  assert.deepEqual(manifests.map(m => m.replyId), [replyIdOf(session.id, 2), replyIdOf(session.id, 1)])
+  const aTurn = completions[1]
+  for (const record of [undefined, { ...aTurn.record, sessionId: 'other' }, { ...aTurn.record, turn: 2 }, { ...aTurn.record, line: '{}' }]) {
+    capture({ ...aTurn, record })
+    assert.equal(captures.length, 2, 'capture substituted a record for a missing/invalid binding')
+  }
+  const storeFile = join(home, 'auma-live', `${session.id}.jsonl`)
+  writeFileSync(storeFile, `${aTurn.record.line.replace('synthetic A', 'changed synthetic A')}\n${completions[0].record.line}\n`)
+  capture(aTurn)
+  assert.equal(captures.length, 2, 'changed physical line produced a capture')
+  // A recorder with the old void contract, a path, wrong body, or another session must refuse before transport.
+  for (const malformed of [() => undefined, () => '/fixture/path', req => ({ ...aTurn.record, sessionId: req.sessionId }), req => ({ ...aTurn.record, sessionId: 'other' })]) {
+    const bad = await turn({ disclosurePolicy: () => disclosure.readOwnerPolicy(OWNER_POLICY), recordRequest: async req => malformed(req) })
+    assert.equal(bad.sent.length, 0, 'invalid append binding reached the provider')
+    assert.deepEqual(done(bad.res).map(frame => frame.reason), ['record-failed'])
+  }
 })
 
 await arm('H1 owner setup status is read-only; strict consent and every disclosure check remain enforced', async () => {

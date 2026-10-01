@@ -28,6 +28,7 @@
 
 import { chmodSync, closeSync, fchmodSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, writeSync } from 'node:fs'
 import { join } from 'node:path'
+import { randomUUID } from 'node:crypto'
 
 /** The directory under the DSH home that belongs to her. Created 0700, explicitly. */
 export const STORE_DIRECTORY = 'auma-live'
@@ -179,12 +180,36 @@ export function ensureStoreDirectory(dshHome: string): string {
  * @param options - the home, the session, the request payload and the time it was recorded.
  * @returns the path written to.
  */
-export function appendModelRequest({ dshHome, sessionId, request, spokenAt = Date.now() }: {
+export interface ModelRequestReceipt {
+  readonly sessionId: string
+  readonly line: string
+  readonly turn: number
+  readonly spokenAt: number
+}
+
+function requestPayload(request: unknown): unknown {
+  return (request as { body?: { messages?: unknown } } | undefined)?.body?.messages === undefined
+    ? request
+    : (request as { body: unknown }).body
+}
+
+export function appendModelRequest(options: {
   dshHome: string
   sessionId: string
   request: unknown
   spokenAt?: number
 }): string {
+  appendModelRequestReceipt(options)
+  return storePath(options.dshHome, options.sessionId)
+}
+
+/** Append durably and locate this append's unique line, never the session's newest line. */
+function appendModelRequestReceipt({ dshHome, sessionId, request, spokenAt = Date.now() }: {
+  dshHome: string
+  sessionId: string
+  request: unknown
+  spokenAt?: number
+}): ModelRequestReceipt {
   if (typeof dshHome !== 'string' || dshHome === '') {
     throw new Error('model-request-store: dshHome is required and is never assumed; pass the home this app was configured with')
   }
@@ -196,21 +221,60 @@ export function appendModelRequest({ dshHome, sessionId, request, spokenAt = Dat
   // `body.messages`, and **every record was then skipped on read: her memory was saved and silently not
   // restored.** Normalising here rather than teaching the reader about one caller's nesting keeps the file's
   // shape equal to the shape it is read as, which is the property a durable format has to hold.
-  const payload = (request as { body?: { messages?: unknown } } | undefined)?.body?.messages === undefined
-    ? request
-    : (request as { body: unknown }).body
-  const line = `${JSON.stringify({ type: LEGACY_EVENT_TYPE, spokenAt, body: payload })}\n`
+  if (!Number.isFinite(spokenAt) || Math.abs(spokenAt) > 8.64e15) throw new Error('model-request-store: invalid time')
+  const payload = requestPayload(request)
+  // An append identifier distinguishes identical bodies written in the same millisecond.
+  // It binds this local receipt; it is not a signature or an identity attestation.
+  const canonical = JSON.stringify({ type: LEGACY_EVENT_TYPE, spokenAt, requestId: randomUUID(), body: payload })
+  const line = `${canonical}\n`
   // `'a'` plus an explicit `fchmod`: the file may be created by this call, and `open`'s mode is umask-filtered
   // for the same reason the directory's is.
   const descriptor = openSync(path, 'a', 0o600)
   try {
     fchmodSync(descriptor, 0o600)
-    writeSync(descriptor, line)
+    if (writeSync(descriptor, line) !== Buffer.byteLength(line)) {
+      throw new Error('model-request-store: incomplete append; dispatch refused')
+    }
     fsyncSync(descriptor)
   } finally {
     closeSync(descriptor)
   }
-  return path
+  const lines = readFileSync(path, 'utf8').split('\n')
+  const index = lines.indexOf(canonical)
+  if (index < 0 || lines.lastIndexOf(canonical) !== index) {
+    throw new Error('model-request-store: appended line cannot be bound uniquely; dispatch refused')
+  }
+  return Object.freeze({ sessionId, line: canonical, turn: index + 1, spokenAt })
+}
+
+/** Validate a recorder's result against the exact request before provider dispatch. */
+export function modelRequestReceiptMatches(receipt: unknown, request: { sessionId: string; body: unknown }): receipt is ModelRequestReceipt {
+  if (receipt === null || typeof receipt !== 'object') return false
+  const record = receipt as ModelRequestReceipt
+  if (record.sessionId !== request.sessionId || !Number.isSafeInteger(record.turn) || record.turn < 1
+      || !Number.isFinite(record.spokenAt) || Math.abs(record.spokenAt) > 8.64e15
+      || typeof record.line !== 'string' || /[\r\n]/u.test(record.line)) return false
+  try {
+    const event = JSON.parse(record.line) as { type?: unknown; spokenAt?: unknown; requestId?: unknown; body?: unknown }
+    return event.type === LEGACY_EVENT_TYPE && event.spokenAt === record.spokenAt
+      && typeof event.requestId === 'string' && /^[0-9a-f-]{36}$/u.test(event.requestId)
+      && JSON.stringify(event.body) === JSON.stringify(request.body)
+  } catch { return false }
+}
+
+/** Recheck the captured physical position. Never substitute another line when it is missing or changed. */
+export function readRecordedModelRequest({ dshHome, sessionId, receipt }: {
+  dshHome: string
+  sessionId: string
+  receipt: ModelRequestReceipt | undefined
+}): ModelRequestReceipt | undefined {
+  if (typeof dshHome !== 'string' || dshHome === '' || receipt === undefined) return undefined
+  try {
+    const body = (JSON.parse(receipt.line) as { body: unknown }).body
+    if (!modelRequestReceiptMatches(receipt, { sessionId, body })) return undefined
+    const line = readFileSync(storePath(dshHome, sessionId), 'utf8').split('\n')[receipt.turn - 1]
+    return line === receipt.line ? receipt : undefined
+  } catch { return undefined }
 }
 
 /**
@@ -310,16 +374,16 @@ export function newestLegacyModelRequest(events: readonly LegacyEventLike[] | un
  * it had been recorded.** An advertised boundary that the only implementation cannot fail is not a boundary.
  *
  * @param options - the home, the session and the request about to be sent.
- * @returns the path written to.
+ * @returns this append's canonical line and physical position.
  */
-export function recordOrRefuse(options: { dshHome: string; sessionId: string; request: unknown }): string {
+export function recordOrRefuse(options: { dshHome: string; sessionId: string; request: unknown }): ModelRequestReceipt {
   if (typeof options.dshHome !== 'string' || options.dshHome === '') {
     throw new Error('model-request-store: no home is configured, so this dispatch cannot be secured before it is '
       + 'sent and must not be sent')
   }
   // The append already throws on a filesystem failure; it is deliberately NOT caught here. Catching it is what
   // made the boundary unable to fail.
-  return appendModelRequest(options)
+  return appendModelRequestReceipt(options)
 }
 
 /**
