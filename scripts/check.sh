@@ -4,12 +4,16 @@
 set -eu
 cd "$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 
-for tool in perl python3 node; do
+for tool in perl python3 node ssh-keygen; do
     command -v "$tool" >/dev/null 2>&1 || {
         printf 'FAIL: required command not found: %s\n' "$tool" >&2
         exit 1
     }
 done
+node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 22 ? 0 : 1)' || {
+    printf 'FAIL: Node.js 22 or newer is required; found %s\n' "$(node -v)" >&2
+    exit 1
+}
 
 # Inline so the TODO list is visible, not swallowed by the parallel runner's last-line summary.
 python3 - <<'PY_FACE_COLOURS'
@@ -61,7 +65,7 @@ PY_FACE_COLOURS
 
 started=$(perl -MTime::HiRes=time -e 'print time')
 work=$(mktemp -d /tmp/ac.XXXXXX)
-mkdir "$work/tmp"
+mkdir -m 700 "$work/tmp"
 # Short socket paths on macOS; no bytecode files racing the vendor pin check.
 TMPDIR="$work/tmp"
 PYTHONDONTWRITEBYTECODE=1
@@ -69,6 +73,7 @@ export TMPDIR PYTHONDONTWRITEBYTECODE
 pids=
 count=0
 failed=0
+skipped=0
 cleanup() {
     trap '' HUP INT TERM
     for pid in $pids; do kill -TERM "$pid" 2>/dev/null || :; done
@@ -81,13 +86,13 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 trap 'exit 129' HUP
 
-check() {
+run_check() {
     count=$((count + 1))
     perl -MTime::HiRes=time -e '
         use strict;
         use warnings;
         use Errno qw(EINTR);
-        my ($prefix, $command) = @ARGV;
+        my ($prefix, $command, $run) = @ARGV;
         my $start = time;
         open my $log, ">", "$prefix.log" or die "log: $!";
         my $pid = fork();
@@ -97,7 +102,7 @@ check() {
             setpgrp(0, 0) or die "setpgrp: $!";
             open STDOUT, ">&", $log or die "stdout: $!";
             open STDERR, ">&", $log or die "stderr: $!";
-            exec "sh", "-c", $command;
+            exec "sh", "-c", $run;
             die "exec: $!";
         }
         close $log;
@@ -131,8 +136,23 @@ check() {
             $reason eq "" ? "" : " [$reason]", $last;
         close $row or die "close row: $!";
         exit($ok ? 0 : 1);
-    ' "$work/$count" "$1" &
+    ' "$work/$count" "$1" "$2" &
     pids="$pids $!"
+}
+# The precard caller supplies a private interpreter dispatcher from the base.
+# Standalone checks use their normal interpreters and make no confinement claim.
+check_self_confined() { run_check "$1" "$1"; }
+check() { run_check "$1" "$1"; }
+
+# Unavailable Seatbelt checks are explicit skips, never counted as passes.
+skip() {
+    printf 'SKIP      -  | %s | %s\n' "$1" "$2"
+    skipped=$((skipped + 1))
+}
+os=$(uname -s)
+check_darwin() {
+    if [ "$os" = Darwin ]; then check_self_confined "$1"
+    else skip "$1" "macOS only: needs Seatbelt (/usr/bin/sandbox-exec); on $os it proves nothing"; fi
 }
 
 check 'python3 vendor/append-only/verify.py --selftest'
@@ -174,9 +194,9 @@ check 'node tests/kira-openviking-recall.test.mjs --red'
 check 'node tests/broker-grant.test.mjs'
 check 'python3 vendor/aukora-membrane/minimal/tour.py'
 check 'node vendor/authority/conformance.mjs'
-check 'node scripts/aukora/box-confinement-check.mjs'
-check 'node scripts/aukora/caged-worker.mjs'
-check 'node scripts/aukora/caged-broker-effect.mjs'
+check_darwin 'node scripts/aukora/box-confinement-check.mjs'
+check_darwin 'node scripts/aukora/caged-worker.mjs'
+check_darwin 'node scripts/aukora/caged-broker-effect.mjs'
 
 index=0
 for pid in $pids; do
@@ -192,6 +212,7 @@ pids=
 perl -MTime::HiRes=time -e '
     printf "TOTAL %.2fs | %d/%d passed", time - $ARGV[0], $ARGV[1] - $ARGV[2], $ARGV[1];
     print " | logs: $ARGV[3]" if $ARGV[2];
+    print " | $ARGV[4] skipped (see SKIP lines)" if $ARGV[4];
     print "\n";
-' "$started" "$count" "$failed" "$work"
+' "$started" "$count" "$failed" "$work" "$skipped"
 [ "$failed" -eq 0 ]

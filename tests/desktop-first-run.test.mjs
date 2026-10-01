@@ -173,12 +173,20 @@ try {
   assert.equal((await lstat(dangling.approvalPath)).isSymbolicLink(), true)
   console.log('PASS malformed evidence and dangling approval symlink remain strict')
 
-  // Only packaged desktop siblings exist beside this private resolver copy; no plugin imports can resolve.
-  const isolatedShell = join(scratch, 'packaged-shell')
-  await mkdir(isolatedShell)
+  // Match the packaged shell's two-level path to the helper shipped through extraFiles.
+  const packagedRoot = join(scratch, 'packaged-shell')
+  const isolatedShell = join(packagedRoot, 'Resources', 'app')
+  await mkdir(isolatedShell, { recursive: true })
   for (const name of ['url-policy.mjs', 'install-settings.mjs']) {
     await copyFile(join(shell, name), join(isolatedShell, name))
   }
+  const desktopPackage = JSON.parse(await readFile(join(shell, 'package.json'), 'utf8'))
+  const helper = desktopPackage.build.extraFiles.find(entry =>
+    entry.from === '../../plugins/aukora-aumlok/lib' && entry.to === 'plugins/aukora-aumlok/lib')
+  assert.ok(helper?.filter.includes('plugin-set-content.mjs'), 'packaged resolver helper must be shipped')
+  const helperDirectory = join(packagedRoot, helper.to)
+  await mkdir(helperDirectory, { recursive: true })
+  await copyFile(join(shell, helper.from, 'plugin-set-content.mjs'), join(helperDirectory, 'plugin-set-content.mjs'))
   const source = await readFile(join(shell, 'resolve.mjs'), 'utf8')
   const comparison = 'receipt.operationDigest === pluginSetOperationDigest(record)'
   assert.equal(source.split(comparison).length, 2, 'red arm must remove exactly the receipt-to-set comparison')

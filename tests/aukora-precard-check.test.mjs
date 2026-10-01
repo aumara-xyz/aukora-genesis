@@ -1,15 +1,97 @@
 #!/usr/bin/env node
 // One focused gate check. Every fixture script, Git object, remote and state file is disposable.
 import assert from 'node:assert/strict'
-import { spawnSync } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import * as fs from 'node:fs'
-import { tmpdir } from 'node:os'
+import * as os from 'node:os'
+const { tmpdir } = os
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { runInNewContext } from 'node:vm'
-import { precardCheck } from '../scripts/aukora/precard-check.mjs'
-import * as scan from '../scripts/aukora/snapshot-scan.mjs'
+// Suite recursion models only sandbox launch in a VM. All other production gate
+// code and disposable Git/timeout effects are real. This is not OS enforcement
+// evidence: the separate full precard run must enter actual Seatbelt.
+const helper = fs.readFileSync(new URL('../scripts/aukora/precard-check.mjs', import.meta.url), 'utf8')
+const fixtureSpawn = (command, args, options) => command === '/usr/bin/sandbox-exec'
+  ? spawn(args[2], args.slice(3), options) : spawn(command, args, options)
+const { precardCheck } = runInNewContext(`(() => {
+${helper.slice(helper.indexOf('const gitEnvironment')).replace(/^export /gmu, '')}
+return { precardCheck }
+})()`, { ...fs, ...os, spawn: fixtureSpawn, spawnSync, createHash,
+  dirname, join, resolve, process, Buffer, setTimeout, clearTimeout })
+console.log('PRECARD FIXTURES: VM sandbox-launch mock; OS enforcement is NOT TESTED here')
+// This mode calls only precardCheck with harmless disposable Git/shell fixtures.
+// It never reads or executes the advance/self-change/become entry points below.
+async function directRepairCheck() {
+  const directory = fs.mkdtempSync(join(tmpdir(), 'precard-direct-repair-'))
+  const repo = join(directory, 'repo')
+  const env = { PATH: '/usr/bin:/bin:/usr/sbin:/sbin', HOME: directory,
+    GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' }
+  const git = args => {
+    const result = spawnSync('/usr/bin/git', ['-c', 'core.hooksPath=/dev/null', ...args], { cwd: repo, env, encoding: 'utf8', timeout: 10_000 })
+    assert.equal(result.status, 0, result.stderr)
+    return result.stdout.trim()
+  }
+  const harness = '#!/bin/sh\nexec /bin/sh lib/fixture.sh\n' // Deliberately ignores the environment hook.
+  const writeFixture = body => {
+    fs.writeFileSync(join(repo, 'scripts/check.sh'), harness)
+    fs.writeFileSync(join(repo, 'lib/fixture.sh'), body)
+    git(['add', 'scripts/check.sh', 'lib/fixture.sh'])
+    return git(['write-tree'])
+  }
+  let failures = 0, sequence = 0
+  const expect = async (name, test) => {
+    try { await test(); console.log(`PASS direct repair: ${name}`) }
+    catch (error) { failures++; console.error(`FAIL direct repair: ${name}: ${error.message}`) }
+  }
+  try {
+    fs.mkdirSync(join(repo, 'scripts'), { recursive: true })
+    fs.mkdirSync(join(repo, 'lib'))
+    git(['init', '-q', '--template='])
+    const baseTree = writeFixture('#!/bin/sh\n# synthetic baseline fixture\n')
+    const base = git(['-c', 'user.name=Synthetic fixture', '-c', 'user.email=fixture@example.invalid',
+      'commit-tree', baseTree, '-m', 'Synthetic direct-check baseline'])
+    git(['update-ref', 'HEAD', base])
+    const run = async body => {
+      const tree = writeFixture(body)
+      return precardCheck({ repo, tree, base, evidence: join(directory, `evidence-${sequence++}`), timeoutMs: 15_000 })
+    }
+    // These rows are simulated runner output, not a Linux or aggregate suite run.
+    for (const [name, report, passed] of [
+      ['legacy TOTAL', 'TOTAL 0.01s | 42/42 passed', true],
+      ['TOTAL with three platform skips', 'TOTAL 0.01s | 39/39 passed | 3 skipped (see SKIP lines)', true],
+      ['explicit zero skips', 'TOTAL 0s | 1/1 passed | 0 skipped (see SKIP lines)', true],
+      ['unequal pass count', 'TOTAL 0.01s | 39/40 passed | 2 skipped (see SKIP lines)', false],
+      ['negative skip count', 'TOTAL 0.01s | 40/40 passed | -2 skipped (see SKIP lines)', false],
+      ['signed skip count', 'TOTAL 0.01s | 40/40 passed | +2 skipped (see SKIP lines)', false],
+      ['fractional skip count', 'TOTAL 0.01s | 40/40 passed | 2.0 skipped (see SKIP lines)', false],
+      ['noncanonical skip count', 'TOTAL 0.01s | 40/40 passed | 02 skipped (see SKIP lines)', false],
+      ['unsupported skip suffix', 'TOTAL 0.01s | 40/40 passed | 2 skipped', false],
+      ['duplicate reports', 'TOTAL 0.01s | 1/1 passed\nTOTAL 0.01s | 1/1 passed', false],
+      ['malformed earlier report', 'TOTAL\tmalformed\nTOTAL 0.01s | 1/1 passed', false],
+      ['FAIL row with passing report', 'FAIL 0s | synthetic-only | refused\nTOTAL 0.01s | 1/1 passed', false],
+      ['unreported skips', 'SKIP | synthetic-only\nTOTAL 0.01s | 1/1 passed', false],
+      ['invented skip count', 'TOTAL 0.01s | 1/1 passed | 1 skipped (see SKIP lines)', false],
+      ['trailing output', 'TOTAL 0.01s | 1/1 passed\ntrailing synthetic output', false],
+    ]) {
+      await expect(name, async () => {
+        // Fixed grammar data contains no shell metacharacters or private content.
+        const rows = name === 'TOTAL with three platform skips' ? 'SKIP | synthetic-only-1\nSKIP | synthetic-only-2\nSKIP | synthetic-only-3\n' : ''
+        const result = await run(`#!/bin/sh\nprintf '%s\n' '${rows}${report}'\n`)
+        assert.equal(result.passed, passed, `${name}: ${result.failure || result.summary}`)
+      })
+    }
+    console.log('NOT TESTED direct repair: real Seatbelt admission (VM fixtures only)')
+    assert.equal(failures, 0, `${failures} direct repair case(s) failed`)
+    console.log('PASS precard direct repair focused test; synthetic evidence only')
+  } finally { fs.rmSync(directory, { recursive: true, force: true }) }
+}
+
+if (process.argv.includes('--direct-repair')) {
+  await directRepairCheck()
+} else {
+const scan = await import('../scripts/aukora/snapshot-scan.mjs')
 const ROOT_FOR_REASON = new URL('..', import.meta.url).pathname
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -28,9 +110,13 @@ const passBody = "printf 'PASS 0.01s | fixture-only | ok\nTOTAL 0.01s | 1/1 pass
 const failBody = "printf 'FAIL 0.01s | fixture-broken | bad\nTOTAL 0.01s | 0/1 passed\n'\nexit 1\n"
 const script = body => '#!/bin/sh\nset -eu\nprintf "fixture-directory=%s\\nfixture-home=%s\\n" "$PWD" "$HOME"\nenv\n' + body
 let parent
-function fixture(body, label) {
-  fs.writeFileSync(join(repo, 'scripts', 'check.sh'), script(body))
-  git(['add', 'scripts/check.sh'])
+// The harness is the base's and stays fixed; the candidate varies the check it runs (lib/fixture.sh).
+const harness = '#!/bin/sh\nexec sh lib/fixture.sh\n'
+function fixture(body, label, candidateHarness = harness) {
+  fs.mkdirSync(join(repo, 'lib'), { recursive: true })
+  fs.writeFileSync(join(repo, 'scripts', 'check.sh'), candidateHarness)
+  fs.writeFileSync(join(repo, 'lib', 'fixture.sh'), script(body))
+  git(['add', 'scripts/check.sh', 'lib/fixture.sh'])
   const tree = git(['write-tree'])
   const commit = git(['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit-tree', tree, ...(parent ? ['-p', parent] : []), '-m', label])
   if (!parent) { parent = commit; git(['update-ref', 'HEAD', commit]) }
@@ -55,6 +141,8 @@ try {
   const hang = fixture("printf 'hang-started\\n'\nwhile :; do sleep 60; done\n", 'hang')
   const malformed = fixture("printf 'TOTAL 0.01s | one/one passed\\n'\n", 'malformed')
   const nonzero = fixture(passBody + 'exit 7\n', 'nonzero')
+  // A candidate that rewrites the harness to print a passing TOTAL while its check fails.
+  const forged = fixture(failBody, 'forged', "#!/bin/sh\nprintf 'TOTAL 0.01s | 1/1 passed\\n'\n")
   git(['init', '-q', '--bare', remote])
   fs.writeFileSync(join(remote, 'objects', 'info', 'alternates'), `${join(repo, '.git', 'objects')}\n`)
   git(['--git-dir', remote, 'update-ref', 'refs/heads/main', base.commit])
@@ -67,8 +155,8 @@ try {
   }
 
   // Dirty source and hostile caller variables must not alter the archived candidate.
-  fs.writeFileSync(join(repo, 'scripts', 'check.sh'), script(failBody))
-  const poisoned = { PATH: '/no-precard-tools-here', HOME: '/no-precard-home-here', AUKORA_PRECARD_TEST: 'poison', GIT_DIR: '/no-precard-git-here', NODE_OPTIONS: '--no-such-node-option' }
+  fs.writeFileSync(join(repo, 'lib', 'fixture.sh'), script(failBody))
+  const poisoned = { PATH: '/no-precard-tools-here', HOME: '/no-precard-home-here', AUKORA_PRECARD_TEST: 'poison', GIT_DIR: '/no-precard-git-here', NODE_OPTIONS: '--no-such-node-option', NODE_PATH: '/no-node-hooks', PERL5LIB: '/no-perl-hooks', AUKORA_CHECK_SANDBOX: '/no-forged-profile', AUKORA_SUPPORT_ROOT: '/no-forged-support' }
   const before = Object.fromEntries(Object.keys(poisoned).map(name => [name, process.env[name]]))
   const evidence = evidenceAt()
   let checked
@@ -79,10 +167,11 @@ try {
     for (const [name, value] of Object.entries(before)) { if (value === undefined) delete process.env[name]; else process.env[name] = value }
   }
   assert.equal(checked.passed, true, checked.failure)
-  assert.equal(checked.summary, 'checks: TOTAL 1/1 passed on this exact tree')
+  const line = /^checks: TOTAL 1\/1 passed on this exact tree \(base harness; [^)]+\)$/mu
+  assert.match(checked.summary, line)
   assert.equal(checked.composition, 'product 1 lines, proof 0 lines')
   const output = evidenceOutput(evidence)
-  assert.doesNotMatch(output, /^(?:AUKORA_|GIT_|NODE_OPTIONS=)/mu)
+  assert.doesNotMatch(output, /^(?:AUKORA_|GIT_|NODE_OPTIONS=|NODE_PATH=|PERL5LIB=)/mu)
   assert.doesNotMatch(output, /no-precard-tools-here|no-precard-home-here/u)
   removedMaterialization(output)
   console.log('PASS exact candidate tree, clean environment, full evidence and temporary cleanup')
@@ -133,7 +222,7 @@ try {
 
   const green = await advance(pass.commit)
   assert.equal(green.popups, 1)
-  assert.match(green.card, /^checks: TOTAL 1\/1 passed on this exact tree$/mu)
+  assert.match(green.card, line)
   assert.match(green.card, /^product 1 lines, proof 0 lines$/mu)
   assert.ok(green.card.length <= 1650)
   removedMaterialization(evidenceOutput(green.evidence))
@@ -181,6 +270,10 @@ try {
     assert.match(evidenceOutput(refused.evidence), /precard checks refused:/u)
   }
   console.log('PASS malformed TOTAL and exit 7 despite passing TOTAL refused before popup')
+  const forgedRun = await advance(forged.commit)
+  assert.equal(forgedRun.popups, 0, 'a candidate harness printing a passing TOTAL must not reach the popup')
+  assert.match(evidenceOutput(forgedRun.evidence), /fixture-broken/u)
+  console.log('PASS candidate-rewritten harness ignored: the base harness ran its failing check; no popup')
 
   const call = /const checked = await precardCheck\(\{ repo: REPO, tree: to, base: from, evidence \}\)/u
   assert.match(sources.advance, call)
@@ -203,4 +296,6 @@ console.log('PASS precard gate focused test')
 } finally {
   clearTimeout(deadline)
   fs.rmSync(scratch, { recursive: true, force: true })
+}
+
 }

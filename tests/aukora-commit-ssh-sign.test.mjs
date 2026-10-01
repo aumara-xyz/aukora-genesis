@@ -33,6 +33,7 @@ for (const name of CUSTODY_ENV) delete process.env[name]
 const cleanEnv = {
   PATH: '/usr/bin:/bin',
   HOME: scratch,
+  TMPDIR: scratch,
   LANG: 'C',
   LC_ALL: 'C',
   GIT_CONFIG_GLOBAL: '/dev/null',

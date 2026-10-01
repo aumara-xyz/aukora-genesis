@@ -25,7 +25,10 @@ function git(repo, args, { input, env = {}, optional = false, encoding = 'utf8' 
       input, encoding, maxBuffer: 64 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'],
       env: { PATH: '/usr/bin:/bin', HOME: '/dev/null', XDG_CONFIG_HOME: '/dev/null',
         GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null', GIT_CONFIG_NOSYSTEM: '1',
-        GIT_TERMINAL_PROMPT: '0', GIT_ALLOW_PROTOCOL: 'file', GIT_LITERAL_PATHSPECS: '1', LANG: 'C', LC_ALL: 'C', ...env },
+        GIT_TERMINAL_PROMPT: '0', GIT_ALLOW_PROTOCOL: 'file', GIT_LITERAL_PATHSPECS: '1', LANG: 'C', LC_ALL: 'C',
+        // Keep Git's SSH buffers in the caller's disposable scratch. Seatbelt,
+        // rather than this environment value, decides which paths are writable.
+        ...(process.env.TMPDIR ? { TMPDIR: process.env.TMPDIR } : {}), ...env },
     })
   } catch { if (optional) return null; deny(`candidate:git-${args[0]}-failed`) }
 }
