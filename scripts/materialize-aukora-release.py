@@ -740,10 +740,11 @@ def assert_harness_clean(source: Path) -> None:
     the pinned ca131858), `tsconfig.client.json` and two node_modules state files into it. A release materialized
     from such a tree would carry every byte of it and NOTHING would say so.
 
-    Two refusals, by name, before a single byte is copied:
+    Three refusals, by name, before a single byte is copied:
       * the lock's digest must be the digest `upstream-dsh.json` pins;
       * `packages/client/aukora-face-*` must not exist — those are built INTO a release by this script from
         `presets/` and `plugins/`; finding them in the SOURCE means the source is somebody's build output.
+      * a successful compiled build must bind the archive, every local patch and the artifact inventory.
     """
     if not source.is_dir():
         fail(f'harness-missing: {source} is not a directory')
@@ -769,6 +770,10 @@ def assert_harness_clean(source: Path) -> None:
         fail('harness-lock-mismatch: %s is %s but upstream-dsh.json pins %s — this tree is NOT the pinned '
              'harness, and a release built from it would carry whatever was written into it'
              % (lock, got[:12], str(pinned)[:12]))
+    built = subprocess.run([sys.executable, str(ROOT / 'scripts/build-dsh.py'), '--root', str(ROOT),
+                            '--verify-built', '--source', str(source)], capture_output=True, text=True)
+    if built.returncode:
+        fail((built.stderr or built.stdout).strip() or 'harness-build-binding-refused: verifier failed')
 #: The release's authored code whose relative imports must all resolve inside the release. Build output is not walked: face
 #: `client.js` bundles and the stock apps under a face's `vendor/` are upstream's bytes. Imports are followed wherever they go.
 IMPORT_WALK_ROOTS = ('scripts', 'plugins', 'apps/aukora-desktop', NOSTR_RELEASE_DIR)
@@ -1761,6 +1766,15 @@ def main() -> int:
     # failure inside the materialization, where nothing has been pointed at the release yet — the
     # 2026-09-22 failure surfaced at a launcher, after the shell had already been quit.
     written = json.loads(record_file.read_text(encoding='utf-8'))
+    # Bind the successful upstream build inventory into the record the owner approves. The final
+    # record includes AUKORA additions; the preserved inventory proves its original harness subset.
+    harness_build = json.loads((source / '.dsh-build/pinned-harness-build.json').read_text())
+    harness_artifacts = (source / '.dsh-build/genesis-artifacts.json').read_bytes()
+    if hashlib.sha256(harness_artifacts).hexdigest() != harness_build['artifactRecordSha256']:
+        fail('harness-build-record-mismatch: source inventory changed during materialization')
+    (target / '.dsh-build/pinned-harness-artifacts.json').write_bytes(harness_artifacts)
+    written['harnessBuild'] = harness_build
+    record_file.write_text(json.dumps(written, indent=2) + '\n')
     recorded_commit = (written.get('producer') or {}).get('genesisCommit')
     head = git_head()
     if recorded_commit != head:

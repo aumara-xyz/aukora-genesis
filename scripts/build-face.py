@@ -172,11 +172,15 @@ def clone_pinned():
 
     The overlay is reused between runs because cloning is the slow part, but a reused
     overlay is only valid while it still holds the harness the repository pins. The
-    marker records the digest `scripts/build-dsh.py` enforces, so a re-pin re-clones
+    marker records the successful build receipt, so an archive/patch/artifact change re-clones
     instead of quietly compiling every face against the previous harness.
     """
     assert_not_symlinked()
-    pin = json.loads((ROOT / 'upstream-dsh.json').read_text())['archiveSha256']
+    checked = subprocess.run([sys.executable, str(ROOT / 'scripts/build-dsh.py'), '--root', str(ROOT),
+                              '--verify-built', '--source', str(PINNED)], capture_output=True, text=True)
+    if checked.returncode:
+        sys.exit((checked.stderr or checked.stdout).strip() or 'harness-build-binding-refused: verifier failed')
+    pin = hashlib.sha256((PINNED / '.dsh-build/pinned-harness-build.json').read_bytes()).hexdigest()
     marker = OVERLAY / PIN_MARKER
     if OVERLAY.exists():
         if marker.is_file() and marker.read_text().strip() == pin:

@@ -161,6 +161,10 @@ cp -Rc "$REPO/vendor/dsh" "$HARNESS" 2>/dev/null || refuse harness-clone-failed 
 [ -L "$HARNESS" ] && refuse harness-symlink "$HARNESS became a SYMBOLIC LINK during the clone"
 say "(a) worktree at $(printf '%s' "$COMMIT" | cut -c1-12) with vendor/dsh cloned (never linked)"
 
+# The candidate's complete patch set must have reached the compiled harness, not just its lockfile.
+"$PY" "$WORKTREE/scripts/build-dsh.py" --root "$WORKTREE" --verify-built --source "$HARNESS" \
+  || refuse harness-build-binding-refused "the cloned harness has no successful build for the candidate archive and patch set; rebuild before cutting"
+
 # ── (b) THE LOCKFILE PIN, CHECKED ON MAIN'S HARNESS ──────────────────────────────────────────────────────
 "$PY" - "$REPO" <<'PY' || refuse harness-lock-mismatch "main's vendor/dsh/pnpm-lock.yaml does not match the digest upstream-dsh.json pins, so this tree is NOT the pinned harness and nothing may be materialized from it"
 import hashlib, json, pathlib, sys

@@ -50,6 +50,65 @@ else:
 record_file=release/'.dsh-build/genesis-artifacts.json'
 if not record_file.is_file():
     parser.error(f'unverified-release: {record_file} is absent; run the pinned build and verification first')
+
+
+def verify_harness_provenance(release, record_path, checkout, approved):
+    """Bind the approved release record to its source commit's exact built harness, before launch.
+
+    An explicitly approved historical record predating mandatory confinement retains the existing
+    byte/gate checks. A new patched release cannot impersonate that recovery case by omitting a marker.
+    This is local build provenance under the approved-record/Git trust roots, not a same-UID attestation.
+    """
+    try:
+        record = json.loads(record_path.read_text())
+        commit = (record.get('producer') or {}).get('genesisCommit', '')
+        if not isinstance(commit, str) or not re.fullmatch(r'[a-f0-9]{40}', commit):
+            raise ValueError('record has no exact source commit')
+        pinned = subprocess.run(['git', '-C', str(checkout), 'show', commit + ':upstream-dsh.json'],
+                                capture_output=True, text=True)
+        if pinned.returncode:
+            raise ValueError('recorded source pin is unavailable locally; historical boundary unresolved')
+        historical_pin = json.loads(pinned.stdout)
+        patch_set = sorted([{'file': p['file'], 'sha256': p['sha256']}
+                            for p in historical_pin.get('localPatches', [])], key=lambda p: p['file'])
+        inputs = {'upstream': {key: historical_pin[key] for key in
+                              ('commit', 'archiveSha256', 'lockfileSha256', 'packageManager')},
+                  'localPatches': patch_set}
+        binding = record.get('harnessBuild')
+        if binding is None and not any(p['file'] == 'patches/mandatory-agent-confinement.patch.json' for p in patch_set):
+            if hashlib.sha256(record_path.read_bytes()).hexdigest() not in approved:
+                raise ValueError('historical recovery requires its explicitly approved record digest')
+            print('launcher: approved historical harness predates mandatory confinement; existing verification applies')
+            return
+        if (not isinstance(binding, dict) or binding.get('formatVersion') != 1
+                or binding.get('kind') != 'pinned-harness-build' or binding.get('inputs') != inputs):
+            raise ValueError('missing/stale successful build binding for the recorded source patch set')
+        snapshot_path = release / '.dsh-build/pinned-harness-artifacts.json'
+        if hashlib.sha256(snapshot_path.read_bytes()).hexdigest() != binding.get('artifactRecordSha256'):
+            raise ValueError('original built inventory differs from approved build binding')
+        snapshot = json.loads(snapshot_path.read_text())
+        entries = snapshot.get('entries')
+        if (snapshot.get('formatVersion') != 1 or snapshot.get('kind') != 'genesis-artifact-record'
+                or not isinstance(entries, list) or not entries or len(entries) != binding.get('artifactCount')
+                or snapshot.get('host', {}).get('fileCount') != len(entries)):
+            raise ValueError('original built inventory is incomplete')
+        for key in ('commit', 'archiveSha256', 'lockfileSha256'):
+            if snapshot.get('upstream', {}).get(key) != inputs['upstream'][key]:
+                raise ValueError('original build inventory upstream pin differs')
+        final = {entry['path']: entry for entry in record['entries']}
+        paths = set()
+        for entry in entries:
+            path = entry['path']
+            if (not isinstance(path, str) or Path(path).is_absolute() or '..' in Path(path).parts
+                    or path in paths or final.get(path) != entry):
+                raise ValueError(f'compiled harness inventory differs in release: {path}')
+            paths.add(path)
+        print(f'launcher: bound {len(entries)} compiled harness artifacts to {len(patch_set)} exact source patches')
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        parser.error(f'harness-patch-set-mismatch: {error}')
+
+
+verify_harness_provenance(release, record_file, Path(__file__).resolve().parents[1], a.approved_record_sha)
 verification=subprocess.run([node,str(Path(__file__).resolve().parents[1]/'scripts/genesis-check.mjs'),
                              '--brick','B1','--checkpoint','build','--source',str(release)],
                             capture_output=True,text=True)

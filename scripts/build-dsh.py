@@ -19,6 +19,7 @@ Usage:
     python3 scripts/build-dsh.py                      # the supported build
     python3 scripts/build-dsh.py --patches-only       # apply+verify the patch layer, no build
     python3 scripts/build-dsh.py --root <dir>         # operate on another checkout root (tests)
+    python3 scripts/build-dsh.py --verify-built       # read-only release prerequisite
 """
 import argparse, contextlib, hashlib, json, os, subprocess, tarfile, urllib.request
 from pathlib import Path
@@ -37,31 +38,21 @@ parser.add_argument('--phase', choices=['all', 'apply', 'build'], default=None,
 parser.add_argument('--skip-pristine', action='store_true',
                     help='skip the pristine-tree comparison. The court uses it to reach the build-phase '
                          'expectation gate on a tree it pre-patched; the supported build never skips it.')
+parser.add_argument('--verify-built', action='store_true',
+                    help='read-only: require a successful build bound to this archive and complete patch set')
+parser.add_argument('--source', type=Path, help='built tree to check with --verify-built')
 args = parser.parse_args()
+if args.verify_built and (args.patches_only or args.phase or args.skip_pristine):
+    parser.error('--verify-built cannot be combined with build/patch phase options')
+if args.source and not args.verify_built:
+    parser.error('--source requires --verify-built')
 
 root = args.root.resolve()
 pin = json.loads((root / 'upstream-dsh.json').read_text())
 archive = root / 'vendor/dsh-source.tar.gz'
-source = root / 'vendor/dsh'
+source = args.source.resolve() if args.source else root / 'vendor/dsh'
 patch_dir = root / 'patches'
-archive.parent.mkdir(exist_ok=True)
-if not archive.exists():
-    with urllib.request.urlopen(pin['archiveUrl'], timeout=60) as response:
-        archive.write_bytes(response.read())
-if hashlib.sha256(archive.read_bytes()).hexdigest() != pin['archiveSha256']:
-    raise SystemExit('source-digest-mismatch: retain archive and inspect provenance before retrying')
-if not source.exists():
-    source.mkdir()
-    subprocess.run(['tar', '-xzf', str(archive), '--strip-components=1', '-C', str(source)], check=True)
-# A modified source tree cannot silently inherit the original source pin. The court skips ONLY this
-# step, and only to exercise the build-phase expectation gate on its own: every arm that patches a tree
-# pre-applies the layer first, so the skip is what lets that arm reach the gate it is testing.
-if not args.skip_pristine:
-    with tarfile.open(archive) as snapshot:
-        for member in snapshot.getmembers():
-            relative = Path(*Path(member.name).parts[1:])
-            if member.isfile() and (source / relative).read_bytes() != snapshot.extractfile(member).read():
-                raise SystemExit(f'source-file-mismatch: inspect {relative} before building')
+binding_path = source / '.dsh-build/pinned-harness-build.json'
 
 
 def sha256_file(path: Path) -> str:
@@ -86,6 +77,8 @@ def load_patches() -> list[dict]:
     for entry in declared:
         if not isinstance(entry, dict) or not all(k in entry for k in ('file', 'sha256', 'reason')):
             raise SystemExit('patch-pin-invalid: every localPatches entry needs file, sha256 and reason')
+        if not isinstance(entry['file'], str) or entry['file'] in by_file:
+            raise SystemExit('patch-pin-invalid: localPatches must name distinct patch files')
         by_file[entry['file']] = entry
     patches = []
     for path in sorted(patch_dir.glob('*.patch.json')):
@@ -109,8 +102,8 @@ def load_patches() -> list[dict]:
             raise SystemExit(f'patch-reason-drift: {relative} reason differs from localPatches')
         patches.append({'file': relative, 'sha256': digest, 'spec': spec})
     for relative in by_file:
-        if not (root / relative).is_file():
-            raise SystemExit(f'patch-pin-mismatch: localPatches names {relative}, which does not exist')
+        if relative not in {patch['file'] for patch in patches}:
+            raise SystemExit(f'patch-pin-mismatch: localPatches names {relative}, which is not an applied patch')
     return patches
 
 
@@ -173,7 +166,113 @@ def verify_expectations(patches: list[dict], phase: str) -> None:
             print(f"patch: verified {patch['file']} reached {relative} ({phase})")
 
 
+def build_inputs(patches: list[dict]) -> dict:
+    return {'upstream': {key: pin[key] for key in
+                        ('commit', 'archiveSha256', 'lockfileSha256', 'packageManager')},
+            'localPatches': [{'file': patch['file'], 'sha256': patch['sha256']} for patch in patches]}
+
+
+def verify_built(patches: list[dict]) -> None:
+    """Presence of patched source is not proof of compiled output: require the post-build receipt.
+
+    The receipt is local build provenance, not an attestation against a malicious same-UID writer.
+    Foundation/face edits do not change harness inputs; validate the harness inventory independently
+    of the record's Genesis inventory, which the release materializer regenerates for its own commit.
+    """
+    try:
+        binding = json.loads(binding_path.read_text())
+    except (OSError, ValueError) as error:
+        raise SystemExit(f'harness-patch-set-mismatch: missing/invalid successful build provenance: {error}')
+    if (not isinstance(binding, dict) or binding.get('formatVersion') != 1
+            or binding.get('kind') != 'pinned-harness-build' or binding.get('inputs') != build_inputs(patches)):
+        raise SystemExit('harness-patch-set-mismatch: built archive/patch set differs from this checkout; rebuild')
+    # Reuse the committed coverage semantics, including the upstream client build record. An empty,
+    # truncated, changed or incomplete inventory cannot turn a receipt into proof of a current build.
+    check = r'''
+import { readFileSync, statSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+const [root, source, bindingPath] = process.argv.slice(1);
+const { loadCoverage, coveredPaths, aggregateDigest, readUpstreamClientRecord, sha256File } =
+  await import(pathToFileURL(resolve(root, 'scripts/lib/artifact-integrity.mjs')));
+const fail = (kind, message) => { throw new Error(`${kind}: ${message}`); };
+try {
+  const binding = JSON.parse(readFileSync(bindingPath, 'utf8'));
+  const coverage = loadCoverage(root);
+  const recordPath = resolve(source, coverage.value.record);
+  const record = JSON.parse(readFileSync(recordPath, 'utf8'));
+  if (sha256File(recordPath) !== binding.artifactRecordSha256)
+    fail('harness-build-record-mismatch', 'inventory differs from the successful build receipt');
+  if (record?.formatVersion !== 1 || record?.kind !== 'genesis-artifact-record')
+    fail('harness-build-record-invalid', 'unknown inventory format');
+  const paths = coveredPaths(source, coverage.value.hostPatterns, coverage.value.excluded);
+  const entries = record.entries;
+  if (!Array.isArray(entries) || entries.length === 0 || entries.length !== binding.artifactCount
+      || record.host?.fileCount !== entries.length || paths.length !== entries.length)
+    fail('harness-build-record-incomplete', 'compiled inventory missing or count differs');
+  const byPath = new Map(entries.map(entry => [entry?.path, entry]));
+  if (byPath.size !== entries.length || paths.some(path => !byPath.has(path))
+      || coverage.value.requiredEntries.some(path => !byPath.has(path))
+      || record.coverage?.declarationSha256 !== coverage.sha256)
+    fail('harness-build-record-incomplete', 'required/covered compiled files differ');
+  for (const key of ['commit', 'archiveSha256', 'lockfileSha256'])
+    if (record.upstream?.[key] !== binding.inputs.upstream[key])
+      fail('harness-build-record-mismatch', `upstream.${key} differs`);
+  for (const path of paths) {
+    const entry = byPath.get(path), absolute = resolve(source, path);
+    if (!Number.isSafeInteger(entry.bytes) || entry.bytes < 0
+        || typeof entry.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(entry.sha256))
+      fail('harness-build-record-invalid', `invalid inventory entry ${path}`);
+    if (statSync(absolute).size !== entry.bytes || sha256File(absolute) !== entry.sha256)
+      fail('harness-built-artifact-mismatch', path);
+  }
+  if (aggregateDigest(source, paths) !== record.host.sha256)
+    fail('harness-built-artifact-mismatch', 'host aggregate differs');
+  const client = readUpstreamClientRecord(source, coverage.value.upstreamClientRecord);
+  const clientPaths = coveredPaths(source, coverage.value.clientPatterns, coverage.value.excluded);
+  const clientDigest = aggregateDigest(source, clientPaths);
+  if (client.sha256 !== record.clientFace?.upstreamRecordSha256
+      || clientDigest !== client.digest || clientPaths.length !== client.fileCount
+      || clientDigest !== record.clientFace?.sha256 || clientPaths.length !== record.clientFace?.fileCount)
+    fail('harness-built-artifact-mismatch', 'client build inventory differs');
+  console.log(`harness-build-binding: verified ${paths.length} artifacts; ${binding.inputs.localPatches.length} pinned patches`);
+} catch (error) {
+  console.error(error.message.startsWith('harness-') ? error.message : `harness-build-record-invalid: ${error.message}`);
+  process.exit(1);
+}
+'''
+    checked = subprocess.run(['node', '--input-type=module', '-e', check, str(root), str(source), str(binding_path)])
+    if checked.returncode:
+        raise SystemExit(checked.returncode)
+    lock = source / 'pnpm-lock.yaml'
+    if not lock.is_file() or sha256_file(lock) != pin['lockfileSha256']:
+        raise SystemExit('harness-lock-mismatch: built tree differs from pinned dependency inputs')
+    verify_expectations(patches, 'build')
+
+
+# Invalidate success BEFORE any attempted mutation, including a failed/partial patches-only run.
+if not args.verify_built:
+    binding_path.unlink(missing_ok=True)
 patches = load_patches()
+if args.verify_built:
+    verify_built(patches)
+    raise SystemExit(0)
+archive.parent.mkdir(exist_ok=True)
+if not archive.exists():
+    with urllib.request.urlopen(pin['archiveUrl'], timeout=60) as response:
+        archive.write_bytes(response.read())
+if hashlib.sha256(archive.read_bytes()).hexdigest() != pin['archiveSha256']:
+    raise SystemExit('source-digest-mismatch: retain archive and inspect provenance before retrying')
+if not source.exists():
+    source.mkdir()
+    subprocess.run(['tar', '-xzf', str(archive), '--strip-components=1', '-C', str(source)], check=True)
+# A hand-edited tree cannot inherit the archive pin. Only existing court phase checks skip this.
+if not args.skip_pristine:
+    with tarfile.open(archive) as snapshot:
+        for member in snapshot.getmembers():
+            relative = Path(*Path(member.name).parts[1:])
+            if member.isfile() and (source / relative).read_bytes() != snapshot.extractfile(member).read():
+                raise SystemExit(f'source-file-mismatch: inspect {relative} before building')
 phase = args.phase if args.phase is not None else ('apply' if args.patches_only else 'all')
 if hashlib.sha256((source / 'pnpm-lock.yaml').read_bytes()).hexdigest() != pin['lockfileSha256']:
     raise SystemExit('lockfile-digest-mismatch: restore the pinned dependency inputs')
@@ -202,4 +301,17 @@ if phase in ('all', 'build'):
     verify_expectations(patches, 'build')
 # Record the built bytes; the check consumes this record and never trusts presence alone.
 subprocess.run(['node', str(root / 'scripts/artifact-record.mjs'), '--source', str(source)], cwd=root, env=env, check=True)
-
+# A successful full build alone creates provenance. Skipping pristine verification cannot mint it.
+if not args.skip_pristine:
+    record_path = source / '.dsh-build/genesis-artifacts.json'
+    record = json.loads(record_path.read_text())
+    binding = {'formatVersion': 1, 'kind': 'pinned-harness-build', 'inputs': build_inputs(patches),
+               'artifactRecordSha256': sha256_file(record_path), 'artifactCount': len(record['entries'])}
+    temporary = binding_path.with_suffix('.tmp')
+    temporary.write_text(json.dumps(binding, indent=2) + '\n')
+    temporary.replace(binding_path)
+    try:
+        verify_built(patches)
+    except BaseException:
+        binding_path.unlink(missing_ok=True)
+        raise
