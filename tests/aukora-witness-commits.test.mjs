@@ -4,6 +4,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createHash } from 'node:crypto'
+import { Script } from 'node:vm'
 import { auditCommits } from '../scripts/aukora/witness.mjs'
 import { chainAuraEntries } from '../plugins/aukora-kira/lib/memory-owner.mjs'
 
@@ -22,6 +24,59 @@ const save = records => {
   writeFileSync(log, chainAuraEntries(auraDir, records).map(e => JSON.stringify(e)).join('\n') + '\n')
 }
 try {
+  // These two standalone readers must bind every wire field. Exercise Echo's actual checkedHead
+  // in a VM before the courier boundary: no peers, keys, signing or witness service are invoked.
+  const echo = readFileSync(join(source, 'scripts/aura/echo-head.mjs'), 'utf8')
+  const start = echo.indexOf('const DOMAIN = '), end = echo.indexOf('\nasync function echoHead(')
+  assert.ok(start >= 0 && end > start, 'the actual Echo reader must be isolated before its courier')
+  const checkedHead = new Script(`${echo.slice(start, end)}\ncheckedHead`).runInNewContext({
+    createHash, TextDecoder, readFileSync: (file) => {
+      assert.ok(file.startsWith(`${scratch}/`), 'reader fixture must stay in scratch')
+      return readFileSync(file)
+    },
+  })
+  const entries = chainAuraEntries(auraDir, [
+    { operation: 'fixture.v1', text: 'Invented public cedar observation', nested: { domain: 'ordinary bound data' } },
+    { operation: 'fixture.v1', text: 'Invented public quartz observation' },
+  ])
+  assert.ok(entries.every(entry => !Object.hasOwn(entry, 'domain')), 'legitimate v1 writer emits no wire domain')
+  const retained = join(scratch, 'diagnostic-head.json')
+  writeFileSync(retained, JSON.stringify({ sequence: 1, hash: entries[0].hash }), { mode: 0o600 })
+  const verifier = join(source, 'scripts/aura/verify-append-only.mjs')
+  const misses = []
+  const cases = [
+    ['legitimate v1, nested domain remains bound', entries, undefined],
+    ...['forged separator', 'aukora:aura-record:v1', null, { forged: true }].map(domain =>
+      [`wire domain ${JSON.stringify(domain)}`, entries.map((entry, index) => index === 0 ? { ...entry, domain } : entry), 'CHAIN_RESERVED_FIELD']),
+    ['wire domain after the retained prefix', entries.map((entry, index) => index === 1 ? { ...entry, domain: 'forged tail' } : entry), 'CHAIN_RESERVED_FIELD', 2],
+    ['ordinary bound field edited, hashes unchanged', entries.map((entry, index) => index === 0 ? { ...entry, text: 'edited public fixture' } : entry), 'CHAIN_TAMPERED'],
+  ]
+  for (const [index, [label, rows, reason, at = 1]] of cases.entries()) {
+    const file = join(scratch, `diagnostic-${index}.jsonl`)
+    const bytes = `${rows.map(entry => JSON.stringify(entry)).join('\n')}\n`
+    writeFileSync(file, bytes, { mode: 0o600 })
+    if (index <= 1) console.log(`PUBLIC SYNTHETIC ${label}: ${JSON.stringify(bytes)}`)
+    let head, failure
+    try { head = checkedHead(file) } catch (error) { failure = error }
+    const checked = spawnSync(process.execPath, [verifier, retained, file], { env, encoding: 'utf8', timeout: 10000 })
+    assert.equal(checked.error, undefined)
+    const output = `${checked.stdout}${checked.stderr}`
+    const goodEcho = reason === undefined ? head?.hash === entries.at(-1).hash
+      : failure?.assurance === 'CONTRADICTED' && failure.message === `${reason} at Aura entry ${at}`
+    const goodVerifier = reason === undefined ? checked.status === 0 && output.includes('VERDICT: APPEND_ONLY')
+      : checked.status === 2 && output.includes('VERDICT: REWRITTEN') && output.includes(`REASON : ${reason}`) && output.includes(`POSITION: ${at}`)
+    console.log(`${goodEcho && goodVerifier ? 'PASS' : 'FAIL'} Aura readers ${label}: Echo=${failure?.message ?? `accepted ${head?.sequence}`} append-only exit=${checked.status} ${output.match(/^VERDICT:.+$/m)?.[0]} ${output.match(/^REASON .+$/m)?.[0]}`)
+    if (!goodEcho) misses.push(`${label}: Echo accepted or gave the wrong reason`)
+    if (!goodVerifier) misses.push(`${label}: append-only accepted or gave the wrong reason`)
+    assert.equal(readFileSync(file, 'utf8'), bytes, 'diagnostics preserve their input bytes')
+    if (reason === 'CHAIN_RESERVED_FIELD') {
+      const retention = spawnSync(process.execPath, [verifier, 'retain', file], { env, encoding: 'utf8', timeout: 10000 })
+      assert.equal(retention.error, undefined)
+      if (retention.status !== 1 || !retention.stdout.includes(`CHAIN_RESERVED_FIELD at entry ${at}`)) misses.push(`${label}: retain accepted or gave the wrong reason`)
+    }
+  }
+  assert.deepEqual(misses, [], 'reserved on-wire fields must be rejected before a diagnostic claims intact history')
+
   git(['init', '-q', '--initial-branch=main'])
   git(['remote', 'add', 'origin', 'https://example.invalid/fixture.git'])
   const tree = git(['mktree'], '')

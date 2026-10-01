@@ -43,6 +43,8 @@ function checkedHead(file) {
     if (entry === null || typeof entry !== 'object' || Array.isArray(entry)) fail('CHAIN_UNPARSEABLE')
     if (JSON.stringify(entry) !== line) fail('CHAIN_NOT_CANONICAL')
     const { hash, prev: link, ...fields } = entry
+    // v1's domain is preimage-only: a wire field would be silently overwritten below.
+    if (Object.hasOwn(fields, 'domain')) fail('CHAIN_RESERVED_FIELD')
     if (typeof hash !== 'string' || !/^[0-9a-f]{64}$/.test(hash)) fail('CHAIN_NO_HASH')
     if (link !== prev) fail('CHAIN_BROKEN_LINK')
     if (sha256(canonical({ prev: link, ...fields, domain: DOMAIN })) !== hash) fail('CHAIN_TAMPERED')

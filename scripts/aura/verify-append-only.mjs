@@ -96,6 +96,8 @@ function walk(log) {
     if (at === log.rows.length && !log.complete) return fail('CHAIN_TRUNCATED', 'the last line has no newline: the last append was interrupted')
     if (row.entry === null) return fail('CHAIN_UNPARSEABLE', 'the line is not a JSON object')
     if (JSON.stringify(row.entry) !== row.line) return fail('CHAIN_NOT_CANONICAL', 'the line is not the bytes its own object serializes to')
+    // v1's domain is preimage-only: entryHash overwrites it rather than binding a wire field.
+    if (Object.hasOwn(row.fields, 'domain')) return fail('CHAIN_RESERVED_FIELD', 'the entry carries a reserved on-wire domain; the hash preimage owns it')
     if (typeof row.hash !== 'string' || !HEX64.test(row.hash)) return fail('CHAIN_NO_HASH', 'the entry carries no 64-hex hash')
     if (row.prev !== prev) return fail('CHAIN_BROKEN_LINK', at === 1 ? `prev is not the genesis domain ${DOMAIN}` : `prev does not name entry ${at - 1}'s hash`)
     if (row.rederived !== row.hash) return fail('CHAIN_TAMPERED', "the stored hash is not the hash of the entry's own fields")
