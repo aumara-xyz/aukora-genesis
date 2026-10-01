@@ -494,7 +494,11 @@ async function main() {
   }
   if (!PLAN) takeLock()
   guardMembrane()
-  if (!PLAN) git('fetch', '-q', 'origin', 'main')
+  // Fetch stderr may contain authenticated remote URLs; report status without echoing it.
+  if (!PLAN) {
+    const fetched = git('fetch', '-q', 'origin', 'main')
+    if (fetched.status !== 0) finish('refused', `git fetch origin main failed (exit ${fetched.status ?? 'unavailable'}); origin/main was not refreshed; nothing live changed`)
+  }
   const commit = git('rev-parse', '--verify', `${commitArg}^{commit}`).text.trim()
   if (!/^[0-9a-f]{40}$/u.test(commit)) finish('refused', `${commitArg} is not a commit this checkout has`)
   if (git('merge-base', '--is-ancestor', commit, 'origin/main').status !== 0) finish('refused', `${commit.slice(0, 9)} is not on GitHub main; activation requires a target commit on main with a matching approval record`)
