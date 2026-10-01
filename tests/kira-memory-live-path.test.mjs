@@ -4,6 +4,7 @@
  *
  *   node tests/kira-memory-live-path.test.mjs [--dsh <built harness>]        # the arms, green
  *   node tests/kira-memory-live-path.test.mjs --red [--dsh <built harness>]  # each fix reverted in turn: its arm must go red
+ *   node tests/kira-memory-live-path.test.mjs --plugin-only              # disposable plugin arms; no release materialization
  *
  *   1. release     a materialized release carries every file its scripts import; its public-evidence.mjs runs
  *   2. auma        the mounted plugin listens for `auma/turn-finished`, and a spoken turn becomes a remembered note
@@ -11,7 +12,7 @@
  *   3k. keeps      off the record / lane door / secret scan / grantsAuthority:false / the separate remembered chain still hold
  *   4a. tier       a note file under remembered/ that says `signed` is listed as Remembered, never as Signed
  *   4b. chain      verify reads the chain: a deleted chain answers MISSING and a rewritten entry CHANGED, never VERIFIED
- *   5. forget      forget removes the auto-staged queue copy and names what it could not reach
+ *   5. forget      explicit governed staging uses its cell; forget reaches an explicitly staged queue copy
  *
  * WHAT RUNS. Arms 2-5 mount `plugins/aukora-kira/lib/index.js` `apply()` on a stand-in context, fire the events the harness
  * and the apps face fire (`agent/turn-stopping`, `auma/turn-finished`), and call the routes the plugin mounted on the stand-in
@@ -46,7 +47,7 @@ const ARMS = Object.freeze({
   keeps: '3k. keeps: off the record, lane door, secret scan, no authority and the separate chain still hold',
   tier: '4a. tier: a note under remembered/ that says signed is listed as Remembered',
   chain: '4b. chain: verify reads the chain, so a deleted or rewritten chain is not VERIFIED',
-  forget: '5. forget: the auto-staged queue copy goes and the answer names what forget did not reach',
+  forget: '5. forget: explicit cell staging stays inert; forget reaches its pending copy and names unreached stores',
 })
 const MUTANTS = Object.freeze({
   'release-closure': {
@@ -67,16 +68,16 @@ const MUTANTS = Object.freeze({
     to: "  const whole = ''\n",
     arm: ARMS.everything,
   },
-  'owner-words-unread': {
-    file: 'plugins/aukora-kira/lib/memory-capture-hook.mjs',
-    from: "  const said = ownerControlIn(String(turn?.text ?? ''))\n",
-    to: '  const said = null\n',
+  'automatic-authority': {
+    file: 'plugins/aukora-kira/lib/memory-tiers.mjs',
+    from: '    grantsAuthority: false, salt,\n',
+    to: '    grantsAuthority: true, salt,\n',
     arm: ARMS.keeps,
   },
   'tier-from-file': {
-    file: 'plugins/aukora-kira/lib/memory-deps.mjs',
-    from: "{ ...note, tier: 'remembered' } : note)",
-    to: '{ ...note } : note)',
+    file: 'plugins/aukora-kira/lib/tracked-memory.mjs',
+    from: "...note.origin?.metadata, tier: 'remembered', contentHash: hash,",
+    to: '...note.origin?.metadata, tier: note.tier, contentHash: hash,',
     arm: ARMS.tier,
   },
   'chain-self-compare': {
@@ -91,10 +92,10 @@ const MUTANTS = Object.freeze({
     to: "  for (const text of [zstdDecompressSync(readFileSync(file)).toString('utf8')]) {\n",
     arm: ARMS.everything,
   },
-  'anchor-before-plan': {
+  'capture-without-flush': {
     file: 'plugins/aukora-kira/lib/memory-remembered-hook.mjs',
-    from: '        const plan = planStoreWrite({\n',
-    to: '        appendJournalLine({ file: journalFile, line: JSON.stringify(anchor) })\n        const plan = planStoreWrite({\n',
+    from: '      if (!recovery && (',
+    to: '      if (false && (',
     arm: ARMS.everything,
   },
   'queue-untouched': {
@@ -103,29 +104,37 @@ const MUTANTS = Object.freeze({
     to: '    const matchesNote = () => false\n',
     arm: ARMS.forget,
   },
+  'governed-cell-bypassed': {
+    file: 'plugins/aukora-kira/lib/tools.mjs',
+    from: 'memoryPut = prover(staged.memoryPut, staged.memoryPut, {',
+    to: 'memoryPut = (args => args)(staged.memoryPut, staged.memoryPut, {',
+    arm: ARMS.forget,
+  },
 })
 
 const argv = process.argv.slice(2)
 const option = name => { const at = argv.indexOf(name); return at >= 0 ? argv[at + 1] : undefined }
 const dshArgs = option('--dsh') === undefined ? [] : ['--dsh', option('--dsh')]
+const pluginOnly = argv.includes('--plugin-only')
 
 // ── --red: plain must pass, then every revert must turn its own arm red ──────────────────────────────────────────────
 if (argv[0] === '--red') {
   const run = extra => {
-    const child = spawnSync(process.execPath, [HERE, ...extra, ...dshArgs], { encoding: 'utf8', timeout: 600_000 })
+    const child = spawnSync(process.execPath, [HERE, ...extra, ...dshArgs, ...(pluginOnly ? ['--plugin-only'] : [])], { encoding: 'utf8', timeout: 600_000 })
     return { status: child.status, out: `${child.stdout ?? ''}${child.stderr ?? ''}` }
   }
   const indent = text => text.trimEnd().split('\n').map(line => `    ${line}`).join('\n')
   const plain = run([])
   process.stdout.write(`plain (no revert): exit ${String(plain.status)}\n${indent(plain.out)}\n\n`)
   let caught = 0
-  for (const [name, mutant] of Object.entries(MUTANTS)) {
+  const mutants = Object.entries(MUTANTS).filter(([, mutant]) => !pluginOnly || !mutant.file.endsWith('.py'))
+  for (const [name, mutant] of mutants) {
     const child = run(['--mutant', name])
     const red = child.status !== 0 && child.out.includes(`FAIL  ${mutant.arm}`)
     if (red) caught += 1
     process.stdout.write(`revert ${name} (${mutant.file}): exit ${String(child.status)} — ${red ? 'CAUGHT' : 'NOT CAUGHT'}: "${mutant.arm}"\n${indent(child.out)}\n\n`)
   }
-  const total = Object.keys(MUTANTS).length
+  const total = mutants.length
   const ok = plain.status === 0 && caught === total
   process.stdout.write(`KIRA MEMORY LIVE PATH RED ARM: plain ${plain.status === 0 ? 'passed' : 'FAILED'}; ${String(caught)}/${String(total)} reverts turned their arm red — ${ok ? 'OK' : 'NOT OK'}\n`)
   process.exit(ok ? 0 : 1)
@@ -136,6 +145,7 @@ let mutation = null
 if (argv[0] === '--mutant') {
   const mutant = MUTANTS[argv[1]]
   if (mutant === undefined) { process.stderr.write(`unknown mutant ${String(argv[1])}\n`); process.exit(2) }
+  if (pluginOnly && mutant.file.endsWith('.py')) { process.stderr.write('release mutation requires the materialization arm; plugin-only refused\n'); process.exit(2) }
   mutation = { name: argv[1], ...mutant, applied: 0 }
   if (mutant.file.endsWith('.mjs') || mutant.file.endsWith('.js')) {
     const target = pathToFileURL(join(ROOT, mutant.file)).href
@@ -153,7 +163,7 @@ if (argv[0] === '--mutant') {
   }
 }
 // A revert of one fix runs only the arms it can reach: the release arm alone for the materializer, the plugin arms otherwise.
-const runRelease = mutation === null || mutation.file.endsWith('.py')
+const runRelease = !pluginOnly && (mutation === null || mutation.file.endsWith('.py'))
 const runPlugin = mutation === null || !mutation.file.endsWith('.py')
 
 const load = path => import(pathToFileURL(join(ROOT, path)).href)
@@ -184,6 +194,10 @@ function filesUnder(dir) {
 }
 
 const work = mkdtempSync(join(tmpdir(), 'kira-memory-live-path-'))
+const bridgeHome = process.env.AUKORA_OPENVIKING_HOME, originalFetch = globalThis.fetch, disposers = []
+process.env.AUKORA_OPENVIKING_HOME = join(work, 'openviking')
+globalThis.fetch = () => { throw Error('memory-live-path fixture prohibits all network/provider calls') }
+assert.equal(statSync(work).mode & 0o777, 0o700)
 assert.ok(!work.includes('Application Support'), `refusing: ${work} is not a scratch directory`)
 try {
   // ── ARM 1: THE RELEASE ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -303,9 +317,12 @@ try {
     // THE TEXT SESSION, as the harness stores it: a zstd file of event lines, grown one owner turn at a time.
     const events = []
     const sessionFile = join(home, 'sessions', 'project', TEXT_SESSION, 'session.jsonl.zstd')
-    mkdirSync(dirname(sessionFile), { recursive: true })
+    mkdirSync(dirname(sessionFile), { recursive: true, mode: 0o700 })
     let seq = 1
     let turn = 0
+    const hostSession = { id: TEXT_SESSION, header: { id: TEXT_SESSION, title: 'Invented test session' } }
+    let flushConfirmed = true
+    let flushCalls = 0
     const handlers = new Map()
     const routes = new Map()
     const warnings = []
@@ -315,15 +332,19 @@ try {
       seq += 2
       turn += 1
       events.push({ type: 'user/message', seq, time, data: { id: `msg-${String(seq)}`, content, source: { kind: 'user' } } })
-      writeFileSync(sessionFile, Buffer.concat([{ type: 'session', id: TEXT_SESSION }, ...events].map(one => zstdCompressSync(Buffer.from(`${JSON.stringify(one)}\n`)))))
-      for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: { id: TEXT_SESSION } }, turn })
+      for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: hostSession }, turn })
     }
     let voiceTurn = 0
+    const { appendModelRequest, readNewestModelRequestLine } = await load('plugins/aukora-face/apps/src/auma-live/model-request-store.ts')
     /** One heard Auma Live turn, in the shape the apps face emits (`plugins/aukora-face/apps/src/index.ts`). */
     const speak = async (ownerText, control = null) => {
       voiceTurn += 1
-      const line = JSON.stringify({ spokenAt: '2026-09-27T11:00:00.000Z', ownerText, turn: voiceTurn })
-      const payload = { sessionId: VOICE_SESSION, ownerText, text: 'Okay.', seq: voiceTurn, turn: voiceTurn, at: `2026-09-27T11:00:${String(voiceTurn).padStart(2, '0')}Z`, line, control, memoryInjected: [], spokenMemory: [] }
+      appendModelRequest({ dshHome: home, sessionId: VOICE_SESSION, spokenAt: Date.now(),
+        request: { body: { messages: [{ role: 'user', content: ownerText }] } } })
+      const record = readNewestModelRequestLine({ dshHome: home, sessionId: VOICE_SESSION })
+      assert.ok(record)
+      const payload = { sessionId: VOICE_SESSION, ownerText, text: 'Okay.', seq: record.turn, turn: record.turn,
+        at: new Date(record.spokenAt).toISOString().replace(/\.\d{3}Z$/u, 'Z'), line: record.line, control, memoryInjected: [], spokenMemory: [] }
       for (const handler of on('auma/turn-finished')) await handler(payload)
     }
     /** Call a route the plugin mounted on the stand-in web server, as the Memory app does. */
@@ -351,19 +372,27 @@ try {
       effect: fn => fn(),
     }
     const tools = new Map()
+    const services = new Map()
     const ctx = {
       tools: { register: definition => { tools.set(definition.name, definition); return () => {} } },
+      sessions: { get: id => id === TEXT_SESSION ? hostSession : undefined, flush: async session => {
+        flushCalls += 1
+        assert.equal(session, hostSession)
+        if (!flushConfirmed) return false
+        writeFileSync(sessionFile, Buffer.concat([{ type: 'session', id: TEXT_SESSION }, ...events].map(one => zstdCompressSync(Buffer.from(`${JSON.stringify(one)}\n`)))), { mode: 0o600, flush: true })
+        return true
+      } },
       on: (name, handler) => { handlers.set(name, [...on(name), handler]); return () => {} },
       emit: () => {},
-      effect: fn => fn(),
+      effect: fn => { const dispose = fn(); if (typeof dispose === 'function') disposers.push(dispose) },
       inject: (_names, callback) => callback(web),
       get: () => undefined,
-      provide: () => {},
+      provide: (name, service) => services.set(name, service),
       reflect: { get: name => (name === 'sessionQuery' ? reader : undefined) },
       logger: { warn: line => warnings.push(String(line)), info: () => {}, debug: () => {} },
     }
     await apply(ctx, {
-      autoStage: true, // off by default since 2026-09-27; turned on here so arm 5 keeps testing forget of a staged copy
+      autoStage: true, // historical compatibility input; automatic capture must remain advisory and create no queue entry
       memoryOwner: {
         stateDir, subject: SUBJECT, permittedPrivacy: ['local'],
         approvalFile: join(home, 'approval.json'), grantFile: join(home, 'grant.json'), queueDir: join(stateDir, 'queue'),
@@ -379,6 +408,19 @@ try {
       const notes = await rememberedWith('coffee black')
       assert.ok(notes.length >= 1, `the spoken turn was not remembered (warnings: ${warnings.slice(-3).join(' | ')})`)
       assert.equal(notes[0].source?.sessionId, VOICE_SESSION, 'the note does not cite the Auma Live session')
+      assert.equal((await call('POST', KIRA_ROUTES.verify, { id: notes[0].id })).body.source, 'VERIFIED')
+      assert.equal((await services.get('kira.recall').citeRemembered(notes[0].id)).verdict, 'VERIFIED')
+      const cited = await services.get('kira.recall').citeRemembered(notes[0].id)
+      assert.equal(cited.namespace, 'kira.remembered'); assert.equal(cited.sourceSha256, notes[0].source.sha256)
+      assert.equal(cited.entryHash, notes[0].aura.entryHash); assert.equal(cited.index, notes[0].aura.index)
+      const overlapSession = 'invented-overlap'
+      const request = context => ({ body: { messages: [{ role: 'system', content: context }, { role: 'user', content: 'Invented repeated question.' }] } })
+      appendModelRequest({ dshHome: home, sessionId: overlapSession, request: request('Invented context A.'), spokenAt: 1790000000000 })
+      const first = readNewestModelRequestLine({ dshHome: home, sessionId: overlapSession })
+      appendModelRequest({ dshHome: home, sessionId: overlapSession, request: request('Invented context B.'), spokenAt: 1790000001000 })
+      const completionRead = readNewestModelRequestLine({ dshHome: home, sessionId: overlapSession })
+      assert.notEqual(completionRead.line, first.line); assert.equal(completionRead.turn, first.turn + 1)
+      process.stdout.write('        BOUNDARY: newest-line completion after overlapping appends selects B, so it cannot establish request A\'s receipt; Apps producer edit remains coordinated\n')
     })
 
     // ── ARM 3: EVERY OWNER TURN ──────────────────────────────────────────────────────────────────────────────────────
@@ -388,18 +430,32 @@ try {
       await say(PLAIN_TEXT)
       await say('continue')
       await say('continue')
+      const persisted = readFileSync(sessionFile)
+      const confirmedCalls = flushCalls
+      flushConfirmed = false
+      await say('The invented deferred comet waits for durable flush.')
+      assert.equal(flushCalls, confirmedCalls + 1, 'turn-stopping must ask the host to confirm durable session flush')
+      assert.deepEqual(readFileSync(sessionFile), persisted)
+      assert.equal((await rememberedWith('deferred comet')).length, 0, 'flush false must defer capture')
+      flushConfirmed = true
+      for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: hostSession }, turn })
+      assert.equal((await rememberedWith('deferred comet')).length, 1, 'confirmed flush must retry the deferred capture once')
       await speak(PLAIN_VOICE)
       const text = await rememberedWith(PLAIN_TEXT)
       assert.equal(text.length, 1, `an unmarked text-chat turn gave ${String(text.length)} note(s), not 1 (warnings: ${warnings.slice(-3).join(' | ')})`)
       assert.equal(text[0].text, PLAIN_TEXT, 'the note is not the owner\'s own words')
       assert.equal(text[0].tier, 'remembered')
+      assert.equal((await call('POST', KIRA_ROUTES.verify, { id: text[0].id })).body.source, 'VERIFIED')
+      assert.equal((await services.get('kira.recall').citeRemembered(text[0].id, hostSession)).verdict, 'VERIFIED')
       const again = (await listed('remembered')).filter(one => one.text === 'continue')
       assert.equal(again.length, 2, `two asks with the same words gave ${String(again.length)} note(s), not 2`)
       const voice = await rememberedWith(PLAIN_VOICE)
       assert.equal(voice.length, 1, `an unmarked Auma Live turn gave ${String(voice.length)} note(s), not 1`)
       assert.equal(text[0].bodyAtCapture?.observationClass, 'HOST_REPORTED_CAPTURE_CONTEXT_NOT_EXECUTION_ATTESTATION', 'the note carries no host-reported bodyAtCapture')
-      const recalled = (await tools.get('kira_recall').execute({ text: 'when does Ana land in Denpasar' }, { agent: {} })).remembered?.notes ?? []
+      const recalled = (await tools.get('kira_recall').execute({ text: 'when does Ana land in Denpasar' }, { agent: { session: hostSession } })).remembered?.notes ?? []
       assert.deepEqual([recalled[0]?.id, recalled[0]?.bodyAtCapture], [text[0].id, text[0].bodyAtCapture], 'kira_recall does not return the remembered note with its bodyAtCapture')
+      assert.equal(recalled[0].advisoryOnly, true); assert.equal(recalled[0].grantsAuthority, false)
+      assert.equal(recalled[0].containment.kind, 'DATA')
       await say('My old passport expired in the spring.', Date.parse('2020-01-01T00:00:00Z'))
       assert.equal((await rememberedWith('old passport'))[0]?.bodyAtCapture, null, 'an ask older than this process was given this body')
       // A REFUSED CAPTURE IS RETRIED: the unsigned chain's tail torn, the ask is refused; repaired, the next turn remembers it once.
@@ -409,20 +465,17 @@ try {
       await say('The spare ladder hangs behind the blue shed.')
       writeFileSync(chainFile, intact)
       turn += 1
-      for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: { id: TEXT_SESSION } }, turn })
+      for (const handler of on('agent/turn-stopping')) await handler({ agent: { session: hostSession }, turn })
       assert.equal((await rememberedWith('spare ladder')).length, 1, 'a refused capture was marked done and never retried')
-      const { canonicalJSON } = await load('plugins/aukora-kira/lib/wasm-cell/aukora/kernel-seed/canonical-json.mjs')
-      const { MEMORY_PUT_PROPOSAL_WASM_SHA256 } = await load('plugins/aukora-kira/lib/wasm-cell/aukora/guest/wasm-proposal-cell.mjs')
       const entries = readFileSync(chainFile, 'utf8').trim().split('\n').map(line => JSON.parse(line))
       const captured = filesUnder(join(stateDir, 'remembered')).filter(file => file.path.endsWith('.json'))
         .map(file => JSON.parse(file.text)).filter(note => note.source?.sessionId === TEXT_SESSION)
       assert.ok(captured.length >= 5, 'vacuity: no automatic text captures to check')
-      for (const { wasmCell, ...note } of captured) {
-        assert.ok(note.text === note.statement, 'persisted text differs from the proposed statement')
-        const digest = createHash('sha256').update(canonicalJSON({ key: note.id, value: note })).digest('hex')
-        assert.deepEqual(wasmCell, { sha256: MEMORY_PUT_PROPOSAL_WASM_SHA256, proposalDigest: digest }, 'note lacks the exact cell proposal digest')
-        assert.deepEqual(entries.find(entry => entry.id === note.id)?.wasmCell, wasmCell, 'chain does not bind the cell evidence')
+      for (const note of captured) {
+        assert.equal(note.grantsAuthority, false)
+        assert.equal(entries.find(entry => entry.id === note.id)?.entryHash, note.aura.entryHash)
       }
+      assert.equal(filesUnder(join(stateDir, 'queue')).length, 0, 'automatic remembered data must not become a governed proposal')
     })
 
     // ── ARM 3k: WHAT REMEMBERING EVERYTHING MUST STILL LEAVE OUT ─────────────────────────────────────────────────────
@@ -457,6 +510,8 @@ try {
       const original = readFileSync(file, 'utf8')
       writeFileSync(file, `${JSON.stringify({ ...JSON.parse(original), tier: 'signed', label: 'signed' })}\n`)
       try {
+        const { readTrackedMemory } = await load('plugins/aukora-kira/lib/tracked-memory.mjs')
+        assert.equal(readTrackedMemory(stateDir).notes.find(note => note.id === target.id)?.tier, 'remembered', 'canonical reader must retain the unsigned namespace')
         const signed = await listed('signed')
         assert.ok(!signed.some(one => one.id === target.id), 'a note file under remembered/ that says signed is listed as Signed')
         const remembered = (await listed('remembered')).filter(one => one.id === target.id)
@@ -497,11 +552,33 @@ try {
       const WORDS = ['quokka', 'turquoise']
       await say(ASK)
       const queueDir = join(stateDir, 'queue')
+      assert.equal(filesUnder(queueDir).length, 0, 'autoStage compatibility input must not enqueue automatic captures')
+      const { stageTool } = await load('plugins/aukora-kira/lib/tools.mjs')
+      const { KIRA_SETTLEMENT_UNAVAILABLE } = await load('plugins/aukora-kira/lib/record.mjs')
+      const { proposeMemoryPutProven } = await load('plugins/aukora-kira/lib/wasm-proposal.mjs')
+      const { queueEntryFor, queueEntryText } = await load('plugins/aukora-kira/lib/queue.mjs')
+      let cellCalls = 0
+      const explicit = stageTool({ describe: async () => ({ subject: SUBJECT, policyRevision: 'fixture', permittedPrivacy: ['local'] }) },
+        KIRA_SETTLEMENT_UNAVAILABLE, (...args) => { cellCalls += 1; return proposeMemoryPutProven(...args) }, {
+          enqueuePending: staged => {
+            mkdirSync(queueDir, { recursive: true, mode: 0o700 })
+            writeFileSync(join(queueDir, `${staged.recordId}.json`), queueEntryText(queueEntryFor(staged)), { mode: 0o600 })
+            return { state: 'queued', recordId: staged.recordId }
+          },
+        })
+      const proposal = await explicit.execute({ kind: 'observation', content: { note: ASK, turn: { sessionId: TEXT_SESSION } },
+        createdAt: new Date().toISOString().replace(/\.\d{3}Z$/u, 'Z') }, {})
+      assert.equal(cellCalls, 1, 'explicit governed staging must execute the pinned WASM proposal cell')
+      assert.equal(proposal.state, 'proposed', 'explicit staging state')
+      assert.deepEqual(proposal.settlement, KIRA_SETTLEMENT_UNAVAILABLE)
+      assert.ok(!(await listed('signed')).some(note => note.id === proposal.recordId), 'an inert proposal must not become signed memory')
+      assert.ok(!(await listed('remembered')).some(note => note.id === proposal.recordId), 'an inert proposal must not become an automatic note')
+      assert.equal(proposal.record.grantsAuthority, false)
       const queued = filesUnder(queueDir).filter(one => one.path.endsWith('.json') && WORDS.every(word => one.text.includes(word)))
-      assert.equal(queued.length, 1, `vacuity: the auto-stage did not queue the ask (${String(queued.length)} copies)`)
+      assert.equal(queued.length, 1, `vacuity: explicit staging did not queue the ask (${String(queued.length)} copies)`)
       // A SET-ASIDE COPY, where `scripts/kira/migrate-queue.mjs --apply` puts one.
       const aside = join(stateDir, 'queue-backup-2026-09-27T00-00-00Z')
-      mkdirSync(aside, { recursive: true })
+      mkdirSync(aside, { recursive: true, mode: 0o700 })
       cpSync(queued[0].path, join(aside, basename(queued[0].path)))
       const notes = await rememberedWith('quokka')
       assert.ok(notes.length >= 1, 'vacuity: the ask was not remembered')
@@ -517,6 +594,10 @@ try {
     })
   }
 } finally {
+  disposers.reverse().forEach(dispose => dispose())
+  globalThis.fetch = originalFetch
+  if (bridgeHome === undefined) delete process.env.AUKORA_OPENVIKING_HOME
+  else process.env.AUKORA_OPENVIKING_HOME = bridgeHome
   // ONLY THE DIRECTORY THIS RUN CREATED: a mkdtemp child of the temp directory with this check's own prefix.
   if (dirname(work) === resolve(tmpdir()) && basename(work).startsWith('kira-memory-live-path-')) rmSync(work, { recursive: true, force: true })
 }
