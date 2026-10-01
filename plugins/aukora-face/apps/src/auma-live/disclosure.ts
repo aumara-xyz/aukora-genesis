@@ -58,6 +58,25 @@ export interface OwnerPolicy {
   readonly allowed: readonly DataClass[]
 }
 
+/** Read-only setup facts, never an admission or configuration write. */
+export function providerSetupOf(consent: unknown, policy?: OwnerPolicy) {
+  const recipient = typeof policy?.recipient === 'string' && policy.recipient.length <= 253
+    && /^[a-z0-9][a-z0-9.-]*$/iu.test(policy.recipient) ? policy.recipient : null
+  const classes = policy?.allowed
+  const allowed = recipient !== null && Array.isArray(classes)
+    ? DATA_CLASSES.filter(value => classes.includes(value)) : []
+  return {
+    consentEnabled: consent === true,
+    recipient,
+    allowed,
+    // Exact pinned SDK startup refusals, independent of CLI PATH presence.
+    nativeSdkProviders: [
+      { id: 'codex', available: false, reason: 'AUKORA_NATIVE_CONFINEMENT_UNWIRED: subagent-codex child startup refused until its SDK launch closure enforces native confinement' },
+      { id: 'claude-code', available: false, reason: 'AUKORA_NATIVE_CONFINEMENT_UNWIRED: subagent-claude-code child startup refused until its SDK launch closure enforces native confinement' },
+    ],
+  }
+}
+
 /** The intended release default, for comparison only; NEVER an unreadable-file fallback. */
 export const DEFAULT_POLICY: OwnerPolicy = Object.freeze({
   recipient: 'openrouter.ai',

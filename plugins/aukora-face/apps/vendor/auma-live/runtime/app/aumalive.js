@@ -758,6 +758,22 @@ export function mountAumaLive(root, options = {}) {
   voiceGroup.append(Object.assign(el('div', 'alv-group-k'), { textContent: 'her voice' }), voiceList);
   if (!canvasMode) panel.append(mindGroup);
   panel.append(voiceGroup);
+  const providerGroup = el('div', 'alv-group');
+  const providerState = el('div', 'alv-note');
+  const providerScope = el('div', 'alv-note');
+  const providerSteps = el('div', 'alv-note');
+  const nativeSdkState = el('div', 'alv-note');
+  providerGroup.append(Object.assign(el('div', 'alv-group-k'), { textContent: 'provider setup' }),
+    providerState, providerScope, providerSteps, nativeSdkState);
+  providerState.textContent = 'Consent status unavailable until the host answers.';
+  providerScope.textContent = 'Provider prompts can include your turn, conversation history, and separately authorised context. Every data class remains checked.';
+  providerSteps.textContent = 'Owner setup: add providerSendConsent: true under the existing aukora-face-apps config in auma-live.patch.yml, preserving its other fields. Set false to disable. Apply through the normal owner-approved deployment/reload. This panel does not change configuration.';
+  nativeSdkState.textContent = 'Native SDK provider availability is unknown until the host answers.';
+  if (!canvasMode) {
+    panel.append(providerGroup);
+    panel.style.maxHeight = 'calc(100% - 110px)';
+    panel.style.overflowY = 'auto';
+  }
   app.append(panel);
 
   // a three-line icon, bottom-LEFT (mirrors the gear): opens the running
@@ -1125,7 +1141,28 @@ export function mountAumaLive(root, options = {}) {
   // reject is never offered — including on a Host with no roster, where the four stay.
   let offeredMinds = ['deep', 'balanced', 'quick', 'muse'];
   let mindLabels = {};
+  function renderProviderSetup(setup) {
+    if (!setup || typeof setup !== 'object' || typeof setup.consentEnabled !== 'boolean') {
+      providerState.textContent = 'Consent status unavailable; the host still checks every request.';
+      providerScope.textContent = 'Current disclosure policy scope is unavailable.';
+      nativeSdkState.textContent = 'Native SDK provider availability is unknown.';
+      return;
+    }
+    providerState.textContent = setup.consentEnabled
+      ? 'Provider consent enabled by owner configuration; disclosure policy still applies.'
+      : 'Provider requests are off. Owner setup is required before Auma Live can answer.';
+    const recipient = typeof setup.recipient === 'string' && setup.recipient.length <= 253 ? setup.recipient : '';
+    const allowed = Array.isArray(setup.allowed) ? setup.allowed.filter(value => typeof value === 'string').slice(0, 8) : [];
+    providerScope.textContent = recipient && allowed.length
+      ? `Policy recipient: ${recipient}. Allowed classes: ${allowed.join(', ')}. Prompts include your turn and history; additional context requires its own allowed class. Consent does not widen this policy.`
+      : 'Disclosure policy unavailable or empty. Consent alone cannot permit a provider request.';
+    const sdk = Array.isArray(setup.nativeSdkProviders) ? setup.nativeSdkProviders : [];
+    nativeSdkState.textContent = sdk.filter(value => value && value.available === false
+      && (value.id === 'codex' || value.id === 'claude-code') && typeof value.reason === 'string')
+      .map(value => `${value.id} native SDK unavailable: ${value.reason}`).join(' ') || 'Native SDK provider availability is unknown.';
+  }
   function applyRoster(data) {
+    renderProviderSetup(data?.providerSetup);
     // AN EMPTY ROSTER IS NOT A REASON TO IGNORE THE ANSWER: her home was already adopted before this runs.
     if (!Array.isArray(data.minds) || data.minds.length === 0) return;
     offeredMinds = data.minds;
@@ -2186,6 +2223,10 @@ export function mountAumaLive(root, options = {}) {
       }
       clearPresenceTimer();
       full += dirs.flush();
+      if (doneReason === 'provider-consent-required') {
+        providerState.textContent = 'Provider requests are off. Owner setup is required before Auma Live can answer.';
+        toast('Provider requests are off. Open her mind & voice settings for owner setup.', 7000);
+      }
       if (doneReason === 'provider-consent-required' || doneReason === 'disclosure-refused') {
         presenceBlocked = true;
         endTurn();

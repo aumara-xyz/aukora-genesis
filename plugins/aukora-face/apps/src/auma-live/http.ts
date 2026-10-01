@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import type { IncomingMessage, ServerResponse } from 'node:http'
-import type { readOwnerPolicy } from './disclosure.ts'
+import { providerSetupOf, type readOwnerPolicy } from './disclosure.ts'
 import type { CredentialProvider } from '@deepseek-ai/dsh-credentials'
 import { credentialRef } from '@deepseek-ai/dsh-credentials'
 import { SessionId, type SessionEvent, type SessionStore } from '@deepseek-ai/dsh-session'
@@ -640,7 +640,9 @@ export class AumaLiveHttp {
     // **AND IT IS NOT AWAITED.** The panel must render now; a resume that takes a second must not hold the strip
     // that says whether she is up. A failure is reported through the same channel every other record failure uses.
     this.resumeHomeInBackground(res, homeSession)
-    const body = JSON.stringify(mindsPayloadOf({
+    let setupPolicy: ReturnType<typeof readOwnerPolicy> | undefined
+    try { setupPolicy = this.dependencies.disclosurePolicy?.() } catch { /* An unreadable policy authorises nothing. */ }
+    const body = JSON.stringify({ ...mindsPayloadOf({
       minds: Object.keys(this.minds),
       labels,
       homeSession,
@@ -659,7 +661,7 @@ export class AumaLiveHttp {
         })),
         { cap: 24 },
       ),
-    }))
+    }), providerSetup: providerSetupOf(this.dependencies.providerSendConsent, setupPolicy) })
     res.writeHead(200, {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',

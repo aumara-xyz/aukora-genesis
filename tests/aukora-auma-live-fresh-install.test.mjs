@@ -36,7 +36,7 @@ import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
-import { registerHooks } from 'node:module'
+import { registerHooks, stripTypeScriptTypes } from 'node:module'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -49,6 +49,13 @@ const CLIENT = process.env.AUKORA_COURT_CLIENT ?? join(APPS, 'vendor/auma-live/r
 
 // ── the mutation mode: copy the sources, remove ONE protection, require the court to fail ────────────────────────────────────
 const MUTATIONS = [
+  {
+    label: 'setup status treats missing consent as enabled',
+    file: 'auma-live/disclosure.ts',
+    from: 'consentEnabled: consent === true,',
+    to: 'consentEnabled: consent !== false,',
+    expect: 'H1',
+  },
   {
     label: 'remembered citation accepts the settled Aura namespace',
     file: 'auma-live/kira-lens.ts',
@@ -230,7 +237,19 @@ if (process.argv.includes('--mutate')) {
 
 // ── loading the sources: node strips the types; the ONE harness package they reach is stubbed ────────────────────────────────
 registerHooks({
+  load(url, context, next) {
+    if (url.endsWith('/auma-live/http.ts')) {
+      return { format: 'module', source: stripTypeScriptTypes(readFileSync(fileURLToPath(url), 'utf8'), { mode: 'transform' }), shortCircuit: true }
+    }
+    return next(url, context)
+  },
   resolve(specifier, context, next) {
+    if (specifier === '@deepseek-ai/dsh-credentials') {
+      return { url: 'data:text/javascript,export const credentialRef = name => ({ name })', shortCircuit: true }
+    }
+    if (specifier === '@deepseek-ai/dsh-session') {
+      return { url: 'data:text/javascript,export const SessionId = {}', shortCircuit: true }
+    }
     if (specifier === '@deepseek-ai/dsh-session-query') {
       return { url: 'data:text/javascript,export const extractSessionEventText = () => ""', shortCircuit: true }
     }
@@ -788,6 +807,73 @@ await arm('G3 remembered citations require a fresh checked namespace and matchin
   assert.ok(!/Aura #\d+, verified/u.test(result.text))
   delete service.citeRemembered
   assert.ok((await lens.ask('telescope', 'fixture-nonce', session.id)).text.includes('UNVERIFIED: remembered-chain citation is not available on this Host'))
+})
+
+await arm('H1 owner setup status is read-only; strict consent and every disclosure check remain enforced', async () => {
+  const { AumaLiveHttp } = await load('auma-live/http.ts')
+  const policy = disclosure.readOwnerPolicy(OWNER_POLICY)
+  const client = readFileSync(CLIENT, 'utf8')
+  const renderer = client.match(/  function renderProviderSetup\(setup\) \{([\s\S]*?)\n  \}\n  function applyRoster/u)?.[1]
+  assert.ok(renderer)
+  const providerState = { textContent: '' }, providerScope = { textContent: '' }, nativeSdkState = { textContent: '' }
+  const render = new Function('setup', 'providerState', 'providerScope', 'nativeSdkState', renderer)
+  const sdkPatch = JSON.parse(readFileSync(join(ROOT, 'patches/mandatory-agent-confinement.patch.json'), 'utf8'))
+  for (const consent of [undefined, false, 'true', true]) {
+    const dependencies = { providerSendConsent: consent, disclosurePolicy: () => policy,
+      credentials: { resolve: () => { throw Error('setup must not resolve credentials') } },
+      sessions: { list: () => [], get: () => undefined }, apiKeyEnv: 'INVENTED_UNUSED',
+      maxRequestBodyBytes: 16_000, crossLane: new CrossLaneMemory(),
+      fetch: () => { throw Error('setup must not contact a provider') } }
+    const http = new AumaLiveHttp(dependencies)
+    let status, body
+    const response = Object.assign(new EventEmitter(), {
+      writeHead: code => { status = code }, end: value => { body = value },
+    })
+    const req = { method: 'GET', url: '/api/auma-live/minds', headers: { host: '127.0.0.1:1' }, socket: { remoteAddress: '127.0.0.1' } }
+    http.availableMinds(req, response)
+    assert.equal(status, 200)
+    const setup = JSON.parse(body).providerSetup
+    assert.equal(setup.consentEnabled, consent === true)
+    assert.equal(dependencies.providerSendConsent, consent)
+    assert.equal(setup.recipient, 'openrouter.ai')
+    assert.deepEqual(setup.allowed, ['turn-text', 'history'])
+    for (const provider of setup.nativeSdkProviders) {
+      assert.equal(provider.available, false)
+      assert.ok(sdkPatch.edits.some(edit => edit.replace.includes(provider.reason)), 'SDK availability reason must match the pinned startup refusal')
+    }
+    render(setup, providerState, providerScope, nativeSdkState)
+    assert.match(providerState.textContent, consent === true ? /enabled by owner configuration/u : /requests are off/u)
+    assert.ok(providerScope.textContent.includes('openrouter.ai'))
+    assert.ok(nativeSdkState.textContent.includes('AUKORA_NATIVE_CONFINEMENT_UNWIRED'))
+    http.availableMinds({ ...req, method: 'POST' }, response)
+    assert.equal(status, 405, 'the availability route must not become a consent writer')
+    http.availableMinds({ ...req, socket: { remoteAddress: '203.0.113.4' } }, response)
+    assert.equal(status, 403)
+  }
+  render(undefined, providerState, providerScope, nativeSdkState)
+  assert.match(providerState.textContent, /unavailable/u)
+  const notice = client.match(/if \(doneReason === 'provider-consent-required'\) \{([\s\S]*?)\n      \}/u)?.[1]
+  assert.ok(notice)
+  const previousScope = providerScope.textContent
+  let setupNotice = ''
+  new Function('providerState', 'toast', notice)(providerState, text => { setupNotice = text })
+  assert.match(providerState.textContent, /requests are off/u)
+  assert.match(setupNotice, /settings for owner setup/u)
+  assert.equal(providerScope.textContent, previousScope, 'a consent refusal must not invent an absent policy')
+  for (const empty of [undefined, { recipient: '', allowed: [] }]) {
+    const setup = disclosure.providerSetupOf(true, empty)
+    render(setup, providerState, providerScope, nativeSdkState)
+    assert.match(providerScope.textContent, /Consent alone cannot permit/u)
+    const blocked = await turn({ providerSendConsent: true, disclosurePolicy: () => empty })
+    assert.equal(blocked.sent.length, 0)
+    assert.deepEqual(done(blocked.res).map(frame => frame.reason), ['disclosure-refused'])
+  }
+  const off = await turn({ providerSendConsent: false, request: { providerSendConsent: true }, disclosurePolicy: () => policy })
+  assert.equal(off.sent.length, 0, 'a client payload must not enable host consent')
+  const on = await turn({ providerSendConsent: true, disclosurePolicy: () => policy })
+  assert.ok(on.sent.length > 0, 'explicit synthetic host opt-in and bounded policy must allow the fake provider')
+  assert.deepEqual(done(on.res).map(frame => frame.reason), ['eos'])
+  assert.ok(client.indexOf('renderProviderSetup(data?.providerSetup)') < client.indexOf('if (!Array.isArray(data.minds)'))
 })
 
 console.log(failures === 0 ? 'ALL ARMS PASSED' : `${String(failures)} ARM(S) FAILED`)

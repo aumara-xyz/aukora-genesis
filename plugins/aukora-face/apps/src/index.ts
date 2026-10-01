@@ -300,7 +300,7 @@ export const Config: z<Config> = z.object({
   voiceAutoStart: z.boolean().default(true),
   voiceRuntimeDirectory: z.string().default(''),
   repoLensRoot: z.string().default('.'),
-  providerSendConsent: z.boolean().default(false),
+  providerSendConsent: z.boolean().default(false).description('Owner consent for Auma Live provider prompts and conversation history. Enable explicitly in the existing aukora-face-apps composition config; false disables sending. The release disclosure policy still checks every data class and continuation.'),
   // setOwnerName validates the value; an invalid name uses the neutral default without disabling the apps plugin.
   ownerName: z.string().default(''),
   /**
