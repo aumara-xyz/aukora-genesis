@@ -1,0 +1,114 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Memory-metal worker policy. Sketch for NVIDIA OpenShell policy schema version 1.
+# OpenShell is Apache-2.0, Copyright NVIDIA CORPORATION & AFFILIATES.
+# https://github.com/NVIDIA/OpenShell
+#
+# Carried forward from PR #9. Direction: SPEC-v0.2-INTAKE.md.
+# Prove profile: PROFILES.md. Bring-up: SPIKE-FINDINGS.md.
+# This file is a design sample. This agent has not loaded it in `openshell`.
+#
+# Peter reported the default image has no user named sandbox. Use the Ubuntu
+# image identity, UID 1000. The 0.1.2 schema accepts the name "sandbox" or a
+# numeric id, and rejects root. Explicit fields below are "1000".
+#
+# "Memory-metal" means the Mac that holds memory: Kira, OpenViking, remembered
+# notes, ~/aukora-live/jobs, and proof stores. This worker must not write them.
+# Its only read-write tree is the sandbox workdir.
+#
+# The schema has no filesystem deny and no path glob. Paths absent from both
+# lists are inaccessible. Landlock covers children of a listed directory, so
+# these host paths must never be bind-mounted and never appear below:
+#   ~/aukora-worktrees/<name>/.git
+#   ~/aukora-genesis
+#   ~/aukora-live/jobs
+#   ~/aukora-live
+#   ~/aukora-live-proof
+#   ~/Library/Application Support/AUKORA
+#   ~/Library/Application Support/AUKORA/state/aumlok-signer.sock
+#   ~/.aukora/signer
+#   ~/.ssh
+#   ~/.config/gh
+#   ~/.git-credentials
+#   ~/.aws
+#   ~/.gnupg
+#   ~/Library/Keychains
+# The signer socket is a Darwin unix socket. Do not --forward it. Leaving it
+# off this file is the deny. Do not add a deny: key; it is not in the schema.
+# NEXT-SPIKE.md plants a sentinel outside the workdir and checks that the
+# socket path is absent. Those checks are UNRUN.
+#
+# Later, if a worktree is mounted at all, mount exactly one directory whose
+# host path is ~/aukora-worktrees/<name> (<name> one segment, the same rule as
+# worktreePath in plugins/aukora-action-gate/lib/self-change-tool.mjs). Do not
+# mount the worktrees root. The first spike mounts nothing from the Mac home.
+#
+# v0.2 §20.10 also requires enforce (not audit) on relied-upon L7 rules,
+# fail-closed middleware, and an explicit telemetry choice. This sample does
+# not express those. It is not the qualification profile.
+
+version: 1
+
+filesystem_policy:
+  include_workdir: true
+  read_only:
+    - /usr
+    - /lib
+    - /etc
+    - /var/log
+    - /proc
+    - /dev/urandom
+  read_write:
+    - /tmp
+    - /dev/null
+
+landlock:
+  compatibility: hard_requirement
+
+process:
+  # Prove profile. Name "sandbox" is absent on the default image (SPIKE-FINDINGS.md).
+  run_as_user: "1000"
+  run_as_group: "1000"
+
+network_policies:
+  github_fetch:
+    name: github-fetch-only
+    endpoints:
+      - host: github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow:
+              method: GET
+              path: "/**/info/refs*"
+          - allow:
+              method: POST
+              path: "/**/git-upload-pack"
+        deny_rules:
+          - method: POST
+            path: "/**/git-receive-pack"
+          - method: "*"
+            path: "/**/git-receive-pack"
+    binaries:
+      - path: /usr/bin/git
+
+  github_api_read:
+    name: github-api-read-only
+    endpoints:
+      - host: api.github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+        deny_rules:
+          - method: POST
+            path: "/**"
+          - method: PUT
+            path: "/**"
+          - method: PATCH
+            path: "/**"
+          - method: DELETE
+            path: "/**"
+    binaries:
+      - path: /usr/bin/curl
+      - path: /usr/bin/git
