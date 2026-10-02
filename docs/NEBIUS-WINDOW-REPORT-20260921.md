@@ -29,7 +29,7 @@ branch `glm/ingestion` (unmerged); nothing here depends on it.
 | Instance start #1–2 | silent failures (async op died); executor retried correctly |
 | Instance start #3 | **RUNNING**, IP resolved, SSH (`aukora@`) succeeded |
 | Disk gate (first remote command) | **DISK_HEADROOM_FAILED: 4 GB free vs 95 GB needed** — exported, no deletion, no substitute model |
-| Provider stop + STOPPED reconfirmed | `computeoperation-e00zaavxb0rzkeg75n`; `get` reports `STOPPED` |
+| Provider stop + STOPPED reconfirmed | `<NEBIUS_OPERATION_ID>`; `get` reports `STOPPED` |
 | Later start attempts (capacity probe) | `NotEnoughResources — VM schedule timeout` ×4 (incl. one STARTING→STOPPED reversal) |
 
 ## 3. Costs (measured + reference)
@@ -40,7 +40,7 @@ branch `glm/ingestion` (unmerged); nothing here depends on it.
 
 ## 4. Findings that change the plan
 
-1. **Provider start/stop require `--parent-id project-e00v3avmpr00fzcxq8s6x7`** (the handoff's command was right; bare calls fail).
+1. **Provider start/stop require `--parent-id <NEBIUS_PROJECT_ID>`** (the handoff's command was right; bare calls fail).
 2. **IP resolver must prefer `public_ip_address` and strip `/32`** (the private `<PRIVATE_IP>/32` is unreachable from here).
 3. **SSH user is `aukora`** (ubuntu/root denied).
 4. **CLI `update` hangs without a TTY** — all provider calls need `stdin=DEVNULL` + bounded timeouts.
