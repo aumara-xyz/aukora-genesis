@@ -74,3 +74,6 @@ plugins/aukora-face/apps/vendor/auma-live/**/*.safetensors
 plugins/aukora-face/apps/vendor/auma-live/**/*.pt
 plugins/aukora-face/apps/vendor/auma-live/**/*.pth
 plugins/aukora-face/apps/vendor/auma-live/**/*.npy
+
+# Rebuilt and ad-hoc signed by scripts/aumlok/build-touchid.sh for desktop packaging; never track the helper binary.
+/out/touchid/

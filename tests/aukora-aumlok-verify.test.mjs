@@ -303,12 +303,12 @@ arm('no refusal ever printed the verdict line',
     }
   })
 
-// ── 3. T5: seven separate results, and unsigned metadata is never shown as verified ──────────
+// ── 3. T5: eight separate results, and unsigned metadata is never shown as verified ──────────
 console.log('\n── 3. T5 — separate structured results ──')
-const ITEMS = ['parse', 'signature', 'trusted_key', 'scope', 'digest', 'attendance', 'custody']
+const ITEMS = ['parse', 'signature', 'trusted_key', 'scope', 'digest', 'attendance', 'custody', 'presence']
 const stateOf = (text, item) => new RegExp(`RESULT ${item}: (\\S+)`, 'u').exec(text)?.[1]
 
-arm('all seven questions are answered separately on the accepting path',
+arm('all eight questions are answered separately on the accepting path',
   () => {
     for (const item of ITEMS) {
       assert.ok(stateOf(verified.stdout, item) !== undefined, `no RESULT line for ${item}`)
@@ -355,7 +355,7 @@ arm('a receipt whose key class is rewritten still verifies — so the class CANN
     assert.equal(stateOf(rewritten.stdout, 'custody'), 'REPORTED')
     assert.match(rewritten.stdout, /KEY_CLASS: C \(operator-custodied\)/u)
   })
-arm('--json carries the same seven results and the same states, for a machine consumer',
+arm('--json carries the same eight results and the same states, for a machine consumer',
   () => {
     const json = spawnSync(process.execPath, [VERIFY, 'receipt.json', '--pub', 'registered-key.pem', '--json'],
       { cwd: strangerDir, encoding: 'utf8' })

@@ -68,7 +68,7 @@ const REFUSE = Object.freeze({
  * T5 — SEPARATE STRUCTURED RESULTS.
  *
  * One verdict line is a summary, and a summary lets a reader take the whole for the sum of its
- * parts. This court answers seven questions SEPARATELY, each with its own state, so no question can
+ * parts. This court answers eight questions SEPARATELY, each with its own state, so no question can
  * borrow the credibility of another:
  *
  *   parse        is this a closed, well-formed receipt?
@@ -78,6 +78,7 @@ const REFUSE = Object.freeze({
  *   digest       do the receipt's own fields derive the digest it claims?
  *   attendance   did a person attend? (the record says so; the signature does not cover it)
  *   custody      what custody is claimed? (same: unsigned metadata)
+ *   presence     did this Mac's enrolled Touch ID key also sign these bytes? (optional, local, never required)
  *
  * STATES, and what each is allowed to mean:
  *   VERIFIED         checked here, by this program, and it held
@@ -320,6 +321,19 @@ if (!verified) {
 record('signature', STATES.VERIFIED,
   `Ed25519 over the ${String(signingBytes.length)} bytes these fields derive, under the key you supplied`)
 
+// ── 8. presence — optional Touch ID evidence kept on THIS Mac, never a condition of the verdict ──────
+// Read from the local enrollment and the evidence file named by these bytes' hash. Any failure here, including the
+// module itself failing to load, is reported as a reason and changes neither the exit code nor the verdict.
+let presenceReason = 'invalid'
+try {
+  const { verifyApprovalPresence } = await import(pathToFileURL(`${ROOT}/plugins/aukora-aumlok/lib/approval-presence.mjs`).href)
+  presenceReason = verifyApprovalPresence(undefined, signingBytes, {}).reason
+} catch { presenceReason = 'invalid' }
+record('presence', presenceReason === 'verified' ? STATES.VERIFIED : STATES.NOT_ESTABLISHED,
+  `${presenceReason}: ${presenceReason === 'verified'
+    ? 'P-256 over these bytes under this Mac\'s enrolled Touch ID key; a same-user file, not attestation or identity'
+    : 'no Touch ID evidence verified on this Mac; the owner signature above stands on its own'}`)
+
 // ── 6 and 7. the items the signature does NOT reach ─────────────────────────────────────────
 //
 // THIS IS THE PART A SINGLE VERDICT LINE HIDES. The preimage covers the approval REQUEST — subject,
@@ -356,7 +370,7 @@ process.stdout.write(`SUCCESSION: ${receipt.succession}\n`)
 process.stdout.write(`IDENTITY_BOUND: ${String(receipt.identityBound)}\n`)
 for (const line of receipt.ceilings) process.stdout.write(`  ${line}\n`)
 
-process.stdout.write('\nRESULTS — seven questions, answered separately\n')
+process.stdout.write('\nRESULTS — eight questions, answered separately\n')
 for (const result of results) {
   process.stdout.write(`  RESULT ${result.item}: ${result.state}\n`)
   process.stdout.write(`    ${result.detail}\n`)
@@ -366,6 +380,7 @@ process.stdout.write(`UNSIGNED_FIELDS: ${unsignedFields.join(', ')}\n`)
 process.stdout.write('  The signature covers SIGNED_FIELDS and nothing else. Every field listed as\n')
 process.stdout.write('  UNSIGNED can be changed by whoever holds the receipt without invalidating it, so\n')
 process.stdout.write('  this program REPORTS those fields and never shows them as verified.\n')
+process.stdout.write(`PRESENCE ${presenceReason}\n`)
 process.stdout.write('VERIFIED: the key you supplied signed exactly these bytes\n')
 process.stdout.write('NOT CHECKED: whether anyone attended, whether the key is still current, whether '
   + 'the history behind this receipt was rewritten, or that any identity is bound\n')

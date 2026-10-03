@@ -252,7 +252,7 @@ export async function startShellSigner(input) {
   }
 
   // ── the signer, built by the organ, driven by the approval window ──────────────────────────────
-  const review = reviewFromAsk(library, ask, { logDir })
+  const review = reviewFromAsk(library, ask, { logDir, presence: input.presence })
   const encodeResponse = organValueAt(library, 'library.serializeApprovalResponse')
   let signer
   try {

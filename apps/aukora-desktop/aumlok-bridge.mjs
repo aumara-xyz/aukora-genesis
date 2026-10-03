@@ -890,6 +890,10 @@ export function installApprovalBridge(deps) {
           facts: Object.freeze({
             challenge,
             subject: String(request.subject ?? ''),
+            // THE TOUCH ID ICON, ONE OF THREE NAMES OR NOTHING. It is the shell's own reading of this Mac, never the
+            // requester's, and it changes nothing about the question or the answer.
+            presenceState: ['ready', 'confirmed', 'downgraded'].includes(request.presenceState?.state)
+              ? request.presenceState.state : null,
             operationDigest: String(request.operationDigest ?? ''),
             issuedAt: request.issuedAt ?? null,
             expiresAt: admitted.expiresAt,

@@ -23,6 +23,56 @@ const APPROVAL_EVENT_LOG_NAME = 'aukora-approval-events.log'
 /** The `source=` field every line carries, so a reader knows which process wrote it. */
 export const SIGNER_LOG_SOURCE = 'aukora-shell-signer'
 
+// ── OPTIONAL TOUCH ID PRESENCE, AFTER APPROVE AND NEVER INSTEAD OF IT ─────────────────────────────────────────
+// `options.presence` is the desktop's provider (aumlok-presence.mjs), handed in by main.mjs only; this module never
+// imports it, so a broken provider cannot stop the signer loading. Each call below is bounded and total: a slow or
+// failing provider costs an icon or a log field, never the answer, and the Touch ID wait always ends six seconds
+// before the request's own window does.
+const PRESENCE_OUTCOMES = Object.freeze(['never-enrolled', 'key-missing', 'invalid', 'no-evidence', 'verified'])
+const PRESENCE_ICON_STATES = Object.freeze(['ready', 'confirmed', 'downgraded'])
+const OWNER_APPROVAL_DOMAIN = 'aukora:owner-approval-request:v1'
+/** Longest a person is given to touch the sensor after Approve. */
+export const PRESENCE_MAX_MS = 15_000
+/** The Touch ID wait, decided HERE and not by the provider: it always leaves six seconds of the request's window. */
+export function presenceBudgetMs(expiresAt, now = Date.now()) {
+  const left = Number(expiresAt) * 1000 - now - 6000
+  return Number.isFinite(left) ? Math.max(0, Math.min(PRESENCE_MAX_MS, left)) : 0
+}
+
+/** Settle with `fallback` after `ms`, or with whatever `work` returns first; never rejects. */
+function bounded(work, ms, fallback) {
+  let timer
+  return Promise.race([
+    Promise.resolve().then(work).catch(() => fallback),
+    new Promise(settle => { timer = setTimeout(() => settle(fallback), ms) }),
+  ]).finally(() => clearTimeout(timer))
+}
+
+/** The line the macOS Touch ID sheet shows: the kind and the requester's own `why`, read from the bound bytes. */
+function presencePrompt(witness, operationContent) {
+  let text = ''
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(Buffer.from(operationContent)) } catch { text = '' }
+  const lines = text.split(/\r?\n/u)
+  const why = lines.find(line => /^(?:why|reason):?[ \t]+/u.test(line))?.replace(/^(?:why|reason):?[ \t]+/u, '')
+  const kind = lines[0] === 'AUKORA: MOVE MAIN' || lines[0] === 'AUKORA: REPLACE MAIN WITH A NEW ROOT' ? 'repo.advance'
+    : /^code\.change(?: —|$)/u.test(lines[0] ?? '') ? 'code.change'
+      : /^AUKORA: (?:LOAD THIS RELEASE|ADMIT THESE PLUGINS)$/u.test(lines[0] ?? '') ? 'release.load'
+        : String(witness?.kind ?? 'operation')
+  return { kind, reason: why || lines.find(line => line.trim() !== '') || String(witness?.words ?? '') }
+}
+
+/** After Approve: ask the provider for Touch ID over the exact signed bytes. Returns an outcome; never throws. */
+async function presenceAfterApprove(presence, library, request, witness, operationContent) {
+  try {
+    const signingBytes = organValueAt(library, 'library.approvalSigningBytes')(request)
+    const budget = presenceBudgetMs(request.expiresAt)
+    if (budget < 250) return 'no-evidence'
+    const outcome = await bounded(() => presence.sign(signingBytes, budget,
+      presencePrompt(witness, operationContent)), budget + 250, 'no-evidence')
+    return PRESENCE_OUTCOMES.includes(outcome) ? outcome : 'invalid'
+  } catch { return 'invalid' }
+}
+
 
 /**
  * The longest single protocol line this server accepts, in BYTES.
@@ -283,6 +333,8 @@ export function appendApprovalEvent(directory, event) {
     wordsCheck: event?.wordsCheck ?? 'unchecked',
     spoken: event?.spoken ?? null,
     decision: event?.decision ?? 'pending',
+    // OPTIONAL TOUCH ID AFTER APPROVE, a separate fact from the decision: absent when no check was made.
+    ...(PRESENCE_OUTCOMES.includes(event?.presenceOutcome) ? { presenceOutcome: event.presenceOutcome } : {}),
     dwellMs: Number.isSafeInteger(event?.dwellMs) && event.dwellMs >= 0 ? event.dwellMs : null,
     // **THE BADGE ONLY FILLS FROM A REAL VERIFY.** AK-UI's own rule, and the honest default is `unverified`: a
     // settled effect nobody has proved is not a verified one, and this log must not imply otherwise.
@@ -409,13 +461,23 @@ export function reviewFromAsk(library, ask, options = {}) {
       ? null
       : approvalWitnessFor(Buffer.isBuffer(operationContent) ? operationContent : Buffer.from(operationContent))
     let answer
+    // THE ICON'S STATE, read before the card goes up and bounded to a quarter second; `none` or any failure is no icon.
+    const presence = request?.domain === OWNER_APPROVAL_DOMAIN && options.presence ? options.presence : null
+    const presenceState = presence === null ? null
+      : await bounded(async () => (await presence.state())?.state, 250, null)
+    const shown = PRESENCE_ICON_STATES.includes(presenceState) ? { presenceState: { state: presenceState } } : {}
     try {
-      answer = await ask(witness === null ? request : { ...request, operationWitness: witness })
+      answer = await ask(witness === null && !shown.presenceState ? request
+        : { ...request, ...shown, ...(witness === null ? {} : { operationWitness: witness }) })
     } catch {
       // AN `ask` THAT THREW COULD NOT ASK. That is not the owner declining, and the signer has a name
       // for it — this is the only place the two facts could be conflated.
       return { approve: false, refusal: refusals.ASK_UNAVAILABLE }
     }
+    // TOUCH ID ONLY AFTER AN EXPLICIT APPROVE, AND ONLY WHEN THIS MAC HAS ENROLLED. The outcome is recorded beside the
+    // decision and never changes it: no touch, a cancelled sheet or a missing key still returns `approve: true` below.
+    const presenceOutcome = presence === null || answer?.approve !== true ? undefined
+      : await presenceAfterApprove(presence, library, request, witness, operationContent)
     // ── **AND THE CLICK IS WRITTEN DOWN, DIGESTS ONLY (AUMLOK, LIVE-TEST PREP)** ────────────────────────────
     //
     // The decision log records whether the signer SERVED; this records what a person DECIDED, over which digest,
@@ -449,6 +511,7 @@ export function reviewFromAsk(library, ask, options = {}) {
         // SHORTENED, which the digest still covers.
         spoken: witness === null ? null : (witness.truncated === true ? 'yes' : 'no'),
         decision: answer?.approve === true ? 'approved' : (answer?.closed === true ? 'pending' : 'declined'),
+        presenceOutcome,
         dwellMs: Number.isSafeInteger(answer?.dwellMs) && answer.dwellMs >= 0 ? answer.dwellMs : null,
       })
     } catch (error) {

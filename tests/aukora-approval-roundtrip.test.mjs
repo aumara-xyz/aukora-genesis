@@ -323,5 +323,42 @@ if (observing.lines().length > 0) {
   check('the producer dialled the observing socket', false, 'nothing arrived at the listener')
 }
 
+// ── 8. optional Touch ID cannot refuse: a provider that throws on the probe and never answers after Approve ──
+// The provider is handed in the way main.mjs hands in the real one. Its probe throws and its sign never settles, so
+// the reviewer must still return the approval, inside the request's window, with the outcome recorded beside it.
+console.log('\n── 8. a broken Touch ID provider: the approval still completes ──')
+const hostileAsked = []
+const hostileLogs = join(scratch, 'hostile-logs')
+const hostile = await signerModule.startShellSigner({
+  library,
+  directory: controllerDir,
+  socketPath: join(scratch, 'h.sock'),
+  ownerDaemonConfigPath,
+  presence: { state: () => { throw new Error('probe broke') }, sign: () => new Promise(() => {}) },
+  ask: async request => { hostileAsked.push(request); return { approve: true } },
+  log: () => {},
+  logDir: hostileLogs,
+})
+const hostileStart = Date.now()
+const hostileExpiry = Math.floor(hostileStart / 1000) + 9
+const throughHostile = await organ.approveOperation({
+  directory: controllerDir, expectation: expected, content: operationBody, operationDigest,
+  socketPath: join(scratch, 'h.sock'), timeoutMs: 20_000, expiresAt: hostileExpiry,
+})
+const hostileMs = Date.now() - hostileStart
+let events = []
+try {
+  events = readFileSync(join(hostileLogs, 'aukora-approval-events.log'), 'utf8').trim().split('\n').map(line => JSON.parse(line))
+} catch { events = [] }
+note(`verdict ${JSON.stringify({ ok: throughHostile.ok, reason: throughHostile.reason })} after ${String(hostileMs)} ms; `
+  + `last event ${JSON.stringify({ decision: events.at(-1)?.decision, presenceOutcome: events.at(-1)?.presenceOutcome })}`)
+check('a provider that throws and never answers does not refuse the approval, and it lands inside the window',
+  hostile.serving === true && throughHostile.ok === true && Date.now() < hostileExpiry * 1000,
+  `${String(throughHostile.reason)} ${String(throughHostile.detail)}`)
+check('the probe failure drew no icon, and the missing evidence is written beside the decision, not instead of it',
+  hostileAsked.length === 1 && hostileAsked[0].presenceState === undefined
+    && events.at(-1)?.decision === 'approved' && events.at(-1)?.presenceOutcome === 'no-evidence')
+await hostile.stop?.()
+
 console.log(`\n══ ${failures === 0 ? 'PASS' : 'FAIL'} — ${String(arms - failures)}/${String(arms)} arms ══\n`)
 process.exit(failures === 0 ? 0 : 1)

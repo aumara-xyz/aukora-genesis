@@ -148,7 +148,9 @@ function install({ release, record, receiptPath, pin, stateRoot }) {
   }
   writePrivate(pinPath, `${JSON.stringify({ ...pin, pinnedAt: new Date().toISOString() }, null, 2)}\n`)
   writePrivate(join(gateState, APPROVAL_FILE), `${JSON.stringify(receipt, null, 2)}\n`)
-  return { verified, gateState, release }
+  // Optional Touch ID evidence, as the stranger's verifier reported it. Reported only; it never decides an install.
+  const presence = /^PRESENCE (never-enrolled|key-missing|invalid|no-evidence|verified)$/mu.exec(stranger.stdout ?? '')?.[1] ?? 'unreported'
+  return { verified, gateState, release, presence }
 }
 
 function main() {
@@ -278,6 +280,7 @@ function main() {
     process.stdout.write(`  operation      ${done.verified.operationDigest}\n`)
     process.stdout.write(`  approval       signed by pinned ${done.verified.approverDid}; class ${done.verified.approvalClass}, `
       + `key class ${done.verified.keyClass} (a software key on this Mac; attendance reported, not proven)\n`)
+    process.stdout.write(`  presence       ${done.presence} (optional Touch ID after Approve; never required)\n`)
     process.stdout.write(`  installed in   ${done.gateState}/${APPROVAL_FILE} and ${PIN_FILE}\n`)
     process.stdout.write(`  evidence       ${out}\n`)
     return

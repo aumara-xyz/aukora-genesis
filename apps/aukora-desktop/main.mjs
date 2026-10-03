@@ -474,7 +474,15 @@ app.whenReady().then(async () => {
           return
         }
         const lib = composition.releaseDir === null ? null : await loadOrganLibrary(composition.releaseDir)
+        // OPTIONAL TOUCH ID AFTER APPROVE, loaded lazily: if it cannot load, approvals run exactly as before.
+        let presence
+        try {
+          presence = (await import('./aumlok-presence.mjs')).createDesktopPresence(app.getPath('userData'))
+        } catch (error) {
+          console.warn(`aukora-desktop: Touch ID presence off: ${String(error?.message ?? error)}`)
+        }
         shellSigner = await startShellSigner({
+          presence,
           library: lib,
           directory: binding === null ? null : binding.directory,
           socketPath: signerSocket.socketPath,

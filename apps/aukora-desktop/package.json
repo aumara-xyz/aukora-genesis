@@ -8,7 +8,7 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test --test-timeout=180000 ../../tests/aukora-approval-roundtrip.test.mjs ../../tests/aukora-aumlok-verify.test.mjs",
-    "dist": "electron-builder --mac dir"
+    "dist": "sh ../../scripts/aumlok/build-touchid.sh && electron-builder --mac dir"
   },
   "devDependencies": {
     "electron": "^44.0.0",
@@ -26,6 +26,7 @@
       "aumlok-bridge-state.mjs",
       "aumlok-bridge.mjs",
       "aumlok-draw.mjs",
+      "aumlok-presence.mjs",
       "aumlok-airlock-config.mjs",
       "aumlok-signer-airlock.mjs",
       "aumlok-signer-review.mjs",
@@ -80,7 +81,24 @@
         "filter": [
           "repo-advance.mjs",
           "release-activate.mjs",
-          "plugin-set-content.mjs"
+          "plugin-set-content.mjs",
+          "approval-presence.mjs"
+        ]
+      },
+      {
+        "from": "../../plugins/aukora-box/aukora",
+        "to": "plugins/aukora-box/aukora",
+        "filter": [
+          "aura/record.mjs",
+          "kernel-seed/canonical-json.mjs"
+        ]
+      },
+      {
+        "from": "../../scripts/aumlok",
+        "to": "scripts/aumlok",
+        "filter": [
+          "touchid.swift",
+          "build-touchid.sh"
         ]
       },
       {
@@ -90,6 +108,15 @@
           "strict-read.mjs",
           "record.mjs",
           "lane-door-messages.mjs"
+        ]
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "../../out/touchid",
+        "to": ".",
+        "filter": [
+          "aukora-touchid"
         ]
       }
     ]
