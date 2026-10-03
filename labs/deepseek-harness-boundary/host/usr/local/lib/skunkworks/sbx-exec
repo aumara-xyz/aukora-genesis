@@ -2,10 +2,24 @@
 # Root-owned. Only entry from aukora-host to Auma's hands: runs ONE bash command inside the
 # NVIDIA OpenShell sandbox "auma-ws" (owned by Linux user auma, rootless podman, network none).
 # Usage (as auma via sudo): sbx-exec <timeout-seconds> <command-string>
+# D) every call: (1) kill leftover processes from earlier calls, (2) run the command with a per-process
+#    CPU-time cap (ulimit -t) and 20 MB file-size cap, (3) kill everything it left behind (detached/setsid
+#    children included). Spared: PID 1, OpenShell's own login shell (the lowest-pid "/bin/bash -l" child of PID 1;
+#    killing it puts the sandbox into Error), and processes of a call still running (ancestor argv has SKSBX).
+#    Output goes to files so detached children cannot hold the exec pipe open past the cleanup. Disk: /sandbox + /tmp sit on a 2.5 GiB ext4 loop image.
 set -u
 export HOME=/home/auma XDG_RUNTIME_DIR=/run/user/$(id -u) OPENSHELL_TELEMETRY_ENABLED=false PATH=/usr/local/bin:/usr/bin:/bin
 cd /home/auma
 t="${1:-60}"; case "$t" in ''|*[!0-9]*) echo "bad timeout" >&2; exit 2;; esac
 [ "$t" -gt 300 ] && t=300
 exec /usr/bin/openshell sandbox exec --name auma-ws --no-tty --no-login-shell --timeout "$t" -- \
-  bash -c 'cd /sandbox 2>/dev/null; ulimit -f 20480 2>/dev/null; exec bash -c "$1"' sbx "${2:-true}" </dev/null
+  bash -c 'infra() { local best= n; for p in /proc/[0-9]*; do n=${p#/proc/}; [ "$(tr "\0" " " 2>/dev/null < $p/cmdline)" = "/bin/bash -l " ] || continue
+      [ "$(awk "/^PPid/{print \$2}" $p/status 2>/dev/null)" = 1 ] || continue; if [ -z "$best" ] || [ "$n" -lt "$best" ]; then best=$n; fi; done; echo "$best"; }
+  skclean() { local k=0 n c a i keep; keep=$(infra); for _ in 1 2; do for p in /proc/[0-9]*; do n=${p#/proc/}; [ "$n" = 1 ] && continue; [ "$n" = "$keep" ] && continue
+      a=$n; i=0; while [ -n "$a" ] && [ "$a" -gt 1 ] && [ $i -lt 64 ]; do c=$(tr "\0" " " 2>/dev/null < /proc/$a/cmdline); case "$c" in *" SKSBX "*) continue 2;; esac
+        a=$(awk "/^PPid/{print \$2}" /proc/$a/status 2>/dev/null); i=$((i+1)); done
+      kill -9 "$n" 2>/dev/null && k=$((k+1)); done; done
+    [ $k -gt 0 ] && echo "[sandbox: killed $k leftover process(es) $1 this call]" >&2; return 0; }
+  skclean before 2>/dev/null; O=$(mktemp /tmp/.sko.XXXXXX); E=$(mktemp /tmp/.ske.XXXXXX); cd /sandbox 2>/dev/null
+  ( ulimit -f 20480; ulimit -t 330; exec bash -c "$1" ) >"$O" 2>"$E" </dev/null; rc=$?
+  skclean after 2>>"$E"; head -c 1048576 "$O"; head -c 1048576 "$E" >&2; rm -f "$O" "$E"; exit $rc' SKSBX "${2:-true}" </dev/null

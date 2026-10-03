@@ -6,4 +6,5 @@ module.exports = { apps: [
   { name: 'sk-gate', ...asUser('aukora-gate', '/workspace/skunkworks/ops/run-gate.sh'), ...common },
   { name: 'sk-harness', ...asUser('aukora-host', '/workspace/skunkworks/ops/run-harness.sh'), ...common },
   { name: 'sk-tunnel', script: '/workspace/skunkworks/ops/run-tunnel.sh', ...common },
+  { name: 'sk-gate-tunnel', script: '/workspace/skunkworks/ops/run-gate-tunnel.sh', ...common },
 ] };

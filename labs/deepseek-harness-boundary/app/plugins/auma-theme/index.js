@@ -13,7 +13,10 @@ const COLOR = /^(default|#[0-9a-fA-F]{6})$/
 export function apply(ctx) {
   let theme = { accent: 'default' }
   try {
-    const parsed = JSON.parse(readFileSync(THEME, 'utf8'))
+    const raw = readFileSync(THEME, 'utf8')
+    // same canonical-bytes rule as skunkworks-gate: anything else (dup keys, escapes, case, whitespace) -> default
+    if (!/^\{"accent": "(default|#[0-9A-F]{6})"\}$/.test(raw)) throw new Error('theme.json is not canonical')
+    const parsed = JSON.parse(raw)
     if (parsed && typeof parsed === 'object' && Object.keys(parsed).length === 1 && typeof parsed.accent === 'string' && COLOR.test(parsed.accent)) theme = { accent: parsed.accent }
     else ctx.logger?.warn?.('auma-theme: theme.json accent invalid; using default')
   } catch (e) { ctx.logger?.warn?.('auma-theme: theme.json unreadable: ' + e.message) }

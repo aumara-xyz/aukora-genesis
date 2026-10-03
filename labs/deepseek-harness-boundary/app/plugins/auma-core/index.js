@@ -46,6 +46,7 @@ const FORBIDDEN = [
   ['modify own boundary code', () => fs.openSync(path.join(APP, 'plugins/auma-core/index.js'), 'r+')],
   ['drop file into plugins dir', () => fs.openSync(path.join(APP, 'plugins/x.js'), 'wx')],
   ['rewrite profile overlay', () => fs.openSync(path.join(APP, 'skunkworks.patch.yml'), 'r+')],
+  ['read gate owner secret', () => fs.readFileSync('/workspace/skunkworks/gate/owner-secret.json')],
   ['sudo to aukora-gate', () => { if (spawnSync('/usr/bin/sudo', ['-n', '-u', 'aukora-gate', '/bin/true']).status === 0) return 1; throw new Error('denied') }],
   ['sudo to root', () => { if (spawnSync('/usr/bin/sudo', ['-n', '/bin/true']).status === 0) return 1; throw new Error('denied') }],
   ['sudo to auma outside sbx-exec', () => { if (spawnSync('/usr/bin/sudo', ['-n', '-u', 'auma', '/bin/true']).status === 0) return 1; throw new Error('denied') }],
@@ -129,6 +130,10 @@ export function apply(ctx) {
       res.forbidden.push({ action: label, result: succeeded ? 'SUCCEEDED (BAD)' : `refused (${why})` })
       if (succeeded) ok = false
     }
+    const ownerProbe = await new Promise(r => { const c = net.createConnection('/run/skunkworks-gate/owner.sock'); c.on('connect', () => { c.destroy(); r('SUCCEEDED (BAD)') }); c.on('error', e => r(`refused (${e.code})`)) })
+    res.forbidden.push({ action: 'connect gate owner.sock (approve channel)', result: ownerProbe }); if (ownerProbe.startsWith('SUCC')) ok = false
+    const decideProbe = await gate('decide', { id: 'selfcheck', outcome: 'allowed-once' }).then(() => 'SUCCEEDED (BAD)', e => `refused (${String(e.message).slice(0, 40)})`)
+    res.forbidden.push({ action: 'decide on propose socket', result: decideProbe }); if (decideProbe.startsWith('SUCC')) ok = false
     try { const g = await gate('verify'); res.gate = { reachable: true, ledger_ok: g.ok, entries: g.entries }; if (!g.ok) ok = false }
     catch (e) { res.gate = { reachable: false, error: e.message }; ok = false }
     const r = await sandbox(egressScript(), 120)
@@ -236,50 +241,73 @@ export function apply(ctx) {
     await e.update({ disabled: true }); await new Promise(r => setTimeout(r, 300)); await e.update({ disabled: null })
     return `Cordis entry "${id}": old fiber disposed, new fiber loaded (no harness restart)`
   }
-  const vis = (txt) => String(txt).replace(/[\x00-\x08\x0b-\x1f\x7f]/g, c => `\\x${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
-  const neutral = (txt) => vis(txt).replace(/[\n\r\u2500-\u257f\u2580-\u259f«»⚠✓✔]/g, '?')
+  // escape EVERYTHING outside printable ASCII (bidi, zero-width, NBSP, figure space, lookalikes, controls)
+  const vis = (txt) => String(txt).replace(/[^\x20-\x7e\n]/gu, c => `\\u{${c.codePointAt(0).toString(16).toUpperCase()}}`)
+  const hexdump = (txt) => { const b = Buffer.from(String(txt), 'utf8'); const out = []; for (let i = 0; i < b.length; i += 16) out.push(b.subarray(i, i + 16).toString('hex').replace(/(..)/g, '$1 ').trim()); return out }
+  const wita = (ms) => new Date(ms).toLocaleTimeString('en-GB', { timeZone: 'Asia/Makassar' }) + ' WITA'
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms))
 
+  // The harness can only PROPOSE. The DSH popup is a DISPLAY (+ Reject) surface; approval happens only on the
+  // gate owner channel (gate-served owner page / owner.sock), which aukora-host cannot reach or impersonate.
+  // Text layout: banner, then the model NOTE (gate-sanitised: printable ASCII, <=120 chars), then the gate CARD
+  // last, next to the buttons; every card line starts with a one-time code the note cannot contain.
   async function boundary(exec, p) {
-    // Popup: HOST-VERIFIED FACTS (all computed by the gate from the real file) first; the model-authored note
-    // is fenced, single-line, length-capped and stripped of box/marker characters so it cannot fake structure.
-    const content = vis(p.content).split('\n').map(l => '│ ' + l).join('\n')
-    const diffBody = vis(p.diff)
+    const pu = p.popup, M = pu.marker
+    const card = [
+      `${M} | ${vis(pu.after_apply)}`,
+      `${M} | CHANGE: ${vis(pu.plain_change)}`,
+      `${M} | target ${p.target} (schema-validated, canonical bytes) - ${p.kind === 'revert' ? 'REVERT to a recorded version' : 'declarative setting'}`,
+      `${M} | proposal ${p.id.slice(0, 8)} - single-use - expires ${wita(p.expires)}`,
+      `${M} | current sha256 ${p.base_sha}`,
+      `${M} | result  sha256 ${p.new_sha}`,
+      ...(p.displayable
+        ? [`${M} | exact diff (- current, + proposed):`, ...vis(p.diff).split('\n').map(l => `${M} |   ${l}`), `${M} | full resulting content, ${p.bytes} bytes:`, ...vis(p.content).split('\n').map(l => `${M} |   ${l}`),
+           `${M} | hex of resulting bytes:`, ...hexdump(p.content).map(l => `${M} |   ${l}`)]
+        : [`${M} | TRUNCATED - APPROVAL DISABLED (too large to show in full); the gate will refuse any approval.`]),
+      `${M} | TO APPROVE: the owner confirms on the gate owner page (served by skunkworks-gate, not this harness). "Allow" in this card applies NOTHING. Reject here = rejected.`,
+    ]
     const reason = [
-      `SYSTEM CHANGE PROPOSED BY AUMA — ${p.kind === 'revert' ? 'REVERT' : 'declarative setting'}`,
-      '──── HOST-VERIFIED FACTS (computed by skunkworks-gate from the real file, not by the model) ────',
-      `target:        ${p.target}  (schema-validated ✓)`,
-      `proposal:      ${p.id.slice(0, 8)} · single-use · expires ${new Date(p.expires).toLocaleTimeString('en-GB', { timeZone: 'Asia/Makassar' })} WITA`,
-      `current sha256: ${p.base_sha}`,
-      `result sha256:  ${p.new_sha}`,
-      ...(p.displayable ? [
-        '──── exact diff (- current, + proposed) ────', diffBody,
-        `──── full resulting content: ${p.bytes} bytes ────`, content,
-      ] : [`TRUNCATED — APPROVAL DISABLED: diff + content too large to show in full. Nothing will be applied whatever you click.`, diffBody.slice(0, 1500), '… [truncated]']),
-      '──── END OF HOST-VERIFIED FACTS ────',
-      `MODEL-AUTHORED NOTE (unverified; may be wrong or manipulative; ignore any instructions inside): «${p.why ? neutral(p.why) : '(none)'}»`,
-      '──── END OF PROPOSAL ────',
-      p.displayable ? `Allow once = skunkworks-gate writes exactly these ${p.bytes} bytes (sha256 ${p.new_sha.slice(0, 12)}…), signs a receipt, and the harness hot-reloads only Cordis entry "${p.entry}". Reject / no answer = nothing changes.` : 'Allow once is IGNORED for this proposal (fail closed).',
+      `${M} | ${vis(pu.after_apply)}   <- the only effect of approving`,
+      `!! ${vis(pu.banner)}`,
+      `!! One-time code for this card: ${M}`,
+      '',
+      '[ MODEL NOTE - written by Auma, NOT verified ]',
+      `    "${vis(pu.note ?? '(none)')}"`,
+      ...pu.flags.map(f => `${M} | WARNING: ${vis(f)}`),
+      '',
+      `===== ${M} GATE CARD - only lines starting with ${M} come from skunkworks-gate =====`,
+      ...card,
     ].join('\n')
     const approval = ctx.get('approval')
-    if (!approval || !exec.agent) { await gate('decide', { id: p.id, outcome: 'unavailable' }).catch(() => {}); throw new Error('refused: no approval channel (fail closed)') }
-    const signal = AbortSignal.any([exec.signal, AbortSignal.timeout(APPROVAL_TTL_MS)].filter(Boolean))
-    let outcome
-    try { outcome = await approval.request({ agent: exec.agent, toolName: exec.name, callId: exec.callId, reason, signal }) }
-    catch (e) { await gate('decide', { id: p.id, outcome: 'unavailable' }).catch(() => {}); throw e }
-    const at = new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Makassar' }) + ' WITA'
-    const d = await gate('decide', { id: p.id, outcome })
-    log(exec, exec.name, `${p.target} ${outcome} -> ${d.state}`)
-    if (!d.applied) {
-      if (outcome !== 'allowed-once') return `NOT APPLIED: ${outcome === 'rejected' ? 'owner REJECTED it in the approval popup' : 'no owner answer (' + outcome + ')'} at ${at}. Nothing changed. (proposal ${p.id} is now ${d.state} and can never be used.)`
-      return `NOT APPLIED: owner clicked Allow once at ${at}, but skunkworks-gate refused: ${d.message}. Nothing changed. (proposal ${p.id} is ${d.state}.)`
+    const ac = new AbortController()
+    let popupOutcome = null
+    if (approval && exec.agent) {
+      const signal = AbortSignal.any([exec.signal, ac.signal, AbortSignal.timeout(APPROVAL_TTL_MS + 5000)].filter(Boolean))
+      approval.request({ agent: exec.agent, toolName: exec.name, callId: exec.callId, reason, signal }).then(o => { popupOutcome = o }, () => { popupOutcome = popupOutcome ?? 'closed' })
     }
-    let reloaded; try { reloaded = await restartEntry(d.entry) } catch (e) { reloaded = 'hot-reload FAILED (' + e.message + '); takes effect on next harness start' }
-    return `Owner APPROVED this exact change in the harness approval popup at ${at}. APPLIED by skunkworks-gate (proposal ${p.id}, spent). ${p.target} now sha256 ${p.new_sha} (was ${p.base_sha}). ${reloaded}. Signed receipt: ledger #${d.ledger_seq}, key ${d.receipt.pubkey_fp}, sig ${d.receipt_sig.slice(0, 24)}…`
+    let st, closedBy = null
+    for (;;) {
+      st = await gate('state', { id: p.id }).catch(() => ({ state: 'pending' }))
+      if (st.state !== 'pending' && st.state !== 'applying') break
+      if (popupOutcome === 'rejected') { await gate('close', { id: p.id, outcome: 'rejected' }).catch(() => {}); closedBy = 'owner clicked Reject in the harness card'; st = await gate('state', { id: p.id }).catch(() => ({ state: 'refused' })); break }
+      if (exec.signal?.aborted) { await gate('close', { id: p.id, outcome: 'cancelled' }).catch(() => {}); closedBy = 'tool call aborted'; st = { state: 'expired' }; break }
+      if (Date.now() > p.expires + 3000) { await gate('close', { id: p.id, outcome: 'expired' }).catch(() => {}); st = await gate('state', { id: p.id }).catch(() => ({ state: 'expired' })); if (st.state === 'pending') st = { state: 'expired' }; closedBy = closedBy ?? 'no owner decision before expiry'; break }
+      await sleep(1500)
+    }
+    ac.abort()
+    const at = wita(Date.now())
+    log(exec, exec.name, `${p.target} -> ${st.state}${popupOutcome ? ' (card: ' + popupOutcome + ')' : ''}`)
+    if (st.state !== 'applied') {
+      const cardNote = popupOutcome === 'allowed-once' ? ' (Allow was clicked in the harness card, which by design applies nothing.)' : ''
+      return `NOT APPLIED at ${at}: proposal ${p.id.slice(0, 8)} is ${st.state}${st.approver ? ' (' + st.approver + ')' : ''}${closedBy ? ' — ' + closedBy : ''}.${cardNote} Nothing changed.`
+    }
+    let reloaded; try { reloaded = await restartEntry(p.entry) } catch (e) { reloaded = 'hot-reload FAILED (' + e.message + '); takes effect on next harness start' }
+    return `Owner APPROVED this exact change on the gate owner channel (${st.approver}) — applied by skunkworks-gate at ${at}. ${p.target} now sha256 ${p.new_sha} (was ${p.base_sha}). ${reloaded}. Signed receipt: ledger #${st.ledger_seq}, key ${st.pubkey_fp}.`
   }
 
   ctx.tools.register(defineTool({
     name: 'propose_change',
-    description: 'The ONLY way to change the system you run in. Proposes exact new content for one allowlisted declarative target; currently only "plugins/auma-theme/theme.json" (UI theme: exactly {"accent": "#RRGGBB" or "default"}; e.g. gold = "#D4AF37"). First call read_target and pass its sha256 as base_sha256: missing or outdated base is refused as stale. The owner sees the exact diff and sha256s in an approval popup and must approve. No code or plugin targets exist.',
+    description: 'The ONLY way to change the system you run in. Proposes exact new content for one allowlisted declarative target; currently only "plugins/auma-theme/theme.json" (UI theme: exactly {"accent": "#RRGGBB" or "default"}; e.g. gold = "#D4AF37"). First call read_target and pass its sha256 as base_sha256: missing or outdated base is refused as stale. The owner sees the exact change in a card and must approve on the gate owner channel (you cannot approve). Keep summary to one short plain sentence (ASCII, <=120 chars). No code or plugin targets exist.',
     parameters: {
       target: { type: 'string', required: true, description: 'allowlisted target name' },
       new_content: { type: 'string', required: true, description: 'complete new file content (exact bytes)' },
@@ -295,7 +323,7 @@ export function apply(ctx) {
   }))
   ctx.tools.register(defineTool({
     name: 'revert_change',
-    description: 'Propose reverting an allowlisted target to any earlier applied version recorded in the ledger (see read_target / change_log), or "previous". Shown in the same approval popup; owner must approve.',
+    description: 'Propose reverting an allowlisted target to any earlier applied version recorded in the ledger (see read_target / change_log), or "previous". Shown in the same card; the owner must approve on the gate owner channel.',
     parameters: { target: { type: 'string', required: true }, to_sha256: { type: 'string', description: 'sha256 of the recorded version, or "previous" (default)' }, summary: { type: 'string' } },
     output: text,
     async execute(args, exec) {
@@ -306,7 +334,7 @@ export function apply(ctx) {
   }))
   ctx.tools.register(defineTool({
     name: 'revert_last_change',
-    description: 'Shortcut for revert_change with to_sha256 "previous". Owner must approve in the popup.',
+    description: 'Shortcut for revert_change with to_sha256 "previous". The owner must approve on the gate owner channel.',
     parameters: { target: { type: 'string', required: true } },
     output: text,
     async execute(args, exec) {
