@@ -1,0 +1,56 @@
+{
+ "path": "wm_library.jsonl",
+ "sha256": "0db7553d272aefb67af741fa617a48434252fab689986f219216bfbc444a2895",
+ "n": 87,
+ "inputs_sha256": {
+  "v5_corpus.json": "781b32dd106f8dc7abad32c59993e24fad4a7d154a919f2916fd8175d0a15561",
+  "v6_corpus.json": "5c4b9e1d8b7a5229f977a4fea8e99187a7714412d27bcf4cae563cb570f613a3"
+ },
+ "stats": {
+  "v5_corpus.json:rows": 50,
+  "v6_corpus.json:rows": 99,
+  "v6_corpus.json:skip_via_replay_gen1": 50,
+  "v6_corpus.json:skip_via_hint_rationalized": 12
+ },
+ "by_source": {
+  "v5_corpus.json": 50,
+  "v6_corpus.json": 37
+ },
+ "by_model": {
+  "base": 50,
+  "gen1": 37
+ },
+ "excluded_sealed_sets": {
+  "holdout128": "regen",
+  "holdout_v7": 144,
+  "holdout32": "file"
+ },
+ "n_excluded_ids": 304,
+ "features": [
+  "match_dist",
+  "inner_walls",
+  "player_box",
+  "box_box",
+  "goal_goal",
+  "box_wall_adj",
+  "box_corner",
+  "goal_wall_adj",
+  "reach_q",
+  "pushable",
+  "boxes_on_goal"
+ ],
+ "weights": [
+  2.0,
+  1.0,
+  0.5,
+  0.5,
+  0.5,
+  1.0,
+  1.0,
+  0.5,
+  0.5,
+  1.0,
+  2.0
+ ],
+ "rule": "verified-only solves by base (v5) and gen-1 (v6 self); hint_rationalized excluded; sealed ids excluded; dup canonical -> shortest plan"
+}

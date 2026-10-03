@@ -1,0 +1,17 @@
+{
+ "version": "CONFIRM-2 (motivated by post-hoc finding: gen-1 gain mostly format; lenient base 21/128; cross-process greedy non-reproducible: gen2 19 vs 23)",
+ "question": "Did gen-1 and/or gen-2 improve Sokoban PLANNING (format-independent) over base on holdout128?",
+ "metric": "per-board count of lenient-OK among n=4 samples (T0.6/top_p0.95/top_k20, seed 20261005, thinking on, 16384 tok); lenient = last {\"moves\":\"[UDLR]{1,64}\"} after </think>, verified by BFS-free simulator",
+ "test": "for each of gen1 and gen2 vs base: one-sided exact sign test over boards whose counts differ (count>base vs count<base); PASS p<=0.05. Two comparisons; Holm correction reported alongside.",
+ "secondary": "strict totals; per-band; tokens",
+ "claude_prediction": {
+  "P_gen1_PASS": 0.2,
+  "P_gen2_PASS": 0.25,
+  "expected": "lenient sampled totals within +-10% of base"
+ },
+ "code_sha256": {
+  "eval_sampled.py": "335c70f796f1ffe68c32ca967445d5d10768b04b9670e0602436c14bd5061ac3",
+  "rebuild_gen1.py": "d6c5f19f1de88dc5442c7116aabb785018425b3ce49a3d8666afd54213206eed",
+  "confirm2_run.sh": "7049069ae989b6fab26ad32ba3811b8b96e6739ef5eb8a2b2e88006d81abd1fd"
+ }
+}

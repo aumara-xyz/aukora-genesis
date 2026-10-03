@@ -1,0 +1,15 @@
+# Amendments / operational notes (append-only)
+- v5_run.sh: PATH fix for ninja (vLLM JIT) after first launch failed at stage A; no protocol change.
+- v5 stage B: triton 3.6.0 -> 3.8.0 in training venv (fla Hopper correctness guard); no protocol change.
+- v5 epochs rule misfired (96 s JIT first step) -> 1 epoch; left as written. Fixed in v6 (warmup excluded).
+- v6: hint "rationalization" only renamed the word hint->idea; 11/12 hint-derived targets reference the hint, 7/12 copy hint text. PREREG-v6 "no-hint targets" claim is CONTRADICTED. Gen-2 is research-only.
+- v6 forecast "8 + caveat paragraph" -> INVALID under strict integer rule.
+- Watchdog pre-stop export path (/mnt/data, no -i key) is wrong; pull_loop.sh (fixed 07:07Z) is the export of record.
+- POST-HOC: base lenient 21/128 vs strict 11; gen-1 CONFIRM-1 gain is mostly answer-format learning (gen1 22 vs lenient base 21: 12 gained / 11 lost).
+- POST-HOC: greedy vLLM eval not reproducible across engine instances (gen2 19 vs 23 on same set); +-5/128 caveat on single greedy comparisons.
+- CONFIRM-2 (sampled n=4, lenient) launched 07:18Z to test planning gain format-independently.
+- 2026-10-03 16:41:38 Peter asked to remove the auto-stop; watchdog killed. GPU runs until Peter says stop. Stop requires a valid Nebius login (expires 17:36; fresh login needed).
+- 2026-10-03 18:17:01 wm_PREREG.md LOCKED sha256 71c316418ffc6b3a52da216388daf1d51bbac1687fd897085e3b2d19b1c46667; queued to start only after REP1_DONE (to avoid GPU collision between REP1's two eval processes)
+- 2026-10-03 18:40:07 s1 amendment A1 appended to lab/s1_PREREG.md (review fixes before any H-S1b box run; hint text split proven/likely dead ends; chunked incremental receipts; REP1/v8 postdate the s1 data build, 0 overlap; no retraining, cumulative Mac training cap already used)
+- 2026-10-03 18:49:50 s1_PREREG.md (with A1) LOCKED sha e3e60e64128ea2088929e8831c68b4d1f35fe1c525b175fa1dc01c7ff143e489; H-S1a PASS (AUROC 0.953, ECE 0.012); H-S1b queued on box after wm
+- 2026-10-03 19:46:06 queued pool_collect.py (v7 on 120 hard TRAINING-pool boards from v8_pool.json, n=8, saves full texts) after s1; purpose: collect verified hard traces for next Ornith round (v8 gate found interactive good-turn yield too low: ~1.3%).

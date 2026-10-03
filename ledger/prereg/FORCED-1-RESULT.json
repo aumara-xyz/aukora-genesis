@@ -1,0 +1,5 @@
+{"prereg":"PREREG-FORCED-1.json","evidence_class":"RAN (base, holdout128, n=4 seed 20261008)",
+ "raw_lenient_ok":89,"forced_lenient_ok":89,"rescued":0,"truncated":229,"of":512,"H2":"NOT SUPPORTED (0 < 5)",
+ "claude_prediction_graded":{"P_H2_was":0.55,"expected_rescued_was":"3-15","actual":0},
+ "diagnosis":"After forced </think>, the model mostly restarts its analysis in prose (210/229 NOPLAN within 96 tokens), 17 illegal, 2 unsolved. Truncated attempts are unfinished search, not lost answers. Untested variant: prefill '{\"moves\": \"' after </think> to force a move string.",
+ "note":"base raw lenient 89/512 here vs 96/512 in CONFIRM-2 (different seed/engine) — sampling noise ~+-7/512."}

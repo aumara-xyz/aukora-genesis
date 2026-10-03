@@ -1,0 +1,9 @@
+{
+ "supersedes": {
+  "file": "PREREG-v4.json",
+  "SHA256": "3b85ba84cf0c65c6e959fddd551d4280a5441020e9efb98065e65b13486da273"
+ },
+ "change": "runner.py loads checkpoint-native Qwen3_5MoeForConditionalGeneration (keys model.language_model.*) and refuses on any missing key; no protocol change. Locked before any Ornith output.",
+ "runner_sha256": "b6787cb2b72c6f6fa265bc983af537beb688b389885ca1981bf21da51661b34a",
+ "box_env": "torch 2.11.0+cu128, transformers 5.18.0, peft 0.21.2, fla present, Python 3.12.3"
+}

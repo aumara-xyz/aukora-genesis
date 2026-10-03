@@ -1,0 +1,9 @@
+{"prereg":"PREREG-REP1.json","holdout":"holdout_rep1.json sha 5bf97fc9 (144 boards, secret seed, never seen by any training)",
+ "evidence_class":"RAN (H200; vLLM 0.30.0; n=8 per board seed 20261009; thinking 16384; forced-answer step; lenient primary)",
+ "lenient_ok_forced_of_1152":{"base":256,"v7":306},"rate":{"base":0.222,"v7":0.266},
+ "PRIMARY_v7_gt_base":{"boards_up":53,"boards_down":32,"p_one_sided":0.0147,"verdict":"PASS"},
+ "by_band_lenient_forced":{"8-16":{"base":191,"v7":223,"up_down":[29,20]},"17-32":{"base":65,"v7":81,"up_down":[22,12]},"33-48":{"base":0,"v7":2}},
+ "secondary":{"strict_ok_forced":"113 -> 296 (86 up / 9 down)","lenient_raw":"256 -> 301 p=0.041","truncated":"426 -> 345","noplan":"415 -> 271","illegal":"376 -> 491"},
+ "claude_prediction_graded":{"P_PASS_was":0.5,"expected_rates_were":"base 0.22-0.26 (actual 0.222), v7 0.25-0.30 (actual 0.266)"},
+ "interpretation":"Replicated on a second independent sealed set: the v7 recipe (LoRA on base's own verified thinking traces + simulator-labelled consequence-prediction practice) improves format-independent planning over the untrained model (+4.4 pts absolute, +19.5% relative), including the 17-32 band. Not yet multi-generation recursion; CP labels come from the environment simulator (ground truth), traces from the model itself.",
+ "limits":"single recipe/generation; Sokoban 8x8 2-box only; frontier model (Qwen3.8 Max Prime) solves ~89% single-shot on holdout128 vs Ornith ~20-27%."}

@@ -1,0 +1,190 @@
+{
+ "paths": {
+  "base": "/Users/peterviviani/aukora-nebius-run/pulled/out/v7_eval_base.json",
+  "gen1": "/Users/peterviviani/aukora-nebius-run/pulled/out/v7_eval_gen1.json",
+  "v7": "/Users/peterviviani/aukora-nebius-run/pulled/out/v7_eval_v7.json"
+ },
+ "stats": {
+  "base": {
+   "lenient_ok_raw": 130,
+   "lenient_ok_forced": 132,
+   "strict_ok_raw": 66,
+   "strict_ok_forced": 68,
+   "of": 576,
+   "truncated": 184,
+   "lenient_rescued": 2,
+   "strict_rescued": 2,
+   "lenient_lost": 0,
+   "forced": 182,
+   "truncated_after_think_close": 2,
+   "forcing_complete": true,
+   "boards_rescued": 2,
+   "illegal_raw": 206,
+   "illegal_forced": 225,
+   "illegal_rate_forced": 0.3906,
+   "illegal_rate_forced_of_planned": 0.5488,
+   "noplan_forced": 166,
+   "mean_tokens": 10429.2,
+   "per_band": {
+    "8-16": {
+     "lenient_ok_forced": 90,
+     "strict_ok_forced": 47
+    },
+    "17-32": {
+     "lenient_ok_forced": 42,
+     "strict_ok_forced": 21
+    },
+    "33-48": {
+     "lenient_ok_forced": 0,
+     "strict_ok_forced": 0
+    }
+   }
+  },
+  "gen1": {
+   "lenient_ok_raw": 155,
+   "lenient_ok_forced": 159,
+   "strict_ok_raw": 153,
+   "strict_ok_forced": 157,
+   "of": 576,
+   "truncated": 144,
+   "lenient_rescued": 4,
+   "strict_rescued": 4,
+   "lenient_lost": 0,
+   "forced": 143,
+   "truncated_after_think_close": 1,
+   "forcing_complete": true,
+   "boards_rescued": 3,
+   "illegal_raw": 203,
+   "illegal_forced": 249,
+   "illegal_rate_forced": 0.4323,
+   "illegal_rate_forced_of_planned": 0.5242,
+   "noplan_forced": 101,
+   "mean_tokens": 9259.9,
+   "per_band": {
+    "8-16": {
+     "lenient_ok_forced": 98,
+     "strict_ok_forced": 97
+    },
+    "17-32": {
+     "lenient_ok_forced": 60,
+     "strict_ok_forced": 59
+    },
+    "33-48": {
+     "lenient_ok_forced": 1,
+     "strict_ok_forced": 1
+    }
+   }
+  },
+  "v7": {
+   "lenient_ok_raw": 161,
+   "lenient_ok_forced": 164,
+   "strict_ok_raw": 153,
+   "strict_ok_forced": 156,
+   "of": 576,
+   "truncated": 154,
+   "lenient_rescued": 3,
+   "strict_rescued": 3,
+   "lenient_lost": 0,
+   "forced": 154,
+   "truncated_after_think_close": 0,
+   "forcing_complete": true,
+   "boards_rescued": 3,
+   "illegal_raw": 184,
+   "illegal_forced": 227,
+   "illegal_rate_forced": 0.3941,
+   "illegal_rate_forced_of_planned": 0.4913,
+   "noplan_forced": 114,
+   "mean_tokens": 9441.2,
+   "per_band": {
+    "8-16": {
+     "lenient_ok_forced": 114,
+     "strict_ok_forced": 110
+    },
+    "17-32": {
+     "lenient_ok_forced": 50,
+     "strict_ok_forced": 46
+    },
+    "33-48": {
+     "lenient_ok_forced": 0,
+     "strict_ok_forced": 0
+    }
+   }
+  }
+ },
+ "tests": {
+  "v7>gen1:lenient_ok_forced": {
+   "key": "lenient_ok_forced",
+   "wins": 43,
+   "losses": 38,
+   "ties": 63,
+   "p_one_sided": 0.32849623379317894,
+   "pass": false,
+   "verdict": "FAIL"
+  },
+  "v7>gen1:strict_ok_forced": {
+   "key": "strict_ok_forced",
+   "wins": 40,
+   "losses": 40,
+   "ties": 64,
+   "p_one_sided": 0.5444639393869536,
+   "pass": false
+  },
+  "v7>gen1:lenient_ok_raw": {
+   "key": "lenient_ok_raw",
+   "wins": 41,
+   "losses": 36,
+   "ties": 67,
+   "p_one_sided": 0.32439558115532247,
+   "pass": false
+  },
+  "v7>base:lenient_ok_forced": {
+   "key": "lenient_ok_forced",
+   "wins": 52,
+   "losses": 32,
+   "ties": 60,
+   "p_one_sided": 0.018764766817206582,
+   "pass": true
+  },
+  "v7>base:strict_ok_forced": {
+   "key": "strict_ok_forced",
+   "wins": 67,
+   "losses": 16,
+   "ties": 61,
+   "p_one_sided": 6.944278222708702e-09,
+   "pass": true
+  },
+  "v7>base:lenient_ok_raw": {
+   "key": "lenient_ok_raw",
+   "wins": 50,
+   "losses": 31,
+   "ties": 63,
+   "p_one_sided": 0.02241426119289933,
+   "pass": true
+  },
+  "gen1>base:lenient_ok_forced": {
+   "key": "lenient_ok_forced",
+   "wins": 49,
+   "losses": 32,
+   "ties": 63,
+   "p_one_sided": 0.037394077141416834,
+   "pass": true
+  },
+  "gen1>base:strict_ok_forced": {
+   "key": "strict_ok_forced",
+   "wins": 65,
+   "losses": 15,
+   "ties": 64,
+   "p_one_sided": 7.057334204906979e-09,
+   "pass": true
+  },
+  "gen1>base:lenient_ok_raw": {
+   "key": "lenient_ok_raw",
+   "wins": 47,
+   "losses": 30,
+   "ties": 67,
+   "p_one_sided": 0.03377462572951339,
+   "pass": true
+  }
+ },
+ "H2_supported": false
+}

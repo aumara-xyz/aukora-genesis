@@ -1,0 +1,166 @@
+{
+ "dest": "wm_laya_export.jsonl",
+ "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "examples": 0,
+ "tok_ckpt_examples": 0,
+ "corpus_pass_only": {
+  "dest": "wm_laya_export.corpus_pass_only.jsonl",
+  "sha256": "18a95180819e4cdb38f87863c87fcc5a52bd3e41a2aa7e5a1954dd57a8caf155",
+  "examples": 258,
+  "use": "NOT for gate training/evaluation; NOT counted toward sufficiency"
+ },
+ "inventory": {
+  "v5_corpus.json": {
+   "rows": 50,
+   "samples_with_prefix_and_outcome": 50,
+   "why": "CORPUS (pass-only, selected, model=base) -> wm_laya_export.corpus_pass_only.jsonl; excluded from gate training/eval and sufficiency"
+  },
+  "v6_corpus.json": {
+   "rows": 99,
+   "samples_with_prefix_and_outcome": 37,
+   "why": "CORPUS (pass-only, selected, model=gen1) -> wm_laya_export.corpus_pass_only.jsonl; excluded from gate training/eval and sufficiency; skipped {'replay_gen1': 50, 'hint_rationalized': 12}"
+  },
+  "v6_A.json:direct": {
+   "rows": 37,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "same traces as v6_corpus via=self (corpus file)"
+  },
+  "v6_A.json:failed": {
+   "rows": 59,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "FAIL outcomes but only the final answer text is saved (no reasoning)"
+  },
+  "forced_base.json": {
+   "rows": 512,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "per-sample finish/verdict saved, but forced_text is the continuation AFTER a forced </think> (not a reasoning prefix)"
+  },
+  "posthoc_lenient_base.json": {
+   "rows": 128,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + final_tail (last 300 chars after </think>) only"
+  },
+  "posthoc_lenient_gen2.json": {
+   "rows": 128,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + final_tail (last 300 chars after </think>) only"
+  },
+  "probe.json": {
+   "rows": 64,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + 400-char TAIL only (and no boards stored)"
+  },
+  "sampled_base.json": {
+   "rows": 512,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "per-board counts + token counts only"
+  },
+  "sampled_gen1.json": {
+   "rows": 512,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "per-board counts + token counts only"
+  },
+  "sampled_gen2.json": {
+   "rows": 512,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "per-board counts + token counts only"
+  },
+  "confirm_base.json": {
+   "rows": 128,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + token count only"
+  },
+  "confirm_gen1.json": {
+   "rows": 128,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + token count only"
+  },
+  "confirm_gen2.json": {
+   "rows": 128,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + token count only"
+  },
+  "confirm_gen2_h32.json": {
+   "rows": 32,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdict + token count only"
+  },
+  "v5_attempts.json": {
+   "rows": 384,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "verdicts + token counts only"
+  },
+  "01_P0_eval.json": {
+   "rows": 32,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "thinking OFF, answer only"
+  },
+  "03_attempts.json": {
+   "rows": 64,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "thinking OFF, answer only"
+  },
+  "v7_eval_base.raw.json": {
+   "rows": -1,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "EXCLUDED: holdout_v7 is sealed (trajectories on sealed boards never enter gate training)"
+  },
+  "v7_eval_gen1.raw.json": {
+   "rows": -1,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "EXCLUDED: holdout_v7 is sealed (trajectories on sealed boards never enter gate training)"
+  },
+  "v7_eval_v7.raw.json": {
+   "rows": -1,
+   "samples_with_prefix_and_outcome": 0,
+   "why": "EXCLUDED: holdout_v7 is sealed (trajectories on sealed boards never enter gate training)"
+  }
+ },
+ "per_source": {
+  "v5_corpus": {
+   "char_aux:1500:pass": 50,
+   "char_aux:4000:pass": 47,
+   "char_aux:500:pass": 50
+  },
+  "v6_corpus_self": {
+   "char_aux:1500:pass": 37,
+   "char_aux:4000:pass": 37,
+   "char_aux:500:pass": 37
+  }
+ },
+ "skipped_tok_ckpt": {},
+ "per_k": {
+  "1024": {
+   "pass": 0,
+   "fail": 0,
+   "boards_pass": 0,
+   "boards_fail": 0
+  },
+  "2048": {
+   "pass": 0,
+   "fail": 0,
+   "boards_pass": 0,
+   "boards_fail": 0
+  },
+  "4096": {
+   "pass": 0,
+   "fail": 0,
+   "boards_pass": 0,
+   "boards_fail": 0
+  },
+  "8192": {
+   "pass": 0,
+   "fail": 0,
+   "boards_pass": 0,
+   "boards_fail": 0
+  }
+ },
+ "sufficiency_rule": ">= 200 examples AND >= 50 distinct boards per class, per checkpoint k (tok_ckpt view, gate file only)",
+ "sufficient": {
+  "1024": false,
+  "2048": false,
+  "4096": false,
+  "8192": false
+ },
+ "verdict": "INSUFFICIENT: no unselected pass/fail samples with reasoning yet (the gate file needs wm_retrieval receipts)"
+}

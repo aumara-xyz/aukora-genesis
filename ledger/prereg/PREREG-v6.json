@@ -1,0 +1,25 @@
+{
+ "version": "v6 (gen-2)",
+ "prior": {
+  "PREREG-CONFIRM-1.json": "2e61bada39203d20598a48eea8163127b46c8663e1d922625d5a8f662350b264"
+ },
+ "question": "Does a second expert-iteration generation, started from gen-1 weights, with coach hints (GLM 5.3, hint-only) rationalized into no-hint training targets and gen-1 replay, beat gen-1 on the 128-puzzle confirm set?",
+ "pool": "96 new boards seed 6120261003 bands 9-16:32, 17-32:40, 33-48:24, disjoint from all holdouts and gen-1 pool",
+ "coach": "z-ai/glm-5.3 via OpenRouter, <=40-word hint, move strings >=4 redacted; called only on tasks with 0/4 self-success; Mac-side key",
+ "training": "fresh LoRA on gen-1 merged weights; corpus = gen-1 replay (50) + self-solved + hint-rationalized (prompt without hint); 2 epochs if projected<=45min (warmup step excluded)",
+ "primary": "gen2 vs gen1 on holdout128, one-sided exact sign test on discordant pairs p<=0.05",
+ "secondary": "gen2 vs base on holdout128; gen2 on holdout32; coach calls/cost; rationalized count; forecast vs P(gen2 on holdout32)",
+ "claude_prediction": {
+  "P_PASS_primary": 0.25,
+  "P_gen2_beats_base_128": 0.6
+ },
+ "code_sha256": {
+  "v6_genA.py": "d00899583d22af68455becb0b6075811e5b6363a4fc775e037ed21b9718192a1",
+  "v6_genB.py": "2f80cc118c05a5068da10945619a11e79b6afa1bdd6132b5ad9a39bb59feb74d",
+  "v6_train.py": "4d2ad7e33f3b4795d58cf5af29a5ed8a89609905c19e39c70e7f4ddd8a074f80",
+  "v6_eval.py": "ae0d6cbe32d1784bdc48ebf25099a8c0b1013f56b573b2c8ac49d68eb66cb198",
+  "v6_run.sh": "b5c8a354ae04877c9d934fc6e87847981e57e57c68b51814e076ad4bf8490611",
+  "friend.py": "1a80e60ec3c3407c767fc5ff595d23127a872f1f42c89d8cff50063f9c438069",
+  "friend_batch.py": "abaec15a4c07f45c43e346be4ff8dfe0043e7e64e6ddf2c370ab1c2662bec865"
+ }
+}

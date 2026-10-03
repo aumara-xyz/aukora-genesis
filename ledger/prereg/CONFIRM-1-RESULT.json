@@ -1,0 +1,6 @@
+{"prereg":"PREREG-CONFIRM-1.json sha 2e61bada39203d20598a48eea8163127b46c8663e1d922625d5a8f662350b264",
+ "evidence_class":"RAN (H200, vLLM 0.30.0 greedy thinking 16k, strict verifier)",
+ "base":11,"gen1":22,"n":128,"b_gained":15,"c_lost":4,"p_one_sided_exact":0.0096,"verdict":"PASS",
+ "by_band":{"8-16":[7,13],"17-32":[4,9],"33-48":[0,0]},
+ "claude_prediction_graded":{"P_PASS_was":0.45,"expected_base_was":"14-22 (actual 11, below band)","expected_delta_was":"+3..+10 (actual +11, above band)"},
+ "limits":"one generation; same procedural generator family (in-distribution); greedy pass@1 only; 8x8 two-box Sokoban; not yet multi-generation recursion"}

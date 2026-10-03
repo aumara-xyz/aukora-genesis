@@ -1,0 +1,8 @@
+{"prereg":"v7_PREREG.md (LOCKED) holdout_v7 sha 1bc8691b","evidence_class":"RAN (H200; n=4 seed 20261007; thinking 16384; forced-answer step)",
+ "lenient_ok_forced_of_576":{"base":132,"gen1":159,"v7":164},"strict_ok_forced_of_576":{"base":68,"gen1":157,"v7":156},
+ "H1_primary_v7_gt_gen1":{"wins":43,"losses":38,"p":0.328,"verdict":"FAIL"},
+ "secondary":{"v7_gt_base_lenient_forced":{"wins":52,"losses":32,"p":0.0188},"gen1_gt_base_lenient_forced":{"wins":49,"losses":32,"p":0.0374},
+   "v7_gt_base_strict_forced":"p=6.9e-9","illegal_pct":{"base":39.1,"gen1":43.2,"v7":39.4},"by_band_lenient_forced":{"base":[90,42,0],"gen1":[98,60,1],"v7":[114,50,0]}},
+ "H2_forcing_rescues_base":{"rescued":2,"verdict":"NOT SUPPORTED"},
+ "claude_prediction_graded":{"P_H1_was":0.5,"totals_predicted":"120/100/125 vs actual 132/159/164","P_v7_gt_base_was":0.2},
+ "caveats":"v7>base is a SECONDARY test (several secondaries, no multiplicity correction); conflicts with CONFIRM-2 where gen1<base lenient on holdout128. Replication REP1 launched on a new sealed set."}

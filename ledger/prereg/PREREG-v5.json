@@ -1,0 +1,31 @@
+{
+ "version": "v5",
+ "locked_utc": "2026-10-03T05:1xZ before any v5 stage ran",
+ "prior": {
+  "PREREG-v4.1.json": "b2f5763fb5fcd8234b25e6904afea5f3cd2c4b4d4c91ec59f0c0265a400c3f75",
+  "v4.1_outcome": "NO_ELIGIBLE_CORPUS (thinking off: P0 0/32, 0/64 tasks)",
+  "exploratory_probe": "probe_vllm.py sha 6ffe7102...: thinking ON greedy 16k -> easy 6/16, holdout 4/32 strict. Exploratory; motivated v5. Holdout outputs not used for training."
+ },
+ "question": "Does one generation of expert iteration on its own verified thinking traces raise Ornith-35B's strict solve count on the same 32 sealed holdouts?",
+ "eval": "vLLM 0.30.0 greedy, enable_thinking=True, max_tokens 16384, strict JSON after </think>; P0 measured twice (P0a,P0b) in-run; P1 on LoRA-merged weights.",
+ "pass": "one-sided exact sign test on (b,c) vs P0a p<=0.05 AND (P1-P0a) > P0a/P0b flip count. Else FAIL. c reported.",
+ "stops": "corpus<8 -> NO_ELIGIBLE_CORPUS; P0a>=28 -> NO_HEADROOM; deadline 16:50 local -> INCOMPLETE.",
+ "corpus": "96 procedural boards seed 4120261003 (depth bands 4-8:32, 9-16:40, 17-24:24), disjoint from holdout; n=4 samples T0.6/top_p0.95/top_k20; shortest strict-OK trace <=12288 tokens per board; cap 64.",
+ "training": "fresh LoRA r16 a32 on 100 attention modules (verified count), AdamW 1e-4, batch1, full assistant trace incl. thinking as target, prompt masked; epochs=2 if projected<=45min else 1 (decided from first 3 steps).",
+ "forecast": "model, thinking on, greedy 4096, integer 0..32 after </think>, locked before training; secondary.",
+ "claude_prediction": {
+  "P_corpus_ge_8": 0.85,
+  "P_PASS": 0.25,
+  "expected_P1_minus_P0": "+1 to +4"
+ },
+ "code_sha256": {
+  "v5_common.py": "6136a8b3b00a1dd6dbb5ff2c393e2e20eb2f0a17a6f7a86296e6605a48fb5025",
+  "v5_gen.py": "415f3dba0895676cd105f605270cb5096106e07592cb22f23b5e4ab9dd41a0e9",
+  "v5_train.py": "991776855ae058ff2b956b342df2541b0b2521217b3ede32e21db902020ff3a6",
+  "v5_eval.py": "c89e5e0e0737af86702b0cef172fc8697a274617171d987ec6121cc1022cb511",
+  "v5_run.sh": "6d887df7bcc372a6bb7260b87f1388989921223ac60422825432c3d0b72378c1",
+  "sokoban.py": "f860cca985126aafd9da4b130b06e5f26be1a8ba2c3b3947a21c61ec5c38fb31",
+  "prompts.py": "2f32ef55b9d2d3227bf922285d3a0e0628f7cd55b940a8aa94330b2c8a1e613c",
+  "holdout.json": "d90d59278fdf83267c3a50fb4e180b62a23cdae3e693747be307858e01132178"
+ }
+}

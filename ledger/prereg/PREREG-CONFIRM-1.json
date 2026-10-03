@@ -1,0 +1,17 @@
+{
+ "version": "CONFIRM-1",
+ "prior": {
+  "PREREG-v5.json": "101a1dcadac3d3ed215a698ad46f56c1aae45a4d44a051e3fb2a7a89f4e84ae2",
+  "v5_outcome": "FAIL by rule: P0 4/32 -> P1 7/32, b=5 c=2 p=0.227"
+ },
+ "question": "Is gen-1 (v5 merged weights, /dev/shm/merged, adapter sha in v5_train.json) better than base on 128 NEW sealed puzzles?",
+ "holdout128_sha256": "9dd07cd7774fc6937ff830165d83b08fdd011edb4c1ac897222cf058a6024e1b",
+ "confirm_py_sha256": "d7d6ef6e578ba0aad1141f53a3889e42b48b4edce36dd2916f7f7f6e3f694094",
+ "eval": "identical to v5 (vLLM greedy, thinking on, 16384, strict)",
+ "pass": "one-sided exact sign test on discordant pairs (gen1 vs base) p<=0.05",
+ "claude_prediction": {
+  "P_PASS": 0.45,
+  "expected_base": "14-22/128",
+  "expected_delta": "+3 to +10"
+ }
+}

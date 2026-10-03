@@ -1,0 +1,9 @@
+{"prereg":"PREREG-CONFIRM-2.json sha badd195cd600b3e6a200dd5ac641487af1039de8c1c7c878a8ca4a1965b84955",
+ "evidence_class":"RAN (H200, vLLM 0.30.0, n=4 T0.6 seed 20261005, thinking 16384, fresh engine per model)",
+ "lenient_ok_of_512":{"base":96,"gen1":77,"gen2":102},"strict_ok_of_512":{"base":42,"gen1":76,"gen2":101},
+ "primary":{"gen1_vs_base_lenient":{"boards_up":19,"boards_down":32,"p_one_sided":0.9756,"verdict":"FAIL"},
+            "gen2_vs_base_lenient":{"boards_up":32,"boards_down":27,"p_one_sided":0.3015,"verdict":"FAIL"}},
+ "secondary":{"strict gen1 vs base":"31 up/12 down p=0.0027","strict gen2 vs base":"46/7 p<1e-4","gen2_vs_gen1_lenient_EXPLORATORY":"33/18 p=0.024",
+              "by_band_lenient [base,gen1,gen2]":{"8-16":[63,55,67],"17-32":[31,21,33],"33-48":[2,1,2]},"truncated_samples_of_512":[217,198,201]},
+ "claude_prediction_graded":{"P_gen1_PASS_was":0.2,"P_gen2_PASS_was":0.25,"outcome":"both FAIL; gen1 below base on lenient (outside predicted +-10% band: -20%)"},
+ "interpretation":"Self-training learned answer FORMAT (strict 42->76->101) but not PLANNING (lenient flat; gen1 regressed, gen2 recovered). ~40% of samples hit the 16k token cap: dominant failure."}

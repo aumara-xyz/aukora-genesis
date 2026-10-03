@@ -1,0 +1,41 @@
+{
+ "status": "LOCKED_BEFORE_ANY_ORNITH_DATA; Peter GO given 2026-10-03 with $40 cap",
+ "supersedes": {
+  "file": "PREREG-v3-DRAFT.json",
+  "SHA256": "69fe04e4deb28a3620d5a77b806f9d30e7214604ae4135d49439c77714ea7d57"
+ },
+ "changes_vs_v3": {
+  "corpus_rule": "Expert iteration (STaR-style) replaces fail-then-fix-only: tasks = up to 32 model-proposed valid novel boards + 64 procedural boards (seed 920261003, disjoint from holdout by canonical id). k=4 sampled drafts per task (T=0.6, top_p 0.95, top_k 20); shortest verified-OK draft accepted; tasks with no OK draft get one greedy verifier-feedback revision. Training corpus = accepted, revision-derived first, cap 48. Minimum 8.",
+  "training": "3 epochs x 1 exposure per example (36..144 steps). router aux loss not used (router frozen). LoRA targets discovered by name: self_attn.{q,k,v,o}_proj + linear_attn.{in_proj_qkv,out_proj}, language tower only.",
+  "why": "v2/v3 fail-then-fix window likely yields < 8 examples; decided before any Ornith output exists."
+ },
+ "unchanged": [
+  "question",
+  "primary metric b/c",
+  "pass threshold one-sided exact sign test p<=0.05",
+  "NO_HEADROOM P0>=28",
+  "model pin + template pin",
+  "forecast secondary",
+  "Claude locked prediction (v3)"
+ ],
+ "claude_locked_prediction_v4_update": {
+  "P_stop_before_training": 0.35,
+  "P_PASS_given_training_completes": 0.15,
+  "P_PASS_overall": 0.1
+ },
+ "code_sha256": {
+  "sokoban.py": "f860cca985126aafd9da4b130b06e5f26be1a8ba2c3b3947a21c61ec5c38fb31",
+  "make_holdout.py": "e910e35cd2fdb729cbd4ddfc5619eafe12c71466702ddfc81c3309725f2e3556",
+  "holdout.json": "d90d59278fdf83267c3a50fb4e180b62a23cdae3e693747be307858e01132178",
+  "prompts.py": "2f32ef55b9d2d3227bf922285d3a0e0628f7cd55b940a8aa94330b2c8a1e613c",
+  "runner.py": "dc56486907988a8c1b80733bdce1e6a69fa5fdf6384ef8fa82aa9f1881cd3c0d",
+  "setup_box.sh": "d63a26fbf4bb90dfc65163cc26e1ebed2cc75d0ba45f6c619a7f794439af91ec",
+  "verify_shards.py": "ea220fa9c1415d224131ae10f12ff391f405076b350d4c49a4e2865d4011cb75"
+ },
+ "watchdog_sha256": "7d40e70a4a6d99f07e08bd8997546700df8e2ae1b9bdc3039b4effe8457a6a6c",
+ "caps": {
+  "usd": 40,
+  "hard_stop_local": "2026-10-03 17:15 WITA (Mac watchdog)",
+  "check_in": "before $40, extension needs new Peter number + Nebius re-login"
+ }
+}

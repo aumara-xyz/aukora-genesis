@@ -1,0 +1,42 @@
+{
+  "evidence_class": "synthetic",
+  "status": "DRAFT_NOT_SELECTED_NOT_APPROVED",
+  "author": "Claude (Opus 5.5), 2026-10-03",
+  "run_id": "ornith35-sokoban-selftrain-r1-v3",
+  "amends": {"file": "EXPERIMENT-PROPOSAL-v2.json", "SHA256": "01aa97ef67f0d1b22b2efa42bc01675bdef4fd5b0ba8dddf314129309f0065bb",
+             "rule": "All v2 fields stand unless overridden below. v2 file is not modified."},
+  "question": "Does one verifier-filtered self-training LoRA generation of Ornith-1.5-35B-A3B solve more of 32 sealed 8x8 Sokoban holdout puzzles than its frozen parent, beyond what chance flips explain?",
+  "why_gpu": "Requires forward+backward through a 35.95B-param BF16 MoE (67 GiB weights). Not runnable on the Mac (33 GiB free disk, no CUDA).",
+  "hypothesis_H1": "P1 (epoch-3 adapter, reloaded) solves more holdout puzzles than P0, by a margin a one-sided exact sign test on discordant pairs accepts at alpha=0.05.",
+  "primary_metric": "Paired discordant counts on 32 holdouts: b = P0 fail -> P1 solve, c = P0 solve -> P1 fail. Greedy decoding, identical batch composition and order for P0 and P1.",
+  "baseline": "P0 = frozen parent, same prompts/template/decoding, measured in the same session before any update.",
+  "pass_threshold": "PASS iff one-sided exact binomial p(X>=b | n=b+c, 0.5) <= 0.05, i.e. (b>=5,c=0) or (b>=7,c<=1) or (b>=9,c<=2). Overrides v2 'P1>P0 and zero regressions' (b=1,c=0 has p=0.50).",
+  "fail": "Completed run with p>0.05 => FAIL (no improvement shown). Any regression count c is reported regardless.",
+  "stop_outcomes_not_fail": {
+    "NO_HEADROOM": "P0 solved >= 28/32 (b>=5 impossible) -> stop before training.",
+    "FLOOR": "P0 solved <= 1/32 AND accepted corpus < 8 -> stop.",
+    "NO_ELIGIBLE_CORPUS": "< 8 fail-then-self-fixed tasks across >= 2 depth bands -> stop.",
+    "INCOMPLETE": "Any operational/time/disk/memory failure -> export partials, stop, UNGRADED."
+  },
+  "amendment_corpus_cap": "Raise model-generated board cap from 16 to 48 (still 512 new tokens each, batched) because the fail-then-fix window is narrow; training set still capped at 16 accepted tasks (first 16 by generation order).",
+  "amendment_stage_gate": "If P0 eval + corpus generation are not complete by T+80 min from START, stop as INCOMPLETE.",
+  "model_forecast": "v2 integer forecast kept as SECONDARY; graded HIT/MISS exactly and also |error|. Never a pass criterion.",
+  "claude_locked_prediction": {
+    "P_stop_before_training": 0.55,
+    "P_PASS_given_training_completes": 0.15,
+    "P_PASS_overall": 0.07,
+    "P_model_forecast_HIT_given_complete": 0.10,
+    "expected_P0_solved_band": "4..16 of 32 (thinking disabled, 2-box 8x8)",
+    "note": "Author's judgment, written before any data exists; graded after run."
+  },
+  "relabel_step": {
+    "gates_this_question": false,
+    "reason": "Sokoban study uses no governance rows; verifier is deterministic BFS.",
+    "feasible_now": false,
+    "blocker": "independent-labeling-readiness.json: 0/12 original situation texts recovered; a blind relabel of label-only rows is not meaningful. Kappa plan: if texts are ever recovered, one blinded labeler, 5-class vocabulary, Cohen's kappa vs author labels; kappa<0.6 => historical 41.67%/66.7% figures are unreliable."
+  },
+  "model_pin": {"repo": "ornith-ai/Ornith-1.5-35B-A3B", "revision": "10fbf86fed7ecee4a061f8b499a618f46001cac1",
+                "template_sha256": "182e77dd83bd8e9ca818b240b82e28f243762cd5dda32e6eef327df7b1cd107e", "enable_thinking": false},
+  "unbound_before_GO": ["verifier/BFS source SHA", "holdout generator seed + 32 board hashes + depth quotas", "prompt templates SHA", "exact pip lock (transformers>=5.8.1, peft, torch, fla/causal-conv1d)", "runner script SHA", "watchdog script SHA", "Peter numeric cap"],
+  "hash_note": "SHA256 of this file is the commitment; any change => new version."
+}

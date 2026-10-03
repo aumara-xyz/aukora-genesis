@@ -1,0 +1,396 @@
+{
+ "evidence_class": "RAN (mps; inference-only re-evaluation of the sealed artifact; extras POST-HOC, non-gating)",
+ "artifact": "/Users/peterviviani/aukora-nebius-run/lab/s1_laya",
+ "artifact_meta_sha256": "ad01782101478ff1fa0e2ace254361e503bcc5dd64736f8124ce17cf7f88f96a",
+ "artifact_files_sha256": {
+  "encoder.safetensors": "b169fdef9591c1ba9cb4f4cf6caa49f689dcf3033113098c225c03521ee7eb95",
+  "head.safetensors": "f07f7377ef1660736fbfff74713983ec683b0802796b532a1490a15b599348e8",
+  "encoder_config.json": "bf3ab80598fdccf414855a2ce80f22859e4492d06ca8a62ddd1cfb63972f8979",
+  "tokenizer/tokenizer.json": "6c8aaa9a542084f2457eab775d4eeb51f92a70c0fd9de28d5edb0ddec3c08d30"
+ },
+ "sealed_receipt": "s1_laya_eval.json",
+ "sealed_receipt_sha256": "fb66dc5d383f552c0afa70548ab9effcf2e253d6b11103a82a22b31a42a8bd02",
+ "code_sha256": {
+  "s1_train_laya.py": "668a7ba861431570380008c263573236b6f3855f46a6e8515db37cfa484d6c37",
+  "s1_value.py": "5076830c78dc23e5b9549cb0f2a0b5b297f00382051727844110f16365f84614",
+  "s1_common.py": "108cf010aca1b18cc00a08b4743de6c7d2d5064df02d5dd2af97336b3b49766f",
+  "sokoban.py": "f860cca985126aafd9da4b130b06e5f26be1a8ba2c3b3947a21c61ec5c38fb31"
+ },
+ "versions": {
+  "torch": "2.8.0",
+  "transformers": "4.53.0"
+ },
+ "device": "mps",
+ "eval": {
+  "skipped": [],
+  "temperature": {
+   "solvable": 1.0238031817371374,
+   "dist": 1.005523298414456,
+   "val_nll_solv": [
+    0.27989891171455383,
+    0.2798258364200592
+   ],
+   "val_nll_dist": [
+    0.7963130474090576,
+    0.7963042259216309
+   ]
+  },
+  "test_solvable_before": {
+   "n": 6000,
+   "acc": 0.8841666666666667,
+   "auroc": 0.952938,
+   "ece15_toplabel": 0.012137885073122245,
+   "ece15_posclass": 0.020130971654551078,
+   "nll": 0.2763863205909729,
+   "brier": 0.085791107914648,
+   "auroc_hard_subset": 0.8692220536165908,
+   "n_hard_unsolvable": 659,
+   "auroc_rule_only_baseline": 0.8901666666666667,
+   "auroc_by_src": {
+    "graph": 0.9389874320349407,
+    "opt": null,
+    "push": 0.9281757402101242,
+    "walk": 0.939686292627469
+   },
+   "acc_on_rule_dead": 0.9517300299017514,
+   "non_gating": {
+    "net_input_not_rule_dead": {
+     "n": 3659,
+     "n_unsolvable": 659,
+     "auroc": 0.8692220536165908,
+     "acc": 0.8409401475813064,
+     "ece15_toplabel": 0.02061468102941799,
+     "ece15_posclass": 0.08163754648889979
+    },
+    "push_and_not_rule_dead": {
+     "n": 501,
+     "n_unsolvable": 152,
+     "auroc": 0.8250640928969989,
+     "acc": 0.7684630738522954,
+     "ece15_toplabel": 0.0683549653079747,
+     "ece15_posclass": 0.06631171511079069
+    },
+    "system_score_auroc": 0.9712724444444445,
+    "by_src": {
+     "graph": {
+      "n": 2129,
+      "n_unsolvable": 1726,
+      "auroc": 0.9389874320349407,
+      "acc": 0.8821042743071865,
+      "ece15_toplabel": 0.01810419445630014,
+      "ece15_posclass": 0.06593523351015321
+     },
+     "opt": {
+      "n": 1897,
+      "n_unsolvable": 0,
+      "auroc": null,
+      "acc": 0.9119662625197681,
+      "ece15_toplabel": 0.026776354030387382,
+      "ece15_posclass": 0.15275582845647298
+     },
+     "push": {
+      "n": 994,
+      "n_unsolvable": 645,
+      "auroc": 0.9281757402101242,
+      "acc": 0.8430583501006036,
+      "ece15_toplabel": 0.041971118510268565,
+      "ece15_posclass": 0.07418529411183011
+     },
+     "walk": {
+      "n": 980,
+      "n_unsolvable": 629,
+      "auroc": 0.939686292627469,
+      "acc": 0.8765306122448979,
+      "ece15_toplabel": 0.02113779906849604,
+      "ece15_posclass": 0.03466935595249513
+     }
+    }
+   }
+  },
+  "test_solvable_after": {
+   "n": 6000,
+   "acc": 0.8841666666666667,
+   "auroc": 0.952938,
+   "ece15_toplabel": 0.01216887528785447,
+   "ece15_posclass": 0.019760902758323935,
+   "nll": 0.27637574076652527,
+   "brier": 0.0857677812748528,
+   "auroc_hard_subset": 0.8692220536165908,
+   "n_hard_unsolvable": 659,
+   "auroc_rule_only_baseline": 0.8901666666666667,
+   "auroc_by_src": {
+    "graph": 0.9389874320349407,
+    "opt": null,
+    "push": 0.9281757402101242,
+    "walk": 0.939686292627469
+   },
+   "acc_on_rule_dead": 0.9517300299017514,
+   "non_gating": {
+    "net_input_not_rule_dead": {
+     "n": 3659,
+     "n_unsolvable": 659,
+     "auroc": 0.8692220536165908,
+     "acc": 0.8409401475813064,
+     "ece15_toplabel": 0.016420264244761753,
+     "ece15_posclass": 0.08331307046238592
+    },
+    "push_and_not_rule_dead": {
+     "n": 501,
+     "n_unsolvable": 152,
+     "auroc": 0.8250640928969989,
+     "acc": 0.7684630738522954,
+     "ece15_toplabel": 0.0669205512920257,
+     "ece15_posclass": 0.07027564392315441
+    },
+    "system_score_auroc": 0.9712724444444445,
+    "by_src": {
+     "graph": {
+      "n": 2129,
+      "n_unsolvable": 1726,
+      "auroc": 0.9389874320349407,
+      "acc": 0.8821042743071865,
+      "ece15_toplabel": 0.01709472052384285,
+      "ece15_posclass": 0.06684845116192942
+     },
+     "opt": {
+      "n": 1897,
+      "n_unsolvable": 0,
+      "auroc": null,
+      "acc": 0.9119662625197681,
+      "ece15_toplabel": 0.029661683374539588,
+      "ece15_posclass": 0.15505178930197633
+     },
+     "push": {
+      "n": 994,
+      "n_unsolvable": 645,
+      "auroc": 0.9281757402101242,
+      "acc": 0.8430583501006036,
+      "ece15_toplabel": 0.04228575082865435,
+      "ece15_posclass": 0.072329037900198
+     },
+     "walk": {
+      "n": 980,
+      "n_unsolvable": 629,
+      "auroc": 0.939686292627469,
+      "acc": 0.8765306122448979,
+      "ece15_toplabel": 0.01912327259602275,
+      "ece15_posclass": 0.03581634851311254
+     }
+    }
+   }
+  },
+  "val_solvable_after": {
+   "n": 6000,
+   "acc": 0.879,
+   "auroc": 0.950878,
+   "ece15_toplabel": 0.01177328356855289,
+   "ece15_posclass": 0.013593519675266506,
+   "nll": 0.2798258364200592,
+   "brier": 0.08689536141722569
+  },
+  "test_dist_before": {
+   "n": 3000,
+   "acc": 0.632,
+   "within_one_bucket": 0.9850000143051147,
+   "nll": 0.8192380666732788,
+   "ece15_toplabel": 0.03208260696132976,
+   "mae_expected_dist_moves": 3.3380062931378682,
+   "confusion": [
+    [
+     426,
+     110,
+     12,
+     0,
+     0
+    ],
+    [
+     61,
+     237,
+     231,
+     7,
+     0
+    ],
+    [
+     10,
+     126,
+     898,
+     183,
+     0
+    ],
+    [
+     2,
+     9,
+     332,
+     335,
+     0
+    ],
+    [
+     0,
+     0,
+     5,
+     16,
+     0
+    ]
+   ]
+  },
+  "test_dist_after": {
+   "n": 3000,
+   "acc": 0.632,
+   "within_one_bucket": 0.9850000143051147,
+   "nll": 0.8190821409225464,
+   "ece15_toplabel": 0.031804456820090636,
+   "mae_expected_dist_moves": 3.3392818071047463,
+   "confusion": [
+    [
+     426,
+     110,
+     12,
+     0,
+     0
+    ],
+    [
+     61,
+     237,
+     231,
+     7,
+     0
+    ],
+    [
+     10,
+     126,
+     898,
+     183,
+     0
+    ],
+    [
+     2,
+     9,
+     332,
+     335,
+     0
+    ],
+    [
+     0,
+     0,
+     5,
+     16,
+     0
+    ]
+   ]
+  },
+  "posthoc_net_temperature": {
+   "T_fit_on_val_not_rule_dead": 1.0871820900970937,
+   "val_nll": [
+    0.34895119071006775,
+    0.34792405366897583
+   ],
+   "test": {
+    "net_input_not_rule_dead": {
+     "n": 3659,
+     "n_unsolvable": 659,
+     "auroc": 0.8692220536165908,
+     "acc": 0.8409401475813064,
+     "ece15_toplabel": 0.017223468558623816,
+     "ece15_posclass": 0.08778488480477192
+    },
+    "push_and_not_rule_dead": {
+     "n": 501,
+     "n_unsolvable": 152,
+     "auroc": 0.8250640928969989,
+     "acc": 0.7684630738522954,
+     "ece15_toplabel": 0.06694900319946857,
+     "ece15_posclass": 0.07119585246130258
+    },
+    "system_score_auroc": 0.9712724444444445,
+    "by_src": {
+     "graph": {
+      "n": 2129,
+      "n_unsolvable": 1726,
+      "auroc": 0.9389874320349407,
+      "acc": 0.8821042743071865,
+      "ece15_toplabel": 0.015238991061335961,
+      "ece15_posclass": 0.06933479299499093
+     },
+     "opt": {
+      "n": 1897,
+      "n_unsolvable": 0,
+      "auroc": null,
+      "acc": 0.9119662625197681,
+      "ece15_toplabel": 0.03730206255558986,
+      "ece15_posclass": 0.16119575842578726
+     },
+     "push": {
+      "n": 994,
+      "n_unsolvable": 645,
+      "auroc": 0.9281757402101242,
+      "acc": 0.8430583501006036,
+      "ece15_toplabel": 0.0402321754336372,
+      "ece15_posclass": 0.07453815069450609
+     },
+     "walk": {
+      "n": 980,
+      "n_unsolvable": 629,
+      "auroc": 0.939686292627469,
+      "acc": 0.8765306122448979,
+      "ece15_toplabel": 0.020483782251866756,
+      "ece15_posclass": 0.03347307817971248
+     }
+    }
+   },
+   "note": "POST-HOC, non-gating, not written to the artifact"
+  },
+  "latency_mps": [
+   {
+    "batch": 64,
+    "median_batch_ms": 1333.29,
+    "per_state_ms": 20.833
+   },
+   {
+    "batch": 8,
+    "median_batch_ms": 158.1,
+    "per_state_ms": 19.762
+   }
+  ]
+ },
+ "H_S1a_recomputed": {
+  "rule": "test AUROC >= 0.90 AND test ECE15 (top-label, after temperature) <= 0.05",
+  "auroc": 0.952938,
+  "ece15_toplabel_after": 0.01216887528785447,
+  "verdict": "PASS",
+  "non_gating_A1": {
+   "auroc_by_src": {
+    "graph": 0.9389874320349407,
+    "opt": null,
+    "push": 0.9281757402101242,
+    "walk": 0.939686292627469
+   },
+   "net_input_not_rule_dead": {
+    "n": 3659,
+    "n_unsolvable": 659,
+    "auroc": 0.8692220536165908,
+    "acc": 0.8409401475813064,
+    "ece15_toplabel": 0.016420264244761753,
+    "ece15_posclass": 0.08331307046238592
+   },
+   "push_and_not_rule_dead": {
+    "n": 501,
+    "n_unsolvable": 152,
+    "auroc": 0.8250640928969989,
+    "acc": 0.7684630738522954,
+    "ece15_toplabel": 0.0669205512920257,
+    "ece15_posclass": 0.07027564392315441
+   },
+   "system_score_auroc": 0.9712724444444445,
+   "note": "operative value-net quality = net-input population (amendment A1); the gate above is as preregistered"
+  }
+ },
+ "reproduction_vs_sealed": {
+  "temperature_solvable_refit_minus_sealed": 0.0,
+  "test_auroc_minus_sealed": 0.0,
+  "test_ece_after_minus_sealed": 0.0,
+  "reference_scores_max_abs_dp": 0.0
+ },
+ "eval_s": 275.2,
+ "wall_s": 287.6,
+ "within_total_cap": true
+}

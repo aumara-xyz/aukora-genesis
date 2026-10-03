@@ -1,0 +1,4 @@
+{"version":"FORCED-1","locked_local":"2026-10-03 16:21:32 WITA","question":"Does forcing a final answer on length-truncated samples rescue solves for BASE on holdout128?",
+ "design":"eval_forced.py sha c8bf56c04663d8d6fa76e0e9c5ef46c48dd84e837b83578f25c41efa55bb34a9; n=4 samples seed 20261008; truncated samples continued with '\\n</think>\\n\\n' + greedy 96 tokens in same engine; lenient scoring",
+ "H2":"rescued >= 5 board-samples (raw not OK -> forced OK)","claude_prediction":{"P_H2":0.55,"expected_rescued":"3-15 of ~215 truncated"},
+ "note":"inference-time only; applies equally to any model; no training"}

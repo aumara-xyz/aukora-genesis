@@ -1,0 +1,8 @@
+{"version":"REP1","locked_local":"2026-10-03 17:56:29 WITA","motivation":"v7 secondary test v7>base lenient_ok_forced p=0.019 on holdout_v7 (and gen1>base p=0.037) contradicts CONFIRM-2 (gen1<base on holdout128). Replicate on a NEW sealed set before any claim.",
+ "holdout":"holdout_rep1.json sha 5bf97fc90fb60a05d0e3665f0eaaed9918bd263dd82afdae621f1f7dc96ba084 (144 boards 64/64/16, secret non-public seed, excludes holdout_v7/holdout128/holdout32/cp/pools)",
+ "code":"rep1_eval.py sha c3fbb8a1f9907561da2e4fab0b8b6dc13ec66aea6764b14ca915192577fcfce7 (= v7_eval.py with HOLDOUT=holdout_rep1.json, N=8, SEED=20261009, receipts rep1_eval_*)",
+ "models":"base (pinned Ornith) and v7 (/dev/shm/merged_v7, adapter out/v7_adapter)",
+ "primary":"v7 > base on per-board lenient_ok_forced counts (0..8), one-sided exact sign test, PASS p<=0.05",
+ "secondary":"strict; per band; illegal rate; tokens",
+ "claude_prediction":{"P_PASS":0.5,"expected_lenient_rate":{"base":"0.22-0.26","v7":"0.25-0.30"}},
+ "interpretation_rule":"PASS => evidence that the v7 recipe (self-traces + CP) improves planning over base on two independent sealed sets (holdout_v7 secondary + REP1 primary). FAIL => the holdout_v7 result is treated as not replicated."}
