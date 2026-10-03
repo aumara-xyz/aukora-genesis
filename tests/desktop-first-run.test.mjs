@@ -97,6 +97,41 @@ try {
   await assert.rejects(lstat(join(first.stateRoot, 'gate-state')), { code: 'ENOENT' })
   console.log('PASS first run: temporary waiver; config and evidence unchanged')
 
+  // Aumlok bound (first-link settings and controller record), restarted before its first plugin-set approval:
+  // the waiver must survive, or nothing could start the app to raise that approval.
+  const bound = await fixture('bound-never-approved')
+  for (const marker of [join(bound.userData, 'kira-deployment-overlay.patch.yml'), join(bound.stateRoot, 'aumlok/local-control.json')]) {
+    await write(marker, 'synthetic marker, not key material\n')
+    bound.tracked.push(marker)
+  }
+  const boundTarget = await resolveUnchanged(bound)
+  assert.equal(boundTarget.allowUnapproved, true)
+  assert.ok(boundTarget.why.includes(FIRST_RUN))
+  console.log('PASS bound, never plugin-set approved: waiver kept (no lockout)')
+
+  // Approved once (approver pin left) and the approval gone: refused by name, in every state-root source.
+  const lost = []
+  for (const [name, options] of [
+    ['lost-approval', {}],
+    ['lost-approval-config-root', { config: { stateRoot: join(scratch, 'lost-config-state') } }],
+    ['lost-approval-env-root', { env: { AUKORA_DESKTOP_STATE: join(scratch, 'lost-env-state') } }],
+  ]) {
+    const sample = await fixture(name, options)
+    const pin = join(sample.stateRoot, 'gate-state/plugin-set-approver.json')
+    await write(pin, 'synthetic pin\n')
+    sample.tracked.push(pin)
+    const before = await Promise.all(sample.tracked.map(path => readFile(path)))
+    await assert.rejects(resolveTarget(sample.args), error => error.message.startsWith('existing-install-approval-missing:')
+      && error.message.includes(pin) && error.message.includes(sample.configPath))
+    assert.deepEqual(await Promise.all(sample.tracked.map(path => readFile(path))), before)
+    lost.push(sample)
+  }
+  const danglingPin = await fixture('dangling-pin')
+  await mkdir(join(danglingPin.stateRoot, 'gate-state'), { recursive: true })
+  await symlink(join(scratch, 'missing-pin'), join(danglingPin.stateRoot, 'gate-state/plugin-set-approver.json'))
+  await assert.rejects(resolveTarget(danglingPin.args), /^Error: existing-install-approval-missing:/u)
+  console.log('PASS approver pin without approval (default, configured, environment root; dangling pin): refused, evidence unchanged')
+
   const approved = await fixture('approved-install', { approval: receipt })
   const approvedTarget = await resolveUnchanged(approved)
   assert.equal(approvedTarget.allowUnapproved, false)
@@ -197,6 +232,13 @@ try {
   assert.throws(() => changedSetOracle(mutatedTarget), error => error.code === 'ERR_ASSERTION'
     && error.message.includes('unmatched evidence must not approve this release record'))
   console.log('RED caught: removing receipt-to-set comparison makes the changed-set oracle fail')
+  const guardCall = 'await assertNeverApproved(installStateRoot, configPath)'
+  assert.equal(source.split(guardCall).length, 2, 'red arm must remove exactly the never-approved guard')
+  const unguardedPath = join(isolatedShell, 'resolve-unguarded.mjs')
+  await writeFile(unguardedPath, source.replace(guardCall, '/* never-approved guard removed */'))
+  const unguarded = await import(pathToFileURL(unguardedPath).href)
+  assert.equal((await unguarded.resolveTarget(lost[0].args)).allowUnapproved, true)
+  console.log('RED caught: removing the never-approved guard hands a lost-approval install the waiver')
   console.log(FIRST_RUN)
   console.log('PASS desktop-first-run: resolver evidence only; app launch and signature verification not tested')
 } finally {

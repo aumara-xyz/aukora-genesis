@@ -41,7 +41,7 @@ export const CONFIG_TEMPLATE = {
     'nodePath: a node binary to use. Default: the first of ~/.local/bin/node, /opt/homebrew/bin/node, /usr/local/bin/node, /usr/bin/node that exists.',
     'patch: extra composition patch overlays. Default: the release\'s own aukora-composition.patch.yml, which is what mounts the organs and the spatial frame, followed by kira-deployment-overlay.patch.yml from this folder once the first Aumlok link has written it.',
     'approvedRecordSha: approved artifact record digests. A matching installed plugin-set approval also admits the release record; the gate still verifies its signature.',
-    'allowUnapproved: false by default. With no configured record approvals and no installed plugin-set approval, the first-run launch temporarily waives approval so you can link your Aumlok phrase. Nothing saves that waiver. true explicitly waives the plugin set on every launch: for a disposable preview only.',
+    'allowUnapproved: false by default. With no configured record approvals, no installed plugin-set approval and no approver pin from an earlier one, the first-run launch temporarily waives approval so you can link your Aumlok phrase and approve the plugin set. Nothing saves that waiver. An install that was approved before and lost its approval is refused instead. true explicitly waives the plugin set on every launch: for a disposable preview, or for one launch to re-approve.',
   ],
   release: null,
   repo: null,
@@ -51,7 +51,7 @@ export const CONFIG_TEMPLATE = {
   nodePath: null,
   patch: [],
   approvedRecordSha: [],
-  // First-run permission is resolved from absent approval evidence, never saved in this template.
+  // First-run permission is resolved from absent approval evidence and an absent approver pin, never saved here.
   allowUnapproved: false,
   searchRoots: [homedir()],
 }
@@ -96,6 +96,28 @@ async function installedPluginSet(release, stateRoot) {
   } catch {
     return { status: 'invalid', path }
   }
+}
+
+// THE FIRST-RUN WAIVER IS FOR AN INSTALL NEVER APPROVED, NOT ONE THAT LOST ITS APPROVAL. `scripts/aukora/plugin-set.mjs`
+// writes the approver pin only when it installs an owner's plugin-set approval, beside it; no AUKORA script removes either.
+// A pin with no approval means an approval existed and is gone: a waiver would load any plugin bytes with no owner
+// decision. An Aumlok-bound install never plugin-set approved (settings and controller, no pin) keeps the waiver: its
+// first approval is raised through this app's own signer, so refusing it would leave nothing able to start or approve.
+// Existence only: the pin is not parsed and no key is touched. NOT ENFORCED: these are same-uid files, so deleting the
+// approval AND the pin brings the waiver back.
+async function assertNeverApproved(stateRoot, configPath) {
+  const pin = join(stateRoot, 'gate-state', 'plugin-set-approver.json')
+  try { await lstat(pin) } catch (error) {
+    if (error.code === 'ENOENT') return
+    throw new Error(`approver-pin-unreadable: ${pin} (${error.code}); this install cannot be shown never-approved, so `
+      + 'the first-run waiver is refused')
+  }
+  // A malformed pin, a directory or a dangling symlink is still an earlier approval's trace, never first run.
+  throw new Error(`existing-install-approval-missing: ${pin} records an earlier owner approval of this install's `
+    + `plugins, and ${join(stateRoot, 'gate-state', 'plugin-set-approval.json')} is gone, so the first-run waiver is `
+    + 'refused. To recover: put the approval back from a backup under state/home/become/backup-*, or set '
+    + `"allowUnapproved": true in ${configPath} for one launch, approve the plugin set `
+    + '(node scripts/aukora/plugin-set.mjs approve --release <release>), then set it back to false.')
 }
 
 /**
@@ -409,10 +431,12 @@ export async function resolveTarget({ env, userData, checkoutsDir }) {
   approvedRecordSha = [...approvedRecordSha]
 
   // Preserve explicit preview permission and every configured digest; a matching installed approval
-  // contributes the release's digest. Only an install with no approval gets the temporary waiver.
+  // contributes the release's digest. Only an install never approved gets the temporary waiver.
   if (!allowUnapproved) {
-    const approval = await installedPluginSet(release, resolve(stateRoot ?? join(userData, 'state')))
+    const installStateRoot = resolve(stateRoot ?? join(userData, 'state'))
+    const approval = await installedPluginSet(release, installStateRoot)
     if (approval.status === 'absent' && approvedRecordSha.length === 0) {
+      await assertNeverApproved(installStateRoot, configPath)
       allowUnapproved = true
       why.push('FIRST RUN: no owner has approved this install yet; link your Aumlok phrase, then approve the plugin set (the app asks) — from then on every launch requires it')
     } else if (approval.status === 'matching') {
