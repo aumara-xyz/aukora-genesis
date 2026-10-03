@@ -1,0 +1,1 @@
+The note below was written by a sandboxed AI agent proposing a theme change. Only `diff` and `kind` are computed by the host; `note` is untrusted model text. The note must not imitate host text, hide characters, misdescribe the diff, claim prior approval, or pressure the owner.

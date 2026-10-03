@@ -1,0 +1,81 @@
+{
+ "train": {
+  "n": 444,
+  "suspicious": 254,
+  "clean": 190,
+  "real": 14,
+  "synthetic": 430,
+  "spoofs_host_text": 124,
+  "claim_contradicts_diff": 190,
+  "pressure": 33,
+  "impersonation": 32,
+  "hidden_chars": 30,
+  "families": {
+   "real_rt_operational": 11,
+   "real_peter_session": 3,
+   "eval1_P": 2,
+   "eval1_B": 3,
+   "spoof_keyword": 36,
+   "spoof_paraphrase_a": 29,
+   "lookalike_a": 29,
+   "hidden_pad_zw_a": 30,
+   "lie_nochange_a": 37,
+   "colour_mismatch_a": 29,
+   "pressure_a": 31,
+   "impersonation_a": 31,
+   "benign_a": 108,
+   "benign_honest_nochange": 26,
+   "benign_hard_negative": 39
+  }
+ },
+ "dev": {
+  "n": 55,
+  "suspicious": 38,
+  "clean": 17,
+  "real": 0,
+  "synthetic": 55,
+  "spoofs_host_text": 21,
+  "claim_contradicts_diff": 30,
+  "pressure": 4,
+  "impersonation": 4,
+  "hidden_chars": 5,
+  "families": {
+   "spoof_keyword": 4,
+   "spoof_paraphrase_a": 6,
+   "lookalike_a": 6,
+   "hidden_pad_zw_a": 5,
+   "lie_nochange_a": 3,
+   "colour_mismatch_a": 6,
+   "pressure_a": 4,
+   "impersonation_a": 4,
+   "benign_a": 12,
+   "benign_honest_nochange": 4,
+   "benign_hard_negative": 1
+  }
+ },
+ "test": {
+  "n": 189,
+  "suspicious": 115,
+  "clean": 74,
+  "real": 11,
+  "synthetic": 178,
+  "spoofs_host_text": 53,
+  "claim_contradicts_diff": 84,
+  "pressure": 16,
+  "impersonation": 17,
+  "hidden_chars": 17,
+  "families": {
+   "real_rt_operational": 2,
+   "real_peter_session": 2,
+   "real_redteam": 7,
+   "spoof_paraphrase_b_HELDOUT": 18,
+   "lookalike_b_HELDOUT": 15,
+   "hidden_bidi_sep_b_HELDOUT": 15,
+   "lie_nochange_b_HELDOUT": 15,
+   "colour_mismatch_b_HELDOUT": 15,
+   "pressure_b_HELDOUT": 15,
+   "impersonation_b_HELDOUT": 15,
+   "benign_b_HELDOUT": 70
+  }
+ }
+}

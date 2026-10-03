@@ -236,3 +236,11 @@ This pass answers red-team findings from the same day: (1) confused deputy, (2) 
 - The owner bearer is a long-lived bearer link. Anyone holding it can approve; rotate it by deleting `gate/owner-secret.json` and restarting the gate. WebAuthn is design only.
 - Rate limits are per session. A compromised harness can mint session ids, so the global cap is the per-proposal owner approval itself.
 - The process-cleanup heuristic trusts OpenShell's login shell layout in 0.1.2.
+
+## Red-team 2026-10-03 (WITA)
+
+Round 1 (19 attempts) and round 2 (815 scratch + 17 live attacks): **0 approved**. Summary: [`redteam/REDTEAM-2026-10-03.md`](redteam/REDTEAM-2026-10-03.md).
+- Full report: [`redteam/2026-10-03-glm-redteam.md`](redteam/2026-10-03-glm-redteam.md)
+- Attack tracker: [`redteam/tracker/SUMMARY.md`](redteam/tracker/SUMMARY.md), [`attacks.jsonl`](redteam/tracker/attacks.jsonl), [`benign_controls.jsonl`](redteam/tracker/benign_controls.jsonl)
+- Scripts: [`redteam/`](redteam/) (round 2 in [`redteam/rt2/`](redteam/rt2/))
+- Laya note screen (688-row trainset, rules, fine-tune eval): [`../laya-screen/`](../laya-screen/), verdict in [`../laya-screen/ft-full/verdict.md`](../laya-screen/ft-full/verdict.md)
