@@ -43,6 +43,54 @@ say()  { printf '%s\n' "$*"; }
 step() { printf '\n== %s\n' "$*"; }
 ok()   { printf '   ok: %s\n' "$*"; }
 skip() { printf '   already there: %s\n' "$*"; }
+# NOT THE SAME AS skip(). It names the file an earlier, unfinished run did not leave, so a person reading the log can
+# tell "nothing to do" from "this had to be repaired"; the line after it says what this run does about it.
+incomplete() { printf '   incomplete: %s\n' "$*"; }
+
+# ── DID A STAGE ACTUALLY FINISH? ────────────────────────────────────────────────────────────────────────────────
+# **A DIRECTORY THAT EXISTS IS NOT A STAGE THAT FINISHED.** An interrupted build leaves the directory behind and not
+# its outputs, and the test this script used — `[ -d <dir> ]` — then skipped that stage for good: the run reached
+# "Done" over a tree it had never built, which is the one outcome the person installing cannot debug. Each predicate
+# below names the file the stage's own build writes LAST, so "already there" means what the header always claimed.
+#
+# Each returns the missing paths on stdout and nothing at all when the stage is complete, so the caller decides and
+# prints from one fact. `set -e` IS IN FORCE: every caller tests with `if`, never with a bare `[ ... ] && ...`,
+# because a false test as the last command of a line would stop the installer.
+harness_missing() {
+  # build-dsh.py DELETES `.dsh-build/pinned-harness-build.json` before it touches the tree and writes it again only
+  # after unpack, patches, `pnpm install`, `pnpm run build` and the artifact record have all finished and verified
+  # (scripts/build-dsh.py, binding_path). The materializer reads it, so a tree without it cannot become a release.
+  # pnpm's `node_modules/.modules.yaml` is NOT enough: it is written before `pnpm run build`, the long part.
+  [ -f vendor/dsh/.dsh-build/pinned-harness-build.json ] || printf 'vendor/dsh/.dsh-build/pinned-harness-build.json '
+}
+
+faces_missing() {
+  # EVERY FACE, READ FROM THE TREE. build-face.py carries its own FACES tuple; a second copy of that list here is a
+  # second list that drifts, and the drift is silent because both halves look correct on their own. The old test named
+  # ONE face (`apps`), so a tree carrying `apps/lib` and no `memory/lib` skipped the stage that builds both.
+  # `.build-inputs.json` is the marker because copy_back writes it for every face unconditionally, while
+  # index.js/client.js/invariant.js are written only when that face produced them.
+  for dir in plugins/aukora-face/*/; do
+    [ -f "${dir}lib/.build-inputs.json" ] || printf '%s ' "${dir}lib"
+  done
+}
+
+release_missing() {
+  # The materializer writes its own record into the release's .dsh-build/ as its last write. A directory named
+  # ~/aukora-release-<sha> can be left behind by a cut that failed part-way; the record is written when it completed.
+  [ -f "$1/.dsh-build/aukora-release.json" ] || printf '%s ' "$1/.dsh-build/aukora-release.json"
+}
+
+app_missing() {
+  # electron-builder's own output is the bundle, not the directory that holds it: `dist` survives a packaging run
+  # that died before the .app was assembled, and the .app is made before its app.asar is written into it. The
+  # output directory follows the arch of the node that runs electron-builder (process.arch): `mac-arm64` on Apple
+  # silicon, plain `mac` for x64 (Intel, or a node under Rosetta).
+  arch=$(node -p process.arch)
+  if [ "$arch" = x64 ]; then out=mac; else out="mac-$arch"; fi
+  asar="apps/aukora-desktop/dist/$out/AUKORA.app/Contents/Resources/app.asar"
+  [ -f "$asar" ] || printf '%s ' "$asar"
+}
 
 # ── THE PREREQUISITES, EACH NAMED WITH HOW TO GET IT ────────────────────────────────────────────────────────────────
 # **THE POINT IS THE SENTENCE A PERSON READS WHEN SOMETHING IS MISSING.** "command not found" costs an afternoon;
@@ -152,17 +200,46 @@ heavy() {  # heavy <description> <command...>
 }
 
 step "The harness (vendor/dsh)"
-if [ -d vendor/dsh/packages ] && [ "$DRY_RUN" -eq 0 ]; then
-  skip "vendor/dsh is already unpacked (delete it to rebuild)"
+MISSING_FROM=$(harness_missing)
+if [ "$DRY_RUN" -eq 0 ] && [ -z "$MISSING_FROM" ]; then
+  skip "vendor/dsh is already unpacked and installed (delete it to rebuild)"
+elif [ -n "$MISSING_FROM" ] && [ -d vendor/dsh ]; then
+  # A HARNESS THAT DID NOT FINISH CANNOT BE FINISHED IN PLACE. build-dsh.py compares every file of an existing
+  # vendor/dsh with the pinned archive before it builds, and its patches have already rewritten some of them, so it
+  # stops on `source-file-mismatch` (or a missing file after a cut-short unpack). The archive itself is kept.
+  incomplete "$MISSING_FROM"
+  say "   build-dsh.py does not build over a tree it already started."
+  say "   Delete vendor/dsh and run this script again; vendor/dsh-source.tar.gz is kept, so nothing downloads twice."
+  if [ "$DRY_RUN" -eq 0 ]; then exit 1; fi
 else
   heavy "building the harness — this is the long one" python3 scripts/build-dsh.py
+  # A BUILD THAT CLAIMS SUCCESS AND LEFT NOTHING IS THE FAILURE THIS WHOLE CHANGE IS ABOUT, so the same predicate
+  # is asked again. `set -e` already stops on a non-zero exit; this catches the other half, a step that exited 0.
+  if [ "$DRY_RUN" -eq 0 ]; then
+    MISSING_FROM=$(harness_missing)
+    if [ -n "$MISSING_FROM" ]; then
+      say "install-mac: the harness step finished but vendor/dsh is still incomplete — missing: $MISSING_FROM"
+      say "  Nothing further was built. Delete vendor/dsh and run this script again."
+      exit 1
+    fi
+  fi
 fi
 
 step "The faces"
-if [ -d plugins/aukora-face/apps/lib ] && [ "$DRY_RUN" -eq 0 ]; then
-  skip "the face bundles are already built (delete plugins/aukora-face/apps/lib to rebuild)"
+MISSING_FROM=$(faces_missing)
+if [ "$DRY_RUN" -eq 0 ] && [ -z "$MISSING_FROM" ]; then
+  skip "every face bundle is already built (delete a face's lib to rebuild it)"
 else
+  if [ -n "$MISSING_FROM" ]; then incomplete "$MISSING_FROM"; fi
   heavy "building the faces" python3 scripts/build-face.py
+  if [ "$DRY_RUN" -eq 0 ]; then
+    MISSING_FROM=$(faces_missing)
+    if [ -n "$MISSING_FROM" ]; then
+      say "install-mac: the face step finished but these face bundles are still incomplete — missing: $MISSING_FROM"
+      say "  Nothing further was built. Run: python3 scripts/build-face.py"
+      exit 1
+    fi
+  fi
 fi
 
 step "A release"
@@ -172,19 +249,44 @@ step "A release"
 # `~/aukora-release-*` on its own (apps/aukora-desktop/resolve.mjs), so this is the release it will run.
 SHORT=$(git rev-parse --short=12 HEAD 2>/dev/null || echo HEAD)
 RELEASE="$HOME/aukora-release-$SHORT"
-if [ -d "$RELEASE" ] && [ "$DRY_RUN" -eq 0 ]; then
+MISSING_FROM=$(release_missing "$RELEASE")
+if [ "$DRY_RUN" -eq 0 ] && [ -z "$MISSING_FROM" ]; then
   skip "$RELEASE (delete it to cut again)"
+elif [ -n "$MISSING_FROM" ] && [ -e "$RELEASE" ]; then
+  # The materializer refuses `release-exists` for any target already there; `--force` is its own way to replace
+  # one, and it is passed only for a target that carries no completion record, so a finished release is never it.
+  incomplete "$MISSING_FROM"
+  heavy "materializing a release at $SHORT into $RELEASE, replacing the unfinished one" \
+    python3 scripts/materialize-aukora-release.py --to "$RELEASE" --force
 else
   heavy "materializing a release at $SHORT into $RELEASE" python3 scripts/materialize-aukora-release.py --to "$RELEASE"
 fi
+if [ "$DRY_RUN" -eq 0 ] && [ -n "$MISSING_FROM" ]; then  # the materializer ran above
+  MISSING_FROM=$(release_missing "$RELEASE")
+  if [ -n "$MISSING_FROM" ]; then
+    say "install-mac: the release step finished but $RELEASE carries no record — missing: $MISSING_FROM"
+    say "  Nothing further was built. Delete $RELEASE and run this script again."
+    exit 1
+  fi
+fi
 
 step "The desktop app"
-if [ -d apps/aukora-desktop/dist ] && [ "$DRY_RUN" -eq 0 ]; then
+MISSING_FROM=$(app_missing)
+if [ "$DRY_RUN" -eq 0 ] && [ -z "$MISSING_FROM" ]; then
   skip "the app bundle is already built (delete apps/aukora-desktop/dist to rebuild)"
 else
+  if [ -n "$MISSING_FROM" ] && [ -d apps/aukora-desktop/dist ]; then incomplete "$MISSING_FROM"; fi
   # The app's own packaging command, which is `electron-builder --mac dir` (measured in its package.json). Its
   # dependencies come first: a fresh clone has no apps/aukora-desktop/node_modules, and the app's lockfile is npm's.
   heavy "packaging the app" sh -c 'cd apps/aukora-desktop && npm ci && npm run dist'
+  if [ "$DRY_RUN" -eq 0 ]; then
+    MISSING_FROM=$(app_missing)
+    if [ -n "$MISSING_FROM" ]; then
+      say "install-mac: the packaging step finished but the bundle is still incomplete — missing: $MISSING_FROM"
+      say "  Nothing further was done. Run: cd apps/aukora-desktop && npm run dist"
+      exit 1
+    fi
+  fi
 fi
 
 # ── HOW TO OPEN IT ──────────────────────────────────────────────────────────────────────────────────────────────────
