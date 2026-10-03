@@ -21,7 +21,12 @@
  */
 import { lookup } from 'node:dns/promises'
 import { BlockList, isIP } from 'node:net'
+import { createHash, randomUUID } from 'node:crypto'
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { isHex32, isValidEvent, publicKeyOf, randomSecretKey, signEvent } from './event.mjs'
+import { evidencePath, retainGiftWrap, wireDigest, wirePath } from './evidence.mjs'
+import { openGiftWrap } from './giftwrap.mjs'
 
 /** Every way a single relay exchange can end. A caller routes on these; none is prose to parse. */
 export const RELAY_STATE = Object.freeze({
@@ -322,15 +327,172 @@ export async function publishToRelays(wrap, { relays = DEFAULT_RELAYS, timeoutMs
   return { accepted, outcomes, verdict: accepted.length > 0 ? null : RELAY_REFUSE.NOBODY_ACCEPTED }
 }
 
+const MAX_PENDING_WINDOWS = 1024
+const activeScans = new Map()
+const timestamp = value => Number.isSafeInteger(value) && value >= 0
+
+function boundedCount(value, maximum, name) {
+  if (!Number.isSafeInteger(value) || value < 1 || value > maximum) {
+    throw new RangeError(`${name} must be an integer from 1 to ${maximum}`)
+  }
+  return value
+}
+
+function readDeadline(timeoutMs) {
+  if (!Number.isFinite(timeoutMs) || timeoutMs < 0 || timeoutMs > 2147483647) throw new RangeError('invalid timeoutMs')
+  return Date.now() + timeoutMs
+}
+
+/** Apply every requested constraint locally; NIP-01 hex filters are exact, never prefixes. */
+function matchesFilter(event, filter) {
+  if (!event || typeof event !== 'object' || !isHex32(event.id) || !isHex32(event.pubkey)
+      || event.id !== event.id.toLowerCase() || event.pubkey !== event.pubkey.toLowerCase()
+      || !Number.isSafeInteger(event.created_at) || !Array.isArray(event.tags)) return false
+  if (filter.kinds && !filter.kinds.includes(event.kind)) return false
+  if (filter.ids && !filter.ids.includes(event.id)) return false
+  if (filter.authors && !filter.authors.includes(event.pubkey)) return false
+  if (filter.since !== undefined && event.created_at < filter.since) return false
+  if (filter.until !== undefined && event.created_at > filter.until) return false
+  return Object.entries(filter).every(([key, values]) => !key.startsWith('#')
+    || event.tags.some(tag => Array.isArray(tag) && tag[0] === key.slice(1) && values.includes(tag[1])))
+}
+
+function loadScan(path) {
+  if (!path) return { version: 1, highWater: null, scan: null }
+  let stored
+  try {
+    if (statSync(path).size > 256 * 1024) throw new Error('scan cursor is too large')
+    stored = JSON.parse(readFileSync(path, 'utf8'))
+  } catch (error) {
+    if (error.code === 'ENOENT') return { version: 1, highWater: null, scan: null }
+    throw error
+  }
+  const scan = stored?.scan
+  if (stored?.version !== 1 || (stored.highWater !== null && !timestamp(stored.highWater))
+      || (scan !== null && (!scan || !timestamp(scan.startedAt) || !timestamp(scan.since)
+        || !timestamp(scan.until) || scan.until < scan.startedAt
+        || (scan.nextRefresh !== undefined && typeof scan.nextRefresh !== 'boolean')
+        || !Array.isArray(scan.pending) || !scan.pending.length || scan.pending.length > MAX_PENDING_WINDOWS
+        || scan.pending.filter(window => window?.refresh).length > 64
+        || scan.pending.some(window => !window || !timestamp(window.since) || !Number.isSafeInteger(window.until)
+          || window.since < scan.since || window.until > scan.until || window.since > window.until
+          || (window.refresh !== undefined && window.refresh !== true)
+          || (window.limit !== undefined && (!Number.isSafeInteger(window.limit)
+            || window.limit < 1 || window.limit > 10000 || window.since !== window.until)))))) {
+    throw new Error('invalid scan cursor; refusing to discard unfinished history')
+  }
+  return stored
+}
+
+const HEX64 = /^[0-9a-f]{64}$/
+
+/** The wraps one relay's scan added to the local store, newest first: `{digest, id, at}`. */
+function loadKept(path) {
+  if (!path) return []
+  let stored
+  try {
+    if (statSync(path).size > 4 * 1024 * 1024) throw new Error('kept list is too large')
+    stored = JSON.parse(readFileSync(path, 'utf8'))
+  } catch (error) {
+    if (error.code === 'ENOENT') return []
+    throw error
+  }
+  if (stored?.version !== 1 || !Array.isArray(stored.kept) || stored.kept.some(entry => !entry
+      || !HEX64.test(entry.digest) || !HEX64.test(entry.id) || !timestamp(entry.at))) {
+    throw new Error('invalid kept list; refusing to guess which ciphertext the scan added')
+  }
+  return stored.kept
+}
+
 /**
- * Read gift wraps addressed to us from every relay.
- *
- * @param {object} spec - `{recipientPubkey, since, relays, timeoutMs, WebSocketImpl, secretKeyHex, kinds, now}`.
- *   `since` defaults to the full jitter window, NOT to "recently" — see DEFAULT_LOOKBACK_SECONDS.
- * @returns {Promise<{wraps: object[], answered: string[], outcomes: Array, verdict: string|null}>}
- *   `wraps` is de-duplicated by event id, because the same wrap legitimately arrives from several
- *   relays; `verdict` is `nostr:no-relay-answered` when nobody answered, which is NOT the same as
- *   an empty `wraps` from a relay that answered.
+ * Keep only the newest `cap` wraps this relay's scan added; delete the older ones' ciphertext. A file
+ * some other writer put there first (a send's own copy, a thread's evidence) was never listed, and a
+ * listed file that an evidence record now names is dropped from the list but never deleted.
+ */
+function trimKept(stateDir, path, kept, cap) {
+  kept.sort((a, b) => b.at - a.at || (a.digest < b.digest ? -1 : 1))
+  const dropped = kept.splice(cap)
+  saveScan(path, { version: 1, kept })
+  for (const entry of dropped) {
+    if (existsSync(evidencePath(stateDir, entry.id))) continue
+    try { unlinkSync(wirePath(stateDir, entry.digest)) } catch (error) { if (error.code !== 'ENOENT') throw error }
+  }
+  return kept
+}
+
+function saveScan(path, cursor) {
+  if (!path) return
+  mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
+  const temporary = `${path}.${randomUUID()}.tmp`
+  try {
+    writeFileSync(temporary, `${JSON.stringify(cursor)}\n`, { mode: 0o600, flag: 'wx' })
+    renameSync(temporary, path)
+  } finally {
+    try { unlinkSync(temporary) } catch (error) { if (error.code !== 'ENOENT') throw error }
+  }
+}
+
+/**
+ * Older part first; never subtract a timestamp from a full page's last event. The cut goes just
+ * above the oldest second the page returned, so a newest-first relay finishes the newer part in
+ * one page (a time midpoint from `since: 0` re-read the same newest page ten times, measured);
+ * the two parts still cover the whole interval, so a relay in any order loses nothing.
+ */
+function splitWindow(window, oldest) {
+  if (window.since < window.until) {
+    const middle = Number.isSafeInteger(oldest) && oldest >= window.since && oldest < window.until
+      ? oldest : window.since + Math.floor((window.until - window.since) / 2)
+    return [{ ...window, until: middle }, { ...window, since: middle + 1 }]
+  }
+  return null
+}
+
+const windowKey = window => `${window.refresh ? 'r' : 'b'}:${window.since}:${window.until}`
+
+/** Deduplicate deferred obligations; at capacity conservatively merge backlog, never drop it. */
+function boundedPending(windows) {
+  const unique = new Map()
+  for (const window of windows) {
+    const key = windowKey(window)
+    const previous = unique.get(key)
+    unique.set(key, previous?.limit > (window.limit ?? 0) ? previous : window)
+  }
+  const pending = [...unique.values()]
+  while (pending.length > MAX_PENDING_WINDOWS) {
+    const backlog = pending.map((window, index) => ({ window, index })).filter(({ window }) => !window.refresh)
+    const leaves = backlog.filter(({ window }) => window.since === window.until)
+    const [a, b] = leaves.length >= 2 ? leaves : backlog
+    // One depth-first refresh wave has at most 53 time siblings. Preserve cold windows when
+    // dense leaves can be merged instead; merging only adds re-reading, never loses coverage.
+    if (!b) throw new Error('scan queue has no room for refresh')
+    pending[a.index] = { since: Math.min(a.window.since, b.window.since), until: Math.max(a.window.until, b.window.until) }
+    pending.splice(b.index, 1)
+  }
+  return pending
+}
+
+function refreshScan(scan, now) {
+  if (now <= scan.until) return scan
+  // Keep unfinished refresh coverage as backlog, but never freeze the newest queryable time.
+  const backlog = scan.pending.map(({ refresh, ...window }) => window)
+  return { ...scan, until: now, pending: boundedPending([...backlog, {
+    since: Math.max(scan.since, scan.until - DEFAULT_LOOKBACK_SECONDS), until: now, refresh: true,
+  }]) }
+}
+
+/**
+ * Read bounded, verified pages. Optional stateDir retains ALL contacts' ciphertext before moving
+ * the per-recipient/relay/kinds cursor. Without it there are no filesystem reads or writes.
+ * A capped scan preserves history while one rolling jitter-window refresh shares its page budget.
+ * highWater advances to scan.until only when every obligation completes, never to a sender time.
+ * EOSE cannot prove a relay is honest or retains history.
+ * Dense seconds retry at maxRepliesPerPage, then rotate without completing; no ID-prefix queries.
+ * limit: 1..1000; maxPagesPerRelay: 1..256; maxRepliesPerPage: 1..10000;
+ * maxRepliesPerRelay: 1..100000. Reply budgets include invalid/duplicate EVENT frames.
+ * Without stateDir nothing persists between calls, so the default is one page per relay (the
+ * newest `limit` wraps, as before); a caller that wants more in one call passes maxPagesPerRelay.
+ * With stateDir the ciphertext a relay's scan adds is capped at its newest maxKeptWraps (1..10000),
+ * and opening stops at the deadline: an unfinished page stays pending rather than overrunning it.
  */
 export async function fetchGiftWraps({
   recipientPubkey,
@@ -342,78 +504,262 @@ export async function fetchGiftWraps({
   kinds = [1059],
   limit = 500,
   now = Math.floor(Date.now() / 1000),
+  stateDir,
+  maxPagesPerRelay = stateDir === undefined ? 1 : 32,
+  maxRepliesPerPage = 2000,
+  maxRepliesPerRelay = 10000,
+  maxKeptWraps = 1000,
 } = {}) {
   if (!isHex32(recipientPubkey)) {
     throw refuse(RELAY_REFUSE.BAD_WRAP, 'a recipient pubkey must be 32 bytes of hex')
   }
-  // NIP-01 filters: the relay does the selection, and `#p` is what keeps a relay from serving us
-  // wraps addressed to other people. A relay that ignores it is not one to trust with metadata.
-  const filter = { kinds, '#p': [recipientPubkey.toLowerCase()], since: since ?? now - DEFAULT_LOOKBACK_SECONDS, limit }
-  const { events, ...result } = await fetchEvents({ filter, relays, timeoutMs, WebSocketImpl, secretKeyHex })
+  const deadline = readDeadline(timeoutMs)
+  boundedCount(limit, 1000, 'limit')
+  boundedCount(maxKeptWraps, 10000, 'maxKeptWraps')
+  boundedCount(maxPagesPerRelay, 256, 'maxPagesPerRelay')
+  boundedCount(maxRepliesPerPage, 10000, 'maxRepliesPerPage')
+  boundedCount(maxRepliesPerRelay, 100000, 'maxRepliesPerRelay')
+  if (!timestamp(now) || (since !== undefined && !timestamp(since))) throw new RangeError('invalid scan timestamp')
+  if (!Array.isArray(kinds) || !kinds.length || kinds.some(kind => kind !== 1059 && kind !== 21059)) {
+    throw new RangeError('gift-wrap kinds must be 1059 or 21059')
+  }
+  if (stateDir !== undefined && (typeof stateDir !== 'string' || !stateDir.length)) throw new TypeError('invalid stateDir')
+  kinds = [...new Set(kinds)].sort((a, b) => a - b)
+  const recipient = recipientPubkey.toLowerCase()
+  if (stateDir !== undefined && (!isHex32(secretKeyHex) || publicKeyOf(secretKeyHex) !== recipient)) {
+    throw refuse(RELAY_REFUSE.BAD_WRAP, 'persisting an inbox requires its recipient key')
+  }
+  const Ctor = resolveTransport(WebSocketImpl)
+  const outcomes = await Promise.all(normalizeRelays(relays).map(async relay => {
+    // Coverage for a narrow request must not suppress a later request for older history.
+    const key = createHash('sha256').update(JSON.stringify([relay, kinds, since ?? null])).digest('hex')
+    const path = stateDir === undefined ? null : join(resolve(stateDir), 'nostr', 'scans', recipient, `${key}.json`)
+    const outcome = { relay, state: RELAY_STATE.TIMEOUT, message: '', events: [], answered: false,
+      complete: false, pages: 0, replies: 0, pending: 0, highWater: null, stopReason: 'deadline' }
+    if (path && activeScans.has(path)) {
+      let timer
+      try {
+        return await Promise.race([activeScans.get(path), new Promise(done => {
+          timer = setTimeout(() => done(outcome), Math.max(0, deadline - Date.now()))
+        })])
+      } finally { clearTimeout(timer) }
+    }
+    let finishScan
+    if (path) activeScans.set(path, new Promise(done => { finishScan = done }))
+    try {
+      let cursor = loadScan(path)
+      const keptPath = path && join(dirname(path), `${key}.kept.json`)
+      let kept = loadKept(keptPath)
+      const listed = new Set(kept.map(entry => entry.digest))
+      outcome.highWater = cursor.highWater
+      if (!cursor.scan) {
+        const floor = Math.max(0, since ?? 0, cursor.highWater === null
+          ? (since ?? now - DEFAULT_LOOKBACK_SECONDS) : cursor.highWater - DEFAULT_LOOKBACK_SECONDS)
+        cursor.scan = { startedAt: now, since: floor, until: now,
+          pending: floor <= now ? [{ since: floor, until: now }] : [] }
+        if (!cursor.scan.pending.length) {
+          cursor = { version: 1, highWater: now, scan: null }
+          saveScan(path, cursor)
+          return Object.assign(outcome, { complete: true, highWater: now, stopReason: null })
+        }
+        saveScan(path, cursor)
+      }
+      const refreshed = refreshScan(cursor.scan, now)
+      if (refreshed !== cursor.scan) {
+        cursor = { ...cursor, scan: refreshed }
+        saveScan(path, cursor)
+      }
+      outcome.pending = cursor.scan.pending.length
+      const byId = new Map()
+      const deferred = new Set()
+      while (cursor.scan) {
+        if (Date.now() >= deadline) { outcome.stopReason = 'deadline'; break }
+        if (outcome.pages >= maxPagesPerRelay) { outcome.stopReason = 'page-cap'; break }
+        if (outcome.replies >= maxRepliesPerRelay) { outcome.stopReason = 'reply-cap'; break }
+        const available = window => !deferred.has(windowKey(window)) && window.until <= now
+        // Persist alternation so even a one-page call advances both cold history and refresh.
+        let index = cursor.scan.pending.findIndex(window => available(window)
+          && !!window.refresh === (cursor.scan.nextRefresh ?? true))
+        if (index < 0) index = cursor.scan.pending.findIndex(available)
+        if (index < 0) {
+          if (cursor.scan.pending.some(window => window.until > now)) outcome.stopReason = 'clock-rollback'
+          break
+        }
+        const window = cursor.scan.pending[index]
+        const page = await readRelayPage({ Ctor, relay, deadline, secretKeyHex,
+          maxReplies: Math.min(maxRepliesPerPage, maxRepliesPerRelay - outcome.replies),
+          filter: { kinds, '#p': [recipient], since: window.since, until: window.until,
+            limit: Math.min(window.limit ?? limit, maxRepliesPerPage) } })
+        outcome.pages++
+        outcome.replies += page.replies
+        outcome.state = page.state
+        outcome.message = page.message
+        outcome.answered ||= page.state === RELAY_STATE.OK || page.events.length > 0
+        let added = false
+        for (const event of page.events) {
+          if (byId.has(event.id)) continue
+          if (stateDir !== undefined) {
+            // Opening costs milliseconds each; past the deadline the page is re-queued below whole.
+            if (Date.now() >= deadline) break
+            const digest = wireDigest(event)
+            if (!existsSync(wirePath(stateDir, digest))) {
+              // A relay's valid signature is not enough to grow the local message archive.
+              try { openGiftWrap(event, { recipientSecretKey: secretKeyHex }) } catch { continue }
+              retainGiftWrap(stateDir, event)
+              if (!listed.has(digest)) {
+                kept.push({ digest, id: event.id, at: event.created_at })
+                listed.add(digest)
+                added = true
+              }
+            }
+          }
+          byId.set(event.id, event)
+          outcome.events.push(event)
+        }
+        if (added) {
+          kept = trimKept(stateDir, keptPath, kept, maxKeptWraps)
+          listed.clear()
+          for (const entry of kept) listed.add(entry.digest)
+        }
+        const expired = Date.now() >= deadline
+        let pending = cursor.scan.pending.filter((_, position) => position !== index)
+        // Even a timed-out flood must make durable progress instead of replaying the same broad
+        // newest page forever. Splitting retains the entire interval; it claims no completion.
+        if (page.saturated || (expired && page.replies > 0 && window.since < window.until)) {
+          const children = splitWindow(window, page.events.reduce((low, event) => Math.min(low, event.created_at), Infinity))
+          if (children) pending.unshift(...children)
+          else if (!children && (window.limit ?? limit) < maxRepliesPerPage) {
+            pending.unshift({ ...window, limit: maxRepliesPerPage })
+          } else {
+            // Retire this leaf from the refresh wave, but retain its unresolved obligation.
+            const { refresh, ...backlog } = window
+            pending.push(backlog)
+            deferred.add(windowKey(backlog))
+            outcome.stopReason = 'overflow'
+          }
+        } else if (!page.complete || expired) {
+          const { refresh, ...backlog } = window
+          pending.push(backlog)
+          deferred.add(windowKey(backlog))
+          outcome.stopReason = expired ? 'deadline' : 'relay-error'
+        }
+        const scan = refreshScan({ ...cursor.scan, pending: boundedPending(pending), nextRefresh: !window.refresh }, now)
+        const next = scan.pending.length ? { ...cursor, scan }
+          : { version: 1, highWater: scan.until, scan: null }
+        saveScan(path, next) // Every returned event is retained (up to the cap) before this checkpoint.
+        cursor = next
+        outcome.pending = scan.pending.length
+        outcome.highWater = cursor.highWater
+      }
+      outcome.complete = cursor.scan === null
+      if (outcome.complete) outcome.stopReason = null
+    } catch (error) {
+      outcome.state = RELAY_STATE.BAD_REPLY
+      outcome.message = `scan storage: ${error.message}`
+      outcome.stopReason = 'storage-error'
+    } finally {
+      if (path) activeScans.delete(path)
+      finishScan?.(outcome)
+    }
+    return outcome
+  }))
+  const { events, ...result } = collectedResults(outcomes)
   return { wraps: events, ...result }
 }
 
-/** A single bounded NIP-01 query per relay, shared by inbox discovery and gift-wrap retrieval. */
-async function fetchEvents({ filter, relays, timeoutMs, WebSocketImpl, secretKeyHex }) {
-  const Ctor = resolveTransport(WebSocketImpl)
-  const targets = normalizeRelays(relays)
-  const outcomes = await Promise.all(targets.map(async relay => {
-    const outcome = await withRelay(Ctor, relay, timeoutMs, ({ send, onMessage, done, fail, timeoutAs }) => {
+/** One page: bound raw replies as well as retained events; preserve verified partial answers. */
+async function readRelayPage({ Ctor, relay, filter, deadline, secretKeyHex, maxReplies }) {
+  const collected = new Map()
+  let replies = 0
+  let eose = false
+  let saturated = false
+  let rejected = false
+  const remaining = deadline - Date.now()
+  const outcome = remaining <= 0 ? { state: RELAY_STATE.TIMEOUT } : await withRelay(Ctor, relay, remaining,
+    ({ send, onMessage, done, fail, timeoutAs }) => {
       const subscription = `aukora-${Math.random().toString(36).slice(2, 10)}`
-      const collected = []
       const request = () => send(['REQ', subscription, filter])
       const auth = relayAuthentication({ send, fail, timeoutAs, retry: request, relay, secretKeyHex })
       onMessage(parsed => {
+        if (Date.now() >= deadline) { fail(RELAY_STATE.TIMEOUT, 'read deadline reached'); return }
         if (auth.onMessage(parsed)) return
-        if (parsed[0] === 'EVENT' && parsed[1] === subscription && parsed[2] !== null && typeof parsed[2] === 'object') {
-          collected.push(parsed[2])
+        if (parsed[0] === 'EVENT' && parsed[1] === subscription) {
+          replies++
+          const event = parsed[2]
+          // Invalid copies never occupy an ID, even within one relay's reply page.
+          if (parsed.length === 3 && matchesFilter(event, filter) && isValidEvent(event)) {
+            if (!collected.has(event.id)) collected.set(event.id, event)
+          } else rejected = true
+          // Crypto is synchronous: a late verification cannot turn an expired page into success.
+          if (Date.now() >= deadline) {
+            fail(RELAY_STATE.TIMEOUT, 'read deadline reached during verification')
+            return
+          }
+          if (collected.size >= filter.limit || replies >= maxReplies) {
+            saturated = true
+            send(['CLOSE', subscription])
+            done()
+          }
           return
         }
-        // NIP-01: a relay may refuse a subscription outright with CLOSED and a machine-readable
-        // reason. Without this branch that refusal is indistinguishable from a relay that simply had
-        // nothing — the same silent-empty-result failure this module exists to prevent, and
-        // `auth-required` is the one a NIP-17 client meets most, because relays are told to gate
-        // kind 1059 behind NIP-42 AUTH.
         if (parsed[0] === 'CLOSED' && parsed[1] === subscription) {
           const reason = typeof parsed[2] === 'string' ? parsed[2] : ''
           if (auth.required(reason)) return
           fail(stateForOk(false, reason), reason || 'the relay refused the subscription')
           return
         }
-        // EOSE ("end of stored events") is the only signal that the relay has finished answering.
-        // Waiting for it rather than for a timer is what makes "nobody answered" mean nobody.
         if (parsed[0] === 'EOSE' && parsed[1] === subscription) {
+          if (parsed.length > 3 || (parsed.length === 3
+              && (!Array.isArray(parsed[2]) || parsed[2].some(value => typeof value !== 'string')))) {
+            fail(RELAY_STATE.BAD_REPLY, 'malformed EOSE')
+            return
+          }
           // NIP-67 permits an auth hint when an unauthenticated query has hidden results.
           if (Array.isArray(parsed[2]) && parsed[2].includes('auth')) {
             const reason = 'auth-required: more results require authentication'
             if (!auth.required(reason)) fail(RELAY_STATE.AUTH_REQUIRED, reason)
             return
           }
-          // NIP-01: close the subscription we opened, so the relay can release it.
+          eose = true
+          saturated = replies >= filter.limit
           send(['CLOSE', subscription])
-          done({ events: collected })
+          done()
         }
       })
       request()
     })
-    if (outcome.state !== RELAY_STATE.OK) return { relay, state: outcome.state, message: outcome.message ?? '', events: [] }
-    return { relay, state: RELAY_STATE.OK, message: '', events: outcome.value.events }
-  }))
+  // Discard a bad frame without poisoning an otherwise finished page. Raw reply caps still
+  // treat junk as saturation, so an invalid-event flood cannot falsely advance the cursor.
+  return { relay, state: outcome.state,
+    message: outcome.message ?? (rejected ? 'invalid or out-of-filter events' : ''), events: [...collected.values()],
+    replies, saturated, complete: eose && !saturated && Date.now() < deadline && outcome.state === RELAY_STATE.OK }
+}
 
-  const answered = outcomes.filter(o => o.state === RELAY_STATE.OK).map(o => o.relay)
-  // De-duplicate by id. Two relays serving the same wrap is the normal case, not an error.
+function collectedResults(outcomes) {
+  const answered = outcomes.filter(o => o.answered ?? (o.state === RELAY_STATE.OK || o.events.length > 0)).map(o => o.relay)
   const byId = new Map()
   for (const outcome of outcomes) {
     for (const event of outcome.events) {
-      if (event !== null && typeof event === 'object' && typeof event.id === 'string') byId.set(event.id, event)
+      if (!byId.has(event.id)) byId.set(event.id, event) // Only locally verified events enter a page.
     }
   }
   return {
     events: [...byId.values()],
     answered,
-    outcomes: outcomes.map(({ relay, state, message }) => ({ relay, state, message })),
+    outcomes: outcomes.map(({ events, answered: ignored, ...outcome }) => outcome),
+    complete: outcomes.every(outcome => outcome.complete),
     verdict: answered.length > 0 ? null : RELAY_REFUSE.NOBODY_ANSWERED,
   }
+}
+
+/** Inbox discovery shares first-valid dedup and a hard per-relay collection/reply bound. */
+async function fetchEvents({ filter, relays, timeoutMs, WebSocketImpl, secretKeyHex }) {
+  const deadline = readDeadline(timeoutMs)
+  const Ctor = resolveTransport(WebSocketImpl)
+  filter = { ...filter, limit: boundedCount(filter.limit ?? 500, 1000, 'limit') }
+  return collectedResults(await Promise.all(normalizeRelays(relays).map(relay => readRelayPage({
+    Ctor, relay, filter, deadline, secretKeyHex, maxReplies: 2000,
+  }))))
 }
 
 /** Parse relay tags without permitting non-WebSocket URLs or credentials in published inboxes. */
@@ -510,7 +856,7 @@ export async function fetchDmRelays({
     filter: { kinds: [10050], authors: [owner], limit: 1 }, relays, timeoutMs, WebSocketImpl, secretKeyHex,
   })
   // NIP-01 selects the lower id when replaceable events have an equal timestamp.
-  const event = events.filter(item => item.kind === 10050 && item.pubkey === owner && isValidEvent(item))
+  const event = events.filter(item => item.kind === 10050 && item.pubkey === owner)
     .sort((a, b) => b.created_at - a.created_at || a.id.localeCompare(b.id))[0] ?? null
   const inboxes = event ? await publicInboxRelays(event.tags.filter(tag => tag[0] === 'relay').map(tag => tag[1]), timeoutMs) : []
   return { relays: inboxes, event, ...result }

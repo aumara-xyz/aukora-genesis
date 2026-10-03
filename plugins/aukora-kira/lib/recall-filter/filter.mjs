@@ -66,7 +66,7 @@ export function filterMemoryRecords(records, context, governed) {
     if (!refusal && (scope === 'session' || String(scope).startsWith('session:'))) {
       const session = scope === 'session' ? note.source?.sessionId : scope.slice(8)
       if (!session || session !== context.sessionId) refusal = 'session-out-of-scope'
-    } else if (!refusal && scope !== 'owner' && !(context.attachedProjects ?? []).includes(scope)) refusal = 'scope-not-attached'
+    } else if (!refusal && scope !== 'owner' && scope !== 'agent' && !(context.attachedProjects ?? []).includes(scope)) refusal = 'scope-not-attached'
     if (refusal) { countDrop(governed, refusal, id); continue }
     // Consent controls visibility, never approval to remember. Owner-only is ordinary private memory.
     if (note.consent === 'hidden') { countDrop(governed, 'hidden', id); continue }

@@ -30,7 +30,7 @@ export function projectScopeOf(agent) {
 export function visibleRemembered(notes, policy, scope) {
   return (Array.isArray(notes) ? notes : []).filter(note => note?.subject === policy?.subject
     && note.privacy === 'local' && policy?.permittedPrivacy?.includes('local')
-    && (note.scope === undefined || note.scope === 'owner' || note.scope === scope))
+    && (note.scope === undefined || note.scope === 'owner' || note.scope === 'agent' || note.scope === scope))
 }
 
 export function rememberedSnippet(note) {

@@ -35,12 +35,14 @@ import { npubDecode } from './identity.mjs'
 export const GIFT_REFUSE = Object.freeze({
   WRAP_KIND: 'nostr:wrap-kind-unknown',
   WRAP_MALFORMED: 'nostr:wrap-malformed',
+  WRAP_TIME: 'nostr:wrap-time-invalid',
   WRAP_NOT_FOR_US: 'nostr:wrap-not-for-us',
   WRAP_UNREADABLE: 'nostr:wrap-unreadable',
   SEAL_KIND: 'nostr:seal-kind-unknown',
   SEAL_TAGS: 'nostr:seal-has-tags',
   SEAL_UNREADABLE: 'nostr:seal-unreadable',
   RUMOR_MALFORMED: 'nostr:rumor-malformed',
+  RUMOR_TIME: 'nostr:rumor-time-invalid',
   RUMOR_SIGNED: 'nostr:rumor-signed',
   RUMOR_ID: 'nostr:rumor-id-mismatch',
   SENDER_MISMATCH: 'nostr:sender-mismatch',
@@ -49,6 +51,12 @@ export const GIFT_REFUSE = Object.freeze({
 })
 
 const refuse = (code, message) => Object.assign(new Error(message), { code })
+
+function assertRumorTime(at) {
+  if (!Number.isSafeInteger(at) || at < 0 || at > Math.floor(Date.now() / 1000) + 900) {
+    throw refuse(GIFT_REFUSE.RUMOR_TIME, 'the rumor timestamp must be a non-negative integer no more than 900 seconds ahead')
+  }
+}
 
 /** Sealed rumors, per NIP-59. */
 export const SEAL_KIND = 13
@@ -88,6 +96,7 @@ export function createRumor({ kind, content, tags = [], secretKey, createdAt }) 
     created_at: createdAt ?? Math.floor(Date.now() / 1000),
   }
   assertEventShape(rumor, 'the rumor')
+  assertRumorTime(rumor.created_at)
   rumor.id = eventId(rumor)
   return rumor
 }
@@ -190,6 +199,9 @@ export function openGiftWrap(wrap, { recipientSecretKey, expectSender }) {
 
   // (1) Structural, before any key is derived. A wrap with no p tag cannot be routed at all.
   if (wrap === null || typeof wrap !== 'object') throw refuse(GIFT_REFUSE.WRAP_MALFORMED, 'the gift wrap must be an object')
+  if (!Number.isSafeInteger(wrap.created_at) || wrap.created_at < 0 || wrap.created_at > Math.floor(Date.now() / 1000)) {
+    throw refuse(GIFT_REFUSE.WRAP_TIME, 'the gift wrap timestamp must not be in the future')
+  }
   if (wrap.kind !== GIFT_WRAP_KIND && wrap.kind !== EPHEMERAL_GIFT_WRAP_KIND) {
     throw refuse(GIFT_REFUSE.WRAP_KIND, `kind ${wrap.kind} is not a gift wrap (${GIFT_WRAP_KIND} or ${EPHEMERAL_GIFT_WRAP_KIND})`)
   }
@@ -246,6 +258,7 @@ export function openGiftWrap(wrap, { recipientSecretKey, expectSender }) {
   }
   // The rumor is unsigned, so its id is the only integrity check available on its own contents.
   assertEventShape(rumor, 'the rumor')
+  assertRumorTime(rumor.created_at)
   const computed = eventId(rumor)
   if (rumor.id !== undefined && rumor.id.toLowerCase() !== computed) {
     throw refuse(GIFT_REFUSE.RUMOR_ID, `the rumor id is ${rumor.id} and its contents hash to ${computed}`)

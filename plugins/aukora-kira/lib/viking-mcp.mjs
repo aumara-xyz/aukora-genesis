@@ -43,7 +43,7 @@ export function createVikingMcp(memory) {
           }
           // The chain is durable before reply. Indexing is attempted even when wait=false;
           // wait=true additionally requires the outbox to have drained successfully.
-          const pending = memory.remember({ text, from: args.from ?? 'viking-mcp' })
+          const pending = memory.remember({ text, from: args.from ?? 'viking-mcp', scope: 'agent' })
           let timer
           try {
             value = args.timeout == null ? await pending : await Promise.race([pending, new Promise((_, reject) => {

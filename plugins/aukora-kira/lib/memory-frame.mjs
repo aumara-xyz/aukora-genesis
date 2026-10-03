@@ -106,7 +106,7 @@ export function recallFilter(note, context) {
   // about "anything not captured by the live hook" would refuse future origins nobody has measured. Add an entry here when an instrument starts storing records.
   if (DERIVED_ORIGINS.includes(String(note.origin?.by ?? ''))) return { ok: false, why: 'derived-record-never-pre-turn' }
   const scope = String(note.scope ?? 'owner')
-  if (scope !== 'owner' && !(context?.attachedProjects ?? []).includes(scope)) return { ok: false, why: 'scope-not-attached' }
+  if (scope !== 'owner' && scope !== 'agent' && !(context?.attachedProjects ?? []).includes(scope)) return { ok: false, why: 'scope-not-attached' }
   if (note.validTo !== null && note.validTo !== undefined && String(note.validTo) < String(context?.now ?? '')) {
     return { ok: false, why: 'validTo-in-the-past' }
   }
