@@ -722,7 +722,9 @@
       node.hidden = !(typeof value === 'string' && Object.prototype.hasOwnProperty.call(labels, value))
       node.setAttribute('data-presence', node.hidden ? '' : value)
       if (node.hidden) return
-      drawIcon(node, value === 'downgraded' ? 'presenceDowngraded' : 'presence', labels[value])
+      // No `title`: a hover tooltip is words on the screen. Assistive technology still gets the name.
+      drawIcon(node, value === 'downgraded' ? 'presenceDowngraded' : 'presence')
+      node.setAttribute('aria-label', labels[value])
     }
     function renderReason(node, reason) {
       node.textContent = ''

@@ -340,7 +340,7 @@ const hostile = await signerModule.startShellSigner({
   logDir: hostileLogs,
 })
 const hostileStart = Date.now()
-const hostileExpiry = Math.floor(hostileStart / 1000) + 9
+const hostileExpiry = Math.floor(hostileStart / 1000) + 63
 const throughHostile = await organ.approveOperation({
   directory: controllerDir, expectation: expected, content: operationBody, operationDigest,
   socketPath: join(scratch, 'h.sock'), timeoutMs: 20_000, expiresAt: hostileExpiry,

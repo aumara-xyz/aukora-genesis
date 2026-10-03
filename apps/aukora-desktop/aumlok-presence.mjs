@@ -69,8 +69,8 @@ export function createDesktopPresence(supportRoot, { helper = helperPath, run: r
     let current
     try {
       const enrollment = recordPresenceEnrollment({ supportRoot })
-      if (!enrollment.enrolled) return { state: 'none', reason: 'never-enrolled' }
-      if (enrollment.key === null) current = { state: 'downgraded', reason: enrollment.reason, from: 'enrollment' }
+      if (!enrollment.enrolled && lastRecorded() === null) return { state: 'none', reason: 'never-enrolled' }
+      if (enrollment.key === null) current = { state: 'downgraded', reason: enrollment.enrolled ? enrollment.reason : 'key-missing', from: 'enrollment' }
       else {
         // A healthy key keeps the last approval's own result until the next approval: confirmed stays confirmed,
         // and a check that produced no or bad evidence stays downgraded. Otherwise the key is ready.
@@ -91,8 +91,8 @@ export function createDesktopPresence(supportRoot, { helper = helperPath, run: r
     let outcome = 'invalid'
     try {
       const enrollment = presenceEnrollment({ supportRoot })
-      if (!enrollment.enrolled) return 'never-enrolled'
-      if (enrollment.key === null) outcome = enrollment.reason
+      if (!enrollment.enrolled && lastRecorded() === null) return 'never-enrolled'
+      if (enrollment.key === null) outcome = enrollment.enrolled ? enrollment.reason : 'key-missing'
       else {
         const timeout = Math.floor(Number(timeoutMs))
         let stdout = ''

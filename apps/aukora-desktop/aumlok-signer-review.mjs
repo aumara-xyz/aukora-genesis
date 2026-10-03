@@ -26,16 +26,20 @@ export const SIGNER_LOG_SOURCE = 'aukora-shell-signer'
 // ── OPTIONAL TOUCH ID PRESENCE, AFTER APPROVE AND NEVER INSTEAD OF IT ─────────────────────────────────────────
 // `options.presence` is the desktop's provider (aumlok-presence.mjs), handed in by main.mjs only; this module never
 // imports it, so a broken provider cannot stop the signer loading. Each call below is bounded and total: a slow or
-// failing provider costs an icon or a log field, never the answer, and the Touch ID wait always ends six seconds
+// failing provider costs an icon or a log field, never the answer, and the Touch ID wait always ends sixty seconds
 // before the request's own window does.
 const PRESENCE_OUTCOMES = Object.freeze(['never-enrolled', 'key-missing', 'invalid', 'no-evidence', 'verified'])
 const PRESENCE_ICON_STATES = Object.freeze(['ready', 'confirmed', 'downgraded'])
 const OWNER_APPROVAL_DOMAIN = 'aukora:owner-approval-request:v1'
 /** Longest a person is given to touch the sensor after Approve. */
 export const PRESENCE_MAX_MS = 15_000
-/** The Touch ID wait, decided HERE and not by the provider: it always leaves six seconds of the request's window. */
+/**
+ * The Touch ID wait, decided HERE and not by the provider. It always leaves sixty seconds of the request's window,
+ * so self-change and advance still have time for both verifiers and the kernel's expiry check; a later click simply
+ * gets no Touch ID.
+ */
 export function presenceBudgetMs(expiresAt, now = Date.now()) {
-  const left = Number(expiresAt) * 1000 - now - 6000
+  const left = Number(expiresAt) * 1000 - now - 60_000
   return Number.isFinite(left) ? Math.max(0, Math.min(PRESENCE_MAX_MS, left)) : 0
 }
 
