@@ -82,14 +82,17 @@ release_missing() {
 }
 
 app_missing() {
-  # electron-builder's own output is the bundle, not the directory that holds it: `dist` survives a packaging run
-  # that died before the .app was assembled, and the .app is made before its app.asar is written into it. The
+  # electron-builder writes app.asar into Electron.app BEFORE it renames that to AUKORA.app, so app.asar is there
+  # whenever AUKORA.app is. After the rename it still copies extraFiles (the owner-daemon, aumlok and kira libs the
+  # app imports) and then ad-hoc signs the bundle (identity "-" in package.json build.mac). The seal is the LAST
+  # write: a run cut short during the copy or the signing leaves app.asar and a seal that does not verify. The
   # output directory follows the arch of the node that runs electron-builder (process.arch): `mac-arm64` on Apple
   # silicon, plain `mac` for x64 (Intel, or a node under Rosetta).
   arch=$(node -p process.arch)
   if [ "$arch" = x64 ]; then out=mac; else out="mac-$arch"; fi
   asar="apps/aukora-desktop/dist/$out/AUKORA.app/Contents/Resources/app.asar"
   [ -f "$asar" ] || printf '%s ' "$asar"
+  codesign --verify --deep --strict "apps/aukora-desktop/dist/$out/AUKORA.app" >/dev/null 2>&1 || printf '%s ' "apps/aukora-desktop/dist/$out/AUKORA.app (signature)"
 }
 
 # ── THE PREREQUISITES, EACH NAMED WITH HOW TO GET IT ────────────────────────────────────────────────────────────────
@@ -252,12 +255,20 @@ RELEASE="$HOME/aukora-release-$SHORT"
 MISSING_FROM=$(release_missing "$RELEASE")
 if [ "$DRY_RUN" -eq 0 ] && [ -z "$MISSING_FROM" ]; then
   skip "$RELEASE (delete it to cut again)"
-elif [ -n "$MISSING_FROM" ] && [ -e "$RELEASE" ]; then
+elif [ -n "$MISSING_FROM" ] && [ -d "$RELEASE" ] && [ ! -L "$RELEASE" ]; then
   # The materializer refuses `release-exists` for any target already there; `--force` is its own way to replace
-  # one, and it is passed only for a target that carries no completion record, so a finished release is never it.
+  # one, and it is passed only for a plain directory that carries no completion record, so a finished release is
+  # never it.
   incomplete "$MISSING_FROM"
   heavy "materializing a release at $SHORT into $RELEASE, replacing the unfinished one" \
     python3 scripts/materialize-aukora-release.py --to "$RELEASE" --force
+elif [ -n "$MISSING_FROM" ] && { [ -e "$RELEASE" ] || [ -L "$RELEASE" ]; }; then
+  # NEVER --force A LINK OR A FILE. The materializer resolves the target and then rmtree's it, so a symlink here
+  # would delete whatever it points at.
+  incomplete "$MISSING_FROM"
+  say "   $RELEASE is not a plain directory (a symlink or a file), so this script will not replace it."
+  say "   Remove $RELEASE yourself and run this script again."
+  if [ "$DRY_RUN" -eq 0 ]; then exit 1; fi
 else
   heavy "materializing a release at $SHORT into $RELEASE" python3 scripts/materialize-aukora-release.py --to "$RELEASE"
 fi
