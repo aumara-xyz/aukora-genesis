@@ -110,7 +110,7 @@ export function verifyRecord(record, readEventLine, readChainEntry) {
   if (!idMatches) {
     return { id: String(record.id ?? ''), source: 'CHANGED', recorded, recomputed: null, failed: 'id-recomputes' }
   }
-  if (record.contentHash !== undefined && sha256Hex(record.statement ?? record.text) !== record.contentHash) {
+  if (record.contentHash !== undefined && sha256Hex(String(record.statement ?? record.text ?? "")) !== record.contentHash) {
     return { id: String(record.id ?? ''), source: 'CHANGED', recorded, recomputed: null, failed: 'content-hash-mismatch' }
   }
   // *** A DECLARED UNLINKED RECEIPT ANSWERS MISSING AND STOPS HERE (Fable, kira-122 decision 1: "it is NEVER verified"). ***

@@ -11,15 +11,16 @@ export const contentHash = text => sha256Hex(String(text))
 // Instruction-shaped turns are orders to whoever reads them, not claims about the world. Recalled
 // beside a later question they act as a prompt injection, so they never enter the vector index;
 // the chain keeps them and exact-word recall still finds them. A short turn that opens by dictating
-// the reply is one; a turn of any length that tells the reader to drop its instructions is one.
+// the exact reply (a colon, a quote or "the … characters/word" after exactly/only/verbatim) is one; a turn of any length that tells the reader to drop its instructions is one.
 const DICTATED_REPLY = [
-  /^(?:(?:please|now|just|ok(?:ay)?|so)[\s,]+)*(?:reply|respond|answer|say|output|print|return|write|type|repeat|echo)\b(?:[\s:,]+\S+){0,8}?[\s:,]+(?:exactly|only|verbatim|nothing\s+(?:but|else|more))\b/iu,
+  /^(?:(?:please|now|just|ok(?:ay)?|so)[\s,]+)*(?:reply|respond|answer|say|output|print|return|write|type|repeat|echo)\b(?:[\s:,]+[^\s:,]+){0,8}?[\s:,]+(?:(?:exactly|only|verbatim)\s*(?::|["“'‘]|the\s+(?:[^\s]+\s+){0,2}(?:words?|letters?|characters?|numbers?|strings?|tokens?|phrases?)\b)|nothing\s+(?:but|else|more)\s*:?\s*["“'‘])/iu,
   /^(?:(?:please|now|just)[\s,]+)*(?:reply|respond|answer)\s+(?:with|using)\s+(?:a\s+single|one|the\s+(?:single\s+)?(?:word|letter|number|character|string|token))\b/iu,
   /^(?:(?:please|now|just)[\s,]+)*repeat\s+after\s+me\b/iu,
   /^(?:you\s+are\s+now|pretend\s+(?:to\s+be|you\s+are))\b/iu,
 ]
 const OVERRIDE = /\b(?:ignore|disregard|forget|override)\s+(?:(?:all|any|every|your|the|of)\s+)*(?:previous|prior|above|earlier|preceding|system|original)\s+(?:instructions?|prompts?|messages?|rules?|directions?)\b/iu
 export const DICTATED_REPLY_MAX_WORDS = 40
+export const CLAIMLESS_MAX_BYTES = 60
 export const instructionShaped = (normalized, words) => OVERRIDE.test(normalized)
   || (words.length <= DICTATED_REPLY_MAX_WORDS && DICTATED_REPLY.some(pattern => pattern.test(normalized)))
 
@@ -32,13 +33,16 @@ export function memoryQuality(text) {
     || words.some(word => /^\p{Lu}\p{Ll}{2,}/u.test(word)
       && !/^(?:I|The|This|That|It|We|You|My|Our|Your|Please|Thanks|Yes|Okay|Stay|Keep|Continue|Go|Do|What|How|When|Where|Why|Can|Could|Would|Should|Just|Now|All|And|But|From|When)$/u.test(word))
     || /(?:https?:\/\/\S+|\b[\w-]+\.(?:mjs|js|py|json|md)\b|["“][^"”]{2,80}["”])/u.test(normalized)
+  // A standing rule ("never …", "only …", "no tests") is a claim about how to work, even without a verb above.
+  const directive = /\b(?:never|always|only|exactly|don['’]?t|not|no|stop|must)\b/iu.test(normalized)
   if (!normalized) reason = 'empty'
   else if (!/[\p{L}\p{N}]/u.test(normalized)) reason = 'no-content'
   else if (!/\s/u.test(normalized) || words.length < QUALITY_FLOOR.minWords || Buffer.byteLength(normalized, 'utf8') < QUALITY_FLOOR.minBytes) reason = 'too-short'
   else if (/^(?:(?:ok(?:ay)?|yes|yeah|yep|yup|sure|thanks?|thank you|got it|understood|cool|great|awesome|done|continue|go ahead|please continue|stay vigilant|keep going|carry on)[\s,.!;:\-]*)+$/iu.test(normalized)) reason = 'acknowledgement'
   else if (/^(?:([\p{L}\p{N}])\1{7,})$/iu.test(normalized)) reason = 'repeated-character'
   else if (instructionShaped(normalized, words)) reason = 'instruction'
-  else if (!assertion && !entity) reason = 'no-assertion-or-entity'
+  // Only SHORT turns can be judged claimless: a long note without these verbs is still a real note.
+  else if (!assertion && !entity && !directive && Buffer.byteLength(normalized, 'utf8') <= CLAIMLESS_MAX_BYTES) reason = 'no-assertion-or-entity'
   return Object.freeze({ keep: reason === null, reason, version: QUALITY_VERSION })
 }
 
