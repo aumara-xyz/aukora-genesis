@@ -36,7 +36,7 @@
 import { durableAppend, durableWrite, exclusiveCreate, readBytesStrict, readJsonStrict, readJsonStrictBytes, readTextStrict, withFileLock } from './strict-read.mjs'
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, randomUUID, sign as edSign, verify as edVerify } from 'node:crypto'
 import {
-  closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync, writeSync,
+  chmodSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync, writeSync,
 } from 'node:fs'
 import { userInfo } from 'node:os'
 import { join, dirname } from 'node:path'
@@ -352,7 +352,11 @@ export function createMemoryOwner(options) {
     if (!verdict.ok) refuse('SUBJECT_INVALID', `the owner subject must be the grammar the approval lane reads: ${verdict.reason} -- ${verdict.detail}`)
   }
 
-  for (const dir of ['objects', 'keys', 'spent', 'approvals']) mkdirSync(join(stateDir, dir), { recursive: true })
+  // Owner-only, chmodded after: `mode` is masked by the umask, and a directory an earlier build made 0775 stays so.
+  for (const dir of ['objects', 'keys', 'spent', 'approvals']) {
+    mkdirSync(join(stateDir, dir), { recursive: true, mode: 0o700 })
+    chmodSync(join(stateDir, dir), 0o700)
+  }
 
   // ── THE PENDING REVIEW QUEUE ────────────────────────────────────────────────────────────────────
   // A record staged inside a turn used to evaporate when the turn ended: nothing durable named it, so

@@ -30,6 +30,17 @@ for name in ['home','agents','workspace','logs']:
         parser.error('missing-private-state: create new private home/agents/workspace/logs directories first')
 if base.stat().st_mode & 0o077:
     parser.error('state-permissions: set the private state root to mode 0700')
+# The backend's plugins read AUKORA_SUPPORT_ROOT (memory, action gate, messages) and fall back to
+# ~/Library/Application Support/AUKORA without it. Forwarded below only when it names a private directory of ours.
+support_root=os.environ.get('AUKORA_SUPPORT_ROOT')
+if support_root is not None:
+    try: _support=os.stat(support_root) if os.path.isabs(support_root) else None
+    except OSError: _support=None
+    if (_support is None or not os.path.isdir(support_root) or _support.st_uid!=os.getuid()
+            or _support.st_mode & 0o022):
+        # Not group- or world-writable, rather than exactly 0700: Electron's userData (the shell's own support root) is 0755.
+        parser.error(f'support-root-invalid: AUKORA_SUPPORT_ROOT={support_root!r} must be an absolute path to an '
+                     'existing directory this user owns that no other user can write')
 entry=release/'apps/cli/lib/bin.js'
 if not entry.is_file(): parser.error('missing-built-entry: complete the pinned build first')
 node=subprocess.check_output(['which','node'],text=True).strip()
@@ -566,6 +577,8 @@ env.update(gate_env)
 for _forwarded in ('AUKORA_EYE_URL', 'AUKORA_EYE_TOKEN', 'AUKORA_SIGNER_SOCKET'):
     if _forwarded in os.environ:
         env[_forwarded] = os.environ[_forwarded]
+if support_root is not None:
+    env['AUKORA_SUPPORT_ROOT'] = support_root
 command=[node,*gate_argv,str(entry)]
 for patch in patches: command += ['--patch', str(patch)]
 command += ['--profile','web','--host','127.0.0.1','--port',str(a.port),'--no-open']
@@ -635,13 +648,14 @@ def _pump():
     try:
         for raw in iter(child.stdout.readline, b''):
             text=raw.decode('utf-8','replace')
-            _live.append(text)
             # THE PUMP LIVES AS LONG AS THE CHILD DOES, so a url printed AFTER the startup window is
             # published exactly like one printed inside it -- which is the whole point of the file.
             # A FAILED PUBLISH OR LOG WRITE MUST NOT STOP THE DRAIN (2026-09-27, red team): either one used to
             # end this loop, and a pipe nobody reads stalls the backend on its next write.
             try: _publish_url(text)
             except Exception: pass
+            # Seen by the readiness window only after the publish, so a launch reported ready has its launch-url.json.
+            _live.append(text)
             try:
                 log.write(redact_token(text).encode('utf-8'))
                 log.flush()
@@ -672,7 +686,7 @@ if url is None and child.poll() is not None:
     code=child.returncode
     tail='\n'.join(line for line in _new_log_text().splitlines()[-12:]).strip()
     parser.error(f'launch-failed-during-startup: pid {child.pid} exited with status {code} before it '
-                 f'printed a URL, so this launch did not start. The private log tail is:\n{tail}\n'
+                 f'printed a URL, so this launch did not start. The private log tail is:\n{redact_token(tail)}\n'
                  f'Nothing is left running. Read the full log at {log_path}')
 if url is None and deadline is not None:
     readiness=f'still-starting-or-hung: no URL after {startup_timeout:g}s and pid {child.pid} is still '
@@ -689,7 +703,9 @@ record={'pid':child.pid,'gate':({'hook':bound_authority['hook'],'hookSha256':gat
                                if gate else None),'upstreamCommit':pin['commit'],'genesisCommit':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip(),'release':str(release),'stateRoot':str(base),'port':a.port,'entrySha256':hashlib.sha256(entry.read_bytes()).hexdigest(),'command':command,'patches':[{'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in patches],'startup':{'windowSeconds':startup_timeout,'readiness':readiness,'url':redact_token(url) if url is not None else None},'status':'spawned; HTTP/browser readiness must be verified separately'}
 (base/'launch.json').write_text(json.dumps(record,indent=2)+'\n')
 if url:
-    print(f'Spawned Genesis PID {child.pid}; it printed its URL inside the startup window: {url}')
+    # NOT THE TOKEN: stdout lands in the caller's log and the journal. The authenticated url is only in launch-url.json.
+    print(f'Spawned Genesis PID {child.pid}; it printed its URL inside the startup window: {redact_token(url)}; '
+          f'the authenticated URL is in {base/"launch-url.json"} (mode 0600)')
 else:
     print(f'Spawned Genesis PID {child.pid}; {readiness}. Readiness is NOT established: inspect {log_path}.')
 

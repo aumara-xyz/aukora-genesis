@@ -36,7 +36,7 @@
  * rather than computing the path**, *because two spellings of one path is how a reader and a writer end up looking at
  * different files while both report success.*
  */
-import { appendFileSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, writeSync } from 'node:fs'
+import { appendFileSync, chmodSync, closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, writeSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 
 /** **THE ONE PLACE THE PATH IS SPELLED.** *Beside the door's own ledger, under the same state root.* */
@@ -59,7 +59,8 @@ export function laneDoorMessagesPath(stateRoot) {
 export function recordLaneDoorMessage(stateRoot, requestId, origin = null) {
   if (typeof requestId !== 'string' || requestId === '') return false
   const path = laneDoorMessagesPath(stateRoot)
-  mkdirSync(dirname(path), { recursive: true })
+  mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
+  chmodSync(dirname(path), 0o700)
   // **O_NOFOLLOW, THE SAME AS THE LEDGER.** *A trail that can be redirected is not a trail* — *and this file decides what
   // is remembered, so a link here would let one be moved somewhere the reader is not.*
   const fd = openSync(path, constants.O_WRONLY | constants.O_APPEND | constants.O_CREAT | constants.O_NOFOLLOW, 0o600)

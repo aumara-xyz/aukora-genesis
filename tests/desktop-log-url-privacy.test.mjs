@@ -105,16 +105,19 @@ for raw_url, credentials in cases:
     output = io.StringIO()
     with contextlib.redirect_stdout(output):
         exec(compile(ast.Module(body=[announce], type_ignores=[]), '<private launcher pipe>', 'exec'), namespace)
-    assert raw_url in output.getvalue(), 'desktop authenticated pipe changed'
+    announced = output.getvalue()
+    assert all(credential not in announced for credential in credentials), 'launcher stdout credential leak'
+    # supervisor.mjs takes the url only from a launch-url.json whose pid is the one announced here.
+    assert re.search(r'Spawned Genesis PID (\d+)', announced).group(1) == str(private['pid']), 'announced PID is not the published PID'
 
 namespace['url'] = None
 empty = eval(compile(ast.Expression(body=startup), '<startup without URL>', 'eval'), namespace)
 assert empty['url'] is None, 'no-URL startup contract changed'
-print(json.dumps({'cases': len(cases), 'privateTransportsPreserved': True, 'diagnosticsRedacted': True}))
+print(json.dumps({'cases': len(cases), 'privateTransportsPreserved': True, 'diagnosticsRedacted': True, 'stdoutRedacted': True}))
 `, new URL('../scripts/launch-dsh.py', import.meta.url).pathname, scratch], { encoding: 'utf8' })
     assert.equal(checked.status, 0, checked.stderr || 'synthetic launcher URL check failed')
     assert.deepEqual(JSON.parse(checked.stdout), {
-      cases: 3, privateTransportsPreserved: true, diagnosticsRedacted: true,
+      cases: 3, privateTransportsPreserved: true, diagnosticsRedacted: true, stdoutRedacted: true,
     })
   } finally {
     rmSync(scratch, { recursive: true, force: true })

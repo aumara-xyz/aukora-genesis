@@ -355,11 +355,16 @@ async function spawnHarness(o, claim) {
   if (code !== 0) throw new Error(`launcher-refused (exit ${code}): ${launcherOut.trim()}`)
 
   const deadline = Date.now() + START_TIMEOUT_MS
+  // The launcher redacts the token from its stdout and from server.log (SECURITY.md:169-172). The authenticated url is
+  // in `<state>/launch-url.json` (0600, inside this shell's 0700 root), accepted only when it names the pid the launcher
+  // announced: a file left by an earlier backend is a credential for a process that is gone.
+  const announced = Number(launcherOut.match(/Spawned Genesis PID (\d+)/)?.[1] ?? NaN)
   for (;;) {
-    // FROM THE LAUNCHER'S OWN STDOUT, WHICH LIVES IN MEMORY — NOT FROM THE LOG (SECURITY.md:169-172). The log is
-    // redacted by the launcher now, so a token read from it would be `<redacted>` and the window could never
-    // authenticate. `launcherOut` already holds the real line; the log is a redacted record, not the credential.
-    const url = launcherOut.match(TOKEN_URL)?.[0] ?? null
+    let url = null
+    try {
+      const record = JSON.parse(await readFile(join(o.stateRoot, 'launch-url.json'), 'utf8'))
+      if (record?.pid === announced && typeof record.url === 'string') url = record.url.match(TOKEN_URL)?.[0] ?? null
+    } catch { /* not written yet, or being replaced */ }
     if (url) return { url, port, stateRoot: o.stateRoot, releaseClaim: claim.release }
     if (Date.now() > deadline) throw new Error('no-authenticated-url: the harness did not report one before the timeout')
     await new Promise(r => setTimeout(r, POLL_MS))

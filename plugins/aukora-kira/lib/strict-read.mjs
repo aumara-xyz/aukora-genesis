@@ -86,7 +86,8 @@ import { constants as FS } from 'node:fs'
  *
  * The store's first write needs `remembered/` to exist, and `durableWrite` deliberately does not create parents — a writer that
  * silently makes whatever path it is handed is a writer nobody can bound. So the creation is its own named act, here, where
- * the filesystem already lives.
+ * the filesystem already lives. Owner-only: the files are 0600, and `mode` is masked by the umask (0775 under umask 002),
+ * so the directory is chmodded after creation, which also closes one an earlier build left open.
  * @param {string} dir - an absolute path.
  * @returns {void}
  */
