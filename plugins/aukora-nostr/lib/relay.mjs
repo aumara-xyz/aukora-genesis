@@ -28,6 +28,19 @@ import { isHex32, isValidEvent, publicKeyOf, randomSecretKey, signEvent } from '
 import { evidencePath, retainGiftWrap, wireDigest, wirePath } from './evidence.mjs'
 import { openGiftWrap } from './giftwrap.mjs'
 
+// A relay page is re-fetched every few seconds; verify each exact event once. Keyed on the whole event,
+// not id+sig alone, so altered content is never mistaken for a verified one. Bounded, oldest out first.
+const verifiedEvents = new Map()
+function verifiedOnce(event) {
+  const key = createHash('sha256').update(JSON.stringify([event.id, event.pubkey, event.created_at, event.kind,
+    event.tags, event.content, event.sig])).digest('hex')
+  if (verifiedEvents.has(key)) return true
+  if (!isValidEvent(event)) return false
+  if (verifiedEvents.size >= 4096) verifiedEvents.delete(verifiedEvents.keys().next().value)
+  verifiedEvents.set(key, true)
+  return true
+}
+
 /** Every way a single relay exchange can end. A caller routes on these; none is prose to parse. */
 export const RELAY_STATE = Object.freeze({
   OK: 'relay:ok',
@@ -687,7 +700,7 @@ async function readRelayPage({ Ctor, relay, filter, deadline, secretKeyHex, maxR
           replies++
           const event = parsed[2]
           // Invalid copies never occupy an ID, even within one relay's reply page.
-          if (parsed.length === 3 && matchesFilter(event, filter) && isValidEvent(event)) {
+          if (parsed.length === 3 && matchesFilter(event, filter) && verifiedOnce(event)) {
             if (!collected.has(event.id)) collected.set(event.id, event)
           } else rejected = true
           // Crypto is synchronous: a late verification cannot turn an expired page into success.
