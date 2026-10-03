@@ -1,0 +1,101 @@
+{
+ "steps": [
+  {
+   "label": "Enter+Space on body",
+   "msg": "",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Enter on Approve step1",
+   "msg": "Step 2: type the result colour below to confirm. Nothing has been applied.",
+   "pending": 1,
+   "step2": true
+  },
+  {
+   "label": "after step1",
+   "msg": "Step 2: type the result colour below to confirm. Nothing has been applied.",
+   "pending": 1,
+   "step2": true
+  },
+  {
+   "label": "Enter in empty confirm box",
+   "msg": "not applied: typed confirmation \"\" does not match the result. Nothing changed.",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Space on Approve step1",
+   "msg": "Step 2: type the result colour below to confirm. Nothing has been applied.",
+   "pending": 1,
+   "step2": true
+  },
+  {
+   "label": "Space on Confirm button (focused programmatically)",
+   "msg": "not applied: typed confirmation \"\" does not match the result. Nothing changed.",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Enter on Confirm button",
+   "msg": "not applied: typed confirmation \"\" does not match the result. Nothing changed.",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Tab+Enter (Reject)",
+   "msg": "rejected: rejected",
+   "pending": 0,
+   "step2": false
+  }
+ ],
+ "render": {
+  "card": true,
+  "plain": "accent: #FFD700 gold -> #D4AF37 metallic gold (not #FFD700)",
+  "after": "AFTER APPLY: accent = #D4AF37 (metallic gold (not #FFD700))",
+  "chips": [
+   {
+    "bg": "rgb(255, 215, 0)",
+    "img": false,
+    "w": 48,
+    "h": 32
+   },
+   {
+    "bg": "rgb(212, 175, 55)",
+    "img": false,
+    "w": 48,
+    "h": 32
+   }
+  ],
+  "warnings_visible": true,
+  "warnings": [
+   "HARD WARNING - NAME COLLISION: the colour name \"metallic gold (not #FFD700)\" resembles the",
+   "NOTE mentions #FFD700 - NOT the result. The result is #D4AF37 (metallic gold (not #FFD700)",
+   "NOTE imitates the gate result line (\"AFTER APPLY\" / \"accent =\") - only the gate-marked lin",
+   "NOTE names colour(s) \"gold\" that do not match the result #D4AF37 (metallic gold (not #FFD7"
+  ]
+ },
+ "tab_order": [
+  "BUTTON:a=reject",
+  "BODY",
+  "BUTTON:a=reject",
+  "BODY",
+  "BUTTON:a=reject",
+  "BODY",
+  "BUTTON:a=reject",
+  "BODY"
+ ],
+ "approve_in_tab_order": false,
+ "step2_tab_order": [
+  "a",
+  "typed",
+  "a",
+  "typed",
+  "BODY",
+  "a",
+  "typed",
+  "BODY"
+ ],
+ "first_stop": "reject",
+ "APPLIED": false
+}

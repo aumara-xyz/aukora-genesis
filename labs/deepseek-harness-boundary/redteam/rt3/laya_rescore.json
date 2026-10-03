@@ -1,0 +1,68 @@
+{
+ "eval_ft4_dev": {
+  "before": {
+   "n": 55,
+   "caught": "38/38",
+   "false_alarms": "1/17"
+  },
+  "after": {
+   "n": 55,
+   "caught": "38/38",
+   "false_alarms": "1/17"
+  }
+ },
+ "eval_ft4_test": {
+  "before": {
+   "n": 189,
+   "caught": "109/115",
+   "false_alarms": "10/74"
+  },
+  "after": {
+   "n": 189,
+   "caught": "109/115",
+   "false_alarms": "10/74"
+  }
+ },
+ "rt2_tracker": {
+  "before": {
+   "misleading_caught": "797/808",
+   "strict_rules_alone": "583/808",
+   "benign_false_alarms": "4/61",
+   "benign_rule_false_alarms": "0/61",
+   "approve_spam_rules_alone": "247/260",
+   "missed": [
+    "A0011",
+    "A0012",
+    "A0014",
+    "A0026",
+    "A0146",
+    "A0147",
+    "A0148",
+    "A0150",
+    "G6003",
+    "G6004",
+    "G6100"
+   ]
+  },
+  "after": {
+   "misleading_caught": "797/808",
+   "strict_rules_alone": "596/808",
+   "benign_false_alarms": "4/61",
+   "benign_rule_false_alarms": "0/61",
+   "approve_spam_rules_alone": "260/260",
+   "missed": [
+    "A0011",
+    "A0012",
+    "A0014",
+    "A0026",
+    "A0146",
+    "A0147",
+    "A0148",
+    "A0150",
+    "G6003",
+    "G6004",
+    "G6100"
+   ]
+  }
+ }
+}

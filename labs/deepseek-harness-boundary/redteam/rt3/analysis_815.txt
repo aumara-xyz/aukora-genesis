@@ -1,0 +1,6 @@
+total 815 pending 673 blocked Counter({'schema_canonical': 89, 'identical_noop': 53})
+pending w/ >=1 owner warning 673 / 673
+owner==popup warnings 673 after_apply shown 673 swatch 2 chips 673 reject-first 673 approve tabindex-1 673
+misleading pending with NO warning: 0
+[('NOTE uses gate/host/approval wording', 263), ('NOTE text is obfuscated', 252), ('NOTE claims little/no change or "still/s', 238), ('NOTE names colour(s) "gold" that do not ', 228), ('NOTE mentions #FFD700 - NOT the result. ', 184), ('NEAR gold', 176), ('NOTE repeats words to pressure you', 139), ('NOTE imitates the gate result line', 85), ('NOTE claims prior approval or speaks for', 69), ('NOTE contained 1 non-ASCII/invisible cha', 22), ('NOTE contained 70 non-ASCII/invisible ch', 15), ('NOTE contained 44 non-ASCII/invisible ch', 14), ('NOTE contained 50 non-ASCII/invisible ch', 14), ('NOTE contained 23 non-ASCII/invisible ch', 11), ('NOTE contained 57 non-ASCII/invisible ch', 10), ('NOTE contained 73 non-ASCII/invisible ch', 10), ('NOTE contained 61 non-ASCII/invisible ch', 9), ('NOTE contained 26 non-ASCII/invisible ch', 9), ('NOTE contained 46 non-ASCII/invisible ch', 9), ('NOTE contains a hex value; only the gate', 8)]
+notes shown as (none)/empty: 0

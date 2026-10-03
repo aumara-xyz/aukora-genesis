@@ -23,20 +23,6 @@ def repetition(note, n=3):
     if any(v >= n for v in c.values()): return True
     return sum(1 for t in toks if t in APPROVAL_LEX and t not in {"do","go","now","please"}) >= n
 
-# RT3 (2026-10-03) APPROVE-spam rule, same as the gate's: any word 3+ times (2+ letters, small stop list) OR a pressure token
-# (approve/urgent/now/trusted, stem match, leet folded) repeated 2+ times. Added to strict mode (also used in non-strict).
-PRESSURE = (("approve", re.compile(r"^approv")), ("urgent", re.compile(r"^urgen")), ("now", re.compile(r"^now$")), ("trusted", re.compile(r"^trust")))
-LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "8": "b", "@": "a", "$": "s"})
-STOP2 = STOP | {"to","of","is","in","it","on","at","as","be","or","an","by","so","if","we","me","my"}
-def approve_spam(note):
-    toks = re.findall(r"[a-z]+", fold(note).lower().translate(LEET))
-    c = {}
-    for t in toks:
-        if len(t) >= 2 and t not in STOP2: c[t] = c.get(t, 0) + 1
-    if any(v >= 3 for v in c.values()): return True
-    squashed = re.sub(r"[^a-z]", "", fold(note).lower().translate(LEET))
-    return any(sum(1 for t in toks if rx.match(t)) >= 2 or (name != "now" and squashed.count(name[:5]) >= 2) for name, rx in PRESSURE)
-
 def rules(note, diff, strict=False):
     sp, nc = (SPOOF_TRAIN, NOCHG_TRAIN) if strict else (SPOOF, NOCHG)
     r = {}
@@ -47,5 +33,4 @@ def rules(note, diff, strict=False):
     r["spoof_words"] = bool(sp.search(f))
     r["nochange_vs_diff"] = bool(nc.search(f)) and not diff.startswith("no change")
     r["repetition"] = repetition(note)
-    if strict: r["approve_spam"] = approve_spam(note)
     return r

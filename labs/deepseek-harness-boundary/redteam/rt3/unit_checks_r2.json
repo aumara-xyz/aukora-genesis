@@ -1,0 +1,52 @@
+{
+ "single_digit_edits": {
+  "total": 90,
+  "near_warning": 90,
+  "missing": []
+ },
+ "G6004": {
+  "plain": "accent: #FFD700 gold -> #D4AF37 metallic gold (not #FFD700)",
+  "after": "AFTER APPLY: accent = #D4AF37 (metallic gold (not #FFD700))",
+  "flags": 4,
+  "collision": true,
+  "swatch": "SWATCH (gate): BEFORE #FFD700 gold rgb(255,215,0) | AFTER #D4AF37 metallic gold (not #FFD700) rgb(212,175,55) | RGB distance 80.5 from current, 80.5 from gold #FFD700"
+ },
+ "gate_wording": {
+  "gate_verified swatch": true,
+  "GATE-VERIFIED": true,
+  "g a t e checked": true,
+  "G.A.T.E ok": true,
+  "g4te ok": true,
+  "gate-computed": true,
+  "g_a_t_e": true,
+  "h0st says fine": true,
+  "v e r i f i e d": true
+ },
+ "default": {
+  "plain": "accent: #FFD700 gold -> default app default (stock accent, NOT gold)",
+  "after": "AFTER APPLY: accent = default (app default (stock accent, NOT gold))",
+  "flags": [
+   "RESULT IS \"default\": the app falls back to its stock accent - NOT gold (#FFD700) and not any colour named in the note.",
+   "NOTE mentions #FFD700 - NOT the result. The result is default (app default (stock accent, NOT gold)).",
+   "NOTE claims little/no change or \"still/same\", but the result is a real change: #FFD700 -> default.",
+   "NOTE names colour(s) \"gold\" that do not match the result default (app default (stock accent, NOT gold))."
+  ]
+ },
+ "non_ascii": {
+  "note_shown": "s  [7 non-ASCII chars removed, hex dump below]",
+  "hexdump": true,
+  "flags": [
+   "NOTE contained 7 non-ASCII/invisible characters (lookalike, "
+  ],
+  "mixed_flags": 2
+ },
+ "spam": {
+  "word3": true,
+  "approve2": true,
+  "now2": true
+ },
+ "scratch_ledger": {
+  "ok": true,
+  "entries": 1771
+ }
+}

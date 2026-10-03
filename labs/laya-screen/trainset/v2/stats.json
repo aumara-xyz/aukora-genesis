@@ -1,0 +1,73 @@
+{
+ "train": {
+  "n": 470,
+  "suspicious": 262,
+  "clean": 208,
+  "new_in_v2": 26,
+  "families": {
+   "real_rt_operational": 11,
+   "real_peter_session": 3,
+   "eval1_P": 2,
+   "eval1_B": 3,
+   "spoof_keyword": 36,
+   "spoof_paraphrase_a": 29,
+   "lookalike_a": 29,
+   "hidden_pad_zw_a": 30,
+   "lie_nochange_a": 37,
+   "colour_mismatch_a": 29,
+   "pressure_a": 31,
+   "impersonation_a": 31,
+   "benign_a": 108,
+   "benign_honest_nochange": 26,
+   "benign_hard_negative": 39,
+   "rt2_miss": 8,
+   "benign_hard_negative_v2": 18
+  }
+ },
+ "dev": {
+  "n": 55,
+  "suspicious": 38,
+  "clean": 17,
+  "new_in_v2": 0,
+  "families": {
+   "spoof_keyword": 4,
+   "spoof_paraphrase_a": 6,
+   "lookalike_a": 6,
+   "hidden_pad_zw_a": 5,
+   "lie_nochange_a": 3,
+   "colour_mismatch_a": 6,
+   "pressure_a": 4,
+   "impersonation_a": 4,
+   "benign_a": 12,
+   "benign_honest_nochange": 4,
+   "benign_hard_negative": 1
+  }
+ },
+ "test": {
+  "n": 293,
+  "suspicious": 131,
+  "clean": 162,
+  "new_in_v2": 104,
+  "families": {
+   "real_rt_operational": 2,
+   "real_peter_session": 2,
+   "real_redteam": 7,
+   "spoof_paraphrase_b_HELDOUT": 18,
+   "lookalike_b_HELDOUT": 15,
+   "hidden_bidi_sep_b_HELDOUT": 15,
+   "lie_nochange_b_HELDOUT": 15,
+   "colour_mismatch_b_HELDOUT": 15,
+   "pressure_b_HELDOUT": 15,
+   "impersonation_b_HELDOUT": 15,
+   "benign_b_HELDOUT": 70,
+   "rt2_miss_variant_heldout": 16,
+   "benign_as_discussed_heldout": 30,
+   "benign_visible_change_heldout": 30,
+   "benign_dark_mode_heldout": 20,
+   "benign_reset_default_heldout": 8
+  }
+ },
+ "leak_check": {
+  "test_notes_also_in_train_or_dev": 0
+ }
+}

@@ -256,6 +256,7 @@ export function apply(ctx) {
     const card = [
       `${M} | ${vis(pu.after_apply)}`,
       `${M} | CHANGE: ${vis(pu.plain_change)}`,
+      ...(pu.swatch ? [`${M} | ${vis(pu.swatch)}`] : []),
       `${M} | target ${p.target} (schema-validated, canonical bytes) - ${p.kind === 'revert' ? 'REVERT to a recorded version' : 'declarative setting'}`,
       `${M} | proposal ${p.id.slice(0, 8)} - single-use - expires ${wita(p.expires)}`,
       `${M} | current sha256 ${p.base_sha}`,
@@ -274,6 +275,8 @@ export function apply(ctx) {
       '[ MODEL NOTE - written by Auma, NOT verified ]',
       `    "${vis(pu.note ?? '(none)')}"`,
       ...pu.flags.map(f => `${M} | WARNING: ${vis(f)}`),
+      ...(pu.note_hexdump ? [`${M} | raw note bytes (non-ASCII removed above): ${pu.note_hexdump}`] : []),
+      ...(pu.swatch ? [`${M} | ${vis(pu.swatch)}`] : []),
       '',
       `===== ${M} GATE CARD - only lines starting with ${M} come from skunkworks-gate =====`,
       ...card,
@@ -307,7 +310,7 @@ export function apply(ctx) {
 
   ctx.tools.register(defineTool({
     name: 'propose_change',
-    description: 'The ONLY way to change the system you run in. Proposes exact new content for one allowlisted declarative target; currently only "plugins/auma-theme/theme.json" (UI theme: exactly {"accent": "#RRGGBB" or "default"}; e.g. gold = "#D4AF37"). First call read_target and pass its sha256 as base_sha256: missing or outdated base is refused as stale. The owner sees the exact change in a card and must approve on the gate owner channel (you cannot approve). Keep summary to one short plain sentence (ASCII, <=120 chars). No code or plugin targets exist.',
+    description: 'The ONLY way to change the system you run in. Proposes exact new content for one allowlisted declarative target; currently only "plugins/auma-theme/theme.json" (UI theme: exactly {"accent": "#RRGGBB" or "default"}; gold = "#FFD700" only; "#D4AF37" is metallic gold, NOT gold). First call read_target and pass its sha256 as base_sha256: missing or outdated base is refused as stale. The owner sees the exact change in a card and must approve on the gate owner channel (you cannot approve). Keep summary to one short plain sentence (ASCII, <=120 chars). No code or plugin targets exist.',
     parameters: {
       target: { type: 'string', required: true, description: 'allowlisted target name' },
       new_content: { type: 'string', required: true, description: 'complete new file content (exact bytes)' },

@@ -21,10 +21,11 @@ sudo -n -u auma -H /workspace/skunkworks/ops/auma-ensure-sandbox.sh
 # approval/state authority (separate Linux user); harness self-check fails closed without it
 npx -y pm2 describe sk-gate 2>/dev/null | grep -q online || npx -y pm2 start ecosystem.config.js --only sk-gate >/dev/null
 for i in $(seq 1 20); do sudo -n test -S $G/gate.sock && break; sleep 0.5; done
-# owner approval page on its own tunnel; link (with the owner bearer) goes to ops/.gate-access (box-only 0600)
+# owner approval page on its own tunnel; link (with the owner bearer) goes to ops/.gate-access (box-only 0600) via gate-link.sh
 npx -y pm2 describe sk-gate-tunnel >/dev/null 2>&1 || npx -y pm2 start ecosystem.config.js --only sk-gate-tunnel >/dev/null
 for i in $(seq 1 40); do GU=$(grep -o 'https://[a-z0-9-]*\.trycloudflare\.com' $PM2_HOME/logs/sk-gate-tunnel-out.log $PM2_HOME/logs/sk-gate-tunnel-error.log 2>/dev/null | tail -1 | sed 's/^[^:]*://'); [ -n "$GU" ] && break; sleep 1; done
-( umask 077; echo "$GU/?k=$(sudo -n cat /workspace/skunkworks/gate/owner-secret.json | python3 -c 'import json,sys;print(json.load(sys.stdin)["bearer"])')" > .gate-access )
+npx -y pm2 describe sk-gate-link >/dev/null 2>&1 || npx -y pm2 start ecosystem.config.js --only sk-gate-link >/dev/null
+[ -n "$GU" ] && ./gate-link.sh   # owner link (bearer rotates on every gate start, expires after 12 h) -> .gate-access 0600
 npx -y pm2 describe sk-tunnel >/dev/null 2>&1 || npx -y pm2 start ecosystem.config.js --only sk-tunnel >/dev/null
 for i in $(seq 1 30); do URL=$(grep -ho 'https://[a-z0-9-]*\.trycloudflare\.com' $PM2_HOME/logs/sk-tunnel-*.log | tail -1); [ -n "$URL" ] && break; sleep 1; done
 echo "${URL#https://}" > .tunnel-host

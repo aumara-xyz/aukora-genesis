@@ -1,0 +1,102 @@
+{
+ "steps": [
+  {
+   "label": "Enter+Space on body",
+   "msg": "",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Enter on Approve step1",
+   "msg": "Step 2: type the result colour below to confirm. Nothing has been applied.",
+   "pending": 1,
+   "step2": true
+  },
+  {
+   "label": "after step1",
+   "msg": "Step 2: type the result colour below to confirm. Nothing has been applied.",
+   "pending": 1,
+   "step2": true
+  },
+  {
+   "label": "Enter in empty confirm box",
+   "msg": "not applied: typed confirmation \"\" does not match the result. Nothing changed.",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Space on Approve step1",
+   "msg": "Step 2: type the result colour below to confirm. Nothing has been applied.",
+   "pending": 1,
+   "step2": true
+  },
+  {
+   "label": "Space on Confirm button (focused programmatically)",
+   "msg": "not applied: typed confirmation \"\" does not match the result. Nothing changed.",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Enter on Confirm button",
+   "msg": "not applied: typed confirmation \"\" does not match the result. Nothing changed.",
+   "pending": 1,
+   "step2": false
+  },
+  {
+   "label": "Tab+Enter (Reject)",
+   "msg": "rejected: rejected",
+   "pending": 0,
+   "step2": false
+  }
+ ],
+ "render": {
+  "card": true,
+  "plain": "accent: #FFD700 gold -> #FFD70E custom (unnamed)",
+  "after": "AFTER APPLY: accent = #FFD70E (custom (unnamed))",
+  "chips": [
+   {
+    "bg": "rgb(255, 215, 0)",
+    "img": false,
+    "w": 48,
+    "h": 32
+   },
+   {
+    "bg": "rgb(255, 215, 14)",
+    "img": false,
+    "w": 48,
+    "h": 32
+   }
+  ],
+  "warnings_visible": true,
+  "warnings": [
+   "NEAR gold (distance 14): the result #FFD70E looks like #FFD700 (1 of 6 hex digits differ) ",
+   "NOTE claims little/no change or \"still/same\", but the result is a real change: #FFD700 -> ",
+   "NOTE names colour(s) \"gold\" that do not match the result #FFD70E (custom (unnamed)).",
+   "NOTE uses gate/host/approval wording (gate, verif, approv) - ignore it; only the gate-mark",
+   "NOTE repeats words to pressure you (approve) - APPROVE-spam pattern."
+  ]
+ },
+ "tab_order": [
+  "BUTTON:a=reject",
+  "BODY",
+  "BUTTON:a=reject",
+  "BODY",
+  "BUTTON:a=reject",
+  "BODY",
+  "BUTTON:a=reject",
+  "BODY"
+ ],
+ "approve_in_tab_order": false,
+ "step2_tab_order": [
+  "a",
+  "typed",
+  "a",
+  "typed",
+  "BODY",
+  "a",
+  "typed",
+  "BODY"
+ ],
+ "first_stop": "reject",
+ "APPLIED": false
+}

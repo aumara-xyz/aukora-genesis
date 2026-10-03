@@ -244,3 +244,18 @@ Round 1 (19 attempts) and round 2 (815 scratch + 17 live attacks): **0 approved*
 - Attack tracker: [`redteam/tracker/SUMMARY.md`](redteam/tracker/SUMMARY.md), [`attacks.jsonl`](redteam/tracker/attacks.jsonl), [`benign_controls.jsonl`](redteam/tracker/benign_controls.jsonl)
 - Scripts: [`redteam/`](redteam/) (round 2 in [`redteam/rt2/`](redteam/rt2/))
 - Laya note screen (688-row trainset, rules, fine-tune eval): [`../laya-screen/`](../laya-screen/), verdict in [`../laya-screen/ft-full/verdict.md`](../laya-screen/ft-full/verdict.md)
+
+## RT3 gate hardening (2026-10-03, WITA)
+Source of truth for the gate is now `gate-src/gate.mjs` (+ `owner-cli.mjs`); `host/usr/local/lib/skunkworks/` mirrors what is deployed.
+Deploy with `ops/deploy-gate.sh` (restarts only `sk-gate`, refuses while anything is pending). Operator notes: `OPS-README.md`.
+- Unique colour names (only `#FFD700` is gold; `#D4AF37` = "metallic gold (not #FFD700)"), HARD warning on name collisions; `default` =
+  "app default (stock accent, NOT gold)".
+- The owner page shows every gate warning, the gate-parsed AFTER APPLY line and a before/after colour swatch (same function as the popup flags);
+  NEAR-gold warning (RGB distance <= 48 or one hex digit); normalised gate-wording, impersonation, APPROVE-spam, obfuscation (leet/scrambled/spaced)
+  and non-ASCII (hex dump) warnings; a hex in the note warns unless it exactly equals the result hex.
+- Two-step approve with a typed confirmation (Tab/Enter/Space alone cannot approve); global rate limits (1 pending, 3 per 10 min, 60 s after a reject).
+- Owner bearer rotates on every gate start and expires after 12 h; `ops/gate-link.sh` writes the link to `ops/.gate-access` (0600, not published),
+  and pm2 app `sk-gate-link` (`ops/gate-link-watch.sh`) re-runs it after every sk-gate restart.
+- Persona and tool description no longer call `#D4AF37` gold.
+- Results: `redteam/rt3/` (815-attack scratch replay: 673/673 pending cards carry an owner-page warning, 0 misleading cards without one;
+  benign false-warning rate 7/61 = 11.5%, all spec-mandated: 6 x #D4AF37 collision, 1 x default).

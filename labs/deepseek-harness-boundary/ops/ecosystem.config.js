@@ -7,4 +7,5 @@ module.exports = { apps: [
   { name: 'sk-harness', ...asUser('aukora-host', '/workspace/skunkworks/ops/run-harness.sh'), ...common },
   { name: 'sk-tunnel', script: '/workspace/skunkworks/ops/run-tunnel.sh', ...common },
   { name: 'sk-gate-tunnel', script: '/workspace/skunkworks/ops/run-gate-tunnel.sh', ...common },
+  { name: 'sk-gate-link', script: '/workspace/skunkworks/ops/gate-link-watch.sh', ...common },   // rewrites ops/.gate-access after every sk-gate (re)start
 ] };
