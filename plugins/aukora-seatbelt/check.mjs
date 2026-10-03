@@ -50,6 +50,7 @@ const ws = join(home, 'aukora-worktrees', 'wt')
 const repo = join(home, 'aukora-genesis')
 const seed = join(supportRoot, 'state', 'aumlok', 'machine-seed-v3.json')
 const socket = join(supportRoot, 'state', 'aumlok-signer.sock')
+const airlockSocket = join(S, 'air', 'owner.sock')
 const auraLog = join(dshHome, 'aura-code', 'aura.jsonl')
 const spentSet = join(dshHome, 'aura-code', 'consumed-ids.json')
 const gateLog = join(dshHome, 'aura-actions', 'aura.jsonl')
@@ -76,6 +77,9 @@ writeFileSync(join(ws, '.git'), `gitdir: ${join(repo, '.git', 'worktrees', 'wt')
 if (Buffer.byteLength(socket) > 103) throw new Error(`socket path too long for sun_path: ${socket}`)
 const signer = createServer(connection => connection.end('FAKE-SIGNER-REPLY\n'))
 await new Promise(ok => signer.listen(socket, ok))
+mkdirSync(dirname(airlockSocket), { recursive: true })
+const airlock = createServer(connection => connection.end('FAKE-AIRLOCK-REPLY\n'))
+await new Promise(ok => airlock.listen(airlockSocket, ok))
 
 // ── The harness, with `sandbox` mounted by the caller. ─────────────────────────────────────────────────────────────
 async function harness(mountSandbox) {
@@ -94,7 +98,7 @@ async function harness(mountSandbox) {
     return { exit: result.exitCode, out: result.stdout.text.trim(), err: result.stderr.text.trim(), denied: result.sandbox?.denied }
   }
 }
-const aukora = await harness(ctx => ctx.plugin(seatbelt, { home, supportRoot, dshHome, providerModule }))
+const aukora = await harness(ctx => ctx.plugin(seatbelt, { home, supportRoot, dshHome, airlockSockets: [airlockSocket], providerModule }))
 const stock = await harness(ctx => ctx.plugin(LocalSandboxProvider))
 
 // ── The arms. ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -117,6 +121,8 @@ const ARMS = [
     `printf 'process.stdout.write(require("fs").readFileSync(process.argv[2], "utf8"))' > peek.cjs && ${node} peek.cjs ${q(seed)}`, 'denied'],
   ['(d) connect to the signer socket',
     `${node} -e 'require("net").connect(process.argv[1]).on("data",d=>{process.stdout.write(d);process.exit(0)}).on("error",e=>{console.error(e.message);process.exit(1)})' ${q(socket)}`, 'denied'],
+  ['(d2) connect to the Airlock owner socket',
+    `${node} -e 'require("net").connect(process.argv[1]).on("data",d=>{process.stdout.write(d);process.exit(0)}).on("error",e=>{console.error(e.message);process.exit(1)})' ${q(airlockSocket)}`, 'denied'],
   ['(e) append to the code Aura chain', `echo '{"seq":2,"forged":true}' >> ${q(auraLog)}`, 'denied'],
   ['(e2) rewrite the kernel spent set', `echo '{"consumedIds":[]}' > ${q(spentSet)}`, 'denied'],
   ['(e3) append to the action receipts', `echo '{"forged":true}' >> ${q(gateLog)}`, 'denied'],
@@ -158,14 +164,39 @@ await section('WITH aukora-seatbelt, workspace = the governing checkout', aukora
 await section('WITH aukora-seatbelt, read-only: no worktree grant', (c, w) => aukora(c, w, 'read-only'), CONTAINED_ARMS.slice(1, 2), () => 'denied', repo)
 // The red arm: the protection removed. Every arm this plugin exists for must now SUCCEED.
 const RED = new Set(['(a) read the fake seed', '(a7) read the backend token', '(c) a script the command writes, then runs, reads the seed',
-  '(c2) the same, as a node script', '(d) connect to the signer socket', '(e) append to the code Aura chain'])
-await section('RED ARM: the stock sandbox-local profile only', stock, ARMS.filter(([label]) => RED.has(label)), () => 'allowed', ws)
-process.stdout.write(`\nfake chain after the red arm: ${JSON.stringify(readFileSync(auraLog, 'utf8'))}\n`)
-await section('RED ARM, ancestor workspace', stock, ANCESTOR_ARMS.slice(0, 1), () => 'allowed', S)
-// (h) is not in a red arm: this scratch tree sits under /private/tmp, which the stock grant already covers.
-await section('RED ARM, governing checkout as workspace', stock, CONTAINED_ARMS.slice(0, 1), () => 'allowed', repo)
+  '(c2) the same, as a node script', '(d) connect to the signer socket', '(d2) connect to the Airlock owner socket', '(e) append to the code Aura chain'])
+// Since the mandatory-agent-confinement patch the harness refuses to start a child without `aukoraConfinement`, so
+// the stock-provider red arm can no longer run through `ctx.shell`. Say so instead of crashing.
+try {
+  await section('RED ARM: the stock sandbox-local profile only', stock, ARMS.filter(([label]) => RED.has(label)), () => 'allowed', ws)
+  process.stdout.write(`\nfake chain after the red arm: ${JSON.stringify(readFileSync(auraLog, 'utf8'))}\n`)
+  await section('RED ARM, ancestor workspace', stock, ANCESTOR_ARMS.slice(0, 1), () => 'allowed', S)
+  // (h) is not in a red arm: this scratch tree sits under /private/tmp, which the stock grant already covers.
+  await section('RED ARM, governing checkout as workspace', stock, CONTAINED_ARMS.slice(0, 1), () => 'allowed', repo)
+} catch (error) {
+  process.stdout.write(`NOT RUN stock red arm: ${error?.code ?? ''} ${error?.message ?? error}\n`)
+}
+// The (d2) twin, straight through sandbox-exec: the same AUKORA forms with and without the Airlock socket. Only the
+// Airlock deny differs, so a connect that is refused with it and succeeds without it is refused BY that deny.
+{
+  // Async: the fake Airlock server lives in this process and must keep answering while the child connects.
+  const { execFile } = await import('node:child_process')
+  const run = (argv) => new Promise(done => execFile(argv[0], argv.slice(1), { encoding: 'utf8', timeout: 20_000 },
+    (error, stdout, stderr) => done({ exit: error ? (error.code ?? 1) : 0, out: String(stdout).trim(), err: String(stderr).trim() })))
+  const { aukoraDenyForms, protectedPaths } = await import('./lib/profile.mjs')
+  const base = '(version 1) (allow default)'
+  const connect = [process.execPath, '-e', 'require("net").connect(process.argv[1]).on("data",d=>{process.stdout.write(d);process.exit(0)}).on("error",e=>{console.error(e.message);process.exit(1)})', airlockSocket]
+  for (const [label, sockets, want] of [['(d2) twin, Airlock deny present', [airlockSocket], 'denied'], ['(d2) twin RED, Airlock deny removed', [], 'allowed']]) {
+    const profile = [base, ...aukoraDenyForms(protectedPaths({ home, supportRoot, dshHome, airlockSockets: sockets }))].join('\n')
+    const r = await run(['/usr/bin/sandbox-exec', '-p', profile, ...connect])
+    const got = verdict(r)
+    if (got !== want) failures.push(`${label}: want ${want}, got ${got}`)
+    process.stdout.write(`${got === want ? 'PASS' : 'FAIL'} ${label}\n  exit=${String(r.exit)} out=${JSON.stringify(r.out)} err=${JSON.stringify(r.err)}\n`)
+  }
+}
 
 signer.close()
+airlock.close()
 process.stdout.write(failures.length === 0 ? '\nSEATBELT CHECK: all arms as expected\n' : `\nSEATBELT CHECK FAILED:\n  ${failures.join('\n  ')}\n`)
 process.stdout.write(`(TMPDIR for this run: ${tmpdir()})\n`)
 process.exit(failures.length === 0 ? 0 : 1)

@@ -33,7 +33,7 @@ import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { aukoraAllowForms, aukoraDenyForms, protectedPaths, withAukoraDenies } from './profile.mjs'
+import { airlockSocketPaths, aukoraAllowForms, aukoraDenyForms, protectedPaths, withAukoraDenies } from './profile.mjs'
 
 export const name = 'aukora-seatbelt'
 export const REQUIRED_SERVICE = 'aukoraConfinement'
@@ -47,7 +47,7 @@ const PROVIDER_CANDIDATES = Object.freeze([
   join(ROOT, 'vendor', 'dsh', 'packages', 'sandbox', 'sandbox-local', 'lib', 'index.js'),
 ])
 
-export const CONFIG_FIELDS = Object.freeze(['supportRoot', 'dshHome', 'home', 'repoRoots', 'worktreesRoot', 'providerModule', 'providerConfig'])
+export const CONFIG_FIELDS = Object.freeze(['supportRoot', 'dshHome', 'home', 'repoRoots', 'worktreesRoot', 'airlockSockets', 'providerModule', 'providerConfig'])
 
 /**
  * Validate the row's config. Refuses by name rather than guessing a location.
@@ -68,8 +68,12 @@ export function readSettings(config = {}) {
   // This deployment's governing checkout and proposal worktrees, unless the row names others.
   const repoRoots = configured('repoRoots', [join(home, 'aukora-genesis')])
   const worktreesRoot = configured('worktreesRoot', join(home, 'aukora-worktrees'))
+  // The Airlock sockets: the installed default plus the one the root-owned config names (profile.mjs).
+  const airlockSockets = configured('airlockSockets', airlockSocketPaths())
   if (!Array.isArray(repoRoots)) throw refused('repoRoots must be a list of absolute paths')
-  for (const [key, value] of [...Object.entries({ home, supportRoot, dshHome, worktreesRoot }), ...repoRoots.map(root => ['repoRoots[]', root])]) {
+  if (!Array.isArray(airlockSockets)) throw refused('airlockSockets must be a list of absolute paths')
+  for (const [key, value] of [...Object.entries({ home, supportRoot, dshHome, worktreesRoot }), ...repoRoots.map(root => ['repoRoots[]', root]),
+    ...airlockSockets.map(path => ['airlockSockets[]', path])]) {
     if (typeof value !== 'string' || !isAbsolute(value)) throw refused(`${key} must be an absolute path`)
   }
   const providerModule = configured('providerModule', PROVIDER_CANDIDATES.find(path => existsSync(path)))
@@ -79,7 +83,8 @@ export function readSettings(config = {}) {
   const providerConfig = configured('providerConfig', {})
   if (providerConfig === null || typeof providerConfig !== 'object' || Array.isArray(providerConfig)) throw refused('providerConfig must be an object')
   return Object.freeze({
-    roots: Object.freeze({ home, supportRoot, dshHome, repoRoots: Object.freeze([...repoRoots]), worktreesRoot }),
+    roots: Object.freeze({ home, supportRoot, dshHome, repoRoots: Object.freeze([...repoRoots]), worktreesRoot,
+      airlockSockets: Object.freeze([...airlockSockets]) }),
     providerModule,
     providerConfig,
   })

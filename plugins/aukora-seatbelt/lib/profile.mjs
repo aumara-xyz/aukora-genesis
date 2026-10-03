@@ -23,19 +23,39 @@
  *
  * @module @aukora/dsh-plugin-seatbelt/profile
  */
-import { realpathSync } from 'node:fs'
+import { readFileSync, realpathSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { basename, dirname, join } from 'node:path'
+import { basename, dirname, isAbsolute, join } from 'node:path'
 
 /** The Aumlok machine seed, by file name, anywhere on disk. Read-only rule: fixtures may still be written. */
 export const SEED_NAME_REGEX = String.raw`/machine-seed[^/]*\.json$`
+
+/** The Airlock owner daemon's socket as installed (INSTALL.md), and the root-owned config that names the live one. */
+export const AIRLOCK_SOCKET_DEFAULT = '/Library/Application Support/AUKORA-Airlock/run/owner.sock'
+export const AIRLOCK_CONFIG = '/etc/aukora/owner-daemon.json'
+
+/**
+ * The Airlock sockets a confined shell must not reach. The daemon signs any well-formed request from the operator's
+ * UID (it proves a UID, never a click), so a confined command running as that UID must not be able to connect.
+ * Reading the config loosely is safe here: it can only ADD a denied path, never remove the default.
+ * @param {string} [configPath] - the owner-daemon config.
+ * @returns {string[]} absolute socket paths.
+ */
+export function airlockSocketPaths(configPath = AIRLOCK_CONFIG) {
+  const paths = new Set([AIRLOCK_SOCKET_DEFAULT])
+  try {
+    const named = JSON.parse(readFileSync(configPath, 'utf8'))?.socketPath
+    if (typeof named === 'string' && isAbsolute(named) && !named.includes('\0')) paths.add(named)
+  } catch {}
+  return [...paths]
+}
 
 /**
  * The paths the agent's shell must not reach, from the deployment's three roots.
  * @param {{supportRoot?: string, dshHome?: string, home?: string}} roots - where this deployment keeps its state.
  * @returns {Readonly<{keys: string[], sockets: string[], receipts: string[]}>} absolute, not yet canonical.
  */
-export function protectedPaths({ home = homedir(), supportRoot, dshHome, repoRoots, worktreesRoot } = {}) {
+export function protectedPaths({ home = homedir(), supportRoot, dshHome, repoRoots, worktreesRoot, airlockSockets } = {}) {
   const support = supportRoot ?? join(home, 'Library', 'Application Support', 'AUKORA')
   const dsh = dshHome ?? join(support, 'state', 'home')
   return Object.freeze({
@@ -52,8 +72,8 @@ export function protectedPaths({ home = homedir(), supportRoot, dshHome, repoRoo
       join(home, '.ssh'), join(home, '.config', 'gh'),
       join(support, 'state', 'launch-url.json'), join(support, 'state', '.launch-url.json.tmp'),
       join(dsh, 'openviking', 'root.key'), join(home, '.git-credentials'), join(home, '.aws')],
-    // The Aumlok signer's socket: no connect, no read, no replace.
-    sockets: [join(support, 'state', 'aumlok-signer.sock')],
+    // The Aumlok signer's socket and the Airlock owner daemon's socket: no connect, no read, no replace.
+    sockets: [join(support, 'state', 'aumlok-signer.sock'), ...(airlockSockets ?? airlockSocketPaths())],
     // No write: the code Aura chain with the kernel's spent set (aura-code/consumed-ids.json) and the action gate's
     // receipt log. Reading them stays allowed.
     receipts: [join(dsh, 'aura-code'), join(dsh, 'aura-actions')],
