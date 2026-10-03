@@ -2,7 +2,7 @@
  * The verified chain is also the durable outbox: a missing index acknowledgement is retried.
  * No approval, grant, queue proposal or authority is created by this module. */
 import { AURA_RECORD_DOMAIN, auraEntryHash, chainAuraEntries } from './memory-owner.mjs'
-import { buildRememberedNote, canonicalInstant, recomputeNoteId, sha256Hex, MEMORY_TIER } from './memory-tiers.mjs'
+import { buildRememberedNote, canonicalInstant, cutText, recomputeNoteId, sha256Hex, MEMORY_TIER } from './memory-tiers.mjs'
 import { contentHash, verifyContentHash } from './memory-quality.mjs'
 import { consumeTurn } from './memory-capture-hook.mjs'
 import { nextEntry, verifyChain as verifyJournal } from './memory-journal.mjs'
@@ -50,7 +50,7 @@ function boundedNotes(note) {
     if (end < note.statement.length && /[\uD800-\uDBFF]/u.test(note.statement[end - 1])) end--
     const statement = note.statement.slice(start, end)
     chunks.push({ ...buildRememberedNote({ ...note, statement,
-      evidence: note.evidence.map(one => ({ ...one, quote: statement.slice(0, 200) })),
+      evidence: note.evidence.map(one => ({ ...one, quote: cutText(statement, 200) })),
       source: { ...note.source, span: { start, end, total: note.statement.length, unit: 'utf16' } },
       origin: note.origin?.run ? { ...note.origin, captureRun: note.origin.run, run: sha256Hex(`${note.origin.run}:${start}:${end}`) } : note.origin,
       salt: sha256Hex(`${note.id}:${start}:${end}`) }), bodyAtCapture: note.bodyAtCapture ?? null })
@@ -262,6 +262,7 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
   const captureTurn = async (turn, options = {}) => {
     const p = await policy(options)
     if (blocked(p, p.attributedTo === 'agent' ? '' : turn.text)) return { remembered: 0, ids: [], reason: 'capture-paused' }
+    if (typeof turn.text === 'string' && !turn.text.isWellFormed()) return { remembered: 0, ids: [], reason: 'memory-text-not-well-formed' }
     const at = canonicalInstant(turn.at ?? now()), digests = forbiddenDigests()
     if (privateContent(String(turn.text), digests)) return { remembered: 0, ids: [], reason: 'private-content-filter' }
     const captured = consumeTurn({ ...turn, at }, { ...p, observedAt: at, validFrom: at.slice(0, 10),
@@ -290,6 +291,8 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
         try {
           const { text, from = 'memory', scope = 'owner', at = canonicalInstant(now()), source, migrationKey, metadata = {}, bodyAtCapture = null } = input
           if (typeof text !== 'string' || !text.trim()) throw new Error('memory-text-invalid')
+          // A lone surrogate would be stored and then refused on every read, leaving the whole store incomplete.
+          if (!text.isWellFormed()) { results.push({ remembered: 0, ids: [], reason: 'memory-text-not-well-formed' }); continue }
           if (typeof from !== 'string' || !/^[A-Za-z0-9_.:-]{1,64}$/u.test(from)) throw new Error('memory-origin-invalid')
           if (blocked(p, attributedTo === 'agent' ? '' : text)) { results.push({ remembered: 0, ids: [], reason: 'capture-paused' }); continue }
           if (privateContent(text, digests)) { results.push({ remembered: 0, ids: [], reason: 'private-content-filter' }); continue }
@@ -307,7 +310,7 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
           if (identities.has(identity) && !orphan) { results.push({ remembered: 0, ids: identities.get(identity), notes: [] }); continue }
           const stamp = orphan?.observedAt ?? canonicalInstant(at)
           const note = orphan && !orphan.source?.span ? orphan : buildRememberedNote({ category: metadata.category ?? 'observation', statement: text,
-            attributedTo, evidence: [{ log: `memory:${from}`, turn: 0, turnDigest: digest, quote: text.slice(0, 200) }],
+            attributedTo, evidence: [{ log: `memory:${from}`, turn: 0, turnDigest: digest, quote: cutText(text, 200) }],
             validFrom: stamp.slice(0, 10), observedAt: stamp, confidence: 1, sensitivity: 'none', privacy: p.privacy, subject: p.subject,
             scope, source: source ?? { state: 'UNLINKED', cited: false, because: 'captured directly; no session event was claimed' },
             origin: { by: from, run: identity, metadata: Object.fromEntries(['expiresBy', 'current', 'supersededBy', 'hidden', 'forgotten', 'consent', 'stale', 'staleness'].filter(key => metadata[key] !== undefined).map(key => [key, metadata[key]])) },

@@ -316,6 +316,23 @@ try {
     await assert.rejects(damaged.remember({ text: 'Must not append.' }), named)
     assert.equal(readFileSync(file, 'utf8'), raw)
   })
+  await arm('an emoji whose high surrogate lands at quote index 199 never poisons the store; a lone surrogate is skipped', async () => {
+    const split = createTrackedMemory({ stateDir: join(root, 'emoji'), subject, config, fetch: fakeFetch }), before = new Set(files.keys())
+    const text = 'The harbour lighthouse keeper paints every shutter blue before the storm season arrives. '.repeat(3).slice(0, 199) + '\u{1F30A} and the gulls follow her home.'
+    assert.equal(text.charCodeAt(199), 0xd83c)
+    assert.equal((await split.captureTurn(turn('owner', text, 30))).remembered, 1)
+    assert.equal((await split.remember({ text, from: 'agent' })).remembered, 1)
+    const skipped = await split.rememberBatch([{ text: 'A lone \ud800 surrogate in the harbour log.' }, { text: 'The tide table hangs by the harbour door.' }])
+    assert.deepEqual(skipped.results.map(result => [result.remembered, result.reason ?? null]), [[0, 'memory-text-not-well-formed'], [1, null]])
+    const live = split.read()
+    assert.equal(live.complete, true); assert.equal(live.notes.length, 3)
+    assert.ok(live.notes.filter(note => note.statement === text).every(note => note.evidence.every(one => one.quote.isWellFormed() && text.startsWith(one.quote))))
+    for (const lexical of [true, false]) {
+      const answer = await split.recall({ question: 'lighthouse keeper shutter', lexical })
+      assert.notEqual(answer.state, 'undetermined'); assert.ok(answer.notes.some(note => note.text === text), `lexical ${lexical}`)
+    }
+    for (const key of files.keys()) if (!before.has(key)) files.delete(key)
+  })
 } finally { rmSync(root, { recursive: true, force: true }) }
 console.log(`kira-openviking-recall: ${passed} passed, ${failed} failed (scratch only)`)
 process.exitCode = failed ? 1 : 0

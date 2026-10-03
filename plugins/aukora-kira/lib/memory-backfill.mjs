@@ -31,7 +31,7 @@ import { objectFileName } from './memory-store.mjs'
 import { listJsonFiles, readJsonStrict, parseStrictText } from './strict-read.mjs'
 import { statementOf, turnReferenceOf } from './memory-migrate.mjs'
 import { migratedEntry, verifyChain } from './memory-journal.mjs'
-import { UNLINKED_RECEIPT, buildRememberedNote, canonicalOf, sha256Hex } from './memory-tiers.mjs'
+import { UNLINKED_RECEIPT, buildRememberedNote, canonicalOf, cutText, sha256Hex } from './memory-tiers.mjs'
 import { verifyRecord } from './memory-verify.mjs'
 
 /** A named refusal, so a caller can act on which precondition failed rather than on a stack. */
@@ -126,7 +126,7 @@ export function migrateNotesFromPlan(input) {
         log: reference === null || reference === undefined ? 'queue' : `auma-live/${String(reference.sessionId)}.jsonl`,
         turn: reference === null || reference === undefined ? 0 : Number(reference.turn),
         turnDigest: queueDigest,
-        quote: statement.slice(0, 200),
+        quote: cutText(statement, 200),
       }],
       validFrom: DATE.test(createdAt.slice(0, 10)) ? createdAt.slice(0, 10) : observedAt.slice(0, 10),
       observedAt: INSTANT.test(createdAt) ? createdAt : observedAt,

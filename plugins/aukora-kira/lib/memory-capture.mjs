@@ -21,7 +21,7 @@
  * @module @aukora/dsh-plugin-kira/memory-capture
  */
 import { classifyCandidate, MAX_CANDIDATE_CHARS, turnKey } from './autostage.mjs'
-import { noteKind, sha256Hex } from './memory-tiers.mjs'
+import { cutText, noteKind, sha256Hex } from './memory-tiers.mjs'
 
 /**
  * How many records one turn may contribute. THREE, because the bound exists to keep memory readable rather than to
@@ -101,7 +101,7 @@ export function spansOf(text) {
     const sentences = trimmed.split(/(?<=[.!?])\s+(?=[A-Z"'(])/u)
     for (const sentence of sentences) {
       const piece = sentence.trim()
-      if (piece !== '') spans.push(piece.slice(0, MAX_CANDIDATE_CHARS))
+      if (piece !== '') spans.push(cutText(piece, MAX_CANDIDATE_CHARS))
     }
   }
   return spans
@@ -173,7 +173,7 @@ export function captureTurn(turn, policy) {
   // classifier found no marker it recognizes and returned null. The most important thing to know about a
   // preference is that the owner CHANGED it, and the store would have gone on reporting the abandoned one.
   if (candidates.length === 0 && CHANGE_MARKER.test(String(text))) {
-    const span = String(text).trim().slice(0, MAX_SPAN_CHARS)
+    const span = cutText(String(text).trim(), MAX_SPAN_CHARS)
     if (span !== '') candidates.push(Object.freeze({ category: 'preference', kind: 'preference', text: span, source, subject, privacy, possibleChange: true }))
   }
   // THE WHOLE TURN, LAST, so a marker sentence that IS the whole turn keeps its kind: the harness keeps the first of two

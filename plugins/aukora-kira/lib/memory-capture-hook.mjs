@@ -28,7 +28,7 @@ import { CONTROLS, ownerControlIn } from './memory-forget.mjs'
 import { applyHarness, normalize } from './memory-harness.mjs'
 import { compileIndex, rankRecords } from './retrieval.mjs'
 import { GENESIS_PREV, entryHashOf, nextEntry } from './memory-journal.mjs'
-import { buildRememberedNote, sha256Hex } from './memory-tiers.mjs'
+import { buildRememberedNote, cutText, sha256Hex } from './memory-tiers.mjs'
 
 /** How the design's categories meet the contract's kinds, for a turn captured without a model's categories. */
 /**
@@ -291,7 +291,7 @@ export function consumeTurn(turn, policy) {
       const relation = candidate.relation ?? sameRelation(candidate.text, related)
       return {
         category: candidate.category, statement: candidate.text, possibleChange: candidate.possibleChange === true,
-        quote: { turn: Number(turn.turn), text: candidate.text.slice(0, 200) }, explicit: policy?.explicitRemember === true,
+        quote: { turn: Number(turn.turn), text: cutText(candidate.text, 200) }, explicit: policy?.explicitRemember === true,
         // THE WHOLE-TURN CANDIDATE IS THE OWNER'S OWN WORDS (`memory-capture.mjs`), so the harness checks it as verbatim.
         verbatim: candidate.verbatim === true, attributedTo: agentFinding ? 'agent' : 'owner',
         ...(relation === null ? {} : { relation }),

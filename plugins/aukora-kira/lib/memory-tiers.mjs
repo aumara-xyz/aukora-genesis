@@ -174,6 +174,13 @@ export function sha256Hex(text) {
   return createHash('sha256').update(Buffer.from(text, 'utf8')).digest('hex')
 }
 
+/** The first `max` UTF-16 units of `text`, minus a trailing high surrogate: a cut never stores half an emoji, which the
+ * strict reader refuses (json:lone-surrogate) and which would mark the whole store incomplete. */
+export function cutText(text, max) {
+  const cut = String(text ?? '').slice(0, max)
+  return /[\uD800-\uDBFF]$/u.test(cut) ? cut.slice(0, -1) : cut
+}
+
 /**
  * THE HARNESS'S `time` IS MILLISECONDS AND A RECEIPT'S `at` IS SECONDS — the conversion, so no caller has to know.
  *
