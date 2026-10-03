@@ -1,0 +1,1 @@
+aukora-host ALL=(auma) NOPASSWD: /usr/local/lib/skunkworks/sbx-exec

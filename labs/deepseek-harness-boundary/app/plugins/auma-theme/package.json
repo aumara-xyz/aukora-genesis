@@ -1,0 +1,8 @@
+{
+  "name": "auma-theme",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "exports": { ".": "./index.js", "./client": "./client.js", "./package.json": "./package.json" },
+  "dsh": { "client": { "platform": "web" } }
+}

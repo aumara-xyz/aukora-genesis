@@ -1,0 +1,11 @@
+--- a/node_modules/@deepseek-ai/dsh-client-ui-settings/lib/client.js
++++ b/node_modules/@deepseek-ai/dsh-client-ui-settings/lib/client.js
+@@ -1506,7 +1506,7 @@
+ 		*/
+ 		function apply(ctx) {
+ 			const schema = new SettingsSchemaService(ctx);
+-			const persistence = ctx.remote.$host.isLoopback ? "host" : "memory";
++			const persistence = "host"; /* SKUNKWORKS: tunnel page is cookie-authenticated operator; was ctx.remote.$host.isLoopback ? "host" : "memory" */
+ 			const mirror = new SettingsDescribeMirror(ctx, persistence);
+ 			ctx.effect(() => {
+ 				const disposers = [ctx.remote.$on("settings/document-updated", () => {

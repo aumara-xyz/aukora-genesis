@@ -1,0 +1,11 @@
+#!/bin/bash
+# Root-owned. Only entry from aukora-host to Auma's hands: runs ONE bash command inside the
+# NVIDIA OpenShell sandbox "auma-ws" (owned by Linux user auma, rootless podman, network none).
+# Usage (as auma via sudo): sbx-exec <timeout-seconds> <command-string>
+set -u
+export HOME=/home/auma XDG_RUNTIME_DIR=/run/user/$(id -u) OPENSHELL_TELEMETRY_ENABLED=false PATH=/usr/local/bin:/usr/bin:/bin
+cd /home/auma
+t="${1:-60}"; case "$t" in ''|*[!0-9]*) echo "bad timeout" >&2; exit 2;; esac
+[ "$t" -gt 300 ] && t=300
+exec /usr/bin/openshell sandbox exec --name auma-ws --no-tty --no-login-shell --timeout "$t" -- \
+  bash -c 'cd /sandbox 2>/dev/null; ulimit -f 20480 2>/dev/null; exec bash -c "$1"' sbx "${2:-true}" </dev/null

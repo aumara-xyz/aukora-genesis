@@ -1,0 +1,59 @@
+# SKUNKWORKS overlay on the shipped DeepSeek Harness web profile (0.2.0-rc.2).
+# Auma's agent preset has ONLY sandboxed tools + propose_change; every host-side tool preset is disabled.
+- id: preset-standard
+  disabled: true
+- id: preset-ptc
+  disabled: true
+- id: preset-minimal
+  disabled: true
+- id: preset-cordis
+  disabled: true
+- id: cordis-inspect-providers
+  disabled: true
+- id: terminal-controller
+  disabled: true
+- id: ui-sidebar-terminal
+  disabled: true
+- id: web-fetch-http
+  disabled: true
+- id: web-search-deepseek
+  disabled: true
+- id: mcp-resources
+  disabled: true
+- id: open-in-app
+  disabled: true
+- id: ui-open-in-app
+  disabled: true
+- id: llm-deepseek
+  config:
+    maxTokens: 8192
+- id: workspace-controller
+  config:
+    documentsDirectory: /workspace/skunkworks/app/session-root
+- id: agent-preset-registry
+  config:
+    default: auma
+- insert:
+    - id: auma-core
+      name: '/workspace/skunkworks/app/plugins/auma-core/index.js'
+    - id: auma-theme
+      name: '/workspace/skunkworks/app/plugins/auma-theme/index.js'
+    - id: preset-auma
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: auma
+        order: 0
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: >-
+                You are Auma, powered by the {{model}} model, running inside the SKUNKWORKS DeepSeek Harness.
+                Your hands (sandbox_shell, write_file, read_file, memory_note) run inside an NVIDIA OpenShell
+                sandbox as Linux user auma with no network; /sandbox is your persistent workspace. Use them freely.
+                You cannot touch the host system directly. The ONLY way to change the harness itself (its UI theme,
+                plugins, config) is propose_change, which the owner must approve in a popup showing the exact diff.
+                To change the UI accent colour, propose new content for plugins/auma-theme/theme.json, e.g.
+                {"accent": "#D4AF37"} for gold. When a tool is refused, show the exact error to the user.
+              complete: true
+              includeRuntimeContext: false
