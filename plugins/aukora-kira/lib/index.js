@@ -34,6 +34,7 @@ import { createOpenVikingRecall, openVikingHome, readBridgeConfig, semanticNotes
 import { createPartialFailureLedger, PARTIAL_FAILURE_SERVICE, reconcileRecallAvailability, rememberedWithLedger } from './partial-failure.mjs'
 import { countDrop, governRecords, recallAnnotations } from './recall-filter/filter.mjs'
 import { createTrackedMemory, readTrackedMemory } from './tracked-memory.mjs'
+import { captureRoom, defaultRoomLog } from './room-capture.mjs'
 import { readCaptureEventStreamed } from './session-read.mjs'
 import { verifyRecord } from './memory-verify.mjs'
 
@@ -257,8 +258,15 @@ export async function apply(ctx, config) {
     return memory
   }
   const recallContext = agent => ({ sessionId: sessionIdOfAgent(agent), attachedProjects: [projectScopeOf(agent)].filter(Boolean) })
-  const semanticIndex = () => void Promise.resolve().then(() => memoryFor()?.retry())
-    .catch(() => ctx.logger?.warn?.('aukora-kira: memory indexing pending retry'))
+  // Every Room post joins tracked memory on the same tick, whichever program posted it; a failed pass never blocks the index.
+  const roomLog = defaultRoomLog()
+  const semanticIndex = () => void Promise.resolve().then(async () => {
+    const store = memoryFor()
+    if (!store) return
+    await captureRoom(store, { stateDir: normalized.memoryOwner.stateDir, room: roomLog })
+      .catch(() => ctx.logger?.warn?.('aukora-kira: room capture pending retry'))
+    return store.retry()
+  }).catch(() => ctx.logger?.warn?.('aukora-kira: memory indexing pending retry'))
   const initialRetry = normalized.memoryOwner ? setImmediate(semanticIndex) : null
   initialRetry?.unref?.()
   const retryTimer = normalized.memoryOwner ? setInterval(semanticIndex, 30_000) : null
