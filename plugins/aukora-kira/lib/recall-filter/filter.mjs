@@ -7,6 +7,7 @@
 import { recallScoped } from './recall.mjs'
 import { classifyEvidence, decodeToAuditVerdict } from './containment.mjs'
 import { stalenessVerdict } from './staleness.mjs'
+import { contentHash, verifyContentHash } from '../memory-quality.mjs'
 
 const counted = new WeakMap()
 export function countDrop(governed, reason, id) {
@@ -31,9 +32,10 @@ export function signedRecallRecord({ record, text }, entries = []) {
   const content = record.content ?? {}
   const metadata = Object.fromEntries(['scope', 'consent', 'validTo', 'expiresBy', 'hidden', 'forgotten',
     'current', 'category', 'origin'].filter(key => content[key] !== undefined).map(key => [key, content[key]]))
-  return { ...metadata, id: record.recordId, recordId: record.recordId, tier: 'signed',
+  const statement = text ?? (typeof content.note === 'string' ? content.note : JSON.stringify(content))
+  return { ...metadata, id: record.recordId, recordId: record.recordId, tier: 'signed', contentHash: contentHash(statement),
     subject: record.subject, privacy: record.privacy, kind: record.kind, createdAt: record.createdAt,
-    source: record.source, statement: text ?? (typeof content.note === 'string' ? content.note : JSON.stringify(content)),
+    source: record.source, statement,
     supersededBy: entries.filter(entry => entry.record?.links?.some(link =>
       link.relation === 'supersedes' && link.recordId === record.recordId)).map(entry => entry.record.recordId) }
 }
@@ -48,6 +50,9 @@ export function filterMemoryRecords(records, context, governed) {
     const forgotten = context.forgotten?.has(id) || note.forgotten === true
     const hidden = moved === 'hidden' || note.hidden === true
     const text = note.statement ?? note.text
+    if (note.contentHash !== undefined && !verifyContentHash(text, note.contentHash).ok) {
+      countDrop(governed, 'content-hash-mismatch', id); continue
+    }
     const record = { recordId: id, content: text, createdAt: instant(note.observedAt ?? note.createdAt) ?? '',
       kind: note.kind ?? 'observation', provenance: 'kira:recalled-data' }
     // recallScoped's first guard runs before scoring or classification, including hidden consent.

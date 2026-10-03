@@ -13,6 +13,7 @@
  * This court goes RED if the gate proceeds while the ledger is incomplete.
  */
 import assert from 'node:assert/strict'
+import { contentHash } from '../plugins/aukora-kira/lib/memory-quality.mjs'
 import { createOpenVikingRecall } from '../plugins/aukora-kira/lib/recall-openviking.mjs'
 import { recallRemembered } from '../plugins/aukora-kira/lib/tools.mjs'
 import {
@@ -58,8 +59,8 @@ const bridge = createOpenVikingRecall({ config, fetch: fakeFetch })
 /** Exactly what index.js semanticLedger() returns when the read THROWS. */
 const unreadable = () => ({ ambient: new Map(), governed: new Map(), complete: false })
 const readable = () => ({
-  ambient: new Map([[AMBIENT, { id: AMBIENT, tier: 'remembered', statement: 'ambient alpha' }]]),
-  governed: new Map([[GOVERNED, { id: GOVERNED, tier: 'signed', statement: 'governed one' }]]),
+  ambient: new Map([[AMBIENT, { id: AMBIENT, tier: 'remembered', statement: 'ambient alpha is available', contentHash: contentHash('ambient alpha is available') }]]),
+  governed: new Map([[GOVERNED, { id: GOVERNED, tier: 'signed', statement: 'governed one is available', contentHash: contentHash('governed one is available') }]]),
   complete: true,
 })
 /** A lexical fallback that MATCHES — the ordinary case, and the one that used to look determined. */

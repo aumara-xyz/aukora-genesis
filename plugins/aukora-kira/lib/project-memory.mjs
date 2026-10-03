@@ -36,6 +36,7 @@ export function visibleRemembered(notes, policy, scope) {
 export function rememberedSnippet(note) {
   return {
     recordId: note.id, text: String(note.statement ?? note.text ?? '').slice(0, 600),
+    contentHash: note.contentHash, contentHashScope: 'full-statement',
     observedAt: note.observedAt, tier: 'remembered', attributedTo: note.attributedTo,
     source: note.source, scope: note.scope,
     citation: { remembered: true, sessionId: note.source?.sessionId, seq: note.source?.seq,

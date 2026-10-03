@@ -271,10 +271,10 @@ export async function apply(ctx, config) {
     return { ...answer, openviking: { removed: result.reached === true },
       ...(result.reached ? {} : { notReached: [...(answer.notReached ?? []), { what: 'openviking', because: result.because }] }) }
   } })
-  const rememberedFor = async (listNotes, text, agent, preTurn = false, report = { dropped: 0, reasons: {} }) => {
+  const rememberedFor = async (listNotes, text, agent, preTurn = false, report = { dropped: 0, reasons: {} }, lexical = false) => {
     const store = memoryFor()
     if (!store) return recallRemembered(listNotes, text, 5)
-    const result = await store.recall({ question: text, context: recallContext(agent) })
+    const result = await store.recall({ question: text, context: recallContext(agent), lexical })
     Object.assign(report, result.memory)
     return result
   }
@@ -628,7 +628,7 @@ export async function apply(ctx, config) {
   registry.register(recallTool(async (exec, request) => {
     if (memoryOwner) {
       const report = { dropped: 0, reasons: {} }
-      const remembered = await rememberedFor(rememberedNotes, request.text ?? '', exec?.agent, false, report)
+      const remembered = await rememberedFor(rememberedNotes, request.text ?? '', exec?.agent, false, report, request.lexical === true)
       const answer = { availability: remembered.state === 'undetermined' ? 'undetermined' : remembered.state === 'found' ? 'found' : 'empty',
         status: remembered.state === 'found' ? 'match' : 'insufficient',
         relations: [], interpretation: { kind: 'search' }, retrieval: { method: remembered.method ?? 'openviking-semantic', degraded: remembered.degraded === true }, ceiling: remembered.ceiling ?? [], state: {},
@@ -648,7 +648,7 @@ export async function apply(ctx, config) {
       answer = await conversation.turn(request, signal ?? new AbortController().signal)
       const governed = { dropped: 0, reasons: {} }
       const remembered = typeof request.text !== 'string' || request.text === '' ? undefined
-        : await rememberedFor(rememberedNotes, request.text, exec?.agent, false, governed)
+        : await rememberedFor(rememberedNotes, request.text, exec?.agent, false, governed, request.lexical === true)
       ;[answer] = await publishRecall([{ ...answer, ...(remembered === undefined ? {} : { remembered }) }], exec?.agent, governed)
       // PHASE 9: reconcile remembered.state with outer availability — never attach an
       // undetermined ambient picture beside a found governed answer without downgrading.

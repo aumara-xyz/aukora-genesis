@@ -14,6 +14,7 @@
  * the reserved slots because an ambient note outscored it by more than the window.
  */
 import assert from 'node:assert/strict'
+import { contentHash } from '../plugins/aukora-kira/lib/memory-quality.mjs'
 import { createOpenVikingRecall } from '../plugins/aukora-kira/lib/recall-openviking.mjs'
 import { eligibleByTier, mergeReservedSlots, GOVERNED_RESERVED_SLOTS } from '../plugins/aukora-kira/lib/reserved-slots.mjs'
 
@@ -32,6 +33,7 @@ const config = {
   queryInstruction: '',
 }
 
+const statementFor = id => `The record is ${id}`
 const uriFor = id => id.startsWith('rem:')
   ? `viking://user/${USER}/memories/kira/remembered/rem-${id.slice(4)}.md`
   : `viking://user/${USER}/memories/kira/governed/${id.slice(5)}.md`
@@ -42,7 +44,7 @@ const fakeFetch = async (url, options = {}) => {
   if (parsed.pathname === '/health') return { ok: true, status: 200, async json() { return { healthy: true } } }
   if (parsed.pathname === '/api/v1/fs/ls') return response(200, [...files.keys()])
   if (parsed.pathname === '/api/v1/content/write') return response(200, {})
-  if (parsed.pathname === '/api/v1/content/read') { const uri = parsed.searchParams.get('uri'); return response(200, uri.includes('/governed/') ? `kira:${uri.split('/').pop().slice(0, -3)}` : `rem:${uri.split('rem-').pop().slice(0, -3)}`) }
+  if (parsed.pathname === '/api/v1/content/read') { const uri = parsed.searchParams.get('uri'); return response(200, statementFor(uri.includes('/governed/') ? `kira:${uri.split('/').pop().slice(0, -3)}` : `rem:${uri.split('rem-').pop().slice(0, -3)}`)) }
   if (parsed.pathname === '/api/v1/fs' && options.method === 'DELETE') { files.delete(parsed.searchParams.get('uri')); return response(200, {}) }
   if (parsed.pathname === '/api/v1/search/find') {
     return response(200, {
@@ -56,8 +58,8 @@ const fakeFetch = async (url, options = {}) => {
   return { ok: false, status: 404, async json() { return { status: 'error', error: { code: 'NOT_FOUND' } } } }
 }
 const ledger = () => ({
-  ambient: new Map(ambientIds.map(id => [id, { id, tier: 'remembered', statement: id }])),
-  governed: new Map(governedIds.map(id => [id, { id, tier: 'signed', statement: id }])),
+  ambient: new Map(ambientIds.map(id => [id, { id, tier: 'remembered', statement: statementFor(id), contentHash: contentHash(statementFor(id)) }])),
+  governed: new Map(governedIds.map(id => [id, { id, tier: 'signed', statement: statementFor(id), contentHash: contentHash(statementFor(id)) }])),
   complete: true,
 })
 

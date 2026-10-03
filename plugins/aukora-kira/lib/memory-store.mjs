@@ -18,6 +18,7 @@
  */
 import { insideStateDir } from './memory-forget.mjs'
 import { qualifyUnsignedNote } from './memory-law.mjs'
+import { MEMORY_STORAGE } from './memory-tiers.mjs'
 
 /**
  * The directories, RELATIVE TO THE STORE ROOT — and `stateDir` means exactly one thing now.
@@ -34,7 +35,7 @@ import { qualifyUnsignedNote } from './memory-law.mjs'
  */
 export const STORE_PATHS = Object.freeze({
   root: '',
-  remembered: 'remembered',
+  remembered: MEMORY_STORAGE.remembered,
   journal: 'remembered/journal.jsonl',
   // THE APPROVED CHAIN. `memory-owner.mjs` appends every settle here (`join(stateDir, 'aura.jsonl')`), and it is the one
   // chain the public evidence export copies (`scripts/kira/public-evidence.mjs`, allowlist `aura.jsonl`).

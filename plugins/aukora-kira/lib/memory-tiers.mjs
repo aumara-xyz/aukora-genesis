@@ -33,7 +33,18 @@ import { createHash, createPublicKey, randomBytes, verify as cryptoVerify } from
 import { contentFreeTombstone } from './memory-law.mjs'
 
 /** The closed tier vocabulary. The design's §2.1: "trusted" was renamed "signed" in revision 2. */
-export const MEMORY_TIERS = Object.freeze(['remembered', 'signed', 'proposal', 'forgotten'])
+export const MEMORY_TIER = Object.freeze({ remembered: 'remembered', signed: 'signed', proposal: 'proposal', forgotten: 'forgotten' })
+export const MEMORY_TIERS = Object.freeze(Object.values(MEMORY_TIER))
+// Storage/provenance names are not authority tiers. In particular, an index hit is
+// never a signed record, and a historical queue item imports as remembered only.
+export const MEMORY_STORAGE = Object.freeze({
+  remembered: 'remembered', // Canonical automatic capture; unsigned, also the old per-ID vector layout.
+  governed: 'governed',     // Historical settled-record projection; its directory grants no authority.
+  room: 'room',             // Legacy external notes; imported as unlinked, advisory data.
+  content: 'content',       // Rebuildable vectors keyed by exact statement hash; never canonical history.
+  queue: 'queue',           // Historical proposals; reconciled to unsigned history, never silently deleted.
+})
+export const MEMORY_STORAGE_TIERS = Object.freeze(Object.values(MEMORY_STORAGE))
 
 /** The tier name revision 1 used. REFUSED rather than aliased: a silent alias would hide the rename from every caller. */
 export const RENAMED_TIER = Object.freeze({ trusted: 'signed' })
@@ -54,7 +65,7 @@ export const RENAMED_TIER = Object.freeze({ trusted: 'signed' })
 export const noteKind = Object.freeze(['fact', 'preference', 'decision', 'commitment', 'person', 'project', 'observation'])
 
 /** The tiers that appear in recall (§2.1): Remembered labelled `unreviewed`, Signed labelled `signed`. */
-export const RECALL_TIERS = Object.freeze(['remembered', 'signed'])
+export const RECALL_TIERS = Object.freeze([MEMORY_TIER.remembered, MEMORY_TIER.signed])
 
 /** How recall labels each tier when Auma speaks (§2.1). Auma never says "verified" or "confirmed" (§2.3). */
 export const TIER_LABELS = Object.freeze({ remembered: 'unreviewed', signed: 'signed' })
@@ -502,7 +513,8 @@ export function buildRememberedNote(input) {
   return Object.freeze({
     ...envelope,
     id: `rem:${memoryRecordId(envelope)}`,
-    tier: 'remembered',
+    tier: MEMORY_TIER.remembered,
+    contentHash: sha256Hex(statement),
     // *** THE CONTRACT'S THREE NAMES LIVE HERE NOW, NOT ONLY IN THE CAPTURE HOOK. *** `.agents/live/MEMORY-CONTRACT-v0.md` calls
     // these `kind`, `text` and `createdAt`; §3.6 and my envelope call them `category`, `statement` and `observedAt`. The hook added
     // the aliases after building, so the MIGRATED notes — built directly by the backfill — had `category` and no `text` at all:

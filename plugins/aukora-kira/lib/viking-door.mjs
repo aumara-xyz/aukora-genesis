@@ -1,6 +1,6 @@
 /** Maintained source of the loopback Viking door. Imports have no side effects. */
 import http from 'node:http'
-import { createTrackedMemory, validExternalOrigin, contentHash } from './tracked-memory.mjs'
+import { createTrackedMemory, validExternalOrigin } from './tracked-memory.mjs'
 import { contentUri, SEMANTIC_DEFAULTS } from './recall-openviking.mjs'
 const MAX_BODY = 16 * 1024
 class DoorError extends Error { constructor(status, message) { super(message); this.status = status } }
@@ -15,7 +15,8 @@ export function createVikingDoor({ memory, stateDir, subject, config, fetch, por
   const recall = async body => {
     if (typeof body.q !== 'string' || !body.q.trim() || (body.limit !== undefined && (!Number.isInteger(body.limit) || body.limit < 1 || body.limit > 10)))
       throw new DoorError(400, 'Expected {q, limit}, with a limit from 1 to 10.')
-    return memory.recall({ question: body.q, limit: body.limit })
+    if (body.lexical !== undefined && typeof body.lexical !== 'boolean') throw new DoorError(400, 'lexical must be boolean.')
+    return memory.recall({ question: body.q, limit: body.limit, lexical: body.lexical === true })
   }
   const server = http.createServer(async (req, res) => {
     const route = req.url === '/remember' || req.url === '/recall' ? req.url : '<other>';
@@ -70,7 +71,7 @@ export function createVikingDoor({ memory, stateDir, subject, config, fetch, por
         const notes = value.notes?.length ? value.notes : value.ids?.length
           ? memory.read().notes.filter(note => value.ids.includes(note.id)) : [];
         const sources = notes.map(note => contentUri(config?.user ?? SEMANTIC_DEFAULTS.user,
-          note.contentHash ?? contentHash(note.statement)));
+          note.contentHash));
         send(201, { ...value, remembered: Boolean(value.ids?.length), from: body.from,
           at: notes[0]?.observedAt ?? new Date().toISOString(), source: sources[0] ?? null, sources });
       }

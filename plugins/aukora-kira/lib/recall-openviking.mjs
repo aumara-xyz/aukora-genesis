@@ -1,4 +1,5 @@
-import { sha256Hex } from './memory-tiers.mjs'
+import { sha256Hex, MEMORY_TIER, MEMORY_STORAGE } from './memory-tiers.mjs'
+import { memoryQuality, verifyContentHash } from './memory-quality.mjs'
 import { dirname } from 'node:path'
 import { readJsonStrict, readTextStrict, stateExists, durableWrite, ensureDirectory, withFileLock } from './strict-read.mjs'
 import { SEMANTIC_WINDOW } from './reserved-slots.mjs'
@@ -93,8 +94,8 @@ export function readBridgeConfig(home) {
 /** The OpenViking URI for one note id. WRITE shape: governed/<hex>.md (A1). */
 export function uriFor(user, id) {
   const value = String(id)
-  if (NOTE_ID.test(value)) return `viking://user/${user}/memories/kira/remembered/rem-${value.slice(4)}.md`
-  if (GOVERNED_ID.test(value)) return `viking://user/${user}/memories/kira/governed/${value.slice(5)}.md`
+  if (NOTE_ID.test(value)) return `viking://user/${user}/memories/kira/${MEMORY_STORAGE.remembered}/rem-${value.slice(4)}.md`
+  if (GOVERNED_ID.test(value)) return `viking://user/${user}/memories/kira/${MEMORY_STORAGE.governed}/${value.slice(5)}.md`
   throw new Error(`kira.semantic: ${value.slice(0, 24)} is not a Kira memory id`)
 }
 
@@ -119,7 +120,7 @@ export class OpenVikingError extends Error {
 /** URI identity is the SHA-256 of the exact UTF-8 capture bytes, never a title or summary. */
 export function contentUri(user, hash) {
   if (!/^[a-zA-Z0-9_-]{1,64}$/u.test(user) || !/^[0-9a-f]{64}$/u.test(hash)) throw new Error('memory-uri-invalid')
-  return `viking://user/${user}/memories/kira/content/${hash}.md`
+  return `viking://user/${user}/memories/kira/${MEMORY_STORAGE.content}/${hash}.md`
 }
 
 export function createOpenVikingRecall(input) {
@@ -146,7 +147,7 @@ export function createOpenVikingRecall(input) {
     const entries = value?.entries instanceof Map ? value.entries : new Map([...(value?.ambient ?? []), ...(value?.governed ?? [])])
     return { ...value, entries, complete: value?.complete === true }
   }
-  const hashOf = note => note.contentHash ?? sha256Hex(note.statement)
+  const hashOf = note => note.contentHash
   const call = async (method, path, body) => {
     try {
       const response = await doFetch(`${config.url}${path}`, { method, redirect: 'error',
@@ -167,8 +168,10 @@ export function createOpenVikingRecall(input) {
       return response.ok && (await response.json()).healthy === true ? { ok: true } : { ok: false, reason: 'openviking-unhealthy' }
     } catch { return { ok: false, reason: 'openviking-unreachable' } }
   }
-  const ack = (uri, ids) => {
-    acknowledgements[uri] = ids
+  const idsOf = entry => Array.isArray(entry) ? entry : Array.isArray(entry?.ids) ? entry.ids : []
+  const ack = (uri, ids, hash = uri.match(/\/content\/([0-9a-f]{64})\.md$/u)?.[1] ?? null, removal = null) => {
+    const value = ids === null ? null : { ids, contentHash: hash, storageTier: uri.split('/').at(-2), ...(removal ? { removal } : {}) }
+    acknowledgements[uri] = value
     if (acknowledgementFile) {
       // Multiple capture processes can share a store. Merge under the chain's lock.
       ensureDirectory(dirname(acknowledgementFile))
@@ -177,7 +180,7 @@ export function createOpenVikingRecall(input) {
         if (stateExists(acknowledgementFile)) { try { current = readJsonStrict(acknowledgementFile) } catch {} }
         if (!current || Array.isArray(current) || typeof current !== 'object') current = {}
         if (ids === null) delete current[uri]
-        else current[uri] = ids
+        else current[uri] = value
         acknowledgements = current
         durableWrite(acknowledgementFile, `${JSON.stringify(current)}\n`, { dir: dirname(acknowledgementFile) })
       }, { waitMs: 0 })
@@ -199,7 +202,9 @@ export function createOpenVikingRecall(input) {
         requests++
         const bytes = await call('GET', `/api/v1/content/read?uri=${encodeURIComponent(uri)}`)
         if (typeof bytes !== 'string') { ack(uri, null); unreadable.push(uri) }
-        else if (grouped.get(uri).some(note => note.statement !== bytes || hashOf(note) !== sha256Hex(bytes))) tampered.push(uri)
+        else if (grouped.get(uri).some(note => note.statement !== bytes || hashOf(note) !== sha256Hex(bytes))
+          || (acknowledgements[uri]?.contentHash != null && acknowledgements[uri].contentHash !== sha256Hex(bytes))) tampered.push(uri)
+        else if (acknowledgements[uri]?.contentHash == null) ack(uri, grouped.get(uri).map(note => note.id), sha256Hex(bytes))
       } catch (error) {
         if (error.code === 'kira.semantic:not-found') { ack(uri, null); unreadable.push(uri) }
         else { failed.push('index-audit-failed'); break }
@@ -211,17 +216,22 @@ export function createOpenVikingRecall(input) {
   const groupLedger = live => {
     const grouped = new Map()
     for (const note of live.entries.values()) {
-      if (typeof note.statement !== 'string' || !note.statement || hashOf(note) !== sha256Hex(note.statement)) continue
+      if (!verifyContentHash(note.statement, hashOf(note)).ok || !memoryQuality(note.statement).keep) continue
       const uri = contentUri(config.user, hashOf(note))
       if (!grouped.has(uri)) grouped.set(uri, [])
       grouped.get(uri).push(note)
     }
     return grouped
   }
+  // Every verified note's content URI, whatever its quality. A note below the floor is never written,
+  // but a vector indexed for it before the floor existed stays where it is (recall drops it on read):
+  // sync removes only vectors whose notes left the ledger (forgotten, hidden, changed or gone).
+  const retainedOf = live => new Set([...live.entries.values()]
+    .filter(note => verifyContentHash(note.statement, hashOf(note)).ok).map(note => contentUri(config.user, hashOf(note))))
   const sync = (source, options = {}) => inTurn(async () => {
     if (!configured) return { added: 0, removed: 0, requests: 0, pending: 0, failed: ['openviking-not-configured'] }
     readAcknowledgements()
-    const live = await ledgerNow(options.snapshot ?? source), grouped = groupLedger(live)
+    const live = await ledgerNow(options.snapshot ?? source), grouped = groupLedger(live), retained = retainedOf(live)
     const budget = syncBudget(options.budget ?? config.syncBatch)
     let added = 0, removed = 0, requests = 0
     const failed = [], written = []
@@ -230,7 +240,7 @@ export function createOpenVikingRecall(input) {
       try { await removeUri(uri); ack(uri, null); removed++ }
       catch { failed.push('remove-failed') }
     }
-    if (live.complete) for (const uri of Object.keys(acknowledgements)) if (uri.startsWith(`${root}/`) && !grouped.has(uri)) {
+    if (live.complete) for (const uri of Object.keys(acknowledgements)) if (uri.startsWith(`${root}/`) && !grouped.has(uri) && !retained.has(uri)) {
       if (requests >= budget || failed.length) break
       await remove(uri)
     }
@@ -246,7 +256,7 @@ export function createOpenVikingRecall(input) {
       try {
         requests++
         await call('POST', '/api/v1/content/write', { uri, content: notes[0].statement, mode: 'replace', wait: true,
-          timeout: Math.max(1, Math.round(config.timeoutMs / 1000)), tags: [`content_sha256=${hashOf(notes[0])}`, 'source=kira-memory'] })
+          timeout: Math.max(1, Math.round(config.timeoutMs / 1000)), tags: [`contentHash=${hashOf(notes[0])}`, `content_sha256=${hashOf(notes[0])}`, `storageTier=${MEMORY_STORAGE.content}`, 'source=kira-memory'] })
         // Keep a durable deletion target even if a forget races this write and the budget is spent.
         ack(uri, notes.map(note => note.id)); written.push(uri)
       } catch { failed.push('index-write-failed'); break }
@@ -266,26 +276,28 @@ export function createOpenVikingRecall(input) {
     requests += audit.requests; failed.push(...audit.failed)
     if (audit.tampered.length) failed.push('index-content-mismatch')
     if (audit.requests) { latest = await ledgerNow(source); latestGroups = groupLedger(latest) }
+    const latestRetained = latest.complete ? retainedOf(latest) : null
     return { added, removed, pending: [...latestGroups.keys()].filter(uri => !acknowledgements[uri]).length,
-      removalPending: latest.complete ? Object.keys(acknowledgements).filter(uri => uri.startsWith(`${root}/`) && !latestGroups.has(uri)).length : null,
+      removalPending: latestRetained ? Object.keys(acknowledgements).filter(uri => uri.startsWith(`${root}/`) && !latestGroups.has(uri)
+        && !latestRetained.has(uri)).length : null,
       indexed: Object.keys(acknowledgements).length, failed, audit, requests, budget }
   })
   const forget = id => inTurn(async () => {
     readAcknowledgements()
-    const uris = Object.entries(acknowledgements).filter(([, ids]) => Array.isArray(ids) && ids.includes(id)).map(([uri]) => uri)
+    const uris = Object.entries(acknowledgements).filter(([, entry]) => idsOf(entry).includes(id)).map(([uri]) => uri)
     if (NOTE_ID.test(id) || GOVERNED_ID.test(id)) uris.push(uriFor(config.user, id))
     if (GOVERNED_ID.test(id)) uris.push(`${root}/governed/kira-${id.slice(5)}.md`)
     let failedUri
     for (const uri of new Set(uris)) {
       try { await removeUri(uri); ack(uri, null) }
-      catch { ack(uri, [id]); failedUri ??= uri }
+      catch { ack(uri, [id], acknowledgements[uri]?.contentHash ?? null, 'forget'); failedUri ??= uri }
     }
     return failedUri ? { reached: false, uri: failedUri, because: 'index deletion pending; recall excludes forgotten records' }
       : { reached: true, uri: uris[0] }
 
   })
   const recall = async ({ question, live: source, accept = () => true, candidates: readCandidates, govern = notes => notes, limit = config.limit }) => {
-    const dropped = { unmapped: [], tampered: [], unreadable: [], belowThreshold: 0, outsideWindow: 0, invalidScore: 0 }
+    const dropped = { unmapped: [], tampered: [], unreadable: [], belowThreshold: 0, outsideWindow: 0, invalidScore: 0, quality: 0 }
     const diagnostics = []
     let live = await ledgerNow(source)
     const up = await available()
@@ -296,7 +308,7 @@ export function createOpenVikingRecall(input) {
     let synced
     try { synced = await sync(source, { budget: config.syncBatch, snapshot: live }) } catch { synced = { failed: ['index-sync-failed'] } }
     let result
-    try { result = await call('POST', '/api/v1/search/find', { query: `${config.queryInstruction}${String(question)}`, target_uri: root, limit: config.candidates }) }
+    try { result = await call('POST', '/api/v1/search/find', { query: `${config.queryInstruction}${String(question)}`, target_uri: `${root}/${MEMORY_STORAGE.content}`, limit: config.candidates }) }
     catch {
       live = await ledgerNow(source)
       return { available: false, reason: 'semantic-recall-failed', hits: [], dropped, ledgerComplete: live.complete }
@@ -305,6 +317,7 @@ export function createOpenVikingRecall(input) {
     // Read content concurrently, then govern everything with one latest ledger after network I/O.
     const byUri = new Map()
     for (const note of live.entries.values()) {
+      if (!verifyContentHash(note.statement, hashOf(note)).ok) continue
       const uri = contentUri(config.user, hashOf(note))
       if (!byUri.has(uri)) byUri.set(uri, [])
       byUri.get(uri).push(note.id)
@@ -343,12 +356,14 @@ export function createOpenVikingRecall(input) {
       if (read.unreadable || typeof bytes !== 'string') { dropped.unreadable.push(uri); ack(uri, null); continue }
       const matches = ids.map(id => live.entries.get(id)).filter(Boolean)
       if (!matches.length) { dropped.unmapped.push(uri); continue }
-      if (typeof bytes !== 'string' || matches.some(note => hashOf(note) !== sha256Hex(bytes) || note.statement !== bytes)) {
+      if (typeof bytes !== 'string' || matches.some(note => hashOf(note) !== sha256Hex(bytes) || note.statement !== bytes)
+        || (acknowledgements[uri]?.contentHash != null && acknowledgements[uri].contentHash !== sha256Hex(bytes))) {
         dropped.tampered.push(uri); diagnostics.push({ reason: 'content-hash-mismatch', uri }); continue
       }
+      if (!memoryQuality(bytes).keep) { dropped.quality++; continue }
       if (!Number.isFinite(score)) { dropped.invalidScore++; continue }
       if (score < config.scoreThreshold) { dropped.belowThreshold++; continue }
-      for (const note of matches) if (!raw.some(one => one.id === note.id)) raw.push({ id: note.id, score, note, uri, tier: 'remembered', relevance: 'semantic-threshold' })
+      for (const note of matches) if (!raw.some(one => one.id === note.id)) raw.push({ id: note.id, score, note, uri, tier: MEMORY_TIER.remembered, relevance: 'semantic-threshold' })
     }
     if (candidateNotes.length) govern(candidateNotes, live)
     const filtered = new Map(govern(raw.map(hit => hit.note), live).map(note => [note.id, note]))
@@ -399,12 +414,13 @@ export function createOpenVikingRecall(input) {
 export function semanticNotes(answer, chars = 600) {
   return { state: answer.hits.length ? 'found' : 'empty', method: SEMANTIC_METHOD, grantsAuthority: false,
     notes: answer.hits.map(({ id, score, note, relevance, uri }) => ({ id, text: note.statement.slice(0, chars), score,
-      contentHash: note.contentHash ?? sha256Hex(note.statement), uri, observedAt: note.observedAt ?? null,
-      tier: 'remembered', relevance, attributedTo: note.attributedTo, scope: note.scope, source: note.source,
+      contentHash: note.contentHash, contentHashScope: 'full-statement', uri, observedAt: note.observedAt ?? null,
+      tier: MEMORY_TIER.remembered, relevance, attributedTo: note.attributedTo, scope: note.scope, source: note.source,
       bodyAtCapture: note.bodyAtCapture ?? null, rememberedChain: note.aura,
       advisoryOnly: true, grantsAuthority: false, containment: note.containment, staleness: note.staleness })),
     droppedUnmapped: answer.dropped.unmapped.length, droppedTampered: answer.dropped.tampered.length,
     droppedUnreadable: answer.dropped.unreadable.length, droppedBelowThreshold: answer.dropped.belowThreshold,
+    hashMismatches: answer.dropped.tampered.length, droppedQuality: answer.dropped.quality ?? 0,
     ...(answer.diagnostics === undefined ? {} : { diagnostics: answer.diagnostics }), threshold: answer.threshold,
     ...(answer.sync === undefined ? {} : { index: answer.sync }), ceiling: SEMANTIC_CEILING }
 }

@@ -110,6 +110,9 @@ export function verifyRecord(record, readEventLine, readChainEntry) {
   if (!idMatches) {
     return { id: String(record.id ?? ''), source: 'CHANGED', recorded, recomputed: null, failed: 'id-recomputes' }
   }
+  if (record.contentHash !== undefined && sha256Hex(record.statement ?? record.text) !== record.contentHash) {
+    return { id: String(record.id ?? ''), source: 'CHANGED', recorded, recomputed: null, failed: 'content-hash-mismatch' }
+  }
   // *** A DECLARED UNLINKED RECEIPT ANSWERS MISSING AND STOPS HERE (Fable, kira-122 decision 1: "it is NEVER verified"). ***
   // The check is FIRST and it RETURNS, so a digest pasted onto an unlinked record later cannot reach the comparisons below:
   // the record's own declaration outranks any field a later edit could add. MISSING rather than a refusal, because the

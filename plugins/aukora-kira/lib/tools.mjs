@@ -155,6 +155,7 @@ export const RECALL_PARAMETERS = {
     type: 'object',
     additionalProperties: false,
     properties: {
+      lexical: { type: 'boolean', description: 'Search exact words in verified history, including records below the semantic quality floor.' },
       action: {
         type: 'string',
         enum: [...CONVERSATION_ACTIONS],
@@ -622,6 +623,7 @@ export function recallTool(dispatch) {
           remembered: { type: 'object', additionalProperties: true, properties: {}, required: [] },
           memory: { type: 'object', additionalProperties: false, properties: {
             dropped: { type: 'integer' }, reasons: { type: 'object', additionalProperties: true },
+            hashMismatches: { type: 'integer' },
           }, required: ['dropped', 'reasons'] },
           // *** DECLARED, NOT STRIPPED, AND THIS FIELD IS WHY. *** `reconcileRecallAvailability`
           // returns `partialFailure` on every reconciled answer, and this schema's
@@ -653,7 +655,8 @@ export function recallTool(dispatch) {
       // The harness schema subset cannot express nonnegative counts or typed dictionary values.
       const memory = answer?.memory, count = value => Number.isInteger(value) && value >= 0
       if (memory !== undefined && (!memory || !count(memory.dropped) || !memory.reasons
-        || typeof memory.reasons !== 'object' || Array.isArray(memory.reasons) || !Object.values(memory.reasons).every(count))) {
+        || typeof memory.reasons !== 'object' || Array.isArray(memory.reasons) || !Object.values(memory.reasons).every(count)
+        || (memory.hashMismatches !== undefined && !count(memory.hashMismatches)))) {
         throw new TypeError('kira_recall: memory counts must be non-negative integers')
       }
       return answer
@@ -688,6 +691,7 @@ export async function recallRemembered(listNotes, text, limit = 5, govern = note
     state: notes.length === 0 ? 'empty' : 'found', grantsAuthority: false,
     notes: notes.sort((a, b) => score.get(b) - score.get(a)).slice(0, limit).map(note => ({
       id: note.id, text: String(note.text).slice(0, 600), observedAt: note.observedAt ?? null,
+      contentHash: note.contentHash, contentHashScope: 'full-statement', tier: note.tier,
       source: { sessionId: note.source?.sessionId ?? null, seq: note.source?.seq ?? null }, bodyAtCapture: note.bodyAtCapture ?? null,
       ...(note.containment ? { advisoryOnly: true, grantsAuthority: false, containment: note.containment, staleness: note.staleness } : {}),
     })),

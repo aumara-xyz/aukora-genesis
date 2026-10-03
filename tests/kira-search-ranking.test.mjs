@@ -6,7 +6,10 @@ import { sha256Hex } from '../plugins/aukora-kira/lib/memory-tiers.mjs'
 import { compileIndex, rankRecords } from '../plugins/aukora-kira/lib/retrieval.mjs'
 
 const question = 'What are my UI color preferences?'
-const notes = ['I prefer a blue UI background with teal accents.', 'OK.', 'Continue.', 'Blue.'].map((statement, i) => ({
+// Indices 0-2 are recallable statements; 3 is a short fact; 4-6 sit below the vector-quality floor
+// (two acknowledgements and one dictated reply) and must never come back as semantic hits.
+const notes = ['I prefer a blue UI background with teal accents.', 'The deploy script lives in scripts/aukora.', 'Peter wants larger dock icons.',
+  'Blue.', 'OK.', 'Continue.', 'Reply with exactly the four characters: OK'].map((statement, i) => ({
   id: 'rem:' + String(i + 1).padStart(64, '0'), statement, contentHash: sha256Hex(statement),
   observedAt: `2026-09-${String(i + 1).padStart(2, '0')}T00:00:00Z`, aura: { index: i },
 }))
@@ -42,15 +45,17 @@ const check = async (name, run) => {
   try { await run(); passed++; console.log('ok ' + name) }
   catch (error) { failed++; console.log('FAIL ' + name + ': ' + error.message) }
 }
-await check('explicit preferences outrank acknowledgements with distinct scores; short facts stay searchable', async () => {
+await check('explicit preferences outrank with distinct scores; acknowledgements and dictated replies never surface; short facts stay searchable', async () => {
   const records = notes.map(note => ({ recordId: note.id, text: note.statement }))
   const lexical = rankRecords(compileIndex(records), records, question)
   assert.equal(lexical[0].recordId, notes[0].id)
-  for (const i of [1, 2]) assert.equal(lexical.find(row => row.recordId === notes[i].id).score, 0)
+  for (const i of [4, 5]) assert.equal(lexical.find(row => row.recordId === notes[i].id).score, 0)
   assert.ok(rankRecords(compileIndex(records), records, 'Blue').find(row => row.recordId === notes[3].id).score > 0)
-  const { answer } = await recall({ memories: [hit(1, 0.57), hit(0, '0.97'), hit(2, 0.46)] })
+  // An already-indexed acknowledgement or instruction scoring above a real record is read, then dropped.
+  const { answer } = await recall({ memories: [hit(4, 0.99), hit(1, 0.57), hit(0, '0.97'), hit(6, 0.98), hit(5, 0.5), hit(2, 0.46)] })
   assert.deepEqual(answer.hits.map(one => one.id), [notes[0].id, notes[1].id, notes[2].id])
   assert.deepEqual(answer.hits.map(one => one.score), [0.97, 0.57, 0.46])
+  assert.equal(answer.dropped.quality, 3)
 })
 await check('combined result lists rank before the candidate cap', async () => {
   const { answer } = await recall({ memories: [hit(1, 0.57), hit(2, 0.46)], resources: [hit(0, 0.97)] }, 2)

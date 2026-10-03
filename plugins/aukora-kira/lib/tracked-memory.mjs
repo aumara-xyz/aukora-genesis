@@ -2,7 +2,8 @@
  * The verified chain is also the durable outbox: a missing index acknowledgement is retried.
  * No approval, grant, queue proposal or authority is created by this module. */
 import { AURA_RECORD_DOMAIN, auraEntryHash, chainAuraEntries } from './memory-owner.mjs'
-import { buildRememberedNote, canonicalInstant, recomputeNoteId, sha256Hex } from './memory-tiers.mjs'
+import { buildRememberedNote, canonicalInstant, recomputeNoteId, sha256Hex, MEMORY_TIER } from './memory-tiers.mjs'
+import { contentHash, verifyContentHash } from './memory-quality.mjs'
 import { consumeTurn } from './memory-capture-hook.mjs'
 import { nextEntry, verifyChain as verifyJournal } from './memory-journal.mjs'
 import { STORE_PATHS, objectFileName } from './memory-store.mjs'
@@ -26,7 +27,7 @@ const decode = file => readLinesIfPresent(file).map((line, damagedAt) => {
   catch { throw Object.assign(new Error('memory-chain-unreadable'), { code: 'memory-chain-unreadable',
     verdict: { ok: false, damagedAt, why: 'chain line does not parse; possible torn append' } }) }
 })
-export const contentHash = text => sha256Hex(String(text))
+export { contentHash } from './memory-quality.mjs'
 export const MAX_NOTE_CHARS = 16_000
 export const validExternalOrigin = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,64}$/u.test(value) && !/^(owner|peter|kira)/iu.test(value)
 
@@ -89,12 +90,12 @@ export function readTrackedMemory(stateDir) {
       if (note.tier === 'forgotten' || forgotten.has(note.id)) continue
       if (states.get(note.id) === 'hidden') continue
       const entry = membership.get(note.id)
-      if (!entry || entry.entryHash !== note.aura?.entryHash || recomputeNoteId(note) !== note.id || objectFileName(note.id) !== name) throw new Error('unchained')
       const hash = contentHash(note.statement)
       const commitment = commitments.get(note.id)
-      if ((entry.contentHash && entry.contentHash !== hash) || (note.contentHash && note.contentHash !== hash)
+      if ((entry?.contentHash !== undefined && entry.contentHash !== hash) || (note.contentHash !== undefined && note.contentHash !== hash)
         || (commitment && (commitment.contentHash !== hash || commitment.entryHash !== note.aura?.entryHash))) throw new Error('content-hash-mismatch')
-      notes.push({ ...note, ...note.origin?.metadata, tier: 'remembered', contentHash: hash,
+      if (!entry || entry.entryHash !== note.aura?.entryHash || recomputeNoteId(note) !== note.id || objectFileName(note.id) !== name) throw new Error('unchained')
+      notes.push({ ...note, ...note.origin?.metadata, tier: MEMORY_TIER.remembered, contentHash: hash,
         trackedContent: entry.contentHash === hash || commitment?.contentHash === hash })
     } catch (error) {
       if (note && !membership.has(note.id)) orphans.push(note)
@@ -102,7 +103,8 @@ export function readTrackedMemory(stateDir) {
     }
   }
   for (const [id] of membership) if (id?.startsWith('rem:') && !seen.has(id) && !forgotten.has(id) && states.get(id) !== 'hidden') withheld.push({ id, recallRefusal: 'missing-object' })
-  return { notes, withheld, forgotten, states, complete: withheld.length === 0, chain, journal, orphans }
+  return { notes, withheld, forgotten, states, complete: withheld.length === 0, chain, journal, orphans,
+    hashMismatches: withheld.filter(note => note.recallRefusal === 'content-hash-mismatch').length }
 }
 
 function repairJournal(stateDir, notes, journal, budget = notes.length) {
@@ -233,7 +235,7 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
       let result
       try {
         const { live, migration } = trackedSnapshot(budget)
-        result = { ...await indexSnapshot(live, [], true, budget), ...migration, ledgerComplete: live.complete }
+        result = { ...await indexSnapshot(live, [], true, budget), ...migration, ledgerComplete: live.complete, hashMismatches: live.hashMismatches }
         if (!live.complete) result.failed = [...(result.failed ?? []), 'memory-store-incomplete']
       } catch { result = { added: 0, failed: ['memory-store-unavailable'] } }
       const failed = result.failed?.length > 0
@@ -332,7 +334,7 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
     if (result.error) throw new Error(result.error)
     return { ...result, index }
   }
-  const recall = async ({ question, limit, context = {} }) => {
+  const recall = async ({ question, limit, context = {}, lexical = false }) => {
     let p = await policy()
     const report = { dropped: 0, reasons: {} }
     const paused = () => p.offTheRecord || Object.entries(CONTROLS).some(([k, v]) => (v.stopsRecall || v.stopsRecallPersonal) && p.controls?.[k])
@@ -341,11 +343,14 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
     const filter = (notes, live) => filterMemoryRecords(notes, { ...context, ...p, permittedPrivacy: [p.privacy],
       nowMs: now(), forgotten: live.forgotten, states: live.states }, report)
     try {
-      const answer = await bridge.recall({ question, live: () => ledger(), govern: filter, limit })
+      const answer = lexical ? { available: false, reason: 'lexical-requested', hits: [],
+        dropped: { unmapped: [], tampered: [], unreadable: [], belowThreshold: 0 } }
+        : await bridge.recall({ question, live: () => ledger(), govern: filter, limit })
       // Both unavailable and successful network paths can race forget, hide, capture or policy changes.
       p = await policy()
       if (paused()) return pauseReply()
       const live = readTrackedMemory(stateDir)
+      report.hashMismatches = live.hashMismatches + (answer.dropped?.tampered?.length ?? 0)
       const notes = filter([...ledger(live).entries.values(), ...live.withheld], live)
       const byId = new Map(notes.map(note => [note.id, note]))
       if (!answer.available) {
@@ -357,9 +362,14 @@ export function createTrackedMemory({ stateDir, subject, config = { configured: 
             uri: contentUri(config.user ?? SEMANTIC_DEFAULTS.user, byId.get(row.recordId).contentHash) }))
         return { ...semanticNotes({ ...answer, hits, threshold: LEXICAL_METHOD.minScore }, 60_000),
           ...(live.complete ? {} : { state: 'undetermined' }), method: LEXICAL_METHOD.name, ceiling: RETRIEVAL_CEILING,
-          degraded: true, semantic: { available: false, reason: answer.reason }, memory: report, dropped: answer.dropped }
+          degraded: !lexical, semantic: { available: false, reason: answer.reason }, memory: report, dropped: answer.dropped }
       }
-      const hits = answer.hits.flatMap(hit => byId.has(hit.id) ? [{ ...hit, note: byId.get(hit.id) }] : [])
+      const hits = answer.hits.flatMap(hit => {
+        const note = byId.get(hit.id)
+        if (!note) return []
+        if (!verifyContentHash(note.statement, hit.note?.contentHash).ok) { report.hashMismatches++; return [] }
+        return [{ ...hit, note }]
+      })
       return { ...semanticNotes({ ...answer, hits }, 60_000), ...(live.complete && answer.ledgerComplete ? {} : { state: 'undetermined' }),
         semantic: { available: true }, memory: report, dropped: answer.dropped }
     } catch {

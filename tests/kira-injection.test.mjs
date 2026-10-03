@@ -37,6 +37,7 @@
  * disposable profile and is named as the remaining gap rather than claimed here.
  */
 import assert from 'node:assert/strict'
+import { contentHash } from '../plugins/aukora-kira/lib/memory-quality.mjs'
 import { chmodSync, statSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 // Main has no court-reaper helper; keep the original exit/signal cleanup here.
@@ -926,9 +927,9 @@ await arm('off-record and secret filters still stop agent findings, including ec
 })
 await arm('semantic recall uses authoritative bytes and pure relevance without lexical rescue', async broken => {
   const rows = [
-    ['1', .69, 'workspace containment'], ['2', .4536, 'workspace containment staged pack'],
-    ['3', .38, 'workspace containment chosen posture'], ['4', .2, 'unrelated beverage preference'],
-  ].map(([id, score, statement]) => ({ id: `rem:${id.repeat(64)}`, score, statement, tier: 'remembered' }))
+    ['1', .69, 'workspace containment is required'], ['2', .4536, 'workspace containment requires a staged pack'],
+    ['3', .38, 'workspace containment is the chosen posture'], ['4', .2, 'the unrelated beverage preference is tea'],
+  ].map(([id, score, statement]) => ({ id: `rem:${id.repeat(64)}`, score, statement, contentHash: contentHash(statement), tier: 'remembered' }))
   const config = { configured: true, url: 'http://127.0.0.1:1', user: 'owner', account: 'scratch', key: 'fixture',
     scoreThreshold: .4, limit: 3, candidates: 12, timeoutMs: 1000, syncBatch: 0, queryInstruction: '' }
   const fetch = async url => {
